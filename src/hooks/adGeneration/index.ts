@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useGoogleAds } from './useGoogleAds';
 import { useMetaAds } from './useMetaAds';
 import { useImageGeneration } from './useImageGeneration';
-import { UseAdGenerationReturn } from './types';
+import { UseAdGenerationReturn, GoogleAd, MetaAd } from './types';
 
 export * from './types';
 
@@ -26,16 +26,28 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
   const generateGoogleAds = async (campaignData: any) => {
     setIsGenerating(true);
-    const result = await googleAdsGenerator(campaignData);
-    setIsGenerating(false);
-    return result;
+    try {
+      const result = await googleAdsGenerator(campaignData);
+      setIsGenerating(false);
+      return result;
+    } catch (error) {
+      console.error("Error generating Google ads:", error);
+      setIsGenerating(false);
+      return null;
+    }
   };
 
   const generateMetaAds = async (campaignData: any) => {
     setIsGenerating(true);
-    const result = await metaAdsGenerator(campaignData);
-    setIsGenerating(false);
-    return result;
+    try {
+      const result = await metaAdsGenerator(campaignData);
+      setIsGenerating(false);
+      return result;
+    } catch (error) {
+      console.error("Error generating Meta ads:", error);
+      setIsGenerating(false);
+      return null;
+    }
   };
 
   return {

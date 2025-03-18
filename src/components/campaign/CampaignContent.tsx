@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaign } from "@/contexts/CampaignContext";
@@ -33,7 +33,27 @@ const CampaignContent: React.FC = () => {
 
   // Website analysis and ad generation hooks
   const { analyzeWebsite, isAnalyzing } = useWebsiteAnalysis();
-  const { generateGoogleAds, generateMetaAds, generateAdImage, isGenerating } = useAdGeneration();
+  const { 
+    generateGoogleAds, 
+    generateMetaAds, 
+    generateAdImage, 
+    isGenerating,
+    googleAds: adGenerationGoogleAds,
+    metaAds: adGenerationMetaAds
+  } = useAdGeneration();
+
+  // Sync ads from the adGeneration hook to the campaign context
+  useEffect(() => {
+    if (adGenerationGoogleAds && adGenerationGoogleAds.length > 0) {
+      setGoogleAds(adGenerationGoogleAds);
+    }
+  }, [adGenerationGoogleAds, setGoogleAds]);
+
+  useEffect(() => {
+    if (adGenerationMetaAds && adGenerationMetaAds.length > 0) {
+      setMetaAds(adGenerationMetaAds);
+    }
+  }, [adGenerationMetaAds, setMetaAds]);
 
   // Campaign step navigation
   const { handleBack, handleNext } = useCampaignSteps(
@@ -112,6 +132,10 @@ const CampaignContent: React.FC = () => {
     await handleGenerateImage(ad, index);
     setLoadingImageIndex(null);
   };
+
+  // Log the current state of ads for debugging
+  console.log("CampaignContent - googleAds state:", googleAds);
+  console.log("CampaignContent - metaAds state:", metaAds);
 
   // Wrapper for next button to create campaign when needed
   const handleNextWrapper = () => {

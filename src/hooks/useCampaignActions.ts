@@ -1,143 +1,164 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { CustomUser } from "@/types/auth";
 
 export const useCampaignActions = (
-  user: CustomUser | null,
+  user: any,
   campaignData: any,
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
   metaAds: MetaAd[],
-  generateGoogleAds: (campaignData: WebsiteAnalysisResult) => Promise<GoogleAd[] | null>,
-  generateMetaAds: (campaignData: WebsiteAnalysisResult) => Promise<MetaAd[] | null>,
+  generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>,
+  generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>,
   generateAdImage: (prompt: string) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  
-  const handleAnalyzeWebsite = async (url: string, analyzeWebsite: (url: string) => Promise<WebsiteAnalysisResult | null>) => {
-    const result = await analyzeWebsite(url);
-    if (result) {
-      setCampaignData((prev: any) => ({
-        ...prev,
-        websiteUrl: url,
-        businessInfo: result,
-      }));
-    }
-    return result;
+  const { toast } = useToast();
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Handle page transitions
+  const handleAnalyzeWebsite = async (url: string) => {
+    // Analysis logic is in useWebsiteAnalysis hook
+    return null;
   };
 
+  // Generate Google ads
   const handleGenerateGoogleAds = async () => {
-    if (!analysisResult) return;
-    
-    const ads = await generateGoogleAds(analysisResult);
-    if (ads) {
-      setCampaignData((prev: any) => ({
-        ...prev,
-        googleAds: ads,
-      }));
-    }
-  };
-
-  const handleGenerateMetaAds = async () => {
-    if (!analysisResult) return;
-    
-    const ads = await generateMetaAds(analysisResult);
-    if (ads) {
-      setCampaignData((prev: any) => ({
-        ...prev,
-        metaAds: ads,
-      }));
-    }
-  };
-
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
-    if (!metaAds || metaAds.length === 0) return;
-    
-    const imageUrl = await generateAdImage(ad.imagePrompt);
-    if (imageUrl) {
-      // Update the Meta ad with the generated image URL
-      const updatedAds = [...metaAds];
-      updatedAds[index] = {
-        ...updatedAds[index],
-        imageUrl,
-      };
-      
-      // Update state
-      setCampaignData((prev: any) => ({
-        ...prev,
-        metaAds: updatedAds,
-      }));
-    }
-  };
-
-  const createCampaign = async () => {
-    try {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to create a campaign",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Prepare campaign data
-      const newCampaign = {
-        user_id: user.id,
-        name: campaignData.name,
-        platform: campaignData.platform,
-        budget: campaignData.budget,
-        budget_type: campaignData.budgetType,
-        status: 'draft',
-      };
-      
-      // Insert campaign into database
-      const { data: createdCampaign, error: campaignError } = await supabase
-        .from('campaigns')
-        .insert(newCampaign)
-        .select()
-        .single();
-      
-      if (campaignError) {
-        console.error('Error creating campaign:', campaignError);
-        toast({
-          title: "Campaign Creation Failed",
-          description: campaignError.message || "Failed to create campaign",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Deduct credits from user
-      const { error: creditsError } = await supabase
-        .from('profiles')
-        .update({ credits: (user.credits || 0) - 5 })
-        .eq('id', user.id);
-      
-      if (creditsError) {
-        console.error('Error updating credits:', creditsError);
-      }
-      
+    if (!analysisResult) {
       toast({
-        title: "Campaign Created Successfully",
-        description: "Your campaign has been created and 5 credits have been deducted from your account",
+        title: "Analysis Required",
+        description: "Please analyze your website first",
+        variant: "destructive",
       });
-      
-      navigate("/dashboard");
-    } catch (error: any) {
+      return;
+    }
+
+    const ads = await generateGoogleAds(analysisResult);
+    if (ads && ads.length > 0) {
+      // Update campaign data with generated ads
+      setCampaignData(prev => ({
+        ...prev,
+        googleAds: ads
+      }));
+    }
+  };
+
+  // Generate Meta ads
+  const handleGenerateMetaAds = async () => {
+    if (!analysisResult) {
+      toast({
+        title: "Analysis Required",
+        description: "Please analyze your website first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const ads = await generateMetaAds(analysisResult);
+    if (ads && ads.length > 0) {
+      // Update campaign data with generated ads
+      setCampaignData(prev => ({
+        ...prev,
+        metaAds: ads
+      }));
+    }
+  };
+
+  // Generate image for Meta ad
+  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+    if (!ad.imagePrompt) {
+      toast({
+        title: "Image Prompt Required",
+        description: "Please provide an image prompt",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const imageUrl = await generateAdImage(ad.imagePrompt);
+      if (imageUrl) {
+        // Update the Meta ad with the generated image
+        const updatedAd = { ...ad, imageUrl };
+        const updatedAds = [...metaAds];
+        updatedAds[index] = updatedAd;
+        
+        // Update both the Meta ads array and the campaign data
+        setCampaignData(prev => ({
+          ...prev,
+          metaAds: updatedAds
+        }));
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Image Generation Failed",
+        description: "Failed to generate image",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Create campaign in database
+  const createCampaign = async () => {
+    if (!user || !campaignData) return;
+    
+    setIsCreating(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert([
+          {
+            user_id: user.id,
+            name: campaignData.name,
+            description: campaignData.description,
+            target_audience: campaignData.targetAudience,
+            platform: campaignData.platform,
+            budget: campaignData.budget,
+            budget_type: campaignData.budgetType,
+            start_date: campaignData.startDate,
+            end_date: campaignData.endDate,
+            objective: campaignData.objective,
+            website_url: campaignData.websiteUrl,
+            google_ads: googleAds,
+            meta_ads: metaAds,
+            status: 'active'
+          }
+        ])
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      // Deduct credits
+      await supabase
+        .from('profiles')
+        .update({ credits: user.credits - 5 })
+        .eq('id', user.id);
+
+      toast({
+        title: "Campaign Created",
+        description: "Your campaign has been created successfully",
+      });
+
+      // Navigate to campaigns page
+      navigate('/campaigns');
+    } catch (error) {
       console.error('Error creating campaign:', error);
       toast({
         title: "Campaign Creation Failed",
-        description: error?.message || "An unexpected error occurred",
+        description: "There was an error creating your campaign",
         variant: "destructive",
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -146,6 +167,7 @@ export const useCampaignActions = (
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateImage,
-    createCampaign
+    createCampaign,
+    isCreating
   };
 };
