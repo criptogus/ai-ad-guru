@@ -233,9 +233,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Add additional logging to track the registration process
       console.log('Starting registration process:', { name, email });
       
-      // Log Supabase configuration
+      // Log Supabase configuration - removed the problematic line that accessed supabaseUrl
       console.log('Current Supabase configuration:', {
-        url: supabase.supabaseUrl,
         authEnabled: !!supabase.auth,
       });
 
