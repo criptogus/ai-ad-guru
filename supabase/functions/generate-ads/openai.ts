@@ -21,7 +21,7 @@ export const generateWithOpenAI = async (prompt: string) => {
   
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Using a more capable model
+      model: "gpt-4o", // Using a more capable model for multilingual content
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 1500,

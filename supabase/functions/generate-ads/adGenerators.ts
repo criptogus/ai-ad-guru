@@ -45,6 +45,15 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     
     ---
     
+    ### 📌 **CRITICAL LANGUAGE INSTRUCTIONS**
+    - You MUST write ALL ad content in the SAME LANGUAGE as the content in the company information above.
+    - If the company information is in Portuguese, write the ads in Portuguese.
+    - If the company information is in Spanish, write the ads in Spanish.
+    - If the company information is in English, write the ads in English.
+    - NEVER mix languages or translate to English if the original content is in another language.
+    
+    ---
+    
     ### 📌 **Output Format (JSON)**
     Return **5 Google Search Ad Variations** in JSON format:
     \`\`\`json
@@ -66,6 +75,7 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     6. ALWAYS include the company name in at least one headline per ad
     7. EVERY headline MUST be relevant to the specific business ${campaignData.companyName}
     8. DO NOT create generic headlines that could apply to any business
+    9. Write ALL content in the SAME LANGUAGE as the company information (do NOT translate)
     `;
     
     console.log("Sending improved Google Ads prompt to OpenAI...");
@@ -114,6 +124,15 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     
     ---
     
+    ### 📌 **CRITICAL LANGUAGE INSTRUCTIONS**
+    - You MUST write ALL ad content in the SAME LANGUAGE as the content in the company information above.
+    - If the company information is in Portuguese, write the ads in Portuguese.
+    - If the company information is in Spanish, write the ads in Spanish.
+    - If the company information is in English, write the ads in English.
+    - NEVER mix languages or translate to English if the original content is in another language.
+    
+    ---
+    
     ### 📌 **Output Format (JSON)**
     Return your answer ONLY as a JSON array with 3 ad objects that look exactly like this, with no additional text before or after:
     [
@@ -133,6 +152,7 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     4. The FIRST ad variation will be used first, so make it the most compelling
     5. For image prompts, describe a professional, eye-catching image that would work well on Instagram
     6. Return ONLY the JSON array - no additional text before or after
+    7. Write ALL content in the SAME LANGUAGE as the company information (do NOT translate)
     `;
     
     console.log("Sending enhanced Instagram Ads prompt to OpenAI...");

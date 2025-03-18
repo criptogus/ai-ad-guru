@@ -63,6 +63,9 @@ serve(async (req) => {
     }
     
     console.log(`Generating ${platform} ads for ${campaignData.companyName}`);
+    console.log("Company information language sample:", 
+      campaignData.businessDescription?.substring(0, 100) || "No business description",
+      campaignData.targetAudience?.substring(0, 100) || "No target audience");
     
     // Format campaign data for prompt
     const formattedData = formatCampaignData(campaignData);
