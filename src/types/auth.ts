@@ -24,12 +24,12 @@ export interface AuthContextType {
   user: CustomUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
+  loginWithGoogle: () => Promise<any>;
   logout: () => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  createTestAccount: () => Promise<void>;
-  updateUserPaymentStatus: (hasPaid: boolean) => Promise<void>;
-  simulateSuccessfulPayment: () => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<any>;
+  createTestAccount: () => Promise<any>;
+  updateUserPaymentStatus: (hasPaid: boolean) => Promise<any>;
+  simulateSuccessfulPayment: () => Promise<any>;
   session: Session | null;
 }

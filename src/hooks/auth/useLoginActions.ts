@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,9 +87,9 @@ export const useLoginActions = (user: any, setUser: any) => {
           data: {
             name: name,
             credits: 400,
-            hasPaid: false,
+            has_paid: false,
           },
-          redirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
@@ -162,9 +163,9 @@ export const useLoginActions = (user: any, setUser: any) => {
           data: {
             name: name,
             credits: 400,
-            hasPaid: true,
+            has_paid: true,
           },
-          redirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
@@ -208,7 +209,7 @@ export const useLoginActions = (user: any, setUser: any) => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .update({ hasPaid: hasPaid })
+        .update({ has_paid: hasPaid })
         .eq('id', user.id)
         .select()
 

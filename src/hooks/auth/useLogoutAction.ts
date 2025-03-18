@@ -1,44 +1,42 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { logout } from '@/services/auth';
+import { CustomUser } from '@/types/auth';
 
-export const useLogoutAction = () => {
+export const useLogoutAction = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleLogout = async (): Promise<void> => {
+  const logout = async () => {
     try {
       setIsLoading(true);
-      console.log('Logging out user');
-      
-      await logout();
-      
-      // User state will be updated by onAuthStateChange
-      toast({
-        title: 'Logged out',
-        description: 'You have been successfully logged out.',
-      });
-      
-      // Always redirect to login page after logout
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
+
+      console.log('User logged out successfully');
+      setUser(null);
       navigate('/login');
-      
     } catch (error: any) {
-      console.error('Logout error:', error);
       toast({
-        title: 'Logout failed',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
+        title: "Logout Failed",
+        description: error.message || "There was a problem logging out",
+        variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    logout: handleLogout,
-    isLoading
+    logout,
+    isLoading,
   };
 };

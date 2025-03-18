@@ -12,10 +12,10 @@ export const useAuthActions = (
   user: CustomUser | null, 
   setUser: (user: CustomUser | null) => void
 ) => {
-  const { login, loginWithGoogle, isLoading: loginLoading } = useLoginActions();
-  const { logout, isLoading: logoutLoading } = useLogoutAction();
-  const { register, isLoading: registerLoading } = useRegisterAction();
-  const { createTestAccount, isLoading: testAccountLoading } = useTestAccountAction();
+  const { login, loginWithGoogle, isLoading: loginLoading } = useLoginActions(user, setUser);
+  const { logout, isLoading: logoutLoading } = useLogoutAction(user, setUser);
+  const { register, isLoading: registerLoading } = useRegisterAction(user, setUser);
+  const { createTestAccount, isLoading: testAccountLoading } = useTestAccountAction(user, setUser);
   const { updateUserPaymentStatus, simulateSuccessfulPayment, isLoading: paymentLoading } = usePaymentAction(user, setUser);
 
   // Combine all loading states

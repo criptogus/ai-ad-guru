@@ -1,42 +1,54 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { register as signUp, RegisterResult } from '@/services/auth';
+import { CustomUser } from '@/types/auth';
 
-export const useRegisterAction = () => {
+export const useRegisterAction = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const register = async (name: string, email: string, password: string): Promise<void> => {
+  const register = async (name: string, email: string, password: string) => {
     try {
       setIsLoading(true);
-      const result: RegisterResult = await signUp(name, email, password);
-      
-      if (result.confirmationRequired) {
-        toast({
-          title: 'Confirmation required',
-          description: 'Please check your email to confirm your account before logging in.',
-        });
-        navigate('/login');
-        return;
-      }
-      
-      // The profile will be created automatically via the trigger
-      // User state will be updated by onAuthStateChange
-      navigate('/billing');
-      toast({
-        title: 'Registration successful',
-        description: 'Your account has been created. Welcome!',
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+            credits: 400,
+            has_paid: false,
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
+      if (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
+
+      if (data.user) {
+        console.log('User registered successfully', data.user);
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          name: name,
+          credits: 400,
+          hasPaid: false,
+          avatar: data.user.user_metadata.avatar_url || '',
+        });
+        navigate('/dashboard');
+        return data;
+      }
     } catch (error: any) {
-      console.error('Registration error:', error);
       toast({
-        title: 'Registration failed',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
+        title: "Registration Failed",
+        description: error.message || "There was a problem signing up",
+        variant: "destructive",
       });
       throw error;
     } finally {
@@ -46,6 +58,6 @@ export const useRegisterAction = () => {
 
   return {
     register,
-    isLoading
+    isLoading,
   };
 };
