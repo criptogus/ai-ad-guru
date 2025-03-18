@@ -47,10 +47,23 @@ const LoginPage: React.FC = () => {
       // and useEffect will redirect to dashboard
     } catch (error: any) {
       console.error('Login error:', error);
-      setError(error?.message || 'Failed to sign in. Please try again.');
+      // Improve error message handling for better user feedback
+      let errorMessage = 'Failed to sign in. Please try again.';
+      
+      if (error?.message) {
+        if (error.message.includes('Database error')) {
+          errorMessage = 'Our system is currently experiencing issues. Please try again later.';
+        } else if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       toast({
         title: 'Login failed',
-        description: error?.message || 'An error occurred during sign in.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

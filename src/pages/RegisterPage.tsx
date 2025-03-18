@@ -55,12 +55,29 @@ const RegisterPage: React.FC = () => {
       await register(name, email, password);
       // After registration, auth context will update isAuthenticated
       // and useEffect will redirect to billing
+      toast({
+        title: 'Registration successful',
+        description: 'Your account has been created. Redirecting you to the dashboard.',
+      });
     } catch (error: any) {
       console.error('Registration error:', error);
-      setError(error?.message || 'Failed to sign up. Please try again.');
+      // Improve error message handling for better user feedback
+      let errorMessage = 'Failed to sign up. Please try again.';
+      
+      if (error?.message) {
+        if (error.message.includes('Database error')) {
+          errorMessage = 'Our system is currently experiencing issues. Please try again later.';
+        } else if (error.message.includes('already registered')) {
+          errorMessage = 'This email is already registered. Please use a different email or try to log in.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       toast({
         title: 'Registration failed',
-        description: error?.message || 'An error occurred during sign up.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

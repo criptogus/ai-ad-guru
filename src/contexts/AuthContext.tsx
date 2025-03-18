@@ -230,6 +230,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     try {
       setIsLoading(true);
+      // Add additional logging to track the registration process
+      console.log('Starting registration process:', { name, email });
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -246,6 +249,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
+      console.log('Registration successful, response:', data);
+      
       toast({
         title: "Registration successful",
         description: "Welcome to AI Ad Guru!",

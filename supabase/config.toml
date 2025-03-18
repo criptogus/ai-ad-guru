@@ -1,1 +1,6 @@
+
 project_id = "ncvffbkavcqkwbklicml"
+
+[auth]
+# Disable email confirmation step which is causing the NULL to string conversion error
+enable_confirmations = false
