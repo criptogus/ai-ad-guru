@@ -50,7 +50,8 @@ const RegisterPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await register(name, email, password);
-      navigate('/billing');
+      // After registration, auth context will update isAuthenticated
+      // and useEffect will redirect to billing
     } catch (error) {
       console.error('Registration error:', error);
       // Toast is shown in auth context
@@ -63,7 +64,7 @@ const RegisterPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await loginWithGoogle();
-      navigate('/billing');
+      // This will redirect to Google auth page
     } catch (error) {
       console.error('Google login error:', error);
       // Toast is shown in auth context

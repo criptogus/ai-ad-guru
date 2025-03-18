@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('demo@example.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -39,7 +39,8 @@ const LoginPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await login(email, password);
-      navigate('/dashboard');
+      // After successful login, auth context will update isAuthenticated
+      // and useEffect will redirect to dashboard
     } catch (error) {
       console.error('Login error:', error);
       // Toast is shown in auth context
@@ -52,7 +53,7 @@ const LoginPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await loginWithGoogle();
-      navigate('/dashboard');
+      // This will redirect to Google auth page
     } catch (error) {
       console.error('Google login error:', error);
       // Toast is shown in auth context
