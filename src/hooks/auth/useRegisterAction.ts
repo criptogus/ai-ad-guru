@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
 
-export const useRegisterAction = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {
+export const useRegisterAction = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -33,14 +33,14 @@ export const useRegisterAction = (user: CustomUser | null, setUser: (user: Custo
 
       if (data.user) {
         console.log('User registered successfully', data.user);
-        setUser({
-          id: data.user.id,
-          email: data.user.email || '',
+        const customUser: CustomUser = {
+          ...data.user,
           name: name,
           credits: 400,
           hasPaid: false,
           avatar: data.user.user_metadata.avatar_url || '',
-        });
+        };
+        setUser(customUser);
         navigate('/dashboard');
         return data;
       }

@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
 
-export const useLogoutAction = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {
+export const useLogoutAction = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();

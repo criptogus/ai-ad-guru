@@ -23,7 +23,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
 
   return (
-    <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto">
+    <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto bg-white">
       {/* Header */}
       <div className="bg-white p-3 border-b flex items-center">
         <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0"></div>

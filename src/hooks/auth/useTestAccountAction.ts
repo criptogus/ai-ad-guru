@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
 
-export const useTestAccountAction = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {
+export const useTestAccountAction = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -13,21 +13,19 @@ export const useTestAccountAction = (user: CustomUser | null, setUser: (user: Cu
   const createTestAccount = async () => {
     try {
       setIsLoading(true);
-      const randomString = Math.random().toString(36).substring(7);
-      const email = `testuser_${randomString}@example.com`;
-      const password = 'testpassword';
-      const name = 'Test User';
+      const testEmail = `test${Math.floor(Math.random() * 10000)}@adguru.test`;
+      const testPassword = `testPassword${Math.floor(Math.random() * 10000)}`;
+      const testName = `Test User ${Math.floor(Math.random() * 100)}`;
 
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: testEmail,
+        password: testPassword,
         options: {
           data: {
-            name: name,
+            name: testName,
             credits: 400,
-            has_paid: true,
+            has_paid: true, // Test accounts have paid status
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
@@ -38,21 +36,27 @@ export const useTestAccountAction = (user: CustomUser | null, setUser: (user: Cu
 
       if (data.user) {
         console.log('Test account created successfully', data.user);
-        setUser({
-          id: data.user.id,
-          email: data.user.email || '',
-          name: name,
+        const customUser: CustomUser = {
+          ...data.user,
+          name: testName,
           credits: 400,
           hasPaid: true,
-          avatar: data.user.user_metadata.avatar_url || '',
-        });
+          avatar: '',
+        };
+        setUser(customUser);
         navigate('/dashboard');
+        
+        toast({
+          title: "Test Account Created",
+          description: "You're now logged in with a test account",
+        });
+        
         return data;
       }
     } catch (error: any) {
       toast({
         title: "Test Account Creation Failed",
-        description: error.message || "There was a problem creating the test account",
+        description: error.message || "There was a problem creating a test account",
         variant: "destructive",
       });
       throw error;
