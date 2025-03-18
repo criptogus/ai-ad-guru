@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +33,7 @@ const BillingPage: React.FC = () => {
       return (
         <Card className="max-w-2xl mx-auto">
           <PaymentVerification 
+            sessionId={sessionId} 
             verifying={verifying} 
             success={success} 
             error={error} 
@@ -92,6 +92,7 @@ const BillingPage: React.FC = () => {
                   ) : (
                     <div className="w-full">
                       <StripeBuyButton 
+                        isAuthenticated={isAuthenticated}
                         userId={user?.id} 
                         customerEmail={user?.email}
                       />

@@ -9,12 +9,21 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface PaymentVerificationProps {
-  sessionId: string | null;
+export interface PaymentVerificationProps {
+  sessionId?: string | null;
+  verifying?: boolean;
+  success?: boolean;
+  error?: string | null;
+  debug?: any;
 }
 
-const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) => {
-  const { verifying, error, success, debug } = usePaymentVerification(sessionId);
+const PaymentVerification: React.FC<PaymentVerificationProps> = ({ 
+  sessionId, 
+  verifying = false, 
+  success = false, 
+  error = null,
+  debug = null
+}) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [verificationTimeout, setVerificationTimeout] = useState(false);

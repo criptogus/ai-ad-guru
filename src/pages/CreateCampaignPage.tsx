@@ -187,17 +187,20 @@ const CreateCampaignPage: React.FC = () => {
         return;
       }
       
+      // Rename local variable to avoid shadowing the state variable
+      const newCampaign = {
+        user_id: user.id,
+        name: campaignData.name,
+        platform: campaignData.platform,
+        budget: campaignData.budget,
+        budget_type: campaignData.budgetType, // This will be converted to budget_type in the database
+        status: 'draft',
+      };
+      
       // Insert campaign into database
-      const { data: campaignData, error: campaignError } = await supabase
+      const { data: createdCampaign, error: campaignError } = await supabase
         .from('campaigns')
-        .insert({
-          user_id: user.id,
-          name: campaignData.name,
-          platform: campaignData.platform,
-          budget: campaignData.budget,
-          budget_type: campaignData.budgetType,
-          status: 'draft',
-        })
+        .insert(newCampaign)
         .select()
         .single();
       

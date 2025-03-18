@@ -8,11 +8,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-interface StripeBuyButtonProps {
-  isAuthenticated: boolean;
+export interface StripeBuyButtonProps {
+  isAuthenticated?: boolean;
+  userId?: string;
+  customerEmail?: string;
 }
 
-const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) => {
+const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ 
+  isAuthenticated = false,
+  userId,
+  customerEmail
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
