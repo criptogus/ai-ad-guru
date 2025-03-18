@@ -6,10 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { PlusCircle } from "lucide-react";
-import { Campaign } from "@/models/CampaignTypes";
+import { Campaign, CampaignStatus } from "@/models/CampaignTypes";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+
+// Define interface for the raw campaign data from Supabase
+interface SupabaseCampaign {
+  id: string;
+  user_id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  budget_type: string;
+  created_at: string;
+  updated_at: string;
+  campaign_performance: {
+    id: string;
+    campaign_id: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    spend: number;
+    date: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+}
 
 const CampaignsPage = () => {
   const { user } = useAuth();
@@ -32,7 +56,41 @@ const CampaignsPage = () => {
         throw error;
       }
       
-      return data as Campaign[];
+      // Map Supabase data to Campaign model
+      return (data as SupabaseCampaign[]).map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        name: item.name,
+        platform: item.platform as 'google' | 'meta',
+        status: item.status as CampaignStatus,
+        budget: item.budget,
+        budgetType: item.budget_type as 'daily' | 'lifetime',
+        // We don't have these fields in the database, so provide defaults
+        businessInfo: {
+          name: '',
+          description: '',
+          industry: '',
+          targetAudience: '',
+          suggestedKeywords: [],
+          adTone: '',
+          websiteUrl: ''
+        },
+        adType: 'search',
+        adVariations: [],
+        // Map performance data if available
+        performance: item.campaign_performance && item.campaign_performance.length > 0 ? {
+          impressions: item.campaign_performance[0].impressions || 0,
+          clicks: item.campaign_performance[0].clicks || 0,
+          ctr: item.campaign_performance[0].ctr || 0,
+          conversions: 0, // Not in database, default to 0
+          costPerClick: 0, // Not in database, default to 0
+          spend: item.campaign_performance[0].spend || 0,
+          roi: 0, // Not in database, default to 0
+          lastUpdated: item.campaign_performance[0].updated_at
+        } : undefined,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      })) as Campaign[];
     },
     enabled: !!user,
   });
@@ -92,21 +150,21 @@ const CampaignsPage = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Budget</span>
-                      <span className="font-medium">${campaign.budget}/{campaign.budget_type}</span>
+                      <span className="font-medium">${campaign.budget}/{campaign.budgetType}</span>
                     </div>
                     {campaign.status === 'active' && campaign.performance && (
                       <>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Impressions</span>
-                          <span className="font-medium">{campaign.performance[0]?.impressions?.toLocaleString() || 0}</span>
+                          <span className="font-medium">{campaign.performance?.impressions?.toLocaleString() || 0}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">CTR</span>
-                          <span className="font-medium">{((campaign.performance[0]?.ctr || 0) * 100).toFixed(2)}%</span>
+                          <span className="font-medium">{((campaign.performance?.ctr || 0) * 100).toFixed(2)}%</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Spend</span>
-                          <span className="font-medium">${(campaign.performance[0]?.spend || 0).toFixed(2)}</span>
+                          <span className="font-medium">${(campaign.performance?.spend || 0).toFixed(2)}</span>
                         </div>
                       </>
                     )}
