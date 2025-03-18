@@ -67,7 +67,7 @@ const LandingPage: React.FC = () => {
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8 border-white text-white hover:bg-white/20 font-medium"
+              className="text-lg px-8 border-white text-white bg-white/10 hover:bg-white/30 font-semibold"
               onClick={() => navigate("/pricing")}
             >
               View Pricing
