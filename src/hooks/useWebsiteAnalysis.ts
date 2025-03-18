@@ -76,8 +76,15 @@ export const useWebsiteAnalysis = () => {
     }
   };
 
+  // Update the analysis result from edited data
+  const updateAnalysisResult = (updatedResult: WebsiteAnalysisResult) => {
+    setAnalysisResult(updatedResult);
+    return updatedResult;
+  };
+
   return {
     analyzeWebsite,
+    updateAnalysisResult,
     isAnalyzing,
     analysisResult,
   };

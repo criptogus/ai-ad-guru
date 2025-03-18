@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Globe, CheckCircle } from "lucide-react";
+import { Globe, CheckCircle, ArrowRight } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Textarea } from "@/components/ui/textarea";
 
 interface WebsiteAnalysisStepProps {
   isAnalyzing: boolean;
@@ -23,6 +24,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 }) => {
   const [website, setWebsite] = useState("");
   const [progress, setProgress] = useState(0);
+  const [editedResult, setEditedResult] = useState<WebsiteAnalysisResult | null>(null);
+
+  // Initialize edited result when analysis result changes
+  React.useEffect(() => {
+    if (analysisResult && !editedResult) {
+      setEditedResult({ ...analysisResult });
+    }
+  }, [analysisResult, editedResult]);
 
   // Simulate progress when analyzing
   React.useEffect(() => {
@@ -44,7 +53,45 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
   const handleAnalyzeClick = async () => {
     setProgress(10);
-    await onAnalyzeWebsite(website);
+    const result = await onAnalyzeWebsite(website);
+    if (result) {
+      setEditedResult({ ...result });
+    }
+  };
+
+  const handleTextChange = (field: keyof WebsiteAnalysisResult, value: string) => {
+    if (!editedResult) return;
+    
+    setEditedResult({
+      ...editedResult,
+      [field]: value,
+    });
+  };
+
+  const handleArrayItemChange = (
+    field: 'keywords' | 'callToAction' | 'uniqueSellingPoints', 
+    index: number, 
+    value: string
+  ) => {
+    if (!editedResult) return;
+    
+    const newArray = [...editedResult[field]];
+    newArray[index] = value;
+    
+    setEditedResult({
+      ...editedResult,
+      [field]: newArray,
+    });
+  };
+
+  const handleNext = () => {
+    // Pass the edited result back through context or props
+    if (editedResult && onNext) {
+      // Update the analysis result with edited values
+      onAnalyzeWebsite(website).then(() => {
+        onNext();
+      });
+    }
   };
 
   return (
@@ -68,25 +115,15 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
                   className="pl-10"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  disabled={isAnalyzing || !!analysisResult}
+                  disabled={isAnalyzing}
                 />
               </div>
-              {!analysisResult ? (
-                <Button 
-                  onClick={handleAnalyzeClick} 
-                  disabled={isAnalyzing || !website}
-                >
-                  {isAnalyzing ? "Analyzing..." : "Analyze"}
-                </Button>
-              ) : (
-                <Button
-                  onClick={onNext}
-                  variant="default"
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Next Step
-                </Button>
-              )}
+              <Button 
+                onClick={handleAnalyzeClick} 
+                disabled={isAnalyzing || !website}
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze"}
+              </Button>
             </div>
           </div>
 
@@ -94,11 +131,21 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
             <Progress value={progress} className="w-full h-2" />
           )}
 
-          {analysisResult && (
+          {analysisResult && editedResult && (
             <div className="mt-6 space-y-6 rounded-lg border border-green-200 bg-green-50 p-6">
-              <div className="flex items-center gap-2 text-green-700">
-                <CheckCircle size={20} />
-                <h3 className="font-medium text-lg">Analysis Complete</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-green-700">
+                  <CheckCircle size={20} />
+                  <h3 className="font-medium text-lg">Analysis Complete</h3>
+                </div>
+                <Button 
+                  onClick={handleNext}
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                >
+                  Next Step
+                  <ArrowRight size={16} />
+                </Button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -106,60 +153,95 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
                   <h4 className="font-medium text-gray-700 mb-2">Company Information</h4>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Company Name</p>
-                      <p className="font-medium">{analysisResult.companyName}</p>
+                      <Label htmlFor="companyName" className="text-sm font-medium text-gray-500">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        value={editedResult.companyName}
+                        onChange={(e) => handleTextChange('companyName', e.target.value)}
+                        className="mt-1"
+                      />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Business Description</p>
-                      <p>{analysisResult.businessDescription}</p>
+                      <Label htmlFor="businessDescription" className="text-sm font-medium text-gray-500">Business Description</Label>
+                      <Textarea
+                        id="businessDescription"
+                        value={editedResult.businessDescription}
+                        onChange={(e) => handleTextChange('businessDescription', e.target.value)}
+                        className="mt-1"
+                        rows={3}
+                      />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Brand Tone</p>
-                      <p>{analysisResult.brandTone}</p>
+                      <Label htmlFor="brandTone" className="text-sm font-medium text-gray-500">Brand Tone</Label>
+                      <Input
+                        id="brandTone"
+                        value={editedResult.brandTone}
+                        onChange={(e) => handleTextChange('brandTone', e.target.value)}
+                        className="mt-1"
+                      />
                     </div>
                   </div>
                 </div>
                 
                 <div className="bg-white p-4 rounded-md shadow-sm">
                   <h4 className="font-medium text-gray-700 mb-2">Target Audience</h4>
-                  <p>{analysisResult.targetAudience}</p>
+                  <Textarea
+                    value={editedResult.targetAudience}
+                    onChange={(e) => handleTextChange('targetAudience', e.target.value)}
+                    rows={4}
+                  />
                 </div>
                 
                 <div className="bg-white p-4 rounded-md shadow-sm">
                   <h4 className="font-medium text-gray-700 mb-2">Keywords</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {analysisResult.keywords.map((keyword, index) => (
-                      <span 
-                        key={index} 
-                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
-                      >
-                        {keyword}
-                      </span>
+                  <div className="space-y-2">
+                    {editedResult.keywords.map((keyword, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="bg-blue-100 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                          {index + 1}
+                        </span>
+                        <Input
+                          value={keyword}
+                          onChange={(e) => handleArrayItemChange('keywords', index, e.target.value)}
+                          className="flex-1"
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
                 
                 <div className="bg-white p-4 rounded-md shadow-sm">
                   <h4 className="font-medium text-gray-700 mb-2">Call to Action Suggestions</h4>
-                  <ul className="space-y-2">
-                    {analysisResult.callToAction.map((cta, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="bg-green-100 text-green-800 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs">
+                  <div className="space-y-2">
+                    {editedResult.callToAction.map((cta, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="bg-green-100 text-green-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
                           {index + 1}
                         </span>
-                        <span>{cta}</span>
-                      </li>
+                        <Input
+                          value={cta}
+                          onChange={(e) => handleArrayItemChange('callToAction', index, e.target.value)}
+                          className="flex-1"
+                        />
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
                 
                 <div className="bg-white p-4 rounded-md shadow-sm md:col-span-2">
                   <h4 className="font-medium text-gray-700 mb-2">Unique Selling Points</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-                    {analysisResult.uniqueSellingPoints.map((usp, index) => (
-                      <div key={index} className="bg-purple-50 border border-purple-100 p-3 rounded-md">
-                        <span className="text-purple-800 font-medium block mb-1">USP {index + 1}</span>
-                        <p className="text-sm">{usp}</p>
+                  <div className="space-y-3 mt-2">
+                    {editedResult.uniqueSellingPoints.map((usp, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="bg-purple-100 text-purple-800 w-6 h-6 rounded-full flex items-center justify-center mt-1 text-xs">
+                          {index + 1}
+                        </span>
+                        <Textarea
+                          value={usp}
+                          onChange={(e) => handleArrayItemChange('uniqueSellingPoints', index, e.target.value)}
+                          className="flex-1"
+                          rows={2}
+                        />
                       </div>
                     ))}
                   </div>

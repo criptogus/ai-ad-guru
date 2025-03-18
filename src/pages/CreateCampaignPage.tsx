@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
-import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import { useWebsiteAnalysis, WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useAdGeneration } from "@/hooks/useAdGeneration";
 import { CampaignProvider, useCampaign } from "@/contexts/CampaignContext";
 import { useCampaignActions } from "@/hooks/useCampaignActions";
@@ -26,7 +26,8 @@ const CampaignContent: React.FC = () => {
     campaignData, 
     setCampaignData, 
     analysisResult, 
-    setAnalysisResult, 
+    setAnalysisResult,
+    updateAnalysisResult,
     googleAds, 
     setGoogleAds, 
     metaAds, 
@@ -105,16 +106,22 @@ const CampaignContent: React.FC = () => {
     setCurrentStep(currentStep + 1);
   };
 
-  // Set analysis result when it changes
-  React.useEffect(() => {
-    setAnalysisResult(analysisResult);
-  }, [analysisResult, setAnalysisResult]);
-
-  // Set ad states when they change
-  React.useEffect(() => {
-    setGoogleAds(googleAds);
-    setMetaAds(metaAds);
-  }, [googleAds, metaAds, setGoogleAds, setMetaAds]);
+  // Custom handler for website analysis that also updates the campaign data
+  const handleWebsiteAnalysis = async (url: string) => {
+    const result = await analyzeWebsite(url);
+    if (result) {
+      setCampaignData(prev => ({
+        ...prev,
+        websiteUrl: url,
+        businessInfo: result,
+        name: `${result.companyName} Campaign`,
+        description: result.businessDescription,
+        targetAudience: result.targetAudience
+      }));
+      setAnalysisResult(result);
+    }
+    return result;
+  };
 
   const getStepContent = () => {
     switch (currentStep) {
@@ -123,7 +130,7 @@ const CampaignContent: React.FC = () => {
           <WebsiteAnalysisStep
             isAnalyzing={isAnalyzing}
             analysisResult={analysisResult}
-            onAnalyzeWebsite={(url) => handleAnalyzeWebsite(url, analyzeWebsite)}
+            onAnalyzeWebsite={handleWebsiteAnalysis}
             onNext={handleNext}
           />
         );

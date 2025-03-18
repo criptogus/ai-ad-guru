@@ -24,6 +24,7 @@ interface CampaignContextType {
   setCampaignData: React.Dispatch<React.SetStateAction<CampaignData>>;
   analysisResult: WebsiteAnalysisResult | null;
   setAnalysisResult: React.Dispatch<React.SetStateAction<WebsiteAnalysisResult | null>>;
+  updateAnalysisResult: (updatedResult: WebsiteAnalysisResult) => void;
   googleAds: GoogleAd[];
   setGoogleAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
   metaAds: MetaAd[];
@@ -56,12 +57,24 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Function to update analysis result and also update the campaign data
+  const updateAnalysisResult = (updatedResult: WebsiteAnalysisResult) => {
+    setAnalysisResult(updatedResult);
+    setCampaignData(prev => ({
+      ...prev,
+      businessInfo: updatedResult,
+      targetAudience: updatedResult.targetAudience,
+      description: updatedResult.businessDescription
+    }));
+  };
+
   return (
     <CampaignContext.Provider value={{
       campaignData,
       setCampaignData,
       analysisResult,
       setAnalysisResult,
+      updateAnalysisResult,
       googleAds,
       setGoogleAds,
       metaAds,
