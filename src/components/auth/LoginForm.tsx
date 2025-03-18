@@ -34,6 +34,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
       });
     };
 
+    // Type casting is needed for CustomEvent with TypeScript
     window.addEventListener('testAccountCreated' as any, handleTestAccountCreated);
 
     return () => {
@@ -58,6 +59,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
     }
     
     try {
+      console.log('Submitting login form with email:', email);
       await onSubmit(email, password);
     } catch (error) {
       console.error('Error in LoginForm handleSubmit:', error);
@@ -77,6 +79,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
+          data-testid="email-input"
         />
       </div>
       <div className="space-y-2">
@@ -95,6 +98,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
+            data-testid="password-input"
           />
           <button 
             type="button" 
@@ -106,7 +110,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
           </button>
         </div>
       </div>
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={isSubmitting}
+        data-testid="login-button"
+      >
         {isSubmitting ? 'Signing in...' : 'Sign in'}
       </Button>
     </form>

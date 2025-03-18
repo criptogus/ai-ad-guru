@@ -15,21 +15,26 @@ export const useAuthState = () => {
     const getSession = async () => {
       try {
         setIsLoading(true);
+        console.log('useAuthState: Getting session');
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('useAuthState: Session result:', session ? 'Session found' : 'No session');
 
         setSession(session);
 
         if (session) {
+          console.log('useAuthState: User authenticated, fetching profile');
           const customUser = await createCustomUserWithProfile(session.user);
           setUser(customUser);
           setIsAuthenticated(true);
+          console.log('useAuthState: User and profile loaded');
         } else {
           // Explicitly set these states to ensure consistency
+          console.log('useAuthState: No session found, resetting auth state');
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error('useAuthState: Error getting session:', error);
         // Ensure consistent state on error
         setUser(null);
         setSession(null);
@@ -41,26 +46,30 @@ export const useAuthState = () => {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('useAuthState: Auth state changed:', event, session ? 'with session' : 'no session');
       setSession(session);
       
       if (session) {
         try {
+          console.log('useAuthState: Creating custom user with profile on auth change');
           const customUser = await createCustomUserWithProfile(session.user);
           setUser(customUser);
           setIsAuthenticated(true);
         } catch (error) {
-          console.error('Error creating custom user:', error);
+          console.error('useAuthState: Error creating custom user:', error);
           // Handle error but maintain session
           setIsAuthenticated(!!session);
         }
       } else {
+        console.log('useAuthState: No session in auth change event');
         setUser(null);
         setIsAuthenticated(false);
       }
     });
 
     return () => {
+      console.log('useAuthState: Unsubscribing from auth state changes');
       subscription.unsubscribe();
     };
   }, []);

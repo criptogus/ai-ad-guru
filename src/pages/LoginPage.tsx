@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
-// Import the newly created components
+// Import the components
 import ErrorDisplay from '@/components/auth/ErrorDisplay';
 import LoginHeader from '@/components/auth/LoginHeader';
 import LoginForm from '@/components/auth/LoginForm';
@@ -23,8 +23,10 @@ const LoginPage: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('LoginPage: isAuthenticated =', isAuthenticated);
     if (isAuthenticated) {
       const from = (location.state as any)?.from || '/dashboard';
+      console.log('LoginPage: Redirecting to', from);
       navigate(from);
     }
   }, [isAuthenticated, navigate, location]);
@@ -34,12 +36,12 @@ const LoginPage: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      console.log('Attempting login with email:', email);
+      console.log('LoginPage: Attempting login with email:', email);
       await login(email, password);
       // After successful login, auth context will update isAuthenticated
       // and useEffect will redirect to dashboard
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('LoginPage: Login error:', error);
       
       // Set appropriate error message based on error code
       if (error.code === 'email_not_confirmed') {
@@ -61,7 +63,7 @@ const LoginPage: React.FC = () => {
       await loginWithGoogle();
       // This will redirect to Google auth page
     } catch (error: any) {
-      console.error('Google login error:', error);
+      console.error('LoginPage: Google login error:', error);
       setError(error?.message || 'Failed to sign in with Google. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -72,9 +74,11 @@ const LoginPage: React.FC = () => {
     try {
       setError(null);
       setIsCreatingTestAccount(true);
+      console.log('LoginPage: Creating test account');
       await createTestAccount();
+      console.log('LoginPage: Test account created');
     } catch (error: any) {
-      console.error('Error creating test account:', error);
+      console.error('LoginPage: Error creating test account:', error);
       setError(error?.message || 'Failed to create test account. Please try again.');
     } finally {
       setIsCreatingTestAccount(false);

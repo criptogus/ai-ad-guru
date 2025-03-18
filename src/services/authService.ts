@@ -6,6 +6,7 @@ import { User, Session } from '@supabase/supabase-js';
 // Helper function to fetch user profile from Supabase
 export const fetchUserProfile = async (userId: string): Promise<Profile | null> => {
   try {
+    console.log('Fetching profile for user ID:', userId);
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -17,6 +18,7 @@ export const fetchUserProfile = async (userId: string): Promise<Profile | null> 
       return null;
     }
 
+    console.log('Profile data retrieved:', data);
     return data as Profile;
   } catch (error) {
     console.error('Error in fetchUserProfile:', error);
@@ -26,9 +28,11 @@ export const fetchUserProfile = async (userId: string): Promise<Profile | null> 
 
 // Helper function to update the user object with profile data
 export const createCustomUserWithProfile = async (authUser: User): Promise<CustomUser> => {
+  console.log('Creating custom user with profile for:', authUser.id);
   const profile = await fetchUserProfile(authUser.id);
   
   if (profile) {
+    console.log('Profile found, creating customUser with profile data');
     const customUser: CustomUser = {
       ...authUser,
       name: profile.name,
@@ -39,10 +43,11 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
     
     return customUser;
   } else {
+    console.log('No profile found, creating basic customUser');
     // Fallback to just the auth user if profile isn't found
     const customUser: CustomUser = {
       ...authUser,
-      name: 'User',
+      name: authUser.user_metadata?.name || 'User',
       avatar: '',
       credits: 0,
       hasPaid: false
@@ -109,6 +114,7 @@ export const loginWithGoogle = async () => {
 
 // Sign out
 export const logout = async () => {
+  console.log('Logging out user');
   await supabase.auth.signOut();
 };
 
@@ -121,6 +127,7 @@ export type RegisterResult = {
 
 // Register new user
 export const register = async (name: string, email: string, password: string): Promise<RegisterResult> => {
+  console.log('Registering new user:', email);
   const { data, error } = await supabase.auth.signUp({
     email: email,
     password: password,
@@ -153,7 +160,6 @@ export const register = async (name: string, email: string, password: string): P
 // Create a test account
 export const createTestAccount = async () => {
   // Generate a unique email with timestamp to avoid "email already registered" errors
-  // Using gmail.com domain as it's widely accepted
   const timestamp = new Date().getTime();
   const testEmail = `test${timestamp}@gmail.com`;
   const testPassword = 'Password123!';
@@ -161,23 +167,6 @@ export const createTestAccount = async () => {
   console.log(`Attempting to create test account with email: ${testEmail}`);
   
   try {
-    // First, check if the user can be signed in directly with these credentials 
-    // (in case we've already created this test user)
-    try {
-      const signInResult = await supabase.auth.signInWithPassword({
-        email: testEmail,
-        password: testPassword,
-      });
-      
-      if (!signInResult.error) {
-        console.log("Test account already exists, signed in directly:", signInResult.data);
-        return { data: signInResult.data, testEmail, testPassword };
-      }
-    } catch (signInError) {
-      // If sign-in fails, proceed with creating a new account
-      console.log("Sign-in with test account failed, proceeding to create new one:", signInError);
-    }
-    
     // Create a new test account
     const { data, error } = await supabase.auth.signUp({
       email: testEmail,
@@ -196,6 +185,20 @@ export const createTestAccount = async () => {
     }
 
     console.log("Test account created:", data);
+    
+    // Wait a moment for the account to be fully registered in the system
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Try to sign in with the new credentials to make sure it works
+    try {
+      await supabase.auth.signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+    } catch (e) {
+      console.log("Note: Immediate sign-in failed but test account was created:", e);
+    }
+    
     return { data, testEmail, testPassword };
   } catch (error) {
     console.error("Error in createTestAccount:", error);
