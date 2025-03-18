@@ -1,18 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon, PlusCircleIcon } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Import the newly created components
+import ErrorDisplay from '@/components/auth/ErrorDisplay';
+import LoginHeader from '@/components/auth/LoginHeader';
+import LoginForm from '@/components/auth/LoginForm';
+import TestAccountSection from '@/components/auth/TestAccountSection';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import LoginFooter from '@/components/auth/LoginFooter';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingTestAccount, setIsCreatingTestAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,22 +29,8 @@ const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, navigate, location]);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (email: string, password: string) => {
     setError(null);
-    
-    if (!email || !password) {
-      toast({
-        title: 'Required fields missing',
-        description: 'Please enter both email and password.',
-        variant: 'destructive',
-      });
-      return;
-    }
     
     try {
       setIsSubmitting(true);
@@ -101,15 +88,7 @@ const LoginPage: React.FC = () => {
     try {
       setError(null);
       setIsCreatingTestAccount(true);
-      const testAccount = await createTestAccount();
-      if (testAccount) {
-        setEmail(testAccount.email);
-        setPassword(testAccount.password);
-        toast({
-          title: "Test account ready",
-          description: "You can now log in with the test account credentials.",
-        });
-      }
+      await createTestAccount();
     } catch (error: any) {
       console.error('Error creating test account:', error);
       setError(error?.message || 'Failed to create test account. Please try again.');
@@ -123,130 +102,28 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <Card className="shadow-xl">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
-              <div className="h-12 w-12 rounded-lg bg-brand-600 text-white flex items-center justify-center text-xl font-bold">
-                AG
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-center">AI Ad Guru</CardTitle>
-            <CardDescription className="text-center">
-              Enter your credentials to access your account
-            </CardDescription>
+            <LoginHeader />
           </CardHeader>
           <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-destructive/15 p-3 rounded-md flex items-center text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                {error}
-              </div>
-            )}
+            <ErrorDisplay error={error} />
             
-            <Alert variant="default" className="bg-blue-50 border-blue-200">
-              <InfoIcon className="h-4 w-4 text-blue-500 mr-2" />
-              <AlertDescription className="text-blue-700 text-sm">
-                <p className="font-semibold">No users in your Supabase project?</p>
-                <p className="mb-2">Click the button below to create a test account:</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-blue-700 border-blue-300 w-full" 
-                  onClick={handleCreateTestAccount}
-                  disabled={isCreatingTestAccount}
-                >
-                  <PlusCircleIcon className="h-3 w-3 mr-1" />
-                  {isCreatingTestAccount ? 'Creating...' : 'Create Test Account'}
-                </Button>
-                <p className="mt-2 text-xs">
-                  This will create a unique test account with a generated email
-                </p>
-              </AlertDescription>
-            </Alert>
+            <TestAccountSection 
+              isCreatingTestAccount={isCreatingTestAccount} 
+              onCreateTestAccount={handleCreateTestAccount} 
+            />
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link to="/forgot-password" className="text-xs text-brand-600 hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                  />
-                  <button 
-                    type="button" 
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
-                    onClick={togglePasswordVisibility}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
-                  </button>
-                </div>
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Sign in'}
-              </Button>
-            </form>
+            <LoginForm 
+              onSubmit={handleLogin} 
+              isSubmitting={isSubmitting} 
+            />
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full"
-              onClick={handleGoogleLogin}
-              disabled={isSubmitting}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
-                <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z"/>
-              </svg>
-              Google
-            </Button>
+            <SocialLoginButtons 
+              onGoogleLogin={handleGoogleLogin} 
+              isSubmitting={isSubmitting} 
+            />
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <div className="text-center text-sm">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-brand-600 hover:underline">
-                Sign up
-              </Link>
-            </div>
-            <div className="text-center text-xs text-muted-foreground">
-              By continuing, you agree to our{' '}
-              <Link to="/terms" className="underline">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link to="/privacy" className="underline">
-                Privacy Policy
-              </Link>
-              .
-            </div>
+            <LoginFooter />
           </CardFooter>
         </Card>
       </div>
