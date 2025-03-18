@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
+
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 interface StripeBuyButtonProps {
   isAuthenticated: boolean;
@@ -11,44 +11,35 @@ interface StripeBuyButtonProps {
 const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!document.querySelector('script[src*="buy-button.js"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://js.stripe.com/v3/buy-button.js';
-      script.async = true;
-      script.onload = () => {
-        console.log('Stripe Buy Button script loaded');
-        
-        // Get the current URL for the redirect
-        const currentUrl = window.location.origin;
-        const returnUrl = `${currentUrl}/billing`;
+  // Direct checkout link provided by the user
+  const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_7sIcNy8yG0jWgpy3cc";
 
-        // If there's a Stripe button container and the user is authenticated, customize it
-        if (containerRef.current && user) {
-          // Remove any existing button first
-          while (containerRef.current.firstChild) {
-            containerRef.current.removeChild(containerRef.current.firstChild);
-          }
-
-          // Create the button with additional metadata
-          const buttonElement = document.createElement('stripe-buy-button');
-          buttonElement.setAttribute('buy-button-id', 'buy_btn_1R2GrvEXrJH93iAslqq4hLcL');
-          buttonElement.setAttribute('publishable-key', 'pk_live_51R2FeWEXrJH93iAsggEd0ejUkIiLIoPwJLjg9Uojh3OI5qxWrU2MgXDqqgW20QBn8W3KqNbGP2LGx411c1Or7ivj00B2PPmNYj');
-          
-          // Add user metadata and success URL to help with verification
-          buttonElement.setAttribute('client-reference-id', user.id);
-          buttonElement.setAttribute('success-url', `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`);
-          buttonElement.setAttribute('cancel-url', returnUrl);
-          
-          containerRef.current.appendChild(buttonElement);
-        }
-      };
-      document.body.appendChild(script);
+  // Handle the redirect to Stripe checkout
+  const handleCheckout = () => {
+    // Get the current URL for the redirect back after payment
+    const currentUrl = window.location.origin;
+    const returnUrl = `${currentUrl}/billing`;
+    
+    // Construct the checkout URL with client reference ID and return URL
+    let checkoutUrl = STRIPE_CHECKOUT_URL;
+    
+    // Add client reference ID if user is available
+    if (user) {
+      // Append user ID as a query parameter for tracking
+      const separator = checkoutUrl.includes('?') ? '&' : '?';
+      checkoutUrl = `${checkoutUrl}${separator}client_reference_id=${user.id}`;
+      
+      // Add success and cancel URLs for proper redirection
+      checkoutUrl = `${checkoutUrl}&success_url=${encodeURIComponent(`${returnUrl}?session_id={CHECKOUT_SESSION_ID}`)}&cancel_url=${encodeURIComponent(returnUrl)}`;
     }
-  }, [user]);
+    
+    console.log("Redirecting to Stripe checkout:", checkoutUrl);
+    
+    // Redirect to the Stripe checkout page
+    window.location.href = checkoutUrl;
+  };
 
   if (!isAuthenticated) {
     return (
@@ -66,10 +57,13 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) =>
   }
 
   return (
-    <div className="stripe-buy-button-container mt-6" ref={containerRef}>
-      <div id="stripe-buy-button">
-        {/* This div will be replaced by the dynamically created Stripe button */}
-      </div>
+    <div className="mt-6">
+      <Button 
+        className="w-full py-6 text-lg font-semibold" 
+        onClick={handleCheckout}
+      >
+        Subscribe Now
+      </Button>
     </div>
   );
 };
