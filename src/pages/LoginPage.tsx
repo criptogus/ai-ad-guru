@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon, RefreshCcwIcon } from 'lucide-react';
+import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon, PlusCircleIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LoginPage: React.FC = () => {
@@ -142,30 +143,23 @@ const LoginPage: React.FC = () => {
             <Alert variant="default" className="bg-blue-50 border-blue-200">
               <InfoIcon className="h-4 w-4 text-blue-500 mr-2" />
               <AlertDescription className="text-blue-700 text-sm">
-                For testing, use the account:<br />
-                Email: <strong>test@example.com</strong><br />
-                Password: <strong>Password123!</strong>
-                <div className="mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-blue-700 border-blue-300" 
-                    onClick={handleCreateTestAccount}
-                    disabled={isCreatingTestAccount}
-                  >
-                    {isCreatingTestAccount ? (
-                      <>
-                        <RefreshCcwIcon className="h-3 w-3 mr-1 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCcwIcon className="h-3 w-3 mr-1" />
-                        Reset/Create Test Account
-                      </>
-                    )}
-                  </Button>
-                </div>
+                <p className="font-semibold">No users in your Supabase project?</p>
+                <p className="mb-2">Click the button below to create a test account:</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-blue-700 border-blue-300 w-full" 
+                  onClick={handleCreateTestAccount}
+                  disabled={isCreatingTestAccount}
+                >
+                  <PlusCircleIcon className="h-3 w-3 mr-1" />
+                  {isCreatingTestAccount ? 'Creating...' : 'Create Test Account'}
+                </Button>
+                <p className="mt-2 text-xs">
+                  This will create: <br />
+                  Email: <strong>test@example.com</strong><br />
+                  Password: <strong>Password123!</strong>
+                </p>
               </AlertDescription>
             </Alert>
             

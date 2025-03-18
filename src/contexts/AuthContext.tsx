@@ -296,36 +296,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       console.log('Creating test account...');
       
-      const { data: { users }, error: fetchError } = await supabase.auth.admin.listUsers();
-      
-      if (fetchError) {
-        console.error("Error checking existing users:", fetchError);
-        throw fetchError;
-      }
-      
-      const testUser = users?.find(u => u.email === 'test@example.com');
-      
-      if (testUser) {
-        console.log('Test user already exists, deleting it first...');
-        const { error: deleteError } = await supabase.auth.admin.deleteUser(testUser.id);
-        
-        if (deleteError) {
-          console.error("Error deleting existing test user:", deleteError);
-          throw deleteError;
-        }
-      }
-      
-      const { data, error } = await supabase.auth.admin.createUser({
+      // Since we can't access admin APIs from the browser, we're using a simple signup method
+      const { data, error } = await supabase.auth.signUp({
         email: 'test@example.com',
         password: 'Password123!',
-        email_confirm: true,
-        user_metadata: {
-          name: 'Test User',
-          avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent('Test User')}&background=6366f1&color=fff`,
-        },
+        options: {
+          data: {
+            name: 'Test User',
+            avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent('Test User')}&background=6366f1&color=fff`,
+          }
+        }
       });
 
       if (error) {
+        // Check if error is because user already exists
+        if (error.message.includes('already registered')) {
+          toast({
+            title: "Test account already exists",
+            description: "You can log in with test@example.com / Password123!",
+          });
+          return;
+        }
+        
         console.error("Error creating test account:", error);
         throw error;
       }
@@ -334,7 +326,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast({
         title: "Test account created",
-        description: "test@example.com / Password123!",
+        description: "Use test@example.com / Password123! to log in",
       });
     } catch (error: any) {
       console.error("Error creating test account:", error);
