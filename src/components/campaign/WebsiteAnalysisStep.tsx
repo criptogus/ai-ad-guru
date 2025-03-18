@@ -48,7 +48,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Website Analysis</CardTitle>
         <CardDescription>
@@ -95,51 +95,74 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           )}
 
           {analysisResult && (
-            <div className="mt-6 space-y-4 bg-green-50 p-4 rounded-md border border-green-200">
+            <div className="mt-6 space-y-6 rounded-lg border border-green-200 bg-green-50 p-6">
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircle size={20} />
-                <h3 className="font-medium">Analysis Complete</h3>
+                <h3 className="font-medium text-lg">Analysis Complete</h3>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Company Name</p>
-                  <p>{analysisResult.companyName}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-4 rounded-md shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-2">Company Information</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Company Name</p>
+                      <p className="font-medium">{analysisResult.companyName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Business Description</p>
+                      <p>{analysisResult.businessDescription}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Brand Tone</p>
+                      <p>{analysisResult.brandTone}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Brand Tone</p>
-                  <p>{analysisResult.brandTone}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm font-medium text-gray-500">Business Description</p>
-                  <p>{analysisResult.businessDescription}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm font-medium text-gray-500">Target Audience</p>
+                
+                <div className="bg-white p-4 rounded-md shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-2">Target Audience</h4>
                   <p>{analysisResult.targetAudience}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Keywords</p>
-                  <ul className="list-disc list-inside text-sm">
+                
+                <div className="bg-white p-4 rounded-md shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-2">Keywords</h4>
+                  <div className="flex flex-wrap gap-2">
                     {analysisResult.keywords.map((keyword, index) => (
-                      <li key={index}>{keyword}</li>
+                      <span 
+                        key={index} 
+                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+                      >
+                        {keyword}
+                      </span>
                     ))}
-                  </ul>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Call to Action</p>
-                  <ul className="list-disc list-inside text-sm">
+                
+                <div className="bg-white p-4 rounded-md shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-2">Call to Action Suggestions</h4>
+                  <ul className="space-y-2">
                     {analysisResult.callToAction.map((cta, index) => (
-                      <li key={index}>{cta}</li>
+                      <li key={index} className="flex items-start">
+                        <span className="bg-green-100 text-green-800 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs">
+                          {index + 1}
+                        </span>
+                        <span>{cta}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm font-medium text-gray-500">Unique Selling Points</p>
-                  <ul className="list-disc list-inside text-sm">
+                
+                <div className="bg-white p-4 rounded-md shadow-sm md:col-span-2">
+                  <h4 className="font-medium text-gray-700 mb-2">Unique Selling Points</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                     {analysisResult.uniqueSellingPoints.map((usp, index) => (
-                      <li key={index}>{usp}</li>
+                      <div key={index} className="bg-purple-50 border border-purple-100 p-3 rounded-md">
+                        <span className="text-purple-800 font-medium block mb-1">USP {index + 1}</span>
+                        <p className="text-sm">{usp}</p>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
             </div>
