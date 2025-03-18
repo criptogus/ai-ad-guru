@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,12 +18,14 @@ const BillingPage = () => {
   const [loading, setLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Short timeout to ensure component mounts properly
     const timer = setTimeout(() => {
+      console.log("Page loading timeout completed");
       setPageLoading(false);
-    }, 500);
+    }, 1000); // Increased timeout to ensure component fully mounts
     
     return () => clearTimeout(timer);
   }, []);
@@ -34,11 +36,13 @@ const BillingPage = () => {
     const sessionId = queryParams.get("session_id");
     
     if (sessionId) {
+      console.log('Found session_id in URL, beginning verification:', sessionId);
       setVerifyingPayment(true);
+      setError(null);
       
       const verifyPayment = async () => {
         try {
-          console.log('Verifying payment session:', sessionId);
+          console.log('Calling verify-payment function');
           
           // Call the edge function to verify the payment
           const { data, error } = await supabase.functions.invoke("verify-payment", {
@@ -46,13 +50,14 @@ const BillingPage = () => {
           });
 
           if (error) {
-            console.error('Verification error:', error);
-            throw new Error(error.message);
+            console.error('Verification error from edge function:', error);
+            throw new Error(error.message || "Error verifying payment");
           }
 
-          console.log('Payment verification response:', data);
+          console.log('Verification response received:', data);
 
-          if (data.verified) {
+          if (data?.verified) {
+            console.log('Payment verified successfully');
             // Update local state
             updateUserPaymentStatus(true);
             toast({
@@ -61,26 +66,37 @@ const BillingPage = () => {
             });
             // Clear the session ID from the URL to prevent re-verification on page refresh
             window.history.replaceState({}, document.title, "/billing");
-            navigate("/dashboard");
-          } else {
+            // Navigate after a short delay to ensure state updates are processed
+            setTimeout(() => navigate("/dashboard"), 500);
+          } else if (data) {
+            console.log('Payment pending or incomplete');
             toast({
               title: "Payment pending",
               description: "Your payment is being processed. We'll update your account when it's complete.",
             });
+            // Clear the session ID from the URL
+            window.history.replaceState({}, document.title, "/billing");
+          } else {
+            throw new Error("Invalid response from verification service");
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error verifying payment:", error);
+          setError(error.message || "There was a problem verifying your payment");
           toast({
             title: "Error activating subscription",
             description: "There was a problem verifying your payment. Please contact support.",
             variant: "destructive",
           });
+          // Clear the session ID from the URL
+          window.history.replaceState({}, document.title, "/billing");
         } finally {
           setVerifyingPayment(false);
         }
       };
 
       verifyPayment();
+    } else {
+      console.log('No session_id found in URL, normal page load');
     }
   }, [location.search, navigate, toast, updateUserPaymentStatus]);
 
@@ -96,6 +112,7 @@ const BillingPage = () => {
     }
     
     setLoading(true);
+    setError(null);
     
     try {
       // Get the current URL to use as return URL
@@ -112,20 +129,22 @@ const BillingPage = () => {
       });
 
       if (error) {
-        console.error('Checkout error:', error);
-        throw new Error(error.message);
+        console.error('Checkout session creation error:', error);
+        throw new Error(error.message || "Error creating checkout session");
       }
 
-      console.log('Checkout session created:', data);
+      console.log('Checkout session created successfully:', data);
 
       // Redirect to the Stripe checkout page
-      if (data.url) {
+      if (data?.url) {
+        console.log('Redirecting to Stripe checkout:', data.url);
         window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
       }
-    } catch (error) {
-      console.error("Error redirecting to payment:", error);
+    } catch (error: any) {
+      console.error("Error creating checkout session:", error);
+      setError(error.message || "There was a problem setting up your payment");
       toast({
         title: "Error processing payment",
         description: "There was a problem setting up your payment. Please try again.",
@@ -178,6 +197,16 @@ const BillingPage = () => {
               You're just one step away from transforming your ad campaigns with AI.
             </p>
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 border rounded-md bg-red-50 border-red-200 text-red-800 flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Error processing payment</p>
+                <p className="text-sm mt-1">{error}</p>
+              </div>
+            </div>
+          )}
 
           <Card className="shadow-lg">
             <CardHeader className="text-center bg-gradient-to-br from-brand-600 to-brand-800 text-white rounded-t-lg">
