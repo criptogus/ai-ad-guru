@@ -20,6 +20,8 @@ function createAnalysisPrompt(websiteData: any): string {
     - callToAction: 3 Call-to-Action suggestions (short phrases)
     - uniqueSellingPoints: 3 Unique Selling Points (what makes them different)
     
+    IMPORTANT: Your analysis must be in the SAME LANGUAGE as the content of the website. If the website is in Spanish, your analysis should be in Spanish. If it's in English, respond in English, etc.
+    
     Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
     {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"]}
     `;
