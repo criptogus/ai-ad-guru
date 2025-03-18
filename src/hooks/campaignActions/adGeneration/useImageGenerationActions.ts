@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { MetaAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 export const useImageGenerationActions = (
+  analysisResult: WebsiteAnalysisResult | null,
   metaAds: MetaAd[],
-  generateAdImage: (prompt: string) => Promise<string | null>,
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const { toast } = useToast();
@@ -27,9 +29,18 @@ export const useImageGenerationActions = (
 
     console.log("Generating image for ad:", ad);
     console.log("With prompt:", ad.imagePrompt);
+    console.log("Using analysis result:", analysisResult);
     
     try {
-      const imageUrl = await generateAdImage(ad.imagePrompt);
+      // Pass additional context from the analysis result to enhance image generation
+      const additionalInfo = analysisResult ? {
+        companyName: analysisResult.companyName,
+        brandTone: analysisResult.brandTone,
+        targetAudience: analysisResult.targetAudience,
+        uniqueSellingPoints: analysisResult.uniqueSellingPoints
+      } : undefined;
+      
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       console.log("Generated image URL:", imageUrl);
       
       if (imageUrl) {

@@ -8,7 +8,7 @@ export const useImageGeneration = () => {
   const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const generateAdImage = async (prompt: string): Promise<string | null> => {
+  const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     if (!prompt) {
       const errorMessage = "Please provide a description for the image you want to generate";
       console.error('No prompt provided for image generation');
@@ -26,9 +26,14 @@ export const useImageGeneration = () => {
     
     try {
       console.log('Generating image with prompt:', prompt);
+      console.log('Additional context:', additionalInfo);
       
+      // Include additional context in the function call
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt },
+        body: { 
+          prompt,
+          ...additionalInfo
+        },
       });
 
       if (error) {

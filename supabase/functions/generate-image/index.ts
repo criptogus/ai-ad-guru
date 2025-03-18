@@ -26,17 +26,42 @@ serve(async (req) => {
     });
 
     // Parse request body
-    const { prompt } = await req.json();
+    const { prompt, brandTone, companyName, targetAudience, uniqueSellingPoints } = await req.json();
     
     if (!prompt) {
       throw new Error('Image prompt is required');
     }
     
     console.log(`Generating image with prompt: ${prompt}`);
+    console.log(`Company: ${companyName}, Brand Tone: ${brandTone}`);
+    
+    // Enhanced prompt for DALL-E 3 following best practices for Instagram ads
+    const enhancedPrompt = `
+Create a high-converting Instagram ad image for ${companyName || 'the company'}, promoting the following:
+
+${prompt}
+
+🔹 Best Practices:
+- Clean, professional, and eye-catching composition
+- High-quality, high-resolution ad style
+- High contrast and vibrant colors to attract attention
+- No text overlay (Meta restricts ad text)
+- Product/service should be clearly visible and appealing
+- Use a modern, engaging background that fits the brand tone: ${brandTone || 'professional'}
+- Showcase how the product/service solves a problem or enhances lifestyle
+
+🎨 Instagram Ad Visual Style:
+${getBrandToneStyle(brandTone)}
+
+Target Audience: ${targetAudience || 'General consumers'}
+Unique Selling Points: ${uniqueSellingPoints ? uniqueSellingPoints.join(', ') : 'High quality, reliable service'}
+
+🔥 Goal: Maximize Instagram engagement & conversions
+`;
+    
+    console.log("Enhanced DALL-E 3 prompt:", enhancedPrompt);
     
     // Generate image with DALL-E
-    const enhancedPrompt = `High quality, professional Instagram ad image: ${prompt}. Clean background, professional lighting, commercial quality, eye-catching for social media.`;
-    
     const response = await openai.images.generate({
       model: "dall-e-3",
       prompt: enhancedPrompt,
@@ -78,8 +103,38 @@ serve(async (req) => {
       }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
 });
+
+// Helper function to get style based on brand tone
+function getBrandToneStyle(brandTone?: string): string {
+  if (!brandTone) return "Professional, clean design with neutral colors";
+  
+  const tone = brandTone.toLowerCase();
+  
+  if (tone.includes("luxury") || tone.includes("premium") || tone.includes("elegant")) {
+    return "Elegant, sophisticated design with dark theme, premium feel, luxury aesthetics";
+  }
+  
+  if (tone.includes("tech") || tone.includes("modern") || tone.includes("innovative")) {
+    return "Futuristic, sleek UI, digital aesthetic with subtle neon accents, high-tech feel";
+  }
+  
+  if (tone.includes("playful") || tone.includes("fun") || tone.includes("energetic")) {
+    return "Bright colors, fun illustrations, energetic composition, playful aesthetic";
+  }
+  
+  if (tone.includes("minimalist") || tone.includes("simple") || tone.includes("clean")) {
+    return "Clean, neutral background, subtle shadows, minimalist design, uncluttered composition";
+  }
+  
+  if (tone.includes("professional") || tone.includes("business") || tone.includes("corporate")) {
+    return "Professional blue tones, business-appropriate design, corporate aesthetic";
+  }
+  
+  // Default style if no specific tone is matched
+  return "Professional, clean design with colors that pop on Instagram";
+}

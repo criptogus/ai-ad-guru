@@ -13,7 +13,7 @@ export const useAdGenerationActions = (
   metaAds: MetaAd[],
   generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>,
   generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>,
-  generateAdImage: (prompt: string) => Promise<string | null>,
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   // Use the smaller, more focused hooks
@@ -34,6 +34,7 @@ export const useAdGenerationActions = (
     imageGenerationError,
     clearImageGenerationError 
   } = useImageGenerationActions(
+    analysisResult,
     metaAds,
     generateAdImage,
     setCampaignData
