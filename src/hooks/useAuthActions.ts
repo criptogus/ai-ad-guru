@@ -10,7 +10,7 @@ import {
   createTestAccount as createTest,
   updatePaymentStatus,
   RegisterResult
-} from '@/services/authService';
+} from '@/services/auth';
 import { CustomUser } from '@/types/auth';
 
 export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUser | null) => void) => {

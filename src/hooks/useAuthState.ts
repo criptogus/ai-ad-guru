@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomUser } from '@/types/auth';
-import { createCustomUserWithProfile } from '@/services/authService';
+import { createCustomUserWithProfile } from '@/services/auth';
 
 export const useAuthState = () => {
   const [user, setUser] = useState<CustomUser | null>(null);
@@ -30,18 +29,15 @@ export const useAuthState = () => {
             console.log('useAuthState: User and profile loaded', customUser);
           } catch (profileError) {
             console.error('useAuthState: Error loading profile, but session exists:', profileError);
-            // Even if profile loading fails, we still have a valid session, so set authenticated
             setIsAuthenticated(true);
           }
         } else {
-          // Explicitly set these states to ensure consistency
           console.log('useAuthState: No session found, resetting auth state');
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('useAuthState: Error getting session:', error);
-        // Ensure consistent state on error
         setUser(null);
         setSession(null);
         setIsAuthenticated(false);
@@ -65,7 +61,6 @@ export const useAuthState = () => {
           console.log('useAuthState: Auth state updated successfully', event);
         } catch (error) {
           console.error('useAuthState: Error creating custom user:', error);
-          // Handle error but maintain session
           setIsAuthenticated(!!session);
         }
       } else {
