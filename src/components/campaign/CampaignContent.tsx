@@ -1,21 +1,21 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAdGeneration } from "@/hooks/adGeneration";
 import { useCampaignActions } from "@/hooks/useCampaignActions";
-import { useCampaignSteps } from "@/hooks/useCampaignSteps";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import CampaignHeader from "./CampaignHeader";
 import StepNavigation from "./StepNavigation";
+import CampaignAdUpdates from "./CampaignAdUpdates";
+import { useCampaignDataSync } from "@/hooks/useCampaignDataSync";
+import { useCampaignFlow } from "@/hooks/useCampaignFlow";
 
 const CampaignContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   
   const { 
     campaignData, 
@@ -43,25 +43,11 @@ const CampaignContent: React.FC = () => {
   } = useAdGeneration();
 
   // Sync ads from the adGeneration hook to the campaign context
-  useEffect(() => {
-    if (adGenerationGoogleAds && adGenerationGoogleAds.length > 0) {
-      setGoogleAds(adGenerationGoogleAds);
-    }
-  }, [adGenerationGoogleAds, setGoogleAds]);
-
-  useEffect(() => {
-    if (adGenerationMetaAds && adGenerationMetaAds.length > 0) {
-      setMetaAds(adGenerationMetaAds);
-    }
-  }, [adGenerationMetaAds, setMetaAds]);
-
-  // Campaign step navigation
-  const { handleBack, handleNext } = useCampaignSteps(
-    currentStep, 
-    setCurrentStep, 
-    analysisResult, 
-    campaignData, 
-    user
+  useCampaignDataSync(
+    adGenerationGoogleAds,
+    adGenerationMetaAds,
+    setGoogleAds,
+    setMetaAds
   );
 
   // Campaign actions
@@ -83,6 +69,31 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
+  // Campaign flow (back, next, create campaign)
+  const { handleBack, handleNextWrapper } = useCampaignFlow(
+    currentStep,
+    setCurrentStep,
+    analysisResult,
+    campaignData,
+    user,
+    createCampaign
+  );
+
+  // Ad updates and image generation handling
+  const {
+    handleUpdateGoogleAd,
+    handleUpdateMetaAd,
+    handleGenerateImageWrapper,
+    loadingImageIndex
+  } = CampaignAdUpdates({
+    googleAds,
+    metaAds,
+    setGoogleAds,
+    setMetaAds,
+    setCampaignData,
+    handleGenerateImage
+  });
+
   // Custom handler for website analysis that also updates the campaign data
   const handleWebsiteAnalysis = async (url: string) => {
     const result = await analyzeWebsite(url);
@@ -98,51 +109,6 @@ const CampaignContent: React.FC = () => {
       setAnalysisResult(result);
     }
     return result;
-  };
-
-  // Handle updates to Google ads
-  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
-    const updatedAds = [...googleAds];
-    updatedAds[index] = updatedAd;
-    setGoogleAds(updatedAds);
-    
-    // Update campaign data as well
-    setCampaignData((prev) => ({
-      ...prev,
-      googleAds: updatedAds
-    }));
-  };
-
-  // Handle updates to Meta ads
-  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
-    const updatedAds = [...metaAds];
-    updatedAds[index] = updatedAd;
-    setMetaAds(updatedAds);
-    
-    // Update campaign data as well
-    setCampaignData((prev) => ({
-      ...prev,
-      metaAds: updatedAds
-    }));
-  };
-
-  // Wrapper for handling image generation with loading state
-  const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
-    setLoadingImageIndex(index);
-    await handleGenerateImage(ad, index);
-    setLoadingImageIndex(null);
-  };
-
-  // Log the current state of ads for debugging
-  console.log("CampaignContent - googleAds state:", googleAds);
-  console.log("CampaignContent - metaAds state:", metaAds);
-
-  // Wrapper for next button to create campaign when needed
-  const handleNextWrapper = () => {
-    const shouldCreateCampaign = handleNext();
-    if (shouldCreateCampaign && currentStep === 3) {
-      createCampaign();
-    }
   };
 
   // Step content renderer
