@@ -13,10 +13,10 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
   totalSteps = 4 // Updated to 4 steps
 }) => {
   const steps = [
-    { number: 1, label: "Website Analysis" },
-    { number: 2, label: "Campaign Setup" },
-    { number: 3, label: "Ad Creation" },
-    { number: 4, label: "Review & Launch" } // New summary step
+    { number: 1, title: "Website Analysis" },
+    { number: 2, title: "Campaign Setup" },
+    { number: 3, title: "Ad Creation" },
+    { number: 4, title: "Review & Launch" } // New summary step
   ];
 
   return (
@@ -26,9 +26,9 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
           <StepIndicator
             key={step.number}
             number={step.number}
-            label={step.label}
-            isActive={currentStep === step.number}
-            isCompleted={currentStep > step.number}
+            title={step.title}
+            active={currentStep === step.number}
+            completed={currentStep > step.number}
           />
         ))}
       </div>

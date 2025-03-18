@@ -1,49 +1,24 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Image, Loader2, AlertCircle } from "lucide-react";
+import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Image } from "lucide-react";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
-  analysisResult: WebsiteAnalysisResult;
-  imageKey: number;
-  loadingImageIndex: number | null;
-  index: number;
-  onGenerateImage: () => Promise<void>;
+  companyName: string;
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
-  analysisResult,
-  imageKey,
-  loadingImageIndex,
-  index,
-  onGenerateImage
+  companyName
 }) => {
-  const [imageError, setImageError] = useState<boolean>(false);
-  const isLoading = loadingImageIndex === index;
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    console.error("Image failed to load:", ad.imageUrl);
-    setImageError(true);
-    e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
-  };
-
-  const handleRetryGeneration = async () => {
-    setImageError(false);
-    await onGenerateImage();
-  };
-
   return (
     <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto">
       {/* Header */}
       <div className="bg-white p-3 border-b flex items-center">
         <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0"></div>
         <div className="ml-2 flex-grow">
-          <div className="font-semibold text-sm">{analysisResult.companyName}</div>
+          <div className="font-semibold text-sm">{companyName}</div>
           <div className="text-xs text-gray-500">Sponsored</div>
         </div>
         <div className="text-gray-500">•••</div>
@@ -51,47 +26,16 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       {/* Image */}
       <div className="bg-gray-100 aspect-square relative">
-        {ad.imageUrl && !isLoading && !imageError ? (
+        {ad.imageUrl ? (
           <img 
-            key={imageKey}
             src={ad.imageUrl} 
             alt={ad.headline}
             className="w-full h-full object-cover"
-            onError={handleImageError}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4">
-            {isLoading ? (
-              <div className="flex flex-col items-center">
-                <Loader2 className="h-6 w-6 animate-spin mb-2" />
-                <span className="text-sm text-gray-500">Generating image...</span>
-              </div>
-            ) : imageError ? (
-              <div className="flex flex-col items-center text-center max-w-[80%]">
-                <AlertCircle className="h-10 w-10 text-destructive mb-2" />
-                <p className="text-sm font-medium text-destructive mb-1">Image generation failed</p>
-                <p className="text-xs text-gray-500 mb-3">There was a problem generating your image.</p>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  onClick={handleRetryGeneration}
-                >
-                  Try Again
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Image size={40} className="text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500 text-center mb-2">No image generated yet</p>
-                <Button 
-                  size="sm" 
-                  onClick={onGenerateImage}
-                  disabled={loadingImageIndex !== null}
-                >
-                  Generate Image
-                </Button>
-              </>
-            )}
+            <Image size={40} className="text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500 text-center">Image preview will appear here</p>
           </div>
         )}
       </div>
@@ -105,7 +49,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         </div>
         
         <div>
-          <span className="font-semibold text-sm">{analysisResult.companyName}</span>
+          <span className="font-semibold text-sm">{companyName}</span>
           <span className="text-sm"> {ad.primaryText}</span>
         </div>
         

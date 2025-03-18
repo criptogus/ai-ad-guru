@@ -103,11 +103,18 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                 <div>
                   <span className="text-muted-foreground text-sm">Keywords:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {analysisResult.keywords.split(",").map((keyword, idx) => (
-                      <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
-                        {keyword.trim()}
-                      </span>
-                    ))}
+                    {typeof analysisResult.keywords === 'string' 
+                      ? analysisResult.keywords.split(",").map((keyword, idx) => (
+                          <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
+                            {keyword.trim()}
+                          </span>
+                        ))
+                      : analysisResult.keywords.map((keyword, idx) => (
+                          <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
+                            {keyword.trim()}
+                          </span>
+                        ))
+                    }
                   </div>
                 </div>
               )}
