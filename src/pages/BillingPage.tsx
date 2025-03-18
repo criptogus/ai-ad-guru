@@ -25,7 +25,7 @@ const BillingPage = () => {
     const timer = setTimeout(() => {
       console.log("Page loading timeout completed");
       setPageLoading(false);
-    }, 1000); // Increased timeout to ensure component fully mounts
+    }, 1500); // Increased timeout to ensure component fully mounts
     
     return () => clearTimeout(timer);
   }, []);
@@ -42,7 +42,7 @@ const BillingPage = () => {
       
       const verifyPayment = async () => {
         try {
-          console.log('Calling verify-payment function');
+          console.log('Calling verify-payment function with session ID:', sessionId);
           
           // Call the edge function to verify the payment
           const { data, error } = await supabase.functions.invoke("verify-payment", {
@@ -67,12 +67,13 @@ const BillingPage = () => {
             // Clear the session ID from the URL to prevent re-verification on page refresh
             window.history.replaceState({}, document.title, "/billing");
             // Navigate after a short delay to ensure state updates are processed
-            setTimeout(() => navigate("/dashboard"), 500);
+            setTimeout(() => navigate("/dashboard"), 800);
           } else if (data) {
-            console.log('Payment pending or incomplete');
+            console.log('Payment pending or incomplete:', data);
             toast({
               title: "Payment pending",
               description: "Your payment is being processed. We'll update your account when it's complete.",
+              variant: "default",
             });
             // Clear the session ID from the URL
             window.history.replaceState({}, document.title, "/billing");
@@ -119,11 +120,13 @@ const BillingPage = () => {
       const returnUrl = `${window.location.origin}/billing`;
       
       console.log('Starting subscription process for user:', user?.id);
+      console.log('User email:', user?.email); // Log user email for debugging
       
       // Call the edge function to create a checkout session
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: { 
           userId: user?.id,
+          userEmail: user?.email, // Send email to pre-fill checkout form
           returnUrl
         },
       });

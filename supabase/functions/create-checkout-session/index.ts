@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       userId: userId,
     };
 
-    // Create a checkout session
+    // Create a checkout session with more detailed product information
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -50,8 +50,9 @@ Deno.serve(async (req) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Pro Subscription',
-              description: 'Monthly subscription with 400 credits',
+              name: 'AI AdGuru Pro Subscription',
+              description: '400 credits per month, AI-generated ad copy and images, campaign management',
+              images: ['https://images.unsplash.com/photo-1616469829581-73993eb86b02?q=80&w=2070&auto=format&fit=crop'],
             },
             unit_amount: 9900, // $99.00
             recurring: {
@@ -62,6 +63,9 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'subscription',
+      allow_promotion_codes: true,
+      billing_address_collection: 'required',
+      customer_email: null, // Could be dynamically set if we have user email
       success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: returnUrl,
       metadata: metadata,
