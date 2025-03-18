@@ -1,8 +1,9 @@
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { ExternalLink } from "lucide-react";
 
 interface StripeBuyButtonProps {
   isAuthenticated: boolean;
@@ -11,63 +12,21 @@ interface StripeBuyButtonProps {
 const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    // Add Stripe Buy Button script if it doesn't exist
-    if (!document.querySelector('script[src*="buy-button.js"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://js.stripe.com/v3/buy-button.js';
-      script.async = true;
-      document.body.appendChild(script);
+  // Stripe checkout direct link
+  const stripeCheckoutUrl = "https://buy.stripe.com/test_7sIcNy8yG0jWgpy3cc";
+
+  const handleCheckout = () => {
+    // Open the Stripe checkout in a new window
+    window.open(stripeCheckoutUrl, "_blank");
+    
+    // If we have a user, we should try to associate this payment with them
+    // This is done through the webhook, but we'll also display a message
+    if (user) {
+      console.log("Opening Stripe checkout for user:", user.id);
     }
-    
-    // Initialize the button after the script is loaded
-    const initializeButton = () => {
-      if (containerRef.current && user) {
-        // Clear any existing content
-        containerRef.current.innerHTML = '';
-        
-        // Create the button element with the exact attributes provided
-        const buttonElement = document.createElement('stripe-buy-button');
-        buttonElement.setAttribute('buy-button-id', 'buy_btn_1R41hUEXrJH93iAs4hjVMyRE');
-        buttonElement.setAttribute('publishable-key', 'pk_test_51R2FeWEXrJH93iAspEvhr575LSSa8CQjBYxioRJO5zK2KwDyKDWLGJNxdo4iSwW06HItJH8nmfzpsKkXqnUhkFPm00EoZb0cBm');
-        
-        // Add user ID as client reference ID for tracking
-        if (user) {
-          buttonElement.setAttribute('client-reference-id', user.id);
-          
-          // Set success and cancel URLs
-          const currentUrl = window.location.origin;
-          const returnUrl = `${currentUrl}/billing`;
-          
-          buttonElement.setAttribute('success-url', `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`);
-          buttonElement.setAttribute('cancel-url', returnUrl);
-        }
-        
-        containerRef.current.appendChild(buttonElement);
-      }
-    };
-    
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="buy-button.js"]')?.getAttribute('loaded') === 'true') {
-      initializeButton();
-    } else {
-      // Set up event listener for script load
-      const existingScript = document.querySelector('script[src*="buy-button.js"]');
-      if (existingScript) {
-        existingScript.addEventListener('load', () => {
-          existingScript.setAttribute('loaded', 'true');
-          initializeButton();
-        });
-      }
-    }
-    
-    // Initialize button on component mount just in case script is already loaded
-    setTimeout(initializeButton, 1000);
-    
-  }, [user]);
+  };
 
   if (!isAuthenticated) {
     return (
@@ -85,8 +44,17 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) =>
   }
 
   return (
-    <div className="mt-6" ref={containerRef}>
-      {/* Stripe Buy Button will be injected here */}
+    <div className="mt-6">
+      <Button 
+        className="w-full" 
+        size="lg" 
+        onClick={handleCheckout}
+      >
+        Subscribe Now <ExternalLink className="ml-1 h-4 w-4" />
+      </Button>
+      <p className="text-sm text-gray-500 mt-2 text-center">
+        You'll be redirected to Stripe's secure checkout page.
+      </p>
     </div>
   );
 };
