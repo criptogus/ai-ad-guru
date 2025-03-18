@@ -117,30 +117,36 @@ export const register = async (name: string, email: string, password: string) =>
 // Create a test account
 export const createTestAccount = async () => {
   // Generate a unique email with timestamp to avoid "email already registered" errors
+  // Using gmail.com domain as it's widely accepted
   const timestamp = new Date().getTime();
-  const testEmail = `test${timestamp}@example.com`;
+  const testEmail = `test${timestamp}@gmail.com`;
   const testPassword = 'Password123!';
   
   console.log(`Attempting to create test account with email: ${testEmail}`);
   
-  const { data, error } = await supabase.auth.signUp({
-    email: testEmail,
-    password: testPassword,
-    options: {
-      data: {
-        name: 'Test User',
-        avatar_url: '',
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: testEmail,
+      password: testPassword,
+      options: {
+        data: {
+          name: 'Test User',
+          avatar_url: '',
+        },
       },
-    },
-  });
+    });
 
-  if (error) {
-    console.error("Error creating test account:", error);
+    if (error) {
+      console.error("Error creating test account:", error);
+      throw error;
+    }
+
+    console.log("Test account created:", data);
+    return { data, testEmail, testPassword };
+  } catch (error) {
+    console.error("Error in createTestAccount:", error);
     throw error;
   }
-
-  console.log("Test account created:", data);
-  return { data, testEmail, testPassword };
 };
 
 // Update user's payment status
