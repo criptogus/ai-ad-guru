@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ const BillingPage = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   // Handle the session_id parameter if redirected from a successful payment
   useEffect(() => {
@@ -23,7 +24,7 @@ const BillingPage = () => {
     const sessionId = queryParams.get("session_id");
     
     if (sessionId) {
-      setLoading(true);
+      setVerifyingPayment(true);
       
       const verifyPayment = async () => {
         try {
@@ -35,6 +36,7 @@ const BillingPage = () => {
           });
 
           if (error) {
+            console.error('Verification error:', error);
             throw new Error(error.message);
           }
 
@@ -47,6 +49,8 @@ const BillingPage = () => {
               title: "Payment successful!",
               description: "Your subscription has been activated.",
             });
+            // Clear the session ID from the URL to prevent re-verification on page refresh
+            window.history.replaceState({}, document.title, "/billing");
             navigate("/dashboard");
           } else {
             toast({
@@ -62,7 +66,7 @@ const BillingPage = () => {
             variant: "destructive",
           });
         } finally {
-          setLoading(false);
+          setVerifyingPayment(false);
         }
       };
 
@@ -98,6 +102,7 @@ const BillingPage = () => {
       });
 
       if (error) {
+        console.error('Checkout error:', error);
         throw new Error(error.message);
       }
 
@@ -119,6 +124,22 @@ const BillingPage = () => {
       setLoading(false);
     }
   };
+
+  if (verifyingPayment) {
+    return (
+      <>
+        <Nav />
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-brand-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifying Your Payment</h1>
+            <p className="text-gray-600">Please wait while we confirm your subscription...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -169,8 +190,17 @@ const BillingPage = () => {
                 onClick={handleStartSubscription}
                 disabled={loading}
               >
-                {loading ? "Processing..." : "Start Your Subscription"}
-                {!loading && <ArrowRight className="ml-2" />}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Start Your Subscription
+                    <ArrowRight className="ml-2" />
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
