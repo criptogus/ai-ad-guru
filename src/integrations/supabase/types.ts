@@ -9,6 +9,124 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      campaign_performance: {
+        Row: {
+          campaign_id: string
+          clicks: number | null
+          created_at: string | null
+          ctr: number | null
+          date: string | null
+          id: string
+          impressions: number | null
+          spend: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string | null
+          id?: string
+          impressions?: number | null
+          spend?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string | null
+          id?: string
+          impressions?: number | null
+          spend?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_performance_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          budget: number
+          budget_type: string
+          created_at: string | null
+          id: string
+          name: string
+          platform: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget?: number
+          budget_type?: string
+          created_at?: string | null
+          id?: string
+          name: string
+          platform: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget?: number
+          budget_type?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          platform?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string | null
+          credits: number | null
+          has_paid: boolean | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string | null
+          credits?: number | null
+          has_paid?: boolean | null
+          id: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string | null
+          credits?: number | null
+          has_paid?: boolean | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       "Zero Digital Agency LLC": {
         Row: {
           created_at: string

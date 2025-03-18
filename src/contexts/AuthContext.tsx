@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,17 @@ interface CustomUser extends User {
   avatar?: string;
   credits?: number;
   hasPaid?: boolean;
+}
+
+// Define our Profile interface that matches the database structure
+interface Profile {
+  id: string;
+  name: string;
+  avatar: string | null;
+  credits: number;
+  has_paid: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthContextType {
@@ -42,6 +54,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Helper function to fetch user profile from Supabase
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data as Profile;
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return null;
+    }
+  };
+
+  // Helper function to update the user object with profile data
+  const updateUserWithProfile = async (authUser: User) => {
+    const profile = await fetchUserProfile(authUser.id);
+    
+    if (profile) {
+      const customUser: CustomUser = {
+        ...authUser,
+        name: profile.name,
+        avatar: profile.avatar || '',
+        credits: profile.credits,
+        hasPaid: profile.has_paid
+      };
+      
+      setUser(customUser);
+      setIsAuthenticated(true);
+    } else {
+      // Fallback to just the auth user if profile isn't found
+      const customUser: CustomUser = {
+        ...authUser,
+        name: 'User',
+        avatar: '',
+        credits: 0,
+        hasPaid: false
+      };
+      
+      setUser(customUser);
+      setIsAuthenticated(true);
+    }
+  };
+
   useEffect(() => {
     const getSession = async () => {
       try {
@@ -51,17 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
 
         if (session) {
-          // Type assertion to convert User to CustomUser
-          const customUser = session.user as CustomUser;
-          
-          // Add default values for our custom properties
-          if (!customUser.name) customUser.name = 'User';
-          if (!customUser.avatar) customUser.avatar = '';
-          if (!customUser.credits) customUser.credits = 0;
-          if (customUser.hasPaid === undefined) customUser.hasPaid = false;
-          
-          setUser(customUser);
-          setIsAuthenticated(true);
+          await updateUserWithProfile(session.user);
         }
       } catch (error: any) {
         console.error('Error getting session:', error);
@@ -72,25 +125,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     getSession();
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) {
-        // Type assertion to convert User to CustomUser
-        const customUser = session.user as CustomUser;
-        
-        // Add default values for our custom properties
-        if (!customUser.name) customUser.name = 'User';
-        if (!customUser.avatar) customUser.avatar = '';
-        if (!customUser.credits) customUser.credits = 0;
-        if (customUser.hasPaid === undefined) customUser.hasPaid = false;
-        
-        setUser(customUser);
-        setIsAuthenticated(true);
+        await updateUserWithProfile(session.user);
       } else {
         setUser(null);
         setIsAuthenticated(false);
       }
     });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -113,8 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('Sign-in successful:', data);
-      setUser(data.user);
-      setIsAuthenticated(true);
+      await updateUserWithProfile(data.user);
       navigate('/dashboard');
 
     } catch (error: any) {
@@ -196,8 +242,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           data: {
             name: name,
             avatar_url: '',
-            credits: 100,  // Default credits for new users
-            hasPaid: false // Default payment status
           },
         },
       });
@@ -214,16 +258,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('Registration successful:', data);
       
-      // Type assertion to convert User to CustomUser and add custom properties
-      const customUser = data.user as CustomUser;
-      if (!customUser.name) customUser.name = name;
-      if (!customUser.avatar) customUser.avatar = '';
-      if (!customUser.credits) customUser.credits = 100;
-      if (customUser.hasPaid === undefined) customUser.hasPaid = false;
+      // The profile will be created automatically via the trigger
+      // We just need to wait a moment to ensure it's created
+      setTimeout(async () => {
+        if (data.user) {
+          await updateUserWithProfile(data.user);
+        }
+      }, 1000);
       
-      setUser(customUser);
-      setIsAuthenticated(true);
       navigate('/billing');
+      toast({
+        title: 'Registration successful',
+        description: 'Your account has been created. Welcome!',
+      });
 
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -257,8 +304,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           data: {
             name: 'Test User',
             avatar_url: '',
-            credits: 500,  // More credits for test accounts
-            hasPaid: true  // Test accounts have paid status for full access
           },
         },
       });
@@ -306,12 +351,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('No user logged in');
       }
       
-      // Update the user in state
+      // Update the profile in the database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ has_paid: hasPaid })
+        .eq('id', user.id);
+        
+      if (error) {
+        console.error('Error updating payment status:', error);
+        throw error;
+      }
+      
+      // Update the user in local state
       const updatedUser = { ...user, hasPaid };
       setUser(updatedUser);
       
-      // In a real application, we would also update this in the database
-      // For now, we're just updating it in the local state
       toast({
         title: hasPaid ? "Subscription activated" : "Subscription cancelled",
         description: hasPaid ? "Your account has been upgraded." : "Your subscription has been cancelled.",
