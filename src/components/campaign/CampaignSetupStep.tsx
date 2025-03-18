@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Wand2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CampaignSetupProps {
   analysisResult: WebsiteAnalysisResult;
@@ -56,6 +59,8 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
   onNext,
 }) => {
   const [activeTab, setActiveTab] = useState("basic");
+  const [isGeneratingTargeting, setIsGeneratingTargeting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Pre-fill the campaign data from the analysis result if not already set
@@ -110,6 +115,66 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
     }
   };
 
+  // Function to generate AI-based targeting recommendations
+  const generateTargetingRecommendations = async () => {
+    if (!analysisResult) {
+      toast({
+        title: "Missing Data",
+        description: "Website analysis data is required to generate targeting recommendations",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingTargeting(true);
+    try {
+      // Call Supabase edge function to generate targeting recommendations
+      const { data, error } = await supabase.functions.invoke('generate-targeting', {
+        body: { 
+          businessDescription: analysisResult.businessDescription,
+          targetAudience: analysisResult.targetAudience,
+          keywords: analysisResult.keywords,
+          brandTone: analysisResult.brandTone,
+          uniqueSellingPoints: analysisResult.uniqueSellingPoints
+        },
+      });
+
+      if (error) {
+        console.error('Error generating targeting recommendations:', error);
+        throw error;
+      }
+
+      if (!data.success) {
+        console.error('Targeting recommendation generation failed:', data.error);
+        throw new Error(data.error || "Failed to generate targeting recommendations");
+      }
+
+      // Update the campaign data with the AI recommendations
+      onUpdateCampaignData({
+        ...campaignData,
+        ...data.data
+      });
+      
+      toast({
+        title: "Targeting Generated",
+        description: "AI-based targeting recommendations have been applied",
+      });
+      
+      // Switch to targeting tab to show the generated recommendations
+      setActiveTab("targeting");
+      
+    } catch (error) {
+      console.error('Error generating targeting recommendations:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate targeting recommendations. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingTargeting(false);
+    }
+  };
+
   const isDeviceSelected = (device: string) => {
     return Array.isArray(campaignData.device) && campaignData.device.includes(device);
   };
@@ -123,6 +188,27 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <Button 
+            onClick={generateTargetingRecommendations} 
+            disabled={isGeneratingTargeting}
+            className="w-full"
+            variant="outline"
+          >
+            {isGeneratingTargeting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating targeting recommendations...
+              </>
+            ) : (
+              <>
+                <Wand2 className="mr-2 h-4 w-4" />
+                Generate AI Targeting Recommendations
+              </>
+            )}
+          </Button>
+        </div>
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-6">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -323,6 +409,33 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="locations">Specific Locations (Optional)</Label>
+              <Textarea
+                id="locations"
+                name="locations"
+                rows={2}
+                placeholder="Enter specific cities, states or regions, separated by commas"
+                value={campaignData.locations || ""}
+                onChange={handleInputChange}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty to target the entire country
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="interests">Interests & Behaviors (Meta Ads)</Label>
+              <Textarea
+                id="interests"
+                name="interests"
+                rows={2}
+                placeholder="Enter interests to target, separated by commas"
+                value={campaignData.interests || ""}
+                onChange={handleInputChange}
+              />
             </div>
           </TabsContent>
           
