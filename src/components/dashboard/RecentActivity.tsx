@@ -40,10 +40,10 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ campaigns }) => {
   return (
     <Card>
       <div className="p-4 border-b">
-        <h2 className="font-bold flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-muted-foreground" />
+        <h3 className="font-medium flex items-center">
+          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
           Recent Activity
-        </h2>
+        </h3>
       </div>
       <CardContent className="p-0">
         <div className="divide-y">
@@ -52,7 +52,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ campaigns }) => {
           ))}
         </div>
         <div className="p-3 text-center border-t">
-          <button className="text-xs text-primary font-medium">
+          <button className="text-xs text-blue-600 font-medium hover:underline">
             View All Activity
           </button>
         </div>
@@ -75,15 +75,15 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
   const getIcon = () => {
     switch (activity.type) {
       case "created":
-        return <Plus className="h-4 w-4 text-green-500" />;
+        return <Plus className="h-4 w-4 text-blue-600" />;
       case "updated":
-        return <RefreshCw className="h-4 w-4 text-blue-500" />;
+        return <RefreshCw className="h-4 w-4 text-blue-600" />;
       case "paused":
         return <Pause className="h-4 w-4 text-amber-500" />;
       case "resumed":
-        return <Play className="h-4 w-4 text-green-500" />;
+        return <Play className="h-4 w-4 text-green-600" />;
       case "generated":
-        return <Plus className="h-4 w-4 text-purple-500" />;
+        return <Plus className="h-4 w-4 text-blue-600" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
@@ -130,7 +130,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
         </div>
         <div className="flex-grow min-w-0">
           <div className="flex justify-between items-start">
-            <div className="font-medium text-sm truncate">
+            <div className="text-sm truncate">
               {getMessage()}
             </div>
             <div className="text-xs text-muted-foreground whitespace-nowrap ml-2">

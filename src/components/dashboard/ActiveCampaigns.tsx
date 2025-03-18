@@ -19,49 +19,49 @@ const ActiveCampaigns: React.FC<ActiveCampaignsProps> = ({ campaigns }) => {
     campaign.status === 'active');
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center">
-          <Flag className="h-5 w-5 mr-2 text-primary" />
+    <Card className="overflow-hidden">
+      <div className="p-4 border-b flex justify-between items-center">
+        <h2 className="font-medium flex items-center">
+          <Flag className="h-5 w-5 mr-2 text-blue-600" />
           Active Campaigns
         </h2>
-        <Button variant="outline" size="sm" onClick={() => navigate("/campaigns")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")}>
           View All
           <ChevronRight size={16} className="ml-1" />
         </Button>
       </div>
 
-      {activeCampaigns.length === 0 ? (
-        <Card className="bg-muted/50">
-          <CardContent className="py-10">
+      <CardContent className="p-0">
+        {activeCampaigns.length === 0 ? (
+          <div className="py-10 text-center">
             <div className="text-center">
               <h3 className="text-lg font-medium mb-2">No active campaigns</h3>
               <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                Get started by creating your first campaign to reach your audience across Google and Meta platforms.
+                Get started by creating your first campaign to reach your audience.
               </p>
               <Button onClick={() => navigate("/create-campaign")} className="gap-2">
                 <PlusCircle size={18} />
                 Create Campaign
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {activeCampaigns.map((campaign) => (
-            <CampaignCard key={campaign.id} campaign={campaign} />
-          ))}
-        </div>
-      )}
-    </div>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {activeCampaigns.map((campaign) => (
+              <CampaignItem key={campaign.id} campaign={campaign} />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
-interface CampaignCardProps {
+interface CampaignItemProps {
   campaign: Campaign;
 }
 
-const CampaignCard: React.FC<CampaignCardProps> = ({ campaign }) => {
+const CampaignItem: React.FC<CampaignItemProps> = ({ campaign }) => {
   const navigate = useNavigate();
   
   const getStatusColor = () => {
@@ -82,85 +82,40 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign }) => {
     }
   };
 
-  const getCtrTrend = () => {
-    const ctr = campaign.performance?.ctr || 0;
-    return ctr > 0.02 ? "text-green-500" : "text-red-500";
-  };
-
   return (
-    <Card className="transition-all duration-200 hover:shadow-md overflow-hidden">
-      <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row">
-          <div className="p-4 md:p-5 flex-grow">
-            <div className="flex justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold">{campaign.name}</h3>
-                <Badge className={getPlatformBadge()} variant="outline">
-                  {campaign.platform === "google" ? "Google" : "Meta"}
-                </Badge>
-              </div>
-              <div className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor()}`}>
-                {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mt-4">
-              <StatItem 
-                label="Budget" 
-                value={`$${campaign.budget}`} 
-                subvalue={campaign.budgetType} 
-              />
-              <StatItem 
-                label="Impressions" 
-                value={campaign.performance?.impressions.toLocaleString() || "0"} 
-              />
-              <StatItem 
-                label="CTR" 
-                value={`${((campaign.performance?.ctr || 0) * 100).toFixed(2)}%`} 
-                trend={getCtrTrend()}
-              />
-              <StatItem 
-                label="Spend" 
-                value={`$${campaign.performance?.spend.toFixed(2) || "0"}`} 
-              />
+    <div className="p-4 hover:bg-muted/50 transition-colors">
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
+        <div className="mb-3 md:mb-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-medium">{campaign.name}</h3>
+            <Badge className={getPlatformBadge()} variant="outline">
+              {campaign.platform === "google" ? "Google" : "Meta"}
+            </Badge>
+            <div className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor()}`}>
+              {campaign.status}
             </div>
           </div>
-          
-          <div className="bg-muted/30 p-4 md:p-5 flex flex-row md:flex-col justify-end items-center gap-2 md:border-l border-t md:border-t-0">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}`)}
-            >
-              View Details
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/edit`)}
-            >
-              Edit
-            </Button>
+          <div className="text-xs text-muted-foreground">
+            Budget: ${campaign.budget} {campaign.budgetType} • Impressions: {campaign.performance?.impressions.toLocaleString() || "0"}
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface StatItemProps {
-  label: string;
-  value: string;
-  subvalue?: string;
-  trend?: string;
-}
-
-const StatItem: React.FC<StatItemProps> = ({ label, value, subvalue, trend }) => {
-  return (
-    <div>
-      <div className="text-xs text-muted-foreground mb-1">{label}</div>
-      <div className={`font-medium ${trend || ""}`}>{value}</div>
-      {subvalue && <div className="text-xs text-muted-foreground">{subvalue}</div>}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/campaigns/${campaign.id}`)}
+          >
+            View
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate(`/campaigns/${campaign.id}/edit`)}
+          >
+            Edit
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

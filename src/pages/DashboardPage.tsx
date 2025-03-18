@@ -40,24 +40,18 @@ const DashboardPage: React.FC = () => {
 
   return (
     <AppLayout activePage="dashboard">
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2">
-            <StatsOverview campaigns={campaigns} />
-          </div>
-          <div>
-            <CreditsStatus user={dashboardUser} />
-          </div>
-        </div>
+        <StatsOverview campaigns={campaigns} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <ActiveCampaigns campaigns={campaigns} />
+            <AiInsights />
           </div>
           <div className="space-y-6">
-            <AiInsights />
+            <CreditsStatus user={dashboardUser} />
             <RecentActivity campaigns={campaigns} />
           </div>
         </div>
