@@ -19,12 +19,23 @@ export const generateWithOpenAI = async (prompt: string) => {
   
   console.log("Sending prompt to OpenAI...");
   
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.7,
-    max_tokens: 1500,
-  });
-  
-  return response.choices[0].message.content;
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1500,
+      timeout: 60000, // Add 60-second timeout
+    });
+    
+    if (!response.choices || response.choices.length === 0) {
+      console.error("OpenAI returned no choices");
+      throw new Error("Failed to generate content with OpenAI - no choices returned");
+    }
+    
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error generating with OpenAI:", error);
+    throw error;
+  }
 };

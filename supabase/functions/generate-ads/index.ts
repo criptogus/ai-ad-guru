@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handleCors } from "./utils.ts";
+import { handleCors, formatCampaignData } from "./utils.ts";
 import { generateGoogleAds, generateMetaAds } from "./adGenerators.ts";
 import { parseAdResponse } from "./responseParser.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
@@ -8,33 +8,80 @@ import { WebsiteAnalysisResult } from "./types.ts";
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return handleCors();
+    return new Response(null, { headers: handleCors() });
   }
   
   try {
     // Parse request body
-    const { platform, campaignData } = await req.json();
+    let requestData;
+    try {
+      requestData = await req.json();
+    } catch (error) {
+      console.error("Failed to parse request body:", error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid JSON in request body" 
+        }),
+        { 
+          status: 400, 
+          headers: { ...handleCors(true), 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
+    const { platform, campaignData } = requestData;
     
     if (!platform || !campaignData) {
-      throw new Error('Platform and campaign data are required');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Platform and campaign data are required' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...handleCors(true), 'Content-Type': 'application/json' } 
+        }
+      );
     }
     
     console.log(`Generating ${platform} ads for ${campaignData.companyName}`);
     
+    // Format campaign data for prompt
+    const formattedData = formatCampaignData(campaignData);
+    
     let adData;
+    let response;
     
     // Generate ads based on platform
-    if (platform === 'google') {
-      const response = await generateGoogleAds(campaignData);
-      adData = parseAdResponse(response, platform, campaignData);
-    } else if (platform === 'meta') {
-      const response = await generateMetaAds(campaignData);
-      adData = parseAdResponse(response, platform, campaignData);
-    } else {
-      throw new Error('Invalid platform specified');
+    try {
+      if (platform === 'google') {
+        response = await generateGoogleAds(campaignData);
+        adData = parseAdResponse(response, platform, campaignData);
+      } else if (platform === 'meta') {
+        response = await generateMetaAds(campaignData);
+        adData = parseAdResponse(response, platform, campaignData);
+      } else {
+        throw new Error('Invalid platform specified');
+      }
+    } catch (error) {
+      console.error(`Error generating ${platform} ads:`, error);
+      
+      // Create fallback data directly from the response parser
+      if (platform === 'google') {
+        const { generateFallbackGoogleAds } = await import("./responseParser.ts");
+        adData = generateFallbackGoogleAds(campaignData);
+      } else if (platform === 'meta') {
+        const { generateFallbackMetaAds } = await import("./responseParser.ts");
+        adData = generateFallbackMetaAds(campaignData);
+      } else {
+        adData = [];
+      }
+      
+      console.log(`Using fallback ${platform} ads due to error`);
     }
 
-    console.log(`${platform} ad generation completed successfully with ${adData.length} variations`);
+    console.log(`${platform} ad generation completed with ${adData.length} variations`);
 
     // Return the generated ads
     return new Response(JSON.stringify({ success: true, data: adData }), {

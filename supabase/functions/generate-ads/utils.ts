@@ -16,22 +16,31 @@ export const handleCors = (includeContentType = false) => {
 
 // Format campaign data for prompt
 export const formatCampaignData = (campaignData) => {
-  // Format keywords, CTAs, and USPs for better prompt formatting
-  const keywords = Array.isArray(campaignData.keywords) 
-    ? campaignData.keywords.join(", ") 
-    : campaignData.keywords;
-    
-  const callToAction = Array.isArray(campaignData.callToAction) 
-    ? campaignData.callToAction.join(", ") 
-    : campaignData.callToAction;
-    
-  const uniqueSellingPoints = Array.isArray(campaignData.uniqueSellingPoints) 
-    ? campaignData.uniqueSellingPoints.join(", ") 
-    : campaignData.uniqueSellingPoints;
+  try {
+    // Format keywords, CTAs, and USPs for better prompt formatting
+    const keywords = Array.isArray(campaignData.keywords) 
+      ? campaignData.keywords.join(", ") 
+      : (typeof campaignData.keywords === 'string' ? campaignData.keywords : '');
+      
+    const callToAction = Array.isArray(campaignData.callToAction) 
+      ? campaignData.callToAction.join(", ") 
+      : (typeof campaignData.callToAction === 'string' ? campaignData.callToAction : '');
+      
+    const uniqueSellingPoints = Array.isArray(campaignData.uniqueSellingPoints) 
+      ? campaignData.uniqueSellingPoints.join(", ") 
+      : (typeof campaignData.uniqueSellingPoints === 'string' ? campaignData.uniqueSellingPoints : '');
 
-  return {
-    keywords,
-    callToAction,
-    uniqueSellingPoints
-  };
+    return {
+      keywords,
+      callToAction,
+      uniqueSellingPoints
+    };
+  } catch (error) {
+    console.error("Error formatting campaign data:", error);
+    return {
+      keywords: '',
+      callToAction: '',
+      uniqueSellingPoints: ''
+    };
+  }
 };
