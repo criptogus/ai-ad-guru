@@ -19,6 +19,13 @@ Deno.serve(async (req) => {
     // Get the request body (user ID)
     const { userId, returnUrl } = await req.json();
 
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    console.log('Creating checkout session for user:', userId);
+    console.log('Return URL:', returnUrl);
+
     // Initialize Stripe with the secret key
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',

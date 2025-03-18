@@ -27,6 +27,8 @@ const BillingPage = () => {
       
       const verifyPayment = async () => {
         try {
+          console.log('Verifying payment session:', sessionId);
+          
           // Call the edge function to verify the payment
           const { data, error } = await supabase.functions.invoke("verify-payment", {
             body: { sessionId },
@@ -35,6 +37,8 @@ const BillingPage = () => {
           if (error) {
             throw new Error(error.message);
           }
+
+          console.log('Payment verification response:', data);
 
           if (data.verified) {
             // Update local state
@@ -83,6 +87,8 @@ const BillingPage = () => {
       // Get the current URL to use as return URL
       const returnUrl = `${window.location.origin}/billing`;
       
+      console.log('Starting subscription process for user:', user?.id);
+      
       // Call the edge function to create a checkout session
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: { 
@@ -94,6 +100,8 @@ const BillingPage = () => {
       if (error) {
         throw new Error(error.message);
       }
+
+      console.log('Checkout session created:', data);
 
       // Redirect to the Stripe checkout page
       if (data.url) {

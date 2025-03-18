@@ -19,6 +19,12 @@ Deno.serve(async (req) => {
     // Get the session ID from the request body
     const { sessionId } = await req.json();
 
+    if (!sessionId) {
+      throw new Error("Session ID is required");
+    }
+
+    console.log('Verifying payment for session:', sessionId);
+
     // Initialize Stripe with the secret key
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
@@ -26,6 +32,8 @@ Deno.serve(async (req) => {
 
     // Retrieve the session to verify payment status
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log('Session status:', session.status);
+    console.log('Payment status:', session.payment_status);
 
     // Initialize the Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -37,6 +45,8 @@ Deno.serve(async (req) => {
       const userId = session.metadata?.userId;
       
       if (userId) {
+        console.log('Updating profile for user:', userId);
+        
         // Update the user's profile to reflect payment
         const { error } = await supabase
           .from('profiles')
@@ -44,6 +54,7 @@ Deno.serve(async (req) => {
           .eq('id', userId);
 
         if (error) {
+          console.error('Error updating profile:', error);
           throw new Error(`Failed to update user profile: ${error.message}`);
         }
         
