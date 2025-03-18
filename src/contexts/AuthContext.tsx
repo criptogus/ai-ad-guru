@@ -63,29 +63,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Get initial session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setSupabaseUser(session.user);
-        const transformedUser = transformUser(session.user);
-        setUser(transformedUser);
-        
-        // Try to get user data from local storage to preserve payment status
-        try {
-          const savedUser = localStorage.getItem('adguru_user');
-          if (savedUser) {
-            const parsedUser = JSON.parse(savedUser);
-            if (parsedUser && parsedUser.id === transformedUser.id) {
-              setUser({
-                ...transformedUser,
-                hasPaid: parsedUser.hasPaid
-              });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setSupabaseUser(session.user);
+          const transformedUser = transformUser(session.user);
+          setUser(transformedUser);
+          
+          // Try to get user data from local storage to preserve payment status
+          try {
+            const savedUser = localStorage.getItem('adguru_user');
+            if (savedUser) {
+              const parsedUser = JSON.parse(savedUser);
+              if (parsedUser && parsedUser.id === transformedUser.id) {
+                setUser({
+                  ...transformedUser,
+                  hasPaid: parsedUser.hasPaid
+                });
+              }
             }
+          } catch (error) {
+            console.error('Error reading from local storage:', error);
           }
-        } catch (error) {
-          console.error('Error reading from local storage:', error);
         }
+      } catch (error) {
+        console.error('Session check error:', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkSession();
@@ -143,16 +148,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
 
       toast({
         title: "Login successful",
         description: "Welcome back to AI Ad Guru!",
       });
     } catch (error) {
+      console.error("Login error details:", error);
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: error instanceof Error ? error.message : 'An error occurred during sign in',
         variant: "destructive",
       });
       throw error;
@@ -171,13 +180,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Google login error:", error);
+        throw error;
+      }
 
       // No toast needed here as we're redirecting to Google
     } catch (error) {
+      console.error("Google login error details:", error);
       toast({
         title: "Google login failed",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: error instanceof Error ? error.message : 'An error occurred during Google sign in',
         variant: "destructive",
       });
       throw error;
@@ -191,7 +204,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Logout error:", error);
+        throw error;
+      }
       
       localStorage.removeItem('adguru_user');
       toast({
@@ -199,11 +215,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "You have been successfully logged out.",
       });
     } catch (error) {
+      console.error("Logout error details:", error);
       toast({
         title: "Logout failed",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: error instanceof Error ? error.message : 'An error occurred during logout',
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -223,16 +241,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Registration error:", error);
+        throw error;
+      }
 
       toast({
         title: "Registration successful",
         description: "Welcome to AI Ad Guru!",
       });
     } catch (error) {
+      console.error("Registration error details:", error);
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: error instanceof Error ? error.message : 'An error occurred during sign up',
         variant: "destructive",
       });
       throw error;

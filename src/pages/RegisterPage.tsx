@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { AlertCircle } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -14,12 +15,13 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { register, loginWithGoogle, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // If user is already authenticated, redirect them
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated) {
       navigate('/billing');
     }
@@ -27,6 +29,7 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     // Validation
     if (!name || !email || !password || !confirmPassword) {
@@ -52,9 +55,14 @@ const RegisterPage: React.FC = () => {
       await register(name, email, password);
       // After registration, auth context will update isAuthenticated
       // and useEffect will redirect to billing
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      // Toast is shown in auth context
+      setError(error?.message || 'Failed to sign up. Please try again.');
+      toast({
+        title: 'Registration failed',
+        description: error?.message || 'An error occurred during sign up.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -63,11 +71,17 @@ const RegisterPage: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       setIsSubmitting(true);
+      setError(null);
       await loginWithGoogle();
       // This will redirect to Google auth page
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google login error:', error);
-      // Toast is shown in auth context
+      setError(error?.message || 'Failed to sign in with Google. Please try again.');
+      toast({
+        title: 'Google login failed',
+        description: error?.message || 'An error occurred during Google sign in.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -89,6 +103,12 @@ const RegisterPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="bg-destructive/15 p-3 rounded-md flex items-center text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
