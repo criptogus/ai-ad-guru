@@ -55,6 +55,8 @@ export const usePaymentVerification = (sessionId: string | null) => {
           });
           // Clear the session ID from the URL
           window.history.replaceState({}, document.title, "/billing");
+          // Navigate to dashboard after a delay
+          setTimeout(() => navigate("/dashboard"), 800);
         } else {
           throw new Error("Invalid response from verification service");
         }
