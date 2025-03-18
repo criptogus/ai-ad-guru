@@ -35,7 +35,7 @@ serve(async (req) => {
     console.log(`Generating image with prompt: ${prompt}`);
     
     // Generate image with DALL-E
-    const enhancedPrompt = `High quality, professional ad image: ${prompt}. Clean background, professional lighting, commercial quality.`;
+    const enhancedPrompt = `High quality, professional Instagram ad image: ${prompt}. Clean background, professional lighting, commercial quality, eye-catching for social media.`;
     
     const response = await openai.images.generate({
       model: "dall-e-3",

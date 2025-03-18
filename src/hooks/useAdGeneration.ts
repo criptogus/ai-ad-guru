@@ -27,6 +27,8 @@ export const useAdGeneration = () => {
     setIsGenerating(true);
     
     try {
+      console.log('Generating Google ads for:', campaignData.companyName);
+      
       const { data, error } = await supabase.functions.invoke('generate-ads', {
         body: { 
           platform: 'google',
@@ -45,6 +47,7 @@ export const useAdGeneration = () => {
       }
 
       if (!data.success) {
+        console.error('Google ads generation failed:', data.error);
         toast({
           title: "Generation Failed",
           description: data.error || "Failed to generate Google ads",
@@ -53,12 +56,13 @@ export const useAdGeneration = () => {
         return null;
       }
 
+      console.log('Google ads generated successfully:', data.data);
       const ads = data.data as GoogleAd[];
       setGoogleAds(ads);
       
       toast({
         title: "Ads Generated",
-        description: "Successfully generated Google ads",
+        description: `Successfully generated ${ads.length} Google ad variations`,
       });
       
       return ads;
@@ -79,6 +83,8 @@ export const useAdGeneration = () => {
     setIsGenerating(true);
     
     try {
+      console.log('Generating Meta ads for:', campaignData.companyName);
+      
       const { data, error } = await supabase.functions.invoke('generate-ads', {
         body: { 
           platform: 'meta',
@@ -97,6 +103,7 @@ export const useAdGeneration = () => {
       }
 
       if (!data.success) {
+        console.error('Meta ads generation failed:', data.error);
         toast({
           title: "Generation Failed",
           description: data.error || "Failed to generate Meta ads",
@@ -105,12 +112,13 @@ export const useAdGeneration = () => {
         return null;
       }
 
+      console.log('Meta ads generated successfully:', data.data);
       const ads = data.data as MetaAd[];
       setMetaAds(ads);
       
       toast({
         title: "Ads Generated",
-        description: "Successfully generated Meta/Instagram ads",
+        description: `Successfully generated ${ads.length} Meta/Instagram ad variations`,
       });
       
       return ads;
@@ -129,6 +137,8 @@ export const useAdGeneration = () => {
 
   const generateAdImage = async (prompt: string) => {
     try {
+      console.log('Generating image with prompt:', prompt);
+      
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { prompt },
       });
@@ -144,6 +154,7 @@ export const useAdGeneration = () => {
       }
 
       if (!data.success) {
+        console.error('Image generation failed:', data.error);
         toast({
           title: "Image Generation Failed",
           description: data.error || "Failed to generate image",
@@ -152,6 +163,7 @@ export const useAdGeneration = () => {
         return null;
       }
 
+      console.log('Image generated successfully:', data.imageUrl);
       return data.imageUrl;
     } catch (error) {
       console.error('Error generating image:', error);
