@@ -63,12 +63,16 @@ serve(async (req) => {
       console.log("Successfully fetched website data");
     } catch (error) {
       console.error("Error fetching website data:", error);
-      websiteData = {
-        title: "Could not extract title",
-        description: "Could not extract description",
-        keywords: "Could not extract keywords",
-        visibleText: "Could not extract visible text"
-      };
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Failed to fetch website data: ${error.message}`
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Step 2: Analyze website with OpenAI
@@ -92,6 +96,7 @@ serve(async (req) => {
     `;
 
     try {
+      console.log("Sending request to OpenAI...");
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
@@ -99,15 +104,26 @@ serve(async (req) => {
         max_tokens: 800,
       });
 
+      console.log("Received response from OpenAI");
       const analysisText = response.choices[0].message.content;
       let websiteAnalysis;
       
       try {
         // Extract JSON from the response
         websiteAnalysis = JSON.parse(analysisText);
+        console.log("Successfully parsed OpenAI response as JSON");
       } catch (error) {
         console.error("Failed to parse OpenAI response as JSON:", analysisText);
-        throw new Error("Failed to parse website analysis data");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Failed to parse website analysis data" 
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
 
       console.log("Website analysis completed successfully");
@@ -121,7 +137,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Error communicating with AI service" 
+          error: `Error communicating with AI service: ${openAiError.message}` 
         }),
         { 
           status: 500, 
@@ -154,6 +170,8 @@ async function fetchWebsiteData(url: string) {
       url = 'https://' + url;
     }
     
+    console.log(`Fetching website: ${url}`);
+    
     // Fetch the website content
     const response = await fetch(url, {
       headers: {
@@ -166,6 +184,7 @@ async function fetchWebsiteData(url: string) {
     }
 
     const html = await response.text();
+    console.log(`Fetched ${html.length} bytes of HTML content`);
     
     // Parse HTML
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -175,6 +194,7 @@ async function fetchWebsiteData(url: string) {
 
     // Extract title
     const title = doc.querySelector("title")?.textContent || "No title found";
+    console.log(`Title: ${title}`);
     
     // Extract meta description
     const metaDescription = doc.querySelector('meta[name="description"]')?.getAttribute("content") || 
@@ -202,6 +222,7 @@ async function fetchWebsiteData(url: string) {
     }
     
     visibleText = visibleText.replace(/\s+/g, " ").trim();
+    console.log(`Extracted ${visibleText.length} characters of visible text`);
     
     // Return structured data
     return {
