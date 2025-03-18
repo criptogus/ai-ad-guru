@@ -2,22 +2,29 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { logout as signOut } from '@/services/auth';
+import { logout } from '@/services/auth';
 
 export const useLogoutAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const logout = async (): Promise<void> => {
+  const handleLogout = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      await signOut();
+      console.log('Logging out user');
+      
+      await logout();
+      
       // User state will be updated by onAuthStateChange
-      navigate('/login');
       toast({
-        description: 'Logged out successfully!',
+        title: 'Logged out',
+        description: 'You have been successfully logged out.',
       });
+      
+      // Always redirect to login page after logout
+      navigate('/login');
+      
     } catch (error: any) {
       console.error('Logout error:', error);
       toast({
@@ -31,7 +38,7 @@ export const useLogoutAction = () => {
   };
 
   return {
-    logout,
+    logout: handleLogout,
     isLoading
   };
 };

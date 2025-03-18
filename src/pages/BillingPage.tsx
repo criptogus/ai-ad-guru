@@ -1,104 +1,143 @@
 
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import { Nav } from "@/components/landing/Nav";
-import { Footer } from "@/components/landing/Footer";
-
-// Imported Components
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import BillingFeatures from "@/components/billing/BillingFeatures";
+import LoadingState from "@/components/billing/LoadingState";
 import StripeBuyButton from "@/components/billing/StripeBuyButton";
 import PaymentVerification from "@/components/billing/PaymentVerification";
-import LoadingState from "@/components/billing/LoadingState";
+import AppLayout from "@/components/AppLayout";
+import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
+import { ArrowLeft, LogIn } from "lucide-react";
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'stripe-buy-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        'buy-button-id': string;
-        'publishable-key': string;
-      };
-    }
-  }
-}
-
-const BillingPage = () => {
-  const { isAuthenticated } = useAuth();
+const BillingPage: React.FC = () => {
+  const { isAuthenticated, user, isLoading, updateUserPaymentStatus } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [pageLoading, setPageLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
-  // Extract session_id from URL if present
+  // Extract session ID from URL if present
   const queryParams = new URLSearchParams(location.search);
-  const sessionId = queryParams.get("session_id");
+  const sessionId = queryParams.get('session_id');
   
-  useEffect(() => {
-    // Short timeout to ensure component mounts properly
-    const timer = setTimeout(() => {
-      console.log("Page loading timeout completed");
-      setPageLoading(false);
-    }, 1500);
+  // Use the payment verification hook
+  const { verifying, success, error } = usePaymentVerification(sessionId);
+  
+  // Check if we're coming from a payment verification flow
+  const isPaymentVerification = !!sessionId;
+  
+  // Helper function to get the correct layout
+  const getContent = () => {
+    // If we're verifying a payment, show the verification component
+    if (isPaymentVerification) {
+      return (
+        <Card className="max-w-2xl mx-auto">
+          <PaymentVerification 
+            verifying={verifying} 
+            success={success} 
+            error={error} 
+          />
+        </Card>
+      );
+    }
     
-    return () => clearTimeout(timer);
-  }, []);
-
-  // If payment verification is in progress, show the verification component
-  if (sessionId) {
-    return <PaymentVerification sessionId={sessionId} />;
-  }
-
-  // If page is still loading, show loading state
-  if (pageLoading) {
-    return <LoadingState />;
-  }
-
-  return (
-    <>
-      <Nav />
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold text-gray-900">Complete Your Subscription</h1>
-            <p className="mt-4 text-lg text-gray-600">
-              You're just one step away from transforming your ad campaigns with AI.
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-4 border rounded-md bg-red-50 border-red-200 text-red-800 flex items-start">
-              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+    // If the user is already authenticated, show the billing page
+    if (isAuthenticated) {
+      return (
+        <AppLayout activePage="billing">
+          <div className="p-8">
+            <div className="flex items-center mb-8">
+              <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft size={16} />
+              </Button>
               <div>
-                <p className="font-semibold">Error processing payment</p>
-                <p className="text-sm mt-1">{error}</p>
+                <h1 className="text-3xl font-bold">Billing</h1>
+                <p className="text-muted-foreground">Manage your subscription</p>
               </div>
             </div>
-          )}
-
-          <Card className="shadow-lg">
-            <CardHeader className="text-center bg-gradient-to-br from-brand-600 to-brand-800 text-white rounded-t-lg">
-              <CardTitle className="text-2xl">Pro Subscription</CardTitle>
-              <CardDescription className="text-white/90 text-lg">
-                $99/month
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <BillingFeatures />
-              <StripeBuyButton isAuthenticated={isAuthenticated} />
-            </CardContent>
-          </Card>
-
-          <div className="mt-8 text-center text-sm text-gray-500">
-            By subscribing, you agree to our Terms of Service and Privacy Policy.
-            <br />
-            Questions? Contact our support team at support@aiadguru.com
+            
+            <div className="mb-8">
+              <Card className="w-full max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle>AI Ad Guru Pro</CardTitle>
+                  <CardDescription>
+                    Unlock unlimited AI-powered ad campaigns
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <BillingFeatures />
+                  <div className="text-center mt-6 space-y-2">
+                    <p className="text-3xl font-bold">$49.99</p>
+                    <p className="text-muted-foreground">per month</p>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col items-center">
+                  {user?.hasPaid ? (
+                    <div className="text-center space-y-4">
+                      <div className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-block">
+                        Active Subscription
+                      </div>
+                      <p className="text-muted-foreground">
+                        Your subscription is active. You have access to all premium features.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => updateUserPaymentStatus(false)}
+                      >
+                        Cancel Subscription
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-full">
+                      <StripeBuyButton 
+                        userId={user?.id} 
+                        customerEmail={user?.email}
+                      />
+                    </div>
+                  )}
+                </CardFooter>
+              </Card>
+            </div>
           </div>
-        </div>
+        </AppLayout>
+      );
+    }
+    
+    // If not authenticated and not in payment verification, show login prompt
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>
+              Please log in to access billing and subscription features
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center p-6">
+            <p className="mb-6 text-muted-foreground">
+              You need to be logged in to manage your subscription and billing information.
+            </p>
+            <Button 
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => navigate("/login")}
+            >
+              <LogIn size={18} />
+              <span>Go to Login</span>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-      <Footer />
-    </>
-  );
+    );
+  };
+  
+  // Show loading state while auth is initializing
+  if (isLoading && !isPaymentVerification) {
+    return <LoadingState />;
+  }
+  
+  return getContent();
 };
 
 export default BillingPage;
