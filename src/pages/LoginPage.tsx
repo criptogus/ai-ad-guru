@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -102,13 +101,15 @@ const LoginPage: React.FC = () => {
     try {
       setError(null);
       setIsCreatingTestAccount(true);
-      await createTestAccount();
-      setEmail('test@example.com');
-      setPassword('Password123!');
-      toast({
-        title: "Test account ready",
-        description: "You can now log in with the test account credentials.",
-      });
+      const testAccount = await createTestAccount();
+      if (testAccount) {
+        setEmail(testAccount.email);
+        setPassword(testAccount.password);
+        toast({
+          title: "Test account ready",
+          description: "You can now log in with the test account credentials.",
+        });
+      }
     } catch (error: any) {
       console.error('Error creating test account:', error);
       setError(error?.message || 'Failed to create test account. Please try again.');
@@ -156,9 +157,7 @@ const LoginPage: React.FC = () => {
                   {isCreatingTestAccount ? 'Creating...' : 'Create Test Account'}
                 </Button>
                 <p className="mt-2 text-xs">
-                  This will create: <br />
-                  Email: <strong>test@example.com</strong><br />
-                  Password: <strong>Password123!</strong>
+                  This will create a unique test account with a generated email
                 </p>
               </AlertDescription>
             </Alert>

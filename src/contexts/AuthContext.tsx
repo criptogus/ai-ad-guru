@@ -296,10 +296,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       console.log('Creating test account...');
       
-      // Since we can't access admin APIs from the browser, we're using a simple signup method
+      // Generate a unique email with timestamp to avoid "email already registered" errors
+      const timestamp = new Date().getTime();
+      const testEmail = `test${timestamp}@example.com`;
+      const testPassword = 'Password123!';
+      
+      console.log(`Attempting to create test account with email: ${testEmail}`);
+      
       const { data, error } = await supabase.auth.signUp({
-        email: 'test@example.com',
-        password: 'Password123!',
+        email: testEmail,
+        password: testPassword,
         options: {
           data: {
             name: 'Test User',
@@ -309,16 +315,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        // Check if error is because user already exists
-        if (error.message.includes('already registered')) {
-          toast({
-            title: "Test account already exists",
-            description: "You can log in with test@example.com / Password123!",
-          });
-          return;
-        }
-        
         console.error("Error creating test account:", error);
+        toast({
+          title: "Failed to create test account",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
 
@@ -326,8 +328,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast({
         title: "Test account created",
-        description: "Use test@example.com / Password123! to log in",
+        description: `Use ${testEmail} / ${testPassword} to log in`,
       });
+      
+      // Auto-fill the login form
+      return {
+        email: testEmail,
+        password: testPassword
+      };
     } catch (error: any) {
       console.error("Error creating test account:", error);
       toast({
