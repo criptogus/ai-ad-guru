@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 import { OpenAI } from "https://esm.sh/openai@4.20.1";
@@ -88,7 +87,8 @@ serve(async (req) => {
     - callToAction: 3 Call-to-Action suggestions (short phrases)
     - uniqueSellingPoints: 3 Unique Selling Points (what makes them different)
     
-    Return this in clean JSON format without any additional text or explanation.
+    Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
+    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"]}
     `;
 
     try {
@@ -104,22 +104,64 @@ serve(async (req) => {
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
         max_tokens: 800,
+        response_format: { type: "json_object" } // Added to ensure we get JSON back
       });
 
       console.log("Received response from OpenAI");
       const analysisText = response.choices[0].message.content;
+      console.log("Raw OpenAI response:", analysisText);
+      
       let websiteAnalysis;
       
       try {
         // Extract JSON from the response
         websiteAnalysis = JSON.parse(analysisText);
         console.log("Successfully parsed OpenAI response as JSON");
+        
+        // Validate that we have all the required fields
+        const requiredFields = ['companyName', 'businessDescription', 'targetAudience', 'brandTone', 
+                                'keywords', 'callToAction', 'uniqueSellingPoints'];
+        
+        for (const field of requiredFields) {
+          if (!websiteAnalysis[field]) {
+            console.error(`Missing required field in analysis: ${field}`);
+            return new Response(
+              JSON.stringify({ 
+                success: false, 
+                error: `Missing required field in analysis: ${field}`,
+                rawResponse: analysisText
+              }),
+              { 
+                status: 500, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+              }
+            );
+          }
+        }
+        
+        // Ensure arrays are properly formatted
+        ['keywords', 'callToAction', 'uniqueSellingPoints'].forEach(field => {
+          if (!Array.isArray(websiteAnalysis[field])) {
+            console.log(`Converting ${field} to array`);
+            if (typeof websiteAnalysis[field] === 'string') {
+              // If it's a string, try to split it
+              websiteAnalysis[field] = websiteAnalysis[field].split(',').map(item => item.trim());
+            } else {
+              // Otherwise create a default array
+              websiteAnalysis[field] = [`Default ${field} item`];
+            }
+          }
+        });
+        
       } catch (error) {
-        console.error("Failed to parse OpenAI response as JSON:", analysisText);
+        console.error("Failed to parse OpenAI response as JSON:", error);
+        console.error("Raw response:", analysisText);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: "Failed to parse website analysis data" 
+            error: "Failed to parse website analysis data",
+            rawResponse: analysisText,
+            parseError: error.message
           }),
           { 
             status: 500, 
