@@ -2,14 +2,18 @@
 import { GoogleAd, MetaAd } from "./types.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
 
-// Generate fallback Google Ads
+// Generate fallback Google Ads that are contextually relevant
 export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult) => {
+  // Create company-specific fallback headlines
+  const companyName = campaignData.companyName;
+  const shortDesc = campaignData.businessDescription.split(' ').slice(0, 3).join(' ');
+  
   return [
     {
       headlines: [
-        `${campaignData.companyName} Services`,
-        "Professional Quality",
-        "Contact Us Today"
+        `${companyName}`, // Company name
+        `${shortDesc}`, // Short description
+        "Contact Us Today" // CTA
       ],
       descriptions: [
         `${campaignData.businessDescription.substring(0, 80)}...`,
@@ -18,9 +22,9 @@ export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult) =
     },
     {
       headlines: [
-        "Expert Solutions",
-        `${campaignData.companyName}`,
-        "Trusted Provider"
+        `Top ${shortDesc}`, // Service with quality descriptor
+        `${companyName}`, // Company name
+        "Trusted Provider" // Trust indicator
       ],
       descriptions: [
         "Top-rated services tailored to your needs. Quality guaranteed.",
@@ -29,9 +33,9 @@ export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult) =
     },
     {
       headlines: [
-        "Special Offer Inside",
-        "Premium Services",
-        `${campaignData.companyName}`
+        `Special ${shortDesc} Offer`, // Special offer with service
+        `Premium ${companyName}`, // Company with quality descriptor
+        "Limited Time Deal" // Urgency indicator
       ],
       descriptions: [
         "Discover how we can help you achieve your goals today.",
@@ -40,9 +44,9 @@ export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult) =
     },
     {
       headlines: [
-        "Quality Guaranteed",
-        `${campaignData.companyName}`,
-        "Professional Service"
+        `Quality ${shortDesc}`, // Quality with service
+        `${companyName}`, // Company name
+        "Professional Service" // Service quality
       ],
       descriptions: [
         "We deliver exceptional results every time. Satisfaction guaranteed.",
@@ -51,9 +55,9 @@ export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult) =
     },
     {
       headlines: [
-        "Limited Time Discount",
-        `Best in ${campaignData.companyName}`,
-        "Act Now & Save"
+        `${shortDesc} Experts`, // Expertise with service
+        `Best in ${companyName}`, // Company with quality descriptor
+        "Act Now & Save" // Urgency CTA
       ],
       descriptions: [
         "Don't miss our special offer available for a limited time only.",
@@ -119,6 +123,24 @@ export const parseAdResponse = (generatedContent: string, platform: string, camp
         console.error(`No array found in response for ${platform} ads:`, adData);
         throw new Error('No ad array found in response');
       }
+    }
+    
+    // Validate the ad content for relevance
+    if (platform === 'google' && Array.isArray(adData)) {
+      adData = adData.map((ad, index) => {
+        // Ensure at least one headline contains the company name
+        const companyNameLower = campaignData.companyName.toLowerCase();
+        const hasCompanyName = ad.headlines.some(headline => 
+          headline.toLowerCase().includes(companyNameLower)
+        );
+        
+        if (!hasCompanyName && ad.headlines.length > 0) {
+          // Replace one headline with company name if missing
+          ad.headlines[0] = campaignData.companyName;
+        }
+        
+        return ad;
+      });
     }
     
     // Final check to ensure we have desired number of ad variations

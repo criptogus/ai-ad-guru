@@ -17,19 +17,20 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     ---
     
     ### 📌 **Ad Creation Guidelines**
-    - **Headlines:** Create 3 short, compelling headlines for each ad, each **30 characters max**. Ensure they are relevant to the business.
-       - First headline should include the company name or main product/service
-       - Second headline should highlight a key benefit or feature
-       - Third headline should include a call to action
-    - **Descriptions:** Persuasive, action-driven, **90 characters max**.
+    - **Headlines:** Create 3 short, compelling headlines for each ad, each **30 characters max**. 
+       - **IMPORTANT: ALL HEADLINES MUST BE DIRECTLY RELEVANT TO THIS SPECIFIC BUSINESS.**
+       - First headline should include the company name or main service offered by ${campaignData.companyName}
+       - Second headline should highlight a key benefit or feature from ${campaignData.companyName}'s unique selling points
+       - Third headline should include a call to action relevant to ${campaignData.companyName}'s services
+    - **Descriptions:** Persuasive, action-driven, **90 characters max**, specifically about ${campaignData.companyName}'s services.
     - **Ad Variations:** Create **5 variations** to test different persuasion techniques.
-    - **Call-to-Action (CTA):** Use direct action words (e.g., "Shop Now", "Try for Free").
-    - **Persuasion Techniques:** Each variation should focus on a different high-impact approach:
-      - **Curiosity Hook:** "This Simple Trick Will [Solve Problem]!"
-      - **Urgency/Scarcity:** "Only 3 Spots Left – Book Now!"
-      - **Social Proof:** "Trusted by 10,000+ Customers!"
-      - **Emotional Trigger:** "Feel More Confident with [Product]!"
-      - **Problem-Solution:** "Tired of [Pain Point]? Try [Solution] Today!"
+    - **Call-to-Action (CTA):** Use direct action words from the provided CTAs: ${callToAction || "Contact Us, Learn More, Get Started"}.
+    - **Persuasion Techniques:** Each variation should focus on a different high-impact approach related to ${campaignData.companyName}'s services:
+      - **Curiosity Hook:** Create curiosity about ${campaignData.companyName}'s specific solutions
+      - **Urgency/Scarcity:** Emphasize limited availability or special offers from ${campaignData.companyName}
+      - **Social Proof:** Highlight ${campaignData.companyName}'s customer base or testimonials
+      - **Emotional Trigger:** Connect emotionally with the target audience's needs that ${campaignData.companyName} addresses
+      - **Problem-Solution:** Address specific pain points that ${campaignData.companyName} solves
     
     ---
     
@@ -63,6 +64,8 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     4. The FIRST ad variation will be used first, so make it the most compelling
     5. Return ONLY the JSON array - no additional text before or after
     6. ALWAYS include the company name in at least one headline per ad
+    7. EVERY headline MUST be relevant to the specific business ${campaignData.companyName}
+    8. DO NOT create generic headlines that could apply to any business
     `;
     
     console.log("Sending improved Google Ads prompt to OpenAI...");

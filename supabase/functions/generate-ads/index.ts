@@ -47,6 +47,21 @@ serve(async (req) => {
       );
     }
     
+    // Ensure required data is present
+    if (!campaignData.companyName) {
+      console.error("Missing company name in campaign data");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Company name is required in campaign data' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...handleCors(true), 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
     console.log(`Generating ${platform} ads for ${campaignData.companyName}`);
     
     // Format campaign data for prompt
