@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
 
-interface CampaignData {
+export interface CampaignData {
   name: string;
   platform: "google" | "meta";
   budget: number;
