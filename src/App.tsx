@@ -12,6 +12,7 @@ import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
+import CreateCampaignPage from "@/pages/CreateCampaignPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/create-campaign" 
+              element={
+                <ProtectedRoute>
+                  <CreateCampaignPage />
                 </ProtectedRoute>
               } 
             />

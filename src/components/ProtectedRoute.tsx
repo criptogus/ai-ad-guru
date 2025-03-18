@@ -15,6 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      // Store the attempted URL for redirection after login
       navigate("/login", { state: { from: location.pathname } });
     }
   }, [isAuthenticated, isLoading, navigate, location.pathname]);
