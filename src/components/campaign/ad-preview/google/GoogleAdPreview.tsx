@@ -5,15 +5,19 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 interface GoogleAdPreviewProps {
   ad: GoogleAd;
-  analysisResult: WebsiteAnalysisResult;
+  analysisResult?: WebsiteAnalysisResult; // Make this optional
+  domain?: string; // Add the domain prop
 }
 
-const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, analysisResult }) => {
+const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, analysisResult, domain }) => {
+  // Use domain if provided, otherwise extract from analysisResult
+  const displayDomain = domain || (analysisResult ? getUrlFromCompanyName(analysisResult.companyName) : "example.com");
+  
   return (
     <div className="border rounded-md p-3 bg-white shadow-sm text-sm w-full max-w-md">
       {/* Ad URL */}
       <div className="text-green-700 truncate text-xs">
-        www.{getUrlFromCompanyName(analysisResult.companyName)}
+        www.{displayDomain}
       </div>
       
       {/* Ad Headlines */}
