@@ -40,8 +40,9 @@ Deno.serve(async (req) => {
     // Retrieve the checkout session
     let session;
     try {
+      console.log('Attempting to retrieve session from Stripe:', sessionId);
       session = await stripe.checkout.sessions.retrieve(sessionId);
-      console.log('Session retrieved:', {
+      console.log('Session retrieved successfully:', {
         id: session.id,
         status: session.status,
         payment_status: session.payment_status,
@@ -67,53 +68,46 @@ Deno.serve(async (req) => {
     // Get the user ID from the session
     const userId = session.client_reference_id;
     if (!userId) {
-      throw new Error('User ID not found in session metadata');
+      console.error('User ID not found in session metadata:', session);
+      throw new Error('User ID not found in session');
     }
 
     console.log('User ID from session:', userId);
 
     // If payment was successful, update the user's subscription status
+    // Consider both 'paid' status and 'complete' status as success indicators
     const paymentSuccessful = session.payment_status === 'paid' || session.status === 'complete';
     
     if (paymentSuccessful) {
-      console.log('Payment verified. Updating profile for user:', userId);
+      console.log('Payment verified as successful. Updating profile for user:', userId);
       
-      // Update the user's profile to reflect payment
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-        
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw new Error(`Failed to fetch user profile: ${profileError.message}`);
-      }
-      
-      console.log('Current profile status:', profile);
-      
-      // Update the user's profile to reflect payment
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ has_paid: true })
-        .eq('id', userId);
+      try {
+        // Update the user's profile to reflect payment
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ has_paid: true })
+          .eq('id', userId);
 
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        throw new Error(`Failed to update user profile: ${updateError.message}`);
-      }
-      
-      // Verify the update was successful
-      const { data: updatedProfile, error: verifyError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw new Error(`Failed to update user profile: ${updateError.message}`);
+        }
         
-      if (verifyError) {
-        console.error('Error verifying profile update:', verifyError);
-      } else {
-        console.log('Profile updated successfully:', updatedProfile);
+        // Verify the update was successful
+        const { data: updatedProfile, error: verifyError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+          
+        if (verifyError) {
+          console.error('Error verifying profile update:', verifyError);
+        } else {
+          console.log('Profile updated successfully:', updatedProfile);
+        }
+      } catch (dbError) {
+        console.error('Database operation error:', dbError);
+        throw new Error(`Database error: ${dbError.message}`);
       }
       
       console.log(`Payment verified and profile updated for user: ${userId}`);

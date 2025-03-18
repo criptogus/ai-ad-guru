@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
 
   const signature = req.headers.get('stripe-signature');
   if (!signature) {
+    console.error('No Stripe signature provided in webhook request');
     return new Response(
       JSON.stringify({ error: 'Webhook Error: No signature provided' }),
       {
@@ -28,6 +29,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.text();
+    console.log('Received webhook request');
     
     // Get the Stripe API key from environment variables
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -42,18 +44,31 @@ Deno.serve(async (req) => {
     // Verify the webhook signature
     const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
     const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+    console.log('Webhook event type:', event.type);
 
     // Initialize the Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing');
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Handle specific webhook events
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const userId = session.client_reference_id || session.metadata?.userId;
+      const userId = session.client_reference_id;
+      
+      console.log('checkout.session.completed event received:', {
+        session_id: session.id,
+        payment_status: session.payment_status,
+        userId
+      });
       
       if (userId) {
+        console.log('Updating profile for user:', userId);
         // Update the user's profile to reflect payment
         const { error } = await supabase
           .from('profiles')
@@ -61,15 +76,17 @@ Deno.serve(async (req) => {
           .eq('id', userId);
 
         if (error) {
+          console.error('Error updating profile:', error);
           throw new Error(`Failed to update user profile: ${error.message}`);
         }
         
         console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
+      } else {
+        console.error('No user ID found in session:', session);
       }
     } else if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object;
       // Handle subscription cancellation
-      // This would require storing the customer ID with the user
       console.log('Subscription cancelled:', subscription.id);
     }
 

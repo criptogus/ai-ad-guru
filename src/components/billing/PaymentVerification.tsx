@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
@@ -13,7 +13,7 @@ interface PaymentVerificationProps {
 }
 
 const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) => {
-  const { verifying, error } = usePaymentVerification(sessionId);
+  const { verifying, error, success } = usePaymentVerification(sessionId);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [verificationTimeout, setVerificationTimeout] = useState(false);
@@ -40,21 +40,21 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) 
     return () => clearTimeout(timeoutId);
   }, [sessionId, verifying, toast]);
 
-  if (!sessionId) {
-    return null;
-  }
-
   const handleReturnToBilling = () => {
     window.history.replaceState({}, document.title, "/billing");
     navigate("/billing");
   };
+
+  if (!sessionId) {
+    return null;
+  }
 
   return (
     <>
       <Nav />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="text-center max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-          {verifying && !verificationTimeout && (
+          {verifying && !verificationTimeout && !success && !error && (
             <>
               <Loader2 className="h-12 w-12 animate-spin text-brand-600 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifying Your Payment</h1>
@@ -62,7 +62,20 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) 
             </>
           )}
           
-          {verificationTimeout && (
+          {success && (
+            <>
+              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Subscription Activated</h1>
+              <p className="text-gray-600 mb-4">
+                Your payment was successful and your subscription has been activated!
+              </p>
+              <Button onClick={() => navigate("/dashboard")} className="mt-4">
+                Go to Dashboard
+              </Button>
+            </>
+          )}
+          
+          {verificationTimeout && !success && !error && (
             <>
               <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Verification In Progress</h1>

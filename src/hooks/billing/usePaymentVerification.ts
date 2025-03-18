@@ -11,6 +11,9 @@ export const usePaymentVerification = (sessionId: string | null) => {
   const { updateUserPaymentStatus } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<boolean>(!!sessionId);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [retries, setRetries] = useState(0);
+  const MAX_RETRIES = 3;
 
   useEffect(() => {
     if (!sessionId) return;
@@ -29,6 +32,19 @@ export const usePaymentVerification = (sessionId: string | null) => {
 
         if (functionError) {
           console.error('Verification error from edge function:', functionError);
+          
+          // If we haven't exceeded max retries, try again
+          if (retries < MAX_RETRIES) {
+            console.log(`Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
+            setRetries(prev => prev + 1);
+            
+            // Wait before retrying
+            setTimeout(() => {
+              verifyPayment();
+            }, 3000);
+            return;
+          }
+          
           throw new Error(functionError.message || "Error verifying payment");
         }
 
@@ -37,6 +53,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
         if (data?.verified) {
           console.log('Payment verified successfully');
           // Update local state
+          setSuccess(true);
           updateUserPaymentStatus(true);
           toast({
             title: "Payment successful!",
@@ -46,7 +63,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
           window.history.replaceState({}, document.title, "/billing");
           // Navigate after a short delay to ensure state updates are processed
           setTimeout(() => navigate("/dashboard"), 1500);
-        } else if (data) {
+        } else if (data?.session?.payment_status === 'unpaid' || data?.session?.status === 'open') {
           console.log('Payment pending or incomplete:', data);
           toast({
             title: "Payment pending",
@@ -55,17 +72,29 @@ export const usePaymentVerification = (sessionId: string | null) => {
           });
           // Clear the session ID from the URL
           window.history.replaceState({}, document.title, "/billing");
-          // Navigate to dashboard after a delay
+          // Navigate to billing after a delay
           setTimeout(() => navigate("/billing"), 1500);
         } else {
-          throw new Error("Invalid response from verification service");
+          // If we haven't exceeded max retries, try again
+          if (retries < MAX_RETRIES) {
+            console.log(`Payment not yet confirmed. Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
+            setRetries(prev => prev + 1);
+            
+            // Wait before retrying
+            setTimeout(() => {
+              verifyPayment();
+            }, 3000);
+            return;
+          }
+          
+          throw new Error("Payment verification incomplete. Please contact support if your subscription is not activated.");
         }
       } catch (error: any) {
         console.error("Error verifying payment:", error);
         setError(error.message || "There was a problem verifying your payment");
         toast({
           title: "Error activating subscription",
-          description: "There was a problem verifying your payment. Please contact support.",
+          description: error.message || "There was a problem verifying your payment. Please contact support.",
           variant: "destructive",
         });
         // Clear the session ID from the URL
@@ -76,7 +105,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
     };
 
     verifyPayment();
-  }, [sessionId, navigate, toast, updateUserPaymentStatus]);
+  }, [sessionId, navigate, toast, updateUserPaymentStatus, retries]);
 
-  return { error, verifying };
+  return { error, verifying, success };
 };
