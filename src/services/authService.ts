@@ -62,6 +62,20 @@ export const loginWithEmail = async (email: string, password: string) => {
 
   if (error) {
     console.error('Sign-in error:', error);
+    
+    // Handle specific error codes with more user-friendly messages
+    if (error.message.includes('Email not confirmed')) {
+      throw {
+        code: 'email_not_confirmed',
+        message: 'Please check your email and click the confirmation link to activate your account.'
+      };
+    } else if (error.message.includes('Invalid login credentials')) {
+      throw {
+        code: 'invalid_credentials',
+        message: 'The email or password you entered is incorrect. Please try again.'
+      };
+    }
+    
     throw error;
   }
 
@@ -111,6 +125,15 @@ export const register = async (name: string, email: string, password: string) =>
   }
 
   console.log('Registration successful:', data);
+  
+  // Check if email confirmation is required
+  if (data.user && !data.user.email_confirmed_at) {
+    return {
+      ...data,
+      confirmationRequired: true
+    };
+  }
+  
   return data;
 };
 

@@ -40,26 +40,15 @@ const LoginPage: React.FC = () => {
       // and useEffect will redirect to dashboard
     } catch (error: any) {
       console.error('Login error:', error);
-      // Improve error message handling for better user feedback
-      let errorMessage = 'Failed to sign in. Please try again.';
       
-      if (error?.message) {
-        if (error.message.includes('Database error')) {
-          errorMessage = 'Our system is currently experiencing issues. Please try again later.';
-        } else if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Email or password is incorrect. Please check your credentials and try again.';
-          console.log('Email used for login attempt:', email);
-        } else {
-          errorMessage = error.message;
-        }
+      // Set appropriate error message based on error code
+      if (error.code === 'email_not_confirmed') {
+        setError('Please check your email inbox and click the confirmation link to activate your account.');
+      } else if (error.code === 'invalid_credentials') {
+        setError('The email or password you entered is incorrect. Please try again.');
+      } else {
+        setError(error.message || 'Failed to sign in. Please try again.');
       }
-      
-      setError(errorMessage);
-      toast({
-        title: 'Login failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -74,11 +63,6 @@ const LoginPage: React.FC = () => {
     } catch (error: any) {
       console.error('Google login error:', error);
       setError(error?.message || 'Failed to sign in with Google. Please try again.');
-      toast({
-        title: 'Google login failed',
-        description: error?.message || 'An error occurred during Google sign in.',
-        variant: 'destructive',
-      });
     } finally {
       setIsSubmitting(false);
     }

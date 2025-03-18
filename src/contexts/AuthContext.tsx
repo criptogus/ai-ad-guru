@@ -35,12 +35,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        title: 'Login failed',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-      throw new Error('Invalid login credentials');
+      
+      // Handle specific error codes
+      if (error.code === 'email_not_confirmed') {
+        toast({
+          title: 'Email not confirmed',
+          description: error.message || 'Please check your email to confirm your account.',
+          variant: 'destructive',
+        });
+        throw error;
+      } else if (error.code === 'invalid_credentials') {
+        toast({
+          title: 'Login failed',
+          description: error.message || 'The email or password you entered is incorrect.',
+          variant: 'destructive',
+        });
+        throw error;
+      } else {
+        toast({
+          title: 'Login failed',
+          description: error.message || 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+        throw error;
+      }
     } finally {
       setLocalLoading(false);
     }
@@ -88,7 +106,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (name: string, email: string, password: string): Promise<void> => {
     try {
       setLocalLoading(true);
-      await signUp(name, email, password);
+      const result = await signUp(name, email, password);
+      
+      if (result.confirmationRequired) {
+        toast({
+          title: 'Confirmation required',
+          description: 'Please check your email to confirm your account before logging in.',
+        });
+        navigate('/login');
+        return;
+      }
       
       // The profile will be created automatically via the trigger
       // User state will be updated by onAuthStateChange
