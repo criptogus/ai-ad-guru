@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,6 @@ const LoginPage: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // If user is already authenticated, redirect them
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as any)?.from || '/dashboard';
@@ -47,6 +46,7 @@ const LoginPage: React.FC = () => {
     
     try {
       setIsSubmitting(true);
+      console.log('Attempting login with email:', email);
       await login(email, password);
       // After successful login, auth context will update isAuthenticated
       // and useEffect will redirect to dashboard
@@ -60,6 +60,7 @@ const LoginPage: React.FC = () => {
           errorMessage = 'Our system is currently experiencing issues. Please try again later.';
         } else if (error.message.includes('Invalid login credentials')) {
           errorMessage = 'Email or password is incorrect. Please check your credentials and try again.';
+          console.log('Email used for login attempt:', email);
         } else {
           errorMessage = error.message;
         }
@@ -117,6 +118,16 @@ const LoginPage: React.FC = () => {
                 {error}
               </div>
             )}
+            
+            <Alert variant="default" className="bg-blue-50 border-blue-200">
+              <InfoIcon className="h-4 w-4 text-blue-500 mr-2" />
+              <AlertDescription className="text-blue-700 text-sm">
+                For testing, use the account:<br />
+                Email: <strong>test@example.com</strong><br />
+                Password: <strong>Password123!</strong>
+              </AlertDescription>
+            </Alert>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
