@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CustomUser, Profile } from '@/types/auth';
 import { User } from '@supabase/supabase-js';
@@ -106,8 +105,15 @@ export const logout = async () => {
   await supabase.auth.signOut();
 };
 
+// Define a return type for register that includes the confirmationRequired property
+type RegisterResult = {
+  user: User;
+  session: Session;
+  confirmationRequired?: boolean;
+};
+
 // Register new user
-export const register = async (name: string, email: string, password: string) => {
+export const register = async (name: string, email: string, password: string): Promise<RegisterResult> => {
   const { data, error } = await supabase.auth.signUp({
     email: email,
     password: password,

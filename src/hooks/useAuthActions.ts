@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -100,7 +99,7 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
       setLocalLoading(true);
       const result = await signUp(name, email, password);
       
-      if (result?.confirmationRequired) {
+      if (result.confirmationRequired) {
         toast({
           title: 'Confirmation required',
           description: 'Please check your email to confirm your account before logging in.',
