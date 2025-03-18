@@ -111,7 +111,7 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
       tone: campaignData.brandTone
     });
     
-    // Generate Meta/Instagram Ads using the enhanced expert prompt structure
+    // Generate Meta/Instagram Ads using the enhanced expert prompt structure with stronger language consistency
     const prompt = `
     You are a top-tier **Instagram Ads expert**, specializing in **highly engaging and high-converting** ads.
 
@@ -122,13 +122,11 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     ### 📌 **Ad Creation Guidelines**
     - **Captions:** Short, engaging, **150 characters max**.
     - **Emojis & Hashtags:** Use when relevant to boost engagement.
-    - **Call-to-Action (CTA):** Strong and clear (e.g., "Swipe Up!", "Get Yours Today!").
+    - **Call-to-Action (CTA):** Strong and clear, IN THE SAME LANGUAGE as the company information.
     - **Persuasion Techniques:** Each variation should use a different **psychological trigger**:
-      - **Curiosity Hook:** "Why is everyone talking about this?! 👀"
-      - **Social Proof:** "🔥 Over 50,000 happy customers!"
-      - **Emotional Trigger:** "You deserve this! 💖"
-      - **Scarcity/Urgency:** "⏳ Last chance – only 2 days left!"
-      - **Exclusive Offer:** "🎁 Special Deal Inside – Swipe Up!"
+      - **Curiosity Hook:** Create curiosity about ${campaignData.companyName}'s specific solutions
+      - **Social Proof:** Highlight ${campaignData.companyName}'s customer base or testimonials 
+      - **Emotional Trigger:** Connect emotionally with the target audience's needs
     
     ---
     
@@ -148,9 +146,10 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     - If the company's business description is in Portuguese, all ad content must be in Portuguese.
     - If the company's business description is in Spanish, all ad content must be in Spanish.
     - If the company's business description is in English, all ad content must be in English.
-    - NEVER mix languages or translate to English if the original content is in another language.
+    - NEVER mix languages in any part of the ad.
     - ALL fields (primaryText, headline, description) MUST be in the SAME LANGUAGE.
-    - For example, if the business is Portuguese, DO NOT use English CTAs like "Swipe Up" - use "Deslize para cima" instead.
+    - If the business is Portuguese, use Portuguese CTAs like "Deslize para cima" instead of English "Swipe Up".
+    - If company info is in Portuguese, ALL generated terms must be in Portuguese.
     
     ---
     

@@ -25,7 +25,6 @@ export const generateWithOpenAI = async (prompt: string) => {
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 1500,
-      timeout: 60000, // Add 60-second timeout
     });
     
     if (!response.choices || response.choices.length === 0) {
