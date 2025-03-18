@@ -11,6 +11,7 @@ const corsHeaders = {
 
 // Handle preflight OPTIONS request
 Deno.serve(async (req) => {
+  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -36,38 +37,52 @@ Deno.serve(async (req) => {
       apiVersion: '2023-10-16',
     });
 
-    // Retrieve the session to verify payment status
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    console.log('Session status:', session.status);
-    console.log('Payment status:', session.payment_status);
+    // Retrieve the checkout session
+    let session;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId);
+      console.log('Session retrieved:', {
+        id: session.id,
+        status: session.status,
+        payment_status: session.payment_status,
+        client_reference_id: session.client_reference_id,
+      });
+    } catch (stripeError) {
+      console.error('Error retrieving session from Stripe:', stripeError);
+      throw new Error(`Could not retrieve session: ${stripeError.message}`);
+    }
 
     // Initialize the Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get the user ID from the session
+    const userId = session.client_reference_id;
+    if (!userId) {
+      throw new Error('User ID not found in session metadata');
+    }
+
+    console.log('User ID from session:', userId);
+
     // If payment was successful, update the user's subscription status
     if (session.payment_status === 'paid' || session.status === 'complete') {
-      const userId = session.client_reference_id || session.metadata?.userId;
+      console.log('Updating profile for user:', userId);
       
-      if (userId) {
-        console.log('Updating profile for user:', userId);
-        
-        // Update the user's profile to reflect payment
-        const { error } = await supabase
-          .from('profiles')
-          .update({ has_paid: true })
-          .eq('id', userId);
+      // Update the user's profile to reflect payment
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ has_paid: true })
+        .eq('id', userId);
 
-        if (error) {
-          console.error('Error updating profile:', error);
-          throw new Error(`Failed to update user profile: ${error.message}`);
-        }
-        
-        console.log(`Payment verified and profile updated for user: ${userId}`);
-      } else {
-        throw new Error('User ID not found in session metadata');
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw new Error(`Failed to update user profile: ${updateError.message}`);
       }
+      
+      console.log(`Payment verified and profile updated for user: ${userId}`);
+    } else {
+      console.log(`Payment not completed. Status: ${session.status}, Payment status: ${session.payment_status}`);
     }
 
     // Return the session status
@@ -77,7 +92,8 @@ Deno.serve(async (req) => {
         session: {
           id: session.id,
           status: session.status,
-          payment_status: session.payment_status
+          payment_status: session.payment_status,
+          userId: userId
         }
       }),
       {

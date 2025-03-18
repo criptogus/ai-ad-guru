@@ -23,13 +23,13 @@ export const usePaymentVerification = (sessionId: string | null) => {
         console.log('Calling verify-payment function with session ID:', sessionId);
         
         // Call the edge function to verify the payment
-        const { data, error } = await supabase.functions.invoke("verify-payment", {
+        const { data, error: functionError } = await supabase.functions.invoke("verify-payment", {
           body: { sessionId },
         });
 
-        if (error) {
-          console.error('Verification error from edge function:', error);
-          throw new Error(error.message || "Error verifying payment");
+        if (functionError) {
+          console.error('Verification error from edge function:', functionError);
+          throw new Error(functionError.message || "Error verifying payment");
         }
 
         console.log('Verification response received:', data);
@@ -45,7 +45,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL to prevent re-verification on page refresh
           window.history.replaceState({}, document.title, "/billing");
           // Navigate after a short delay to ensure state updates are processed
-          setTimeout(() => navigate("/dashboard"), 800);
+          setTimeout(() => navigate("/dashboard"), 1000);
         } else if (data) {
           console.log('Payment pending or incomplete:', data);
           toast({
@@ -56,7 +56,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL
           window.history.replaceState({}, document.title, "/billing");
           // Navigate to dashboard after a delay
-          setTimeout(() => navigate("/dashboard"), 800);
+          setTimeout(() => navigate("/dashboard"), 1000);
         } else {
           throw new Error("Invalid response from verification service");
         }
