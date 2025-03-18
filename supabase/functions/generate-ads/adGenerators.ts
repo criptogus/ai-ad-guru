@@ -15,29 +15,28 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
       tone: campaignData.brandTone
     });
     
-    // Generate Google Ads using the improved expert prompt structure with clearer headline instructions
+    // Generate Google Ads with stricter character limits and improved persuasion techniques
     const prompt = `
     You are a top-tier **Google Ads expert**, specializing in creating **high-converting search ads** using the latest best practices.
 
-    Your goal is to generate **Google Search Ads** that maximize **curiosity, clicks, and conversions**, following Google's **most effective ad strategies**.
+    ## 🎯 **1. Generate Google Search Ads**
     
-    ---
+    Your task is to create 5 compelling Google Search Ad variations with strict character limits for ${campaignData.companyName}.
     
-    ### 📌 **Ad Creation Guidelines**
-    - **Headlines:** Create 3 short, compelling headlines for each ad, each **30 characters max**. 
-       - **IMPORTANT: ALL HEADLINES MUST BE DIRECTLY RELEVANT TO THIS SPECIFIC BUSINESS.**
-       - First headline should include the company name or main service offered by ${campaignData.companyName}
-       - Second headline should highlight a key benefit or feature from ${campaignData.companyName}'s unique selling points
-       - Third headline should include a call to action relevant to ${campaignData.companyName}'s services
-    - **Descriptions:** Persuasive, action-driven, **90 characters max**, specifically about ${campaignData.companyName}'s services.
-    - **Ad Variations:** Create **5 variations** to test different persuasion techniques.
-    - **Call-to-Action (CTA):** Use direct action words from the provided CTAs: ${callToAction || "Contact Us, Learn More, Get Started"}.
-    - **Persuasion Techniques:** Each variation should focus on a different high-impact approach related to ${campaignData.companyName}'s services:
-      - **Curiosity Hook:** Create curiosity about ${campaignData.companyName}'s specific solutions
-      - **Urgency/Scarcity:** Emphasize limited availability or special offers from ${campaignData.companyName}
-      - **Social Proof:** Highlight ${campaignData.companyName}'s customer base or testimonials
-      - **Emotional Trigger:** Connect emotionally with the target audience's needs that ${campaignData.companyName} addresses
-      - **Problem-Solution:** Address specific pain points that ${campaignData.companyName} solves
+    ### 📋 **Ad Format Requirements:**
+    - **Headlines:** Create 3 headlines per ad, each **STRICTLY 30 CHARACTERS OR LESS**
+       - First headline should include the company name or main service
+       - Second headline should highlight a key benefit or feature
+       - Third headline should include a call to action
+    - **Descriptions:** Create 2 descriptions per ad, each **STRICTLY 90 CHARACTERS OR LESS**
+    
+    ### 🎭 **Persuasion Technique Requirements:**
+    Each of the 5 ad variations MUST use a different persuasion technique:
+    1. **Scarcity/Urgency:** Create a sense of limited time or availability ("Limited offer!", "Act now!")
+    2. **Social Proof:** Emphasize customer base, reviews, or testimonials ("Trusted by thousands", "5-star rated")
+    3. **Problem-Solution:** Address a pain point and how the company solves it ("Struggling with X? We solve it")
+    4. **Direct Benefit:** Clearly state what the customer gains ("Save time", "Boost revenue")
+    5. **Emotional Appeal:** Connect with feelings and aspirations ("Feel confident", "Achieve peace of mind")
     
     ---
     
@@ -54,14 +53,18 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     
     ### 📌 **CRITICAL LANGUAGE INSTRUCTIONS - EXTREMELY IMPORTANT**
     - You MUST write ALL ad content in the SAME LANGUAGE as the company information above.
-    - EVERY HEADLINE AND DESCRIPTION within the same ad MUST be in the SAME LANGUAGE - never mix languages.
-    - If the company's business description is in Portuguese, ALL headlines and descriptions must be in Portuguese.
-    - If the company's business description is in Spanish, ALL headlines and descriptions must be in Spanish.
-    - If the company's business description is in English, ALL headlines and descriptions must be in English.
-    - NEVER mix languages within a single ad. DO NOT use English for some headlines and Portuguese/Spanish for others.
-    - ALL headlines within the same ad variation MUST be in the SAME LANGUAGE.
-    - The third headline should include a call-to-action IN THE SAME LANGUAGE as the other headlines.
-    - NEVER use "Contact Us Today" in English if the rest of the ad is in Portuguese or another language.
+    - If the company's business description is in Portuguese, all ad content must be in Portuguese.
+    - If the company's business description is in Spanish, all ad content must be in Spanish.
+    - If the company's business description is in English, all ad content must be in English.
+    - NEVER mix languages in any part of the ad.
+    - ALL headlines and descriptions MUST be in the SAME LANGUAGE.
+    
+    ---
+    
+    ### 📌 **CRITICAL CHARACTER LIMIT ENFORCEMENT**
+    - Each headline MUST be 30 CHARACTERS OR LESS. This is a strict Google requirement.
+    - Each description MUST be 90 CHARACTERS OR LESS. This is a strict Google requirement.
+    - Count characters carefully for each headline and description before submitting.
     
     ---
     
@@ -87,7 +90,7 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     7. EVERY headline MUST be relevant to the specific business ${campaignData.companyName}
     8. DO NOT create generic headlines that could apply to any business
     9. Write ALL content in the SAME LANGUAGE as the company information (NEVER mix languages)
-    10. If company info is in Portuguese, use Portuguese CTAs (not "Contact Us Today" in English)
+    10. STRICTLY adhere to character limits: 30 chars for headlines, 90 chars for descriptions
     `;
     
     console.log("Sending improved Google Ads prompt to OpenAI...");
