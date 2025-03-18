@@ -22,11 +22,12 @@ const LoginPage: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
 
+  console.log('LoginPage: Rendering with isAuthenticated =', isAuthenticated);
+
   useEffect(() => {
-    console.log('LoginPage: isAuthenticated =', isAuthenticated);
     if (isAuthenticated) {
       const from = (location.state as any)?.from || '/dashboard';
-      console.log('LoginPage: Redirecting to', from);
+      console.log('LoginPage: User is authenticated, redirecting to', from);
       navigate(from);
     }
   }, [isAuthenticated, navigate, location]);
@@ -38,8 +39,8 @@ const LoginPage: React.FC = () => {
       setIsSubmitting(true);
       console.log('LoginPage: Attempting login with email:', email);
       await login(email, password);
-      // After successful login, auth context will update isAuthenticated
-      // and useEffect will redirect to dashboard
+      // Login will update the auth context state
+      console.log('LoginPage: Login successful');
     } catch (error: any) {
       console.error('LoginPage: Login error:', error);
       

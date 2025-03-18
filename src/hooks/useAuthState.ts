@@ -23,10 +23,16 @@ export const useAuthState = () => {
 
         if (session) {
           console.log('useAuthState: User authenticated, fetching profile');
-          const customUser = await createCustomUserWithProfile(session.user);
-          setUser(customUser);
-          setIsAuthenticated(true);
-          console.log('useAuthState: User and profile loaded');
+          try {
+            const customUser = await createCustomUserWithProfile(session.user);
+            setUser(customUser);
+            setIsAuthenticated(true);
+            console.log('useAuthState: User and profile loaded', customUser);
+          } catch (profileError) {
+            console.error('useAuthState: Error loading profile, but session exists:', profileError);
+            // Even if profile loading fails, we still have a valid session, so set authenticated
+            setIsAuthenticated(true);
+          }
         } else {
           // Explicitly set these states to ensure consistency
           console.log('useAuthState: No session found, resetting auth state');
@@ -56,6 +62,7 @@ export const useAuthState = () => {
           const customUser = await createCustomUserWithProfile(session.user);
           setUser(customUser);
           setIsAuthenticated(true);
+          console.log('useAuthState: Auth state updated successfully', event);
         } catch (error) {
           console.error('useAuthState: Error creating custom user:', error);
           // Handle error but maintain session

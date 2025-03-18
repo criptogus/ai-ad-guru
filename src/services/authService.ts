@@ -29,23 +29,37 @@ export const fetchUserProfile = async (userId: string): Promise<Profile | null> 
 // Helper function to update the user object with profile data
 export const createCustomUserWithProfile = async (authUser: User): Promise<CustomUser> => {
   console.log('Creating custom user with profile for:', authUser.id);
-  const profile = await fetchUserProfile(authUser.id);
-  
-  if (profile) {
-    console.log('Profile found, creating customUser with profile data');
-    const customUser: CustomUser = {
-      ...authUser,
-      name: profile.name,
-      avatar: profile.avatar || '',
-      credits: profile.credits,
-      hasPaid: profile.has_paid
-    };
+  try {
+    const profile = await fetchUserProfile(authUser.id);
     
-    return customUser;
-  } else {
-    console.log('No profile found, creating basic customUser');
-    // Fallback to just the auth user if profile isn't found
-    const customUser: CustomUser = {
+    if (profile) {
+      console.log('Profile found, creating customUser with profile data');
+      const customUser: CustomUser = {
+        ...authUser,
+        name: profile.name,
+        avatar: profile.avatar || '',
+        credits: profile.credits,
+        hasPaid: profile.has_paid
+      };
+      
+      return customUser;
+    } else {
+      console.log('No profile found, creating basic customUser');
+      // Fallback to just the auth user if profile isn't found
+      const customUser: CustomUser = {
+        ...authUser,
+        name: authUser.user_metadata?.name || 'User',
+        avatar: '',
+        credits: 0,
+        hasPaid: false
+      };
+      
+      return customUser;
+    }
+  } catch (error) {
+    console.error('Error in createCustomUserWithProfile:', error);
+    // Return a basic user object to prevent authentication failures if profile has issues
+    const basicUser: CustomUser = {
       ...authUser,
       name: authUser.user_metadata?.name || 'User',
       avatar: '',
@@ -53,7 +67,7 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
       hasPaid: false
     };
     
-    return customUser;
+    return basicUser;
   }
 };
 
@@ -96,6 +110,7 @@ export const loginWithEmail = async (email: string, password: string) => {
 
 // Login with Google
 export const loginWithGoogle = async () => {
+  console.log('Initiating Google sign-in');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -187,17 +202,7 @@ export const createTestAccount = async () => {
     console.log("Test account created:", data);
     
     // Wait a moment for the account to be fully registered in the system
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Try to sign in with the new credentials to make sure it works
-    try {
-      await supabase.auth.signInWithPassword({
-        email: testEmail,
-        password: testPassword,
-      });
-    } catch (e) {
-      console.log("Note: Immediate sign-in failed but test account was created:", e);
-    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     return { data, testEmail, testPassword };
   } catch (error) {

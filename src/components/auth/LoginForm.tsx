@@ -18,12 +18,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  const { createTestAccount } = useAuth();
 
   useEffect(() => {
     // Listen for the custom event to update form values
     const handleTestAccountCreated = (event: CustomEvent<{ email: string, password: string }>) => {
       const { email, password } = event.detail;
+      console.log('Test account event received:', { email });
       setEmail(email);
       setPassword(password);
       
@@ -35,10 +35,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
     };
 
     // Type casting is needed for CustomEvent with TypeScript
-    window.addEventListener('testAccountCreated' as any, handleTestAccountCreated);
+    const listener = ((e: Event) => {
+      handleTestAccountCreated(e as CustomEvent<{ email: string, password: string }>);
+    });
+
+    window.addEventListener('testAccountCreated', listener);
 
     return () => {
-      window.removeEventListener('testAccountCreated' as any, handleTestAccountCreated);
+      window.removeEventListener('testAccountCreated', listener);
     };
   }, [toast]);
 
