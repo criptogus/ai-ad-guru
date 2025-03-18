@@ -75,6 +75,12 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     ? new URL(analysisResult.websiteUrl).hostname 
     : `www.${analysisResult.companyName.toLowerCase().replace(/\s+/g, "")}.com`;
 
+  // Helper to limit text with indicator for search preview
+  const truncateForPreview = (text: string, limit: number) => {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + "...";
+  };
+
   return (
     <div className="border rounded-md p-4 bg-white shadow-sm mb-4">
       <div className="flex justify-between items-start mb-2">
@@ -127,7 +133,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
         </Alert>
       )}
       
-      {/* Google Ad Preview */}
+      {/* Google Ad Preview - Accurate Google Ads format */}
       <div className="border rounded-md overflow-hidden mb-4">
         <div className="p-4">
           {/* Ad Badge */}
@@ -136,8 +142,13 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
             <span className="text-xs text-gray-500">{domain}</span>
           </div>
           
-          {/* Headline */}
-          <div className="text-[#1a0dab] font-medium text-xl leading-tight cursor-pointer hover:underline">
+          {/* URL Path */}
+          <div className="text-[#202124] text-sm mb-1">
+            {domain}
+          </div>
+          
+          {/* Headline - With pipes between each headline */}
+          <div className="text-[#1a0dab] font-medium text-xl leading-tight cursor-pointer hover:underline mb-1">
             {displayAd.headlines.map((headline, i) => (
               <span key={i}>
                 {headline}
@@ -146,12 +157,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
             ))}
           </div>
           
-          {/* Final URL */}
-          <div className="text-[#202124] text-sm mt-1">
-            {domain}
-          </div>
-          
-          {/* Description */}
+          {/* Descriptions */}
           <div className="text-[#4d5156] text-sm mt-1">
             {displayAd.descriptions.map((desc, i) => (
               <div key={i}>{desc}</div>
@@ -166,17 +172,25 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           <span className="font-medium text-gray-700">Headlines:</span>
           <div className="space-y-2 mt-1">
             {displayAd.headlines.map((headline, i) => (
-              <div key={i} className="flex items-center">
+              <div key={i} className="flex flex-col">
                 {isEditing ? (
-                  <Input 
-                    value={headline}
-                    onChange={(e) => handleHeadlineChange(e.target.value, i)}
-                    className="text-sm h-8"
-                    maxLength={30}
-                    placeholder="Headline text"
-                  />
+                  <div>
+                    <Input 
+                      value={headline}
+                      onChange={(e) => handleHeadlineChange(e.target.value, i)}
+                      className="text-sm h-8"
+                      maxLength={30}
+                      placeholder={`Headline ${i+1}`}
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {headline.length}/30 characters
+                    </div>
+                  </div>
                 ) : (
-                  <span className="ml-2 text-sm">{i+1}. {headline}</span>
+                  <div className="flex flex-col">
+                    <span className="ml-2 text-sm">{i+1}. {headline}</span>
+                    <span className="ml-2 text-xs text-gray-500">{headline.length}/30 characters</span>
+                  </div>
                 )}
               </div>
             ))}
@@ -187,17 +201,25 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           <span className="font-medium text-gray-700">Descriptions:</span>
           <div className="space-y-2 mt-1">
             {displayAd.descriptions.map((desc, i) => (
-              <div key={i} className="flex items-center">
+              <div key={i} className="flex flex-col">
                 {isEditing ? (
-                  <Textarea 
-                    value={desc}
-                    onChange={(e) => handleDescriptionChange(e.target.value, i)}
-                    className="text-sm min-h-[60px]"
-                    maxLength={90}
-                    placeholder="Description text"
-                  />
+                  <div>
+                    <Textarea 
+                      value={desc}
+                      onChange={(e) => handleDescriptionChange(e.target.value, i)}
+                      className="text-sm min-h-[60px]"
+                      maxLength={90}
+                      placeholder={`Description ${i+1}`}
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {desc.length}/90 characters
+                    </div>
+                  </div>
                 ) : (
-                  <span className="ml-2 text-sm">{i+1}. {desc}</span>
+                  <div className="flex flex-col">
+                    <span className="ml-2 text-sm">{i+1}. {desc}</span>
+                    <span className="ml-2 text-xs text-gray-500">{desc.length}/90 characters</span>
+                  </div>
                 )}
               </div>
             ))}

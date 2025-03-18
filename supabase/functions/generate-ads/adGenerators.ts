@@ -1,4 +1,3 @@
-
 import { formatCampaignData } from "./utils.ts";
 import { generateWithOpenAI } from "./openai.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
