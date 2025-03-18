@@ -38,13 +38,27 @@ export const useCampaignActions = (
       return;
     }
 
+    console.log("Generating Google ads with analysis result:", analysisResult);
     const ads = await generateGoogleAds(analysisResult);
+    console.log("Generated Google ads:", ads);
+    
     if (ads && ads.length > 0) {
       // Update campaign data with generated ads
       setCampaignData(prev => ({
         ...prev,
         googleAds: ads
       }));
+      
+      toast({
+        title: "Google Ads Generated",
+        description: `Successfully created ${ads.length} ad variations`,
+      });
+    } else {
+      toast({
+        title: "Ad Generation Failed",
+        description: "Unable to generate Google ads. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -59,13 +73,27 @@ export const useCampaignActions = (
       return;
     }
 
+    console.log("Generating Meta ads with analysis result:", analysisResult);
     const ads = await generateMetaAds(analysisResult);
+    console.log("Generated Meta ads:", ads);
+    
     if (ads && ads.length > 0) {
       // Update campaign data with generated ads
       setCampaignData(prev => ({
         ...prev,
         metaAds: ads
       }));
+      
+      toast({
+        title: "Meta Ads Generated",
+        description: `Successfully created ${ads.length} ad variations`,
+      });
+    } else {
+      toast({
+        title: "Ad Generation Failed",
+        description: "Unable to generate Meta ads. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -80,8 +108,13 @@ export const useCampaignActions = (
       return;
     }
 
+    console.log("Generating image for ad:", ad);
+    console.log("With prompt:", ad.imagePrompt);
+    
     try {
       const imageUrl = await generateAdImage(ad.imagePrompt);
+      console.log("Generated image URL:", imageUrl);
+      
       if (imageUrl) {
         // Update the Meta ad with the generated image
         const updatedAd = { ...ad, imageUrl };
@@ -93,12 +126,19 @@ export const useCampaignActions = (
           ...prev,
           metaAds: updatedAds
         }));
+        
+        toast({
+          title: "Image Generated",
+          description: "Ad image was successfully created",
+        });
+      } else {
+        throw new Error("Image generation returned null");
       }
     } catch (error) {
       console.error("Error generating image:", error);
       toast({
         title: "Image Generation Failed",
-        description: "Failed to generate image",
+        description: "Failed to generate image. Please try again.",
         variant: "destructive",
       });
     }

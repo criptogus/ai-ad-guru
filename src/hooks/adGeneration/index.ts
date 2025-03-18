@@ -25,9 +25,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   } = useImageGeneration();
 
   const generateGoogleAds = async (campaignData: any) => {
+    console.log("useAdGeneration - Generating Google ads with data:", campaignData);
     setIsGenerating(true);
     try {
       const result = await googleAdsGenerator(campaignData);
+      console.log("useAdGeneration - Generated Google ads:", result);
       setIsGenerating(false);
       return result;
     } catch (error) {
@@ -38,9 +40,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   };
 
   const generateMetaAds = async (campaignData: any) => {
+    console.log("useAdGeneration - Generating Meta ads with data:", campaignData);
     setIsGenerating(true);
     try {
       const result = await metaAdsGenerator(campaignData);
+      console.log("useAdGeneration - Generated Meta ads:", result);
       setIsGenerating(false);
       return result;
     } catch (error) {
@@ -50,10 +54,22 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     }
   };
 
+  const generateAdImageWithLogging = async (prompt: string) => {
+    console.log("useAdGeneration - Generating image with prompt:", prompt);
+    try {
+      const imageUrl = await generateAdImage(prompt);
+      console.log("useAdGeneration - Generated image URL:", imageUrl);
+      return imageUrl;
+    } catch (error) {
+      console.error("Error generating image:", error);
+      return null;
+    }
+  };
+
   return {
     generateGoogleAds,
     generateMetaAds,
-    generateAdImage,
+    generateAdImage: generateAdImageWithLogging,
     isGenerating,
     googleAds,
     metaAds,
