@@ -25,8 +25,14 @@ Deno.serve(async (req) => {
 
     console.log('Verifying payment for session:', sessionId);
 
+    // Get the Stripe API key from environment variables
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error("Stripe API key not configured");
+    }
+
     // Initialize Stripe with the secret key
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 

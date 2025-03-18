@@ -28,7 +28,14 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.text();
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    
+    // Get the Stripe API key from environment variables
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error("Stripe API key not configured");
+    }
+    
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
     
