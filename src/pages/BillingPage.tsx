@@ -17,6 +17,16 @@ const BillingPage = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    // Short timeout to ensure component mounts properly
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle the session_id parameter if redirected from a successful payment
   useEffect(() => {
@@ -124,6 +134,22 @@ const BillingPage = () => {
       setLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <>
+        <Nav />
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-brand-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Loading Billing Information</h1>
+            <p className="text-gray-600">Please wait while we prepare your subscription options...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (verifyingPayment) {
     return (
