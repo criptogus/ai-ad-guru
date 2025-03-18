@@ -56,7 +56,8 @@ const CampaignContent: React.FC = () => {
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateImage,
-    createCampaign
+    createCampaign,
+    isCreating
   } = useCampaignActions(
     user, 
     campaignData, 
@@ -121,6 +122,7 @@ const CampaignContent: React.FC = () => {
     isAnalyzing,
     isGenerating,
     loadingImageIndex,
+    isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
@@ -129,14 +131,15 @@ const CampaignContent: React.FC = () => {
     handleUpdateMetaAd,
     setCampaignData,
     handleBack,
-    handleNextWrapper
+    handleNextWrapper,
+    createCampaign
   });
 
   return (
     <div className="p-8">
       <CampaignHeader onBack={handleBack} />
       <div className="mb-8">
-        <StepNavigation />
+        <StepNavigation totalSteps={4} currentStep={currentStep} />
         {getStepContent()}
       </div>
     </div>

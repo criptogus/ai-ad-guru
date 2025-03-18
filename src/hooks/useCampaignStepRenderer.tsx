@@ -5,6 +5,7 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import AdPreviewStep from "@/components/campaign/AdPreviewStep";
+import CampaignSummary from "@/components/campaign/CampaignSummary";
 
 interface UseCampaignStepRendererProps {
   currentStep: number;
@@ -15,6 +16,7 @@ interface UseCampaignStepRendererProps {
   isAnalyzing: boolean;
   isGenerating: boolean;
   loadingImageIndex: number | null;
+  isCreating: boolean;
   handleWebsiteAnalysis: (url: string) => Promise<WebsiteAnalysisResult | null>;
   handleGenerateGoogleAds: () => Promise<void>;
   handleGenerateMetaAds: () => Promise<void>;
@@ -24,6 +26,7 @@ interface UseCampaignStepRendererProps {
   setCampaignData: React.Dispatch<React.SetStateAction<any>>;
   handleBack: () => void;
   handleNextWrapper: () => void;
+  createCampaign: () => Promise<void>;
 }
 
 export const useCampaignStepRenderer = ({
@@ -35,6 +38,7 @@ export const useCampaignStepRenderer = ({
   isAnalyzing,
   isGenerating,
   loadingImageIndex,
+  isCreating,
   handleWebsiteAnalysis,
   handleGenerateGoogleAds,
   handleGenerateMetaAds,
@@ -43,7 +47,8 @@ export const useCampaignStepRenderer = ({
   handleUpdateMetaAd,
   setCampaignData,
   handleBack,
-  handleNextWrapper
+  handleNextWrapper,
+  createCampaign
 }: UseCampaignStepRendererProps) => {
   
   const getStepContent = () => {
@@ -82,6 +87,26 @@ export const useCampaignStepRenderer = ({
             onUpdateMetaAd={handleUpdateMetaAd}
             onNext={handleNextWrapper}
             onBack={handleBack}
+          />
+        );
+      case 4:
+        return (
+          <CampaignSummary 
+            campaignName={campaignData.name}
+            platform={campaignData.platform}
+            budget={campaignData.budget}
+            budgetType={campaignData.budgetType}
+            startDate={campaignData.startDate}
+            endDate={campaignData.endDate}
+            objective={campaignData.objective}
+            targetAudience={campaignData.targetAudience}
+            websiteUrl={campaignData.websiteUrl}
+            analysisResult={analysisResult!}
+            googleAds={googleAds}
+            metaAds={metaAds}
+            onApprove={createCampaign}
+            onEdit={handleBack}
+            isLoading={isCreating}
           />
         );
       default:

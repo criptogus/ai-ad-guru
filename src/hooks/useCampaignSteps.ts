@@ -45,7 +45,24 @@ export const useCampaignSteps = (
       }
     }
 
+    // Check if we have ads before proceeding to summary
     if (currentStep === 3) {
+      const platformAds = campaignData.platform === 'google' 
+        ? campaignData.googleAds 
+        : campaignData.metaAds;
+        
+      if (!platformAds || platformAds.length === 0) {
+        toast({
+          title: "Ads Required",
+          description: `Please generate ${campaignData.platform} ads before proceeding`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Only check credits on the final submit step (now step 4)
+    if (currentStep === 4) {
       if (user && user.credits < 5) {
         toast({
           title: "Insufficient credits",
