@@ -16,7 +16,7 @@ export const useAuthActions = (
   const { logout, isLoading: logoutLoading } = useLogoutAction();
   const { register, isLoading: registerLoading } = useRegisterAction();
   const { createTestAccount, isLoading: testAccountLoading } = useTestAccountAction();
-  const { updateUserPaymentStatus, isLoading: paymentLoading } = usePaymentAction(user, setUser);
+  const { updateUserPaymentStatus, simulateSuccessfulPayment, isLoading: paymentLoading } = usePaymentAction(user, setUser);
 
   // Combine all loading states
   const isLoading = loginLoading || logoutLoading || registerLoading || testAccountLoading || paymentLoading;
@@ -28,6 +28,7 @@ export const useAuthActions = (
     register,
     createTestAccount,
     updateUserPaymentStatus,
+    simulateSuccessfulPayment,
     isLoading
   };
 };

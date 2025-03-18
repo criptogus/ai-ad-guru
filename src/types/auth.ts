@@ -30,5 +30,6 @@ export interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   createTestAccount: () => Promise<void>;
   updateUserPaymentStatus: (hasPaid: boolean) => Promise<void>;
+  simulateSuccessfulPayment: () => Promise<void>;
   session: Session | null;
 }

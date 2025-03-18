@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,12 +10,13 @@ import StripeBuyButton from "@/components/billing/StripeBuyButton";
 import PaymentVerification from "@/components/billing/PaymentVerification";
 import AppLayout from "@/components/AppLayout";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
-import { ArrowLeft, LogIn } from "lucide-react";
+import { ArrowLeft, LogIn, Beaker } from "lucide-react";
 
 const BillingPage: React.FC = () => {
   const { isAuthenticated, user, isLoading, updateUserPaymentStatus } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showDevTools, setShowDevTools] = useState(false);
   
   // Extract session ID from URL if present
   const queryParams = new URLSearchParams(location.search);
@@ -25,6 +27,11 @@ const BillingPage: React.FC = () => {
   
   // Check if we're coming from a payment verification flow
   const isPaymentVerification = !!sessionId;
+
+  // Toggle developer tools visibility
+  const toggleDevTools = () => {
+    setShowDevTools(!showDevTools);
+  };
   
   // Helper function to get the correct layout
   const getContent = () => {
@@ -47,15 +54,68 @@ const BillingPage: React.FC = () => {
       return (
         <AppLayout activePage="billing">
           <div className="p-8">
-            <div className="flex items-center mb-8">
-              <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
-                <ArrowLeft size={16} />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold">Billing</h1>
-                <p className="text-muted-foreground">Manage your subscription</p>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
+                  <ArrowLeft size={16} />
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold">Billing</h1>
+                  <p className="text-muted-foreground">Manage your subscription</p>
+                </div>
               </div>
+              
+              {/* Developer mode toggle button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={toggleDevTools}
+                className="flex items-center gap-1"
+              >
+                <Beaker size={16} />
+                <span>Dev Tools</span>
+              </Button>
             </div>
+            
+            {/* Developer tools section */}
+            {showDevTools && (
+              <Card className="w-full max-w-2xl mx-auto mb-8 border-dashed border-amber-300 bg-amber-50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-amber-800 text-lg">Developer Tools</CardTitle>
+                  <CardDescription className="text-amber-700">
+                    Tools for testing payment flows
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-amber-100 rounded-md">
+                      <p className="text-sm text-amber-800 mb-3">
+                        These tools simulate payment actions without actually processing payments.
+                        For testing purposes only.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          onClick={() => updateUserPaymentStatus(true)}
+                          className="bg-amber-200 hover:bg-amber-300 text-amber-900"
+                        >
+                          Simulate Successful Payment
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateUserPaymentStatus(false)}
+                          className="border-amber-300 text-amber-800"
+                        >
+                          Simulate Cancellation
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
             <div className="mb-8">
               <Card className="w-full max-w-2xl mx-auto">

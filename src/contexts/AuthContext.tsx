@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -19,6 +20,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register, 
     createTestAccount,
     updateUserPaymentStatus,
+    simulateSuccessfulPayment,
     isLoading: actionsLoading 
   } = useAuthActions(user, setUser);
 
@@ -45,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     createTestAccount,
     updateUserPaymentStatus,
+    simulateSuccessfulPayment,
     session,
   };
 
