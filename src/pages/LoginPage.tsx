@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,14 +22,23 @@ const LoginPage: React.FC = () => {
   const { toast } = useToast();
 
   console.log('LoginPage: Rendering with isAuthenticated =', isAuthenticated);
+  
+  // Check if we're in a payment verification flow
+  const isPaymentVerification = location.search.includes('session_id=');
 
   useEffect(() => {
+    // Skip redirection if we're in a payment verification process
+    if (isPaymentVerification) {
+      console.log('LoginPage: Payment verification in progress, bypassing redirection');
+      return;
+    }
+    
     if (isAuthenticated) {
       const from = (location.state as any)?.from || '/dashboard';
       console.log('LoginPage: User is authenticated, redirecting to', from);
       navigate(from);
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, navigate, location, isPaymentVerification]);
 
   const handleLogin = async (email: string, password: string) => {
     setError(null);
@@ -85,6 +93,12 @@ const LoginPage: React.FC = () => {
       setIsCreatingTestAccount(false);
     }
   };
+
+  // If we're in payment verification, don't show the login page at all
+  if (isPaymentVerification) {
+    console.log('LoginPage: Detected payment verification flow, not showing login UI');
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900 p-4">
