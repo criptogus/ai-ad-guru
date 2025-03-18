@@ -13,6 +13,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
   const [verifying, setVerifying] = useState<boolean>(!!sessionId);
   const [success, setSuccess] = useState<boolean>(false);
   const [retries, setRetries] = useState(0);
+  const [debug, setDebug] = useState<any>(null);
   const MAX_RETRIES = 3;
 
   useEffect(() => {
@@ -25,10 +26,43 @@ export const usePaymentVerification = (sessionId: string | null) => {
         setVerifying(true);
         console.log('Calling verify-payment function with session ID:', sessionId);
         
+        // Try first a direct verification with test mode
+        if (sessionId.startsWith('cs_test_')) {
+          console.log('Test session detected, trying direct verification mode first');
+          
+          const directResult = await supabase.functions.invoke("verify-payment", {
+            body: { 
+              sessionId,
+              direct: true 
+            },
+          });
+          
+          console.log('Direct verification result:', directResult);
+          setDebug(directResult);
+          
+          if (directResult.data?.verified) {
+            console.log('Direct verification successful');
+            setSuccess(true);
+            updateUserPaymentStatus(true);
+            toast({
+              title: "Payment successful!",
+              description: "Your subscription has been activated.",
+            });
+            window.history.replaceState({}, document.title, "/billing");
+            setTimeout(() => navigate("/dashboard"), 1500);
+            return;
+          } else {
+            console.log('Direct verification not successful, falling back to standard verification');
+          }
+        }
+        
         // Call the edge function to verify the payment
         const { data, error: functionError } = await supabase.functions.invoke("verify-payment", {
           body: { sessionId },
         });
+
+        console.log('Verification response:', { data, error: functionError });
+        setDebug({ data, error: functionError });
 
         if (functionError) {
           console.error('Verification error from edge function:', functionError);
@@ -44,16 +78,6 @@ export const usePaymentVerification = (sessionId: string | null) => {
             }, 3000);
             return;
           }
-          
-          // For debugging - let's try to make a direct call to Stripe
-          const directVerificationAttempt = await supabase.functions.invoke("verify-payment", {
-            body: { 
-              sessionId,
-              direct: true 
-            },
-          });
-          
-          console.log('Direct verification attempt result:', directVerificationAttempt);
           
           throw new Error(functionError.message || "Error verifying payment");
         }
@@ -115,6 +139,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
       } catch (error: any) {
         console.error("Error verifying payment:", error);
         setError(error.message || "There was a problem verifying your payment");
+        setDebug({ error: error.message, stack: error.stack });
         toast({
           title: "Error activating subscription",
           description: error.message || "There was a problem verifying your payment. Please contact support.",
@@ -128,5 +153,5 @@ export const usePaymentVerification = (sessionId: string | null) => {
     verifyPayment();
   }, [sessionId, navigate, toast, updateUserPaymentStatus, retries]);
 
-  return { error, verifying, success };
+  return { error, verifying, success, debug };
 };

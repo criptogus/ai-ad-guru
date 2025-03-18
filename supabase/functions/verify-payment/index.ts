@@ -18,7 +18,23 @@ Deno.serve(async (req) => {
 
   try {
     // Get the session ID from the request body
-    const { sessionId, direct = false } = await req.json();
+    const bodyText = await req.text();
+    let body;
+    
+    try {
+      body = JSON.parse(bodyText);
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError, 'Raw body:', bodyText);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+    
+    const { sessionId, direct = false } = body;
 
     if (!sessionId) {
       throw new Error("Session ID is required");
@@ -74,7 +90,17 @@ Deno.serve(async (req) => {
         );
       }
       
-      throw new Error(`Could not retrieve session: ${stripeError.message}`);
+      // Try retrieving the session again with expanded properties
+      try {
+        console.log('Attempting to retrieve session with expanded properties');
+        session = await stripe.checkout.sessions.retrieve(sessionId, {
+          expand: ['customer', 'payment_intent', 'subscription']
+        });
+        console.log('Session retrieved with expanded properties');
+      } catch (expandedError) {
+        console.error('Error retrieving expanded session:', expandedError);
+        throw new Error(`Could not retrieve session: ${stripeError.message}`);
+      }
     }
 
     // Initialize the Supabase client
