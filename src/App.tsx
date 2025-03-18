@@ -1,71 +1,79 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Pages
+import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
-import CreateCampaignPage from "@/pages/CreateCampaignPage";
 import CampaignsPage from "@/pages/CampaignsPage";
+import CreateCampaignPage from "@/pages/CreateCampaignPage";
 import BillingPage from "@/pages/BillingPage";
 import NotFound from "@/pages/NotFound";
+import OpenAITestPage from "@/pages/OpenAITestPage";
 
+// Create a client
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/billing" element={<BillingPage />} />
-            
-            {/* Protected Routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
-                <ProtectedRoute requiresPayment={true}>
+                <ProtectedRoute>
                   <DashboardPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/campaigns" 
+            <Route
+              path="/campaigns"
               element={
-                <ProtectedRoute requiresPayment={true}>
+                <ProtectedRoute>
                   <CampaignsPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/create-campaign" 
+            <Route
+              path="/create-campaign"
               element={
-                <ProtectedRoute requiresPayment={true}>
+                <ProtectedRoute>
                   <CreateCampaignPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Catch-all */}
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <BillingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/openai-test"
+              element={
+                <ProtectedRoute>
+                  <OpenAITestPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Toaster />
         </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </Router>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
