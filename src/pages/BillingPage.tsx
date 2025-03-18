@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,16 +18,30 @@ const BillingPage = () => {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const stripeBuyButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Short timeout to ensure component mounts properly
     const timer = setTimeout(() => {
       console.log("Page loading timeout completed");
       setPageLoading(false);
-    }, 1500); // Increased timeout to ensure component fully mounts
+    }, 1500);
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Load Stripe buy button script
+  useEffect(() => {
+    if (!pageLoading && !document.querySelector('script[src*="buy-button.js"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/buy-button.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('Stripe Buy Button script loaded');
+      };
+      document.body.appendChild(script);
+    }
+  }, [pageLoading]);
 
   // Handle the session_id parameter if redirected from a successful payment
   useEffect(() => {
@@ -101,62 +114,6 @@ const BillingPage = () => {
     }
   }, [location.search, navigate, toast, updateUserPaymentStatus]);
 
-  const handleStartSubscription = async () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Not logged in",
-        description: "You need to be logged in to start a subscription.",
-        variant: "destructive",
-      });
-      navigate("/login", { state: { from: location.pathname } });
-      return;
-    }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Get the current URL to use as return URL
-      const returnUrl = `${window.location.origin}/billing`;
-      
-      console.log('Starting subscription process for user:', user?.id);
-      console.log('User email:', user?.email); // Log user email for debugging
-      
-      // Call the edge function to create a checkout session
-      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
-        body: { 
-          userId: user?.id,
-          userEmail: user?.email, // Send email to pre-fill checkout form
-          returnUrl
-        },
-      });
-
-      if (error) {
-        console.error('Checkout session creation error:', error);
-        throw new Error(error.message || "Error creating checkout session");
-      }
-
-      console.log('Checkout session created successfully:', data);
-
-      // Redirect to the Stripe checkout page
-      if (data?.url) {
-        console.log('Redirecting to Stripe checkout:', data.url);
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
-    } catch (error: any) {
-      console.error("Error creating checkout session:", error);
-      setError(error.message || "There was a problem setting up your payment");
-      toast({
-        title: "Error processing payment",
-        description: "There was a problem setting up your payment. Please try again.",
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
-
   if (pageLoading) {
     return (
       <>
@@ -219,7 +176,7 @@ const BillingPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="space-y-4">
+              <div className="space-y-4 mb-6">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                   <span>400 credits per month (1 campaign = 5 credits)</span>
@@ -241,26 +198,27 @@ const BillingPage = () => {
                   <span>10% of ad spend fee via Stripe</span>
                 </div>
               </div>
+              
+              {isAuthenticated ? (
+                <div className="stripe-buy-button-container mt-6">
+                  <stripe-buy-button
+                    buy-button-id="buy_btn_1R2GrvEXrJH93iAslqq4hLcL"
+                    publishable-key="pk_live_51R2FeWEXrJH93iAsggEd0ejUkIiLIoPwJLjg9Uojh3OI5qxWrU2MgXDqqgW20QBn8W3KqNbGP2LGx411c1Or7ivj00B2PPmNYj"
+                  ></stripe-buy-button>
+                </div>
+              ) : (
+                <div className="text-center p-4 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-amber-800">Please log in to subscribe to our Pro plan.</p>
+                  <Button 
+                    className="mt-2" 
+                    variant="outline"
+                    onClick={() => navigate("/login", { state: { from: location.pathname } })}
+                  >
+                    Log In
+                  </Button>
+                </div>
+              )}
             </CardContent>
-            <CardFooter className="flex justify-center pb-6">
-              <Button 
-                className="w-full md:w-auto px-8 py-6 text-lg gap-2" 
-                onClick={handleStartSubscription}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Start Your Subscription
-                    <ArrowRight className="ml-2" />
-                  </>
-                )}
-              </Button>
-            </CardFooter>
           </Card>
 
           <div className="mt-8 text-center text-sm text-gray-500">
