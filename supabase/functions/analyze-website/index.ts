@@ -18,7 +18,17 @@ serve(async (req) => {
     // Get OpenAI API key from environment variable
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+      console.error('OPENAI_API_KEY is not set');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "OpenAI API key is not configured" 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Initialize OpenAI client
@@ -27,9 +37,20 @@ serve(async (req) => {
     });
 
     // Parse request body
-    const { url } = await req.json();
+    const requestData = await req.json();
+    const { url } = requestData;
+    
     if (!url) {
-      throw new Error('URL is required');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "URL is required" 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log(`Analyzing website: ${url}`);
@@ -49,30 +70,44 @@ serve(async (req) => {
     Return this in clean JSON format without any additional text or explanation.
     `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 800,
-    });
-
-    const analysisText = response.choices[0].message.content;
-    let websiteData;
-    
     try {
-      // Extract JSON from the response
-      websiteData = JSON.parse(analysisText);
-    } catch (error) {
-      console.error("Failed to parse OpenAI response as JSON:", analysisText);
-      throw new Error("Failed to parse website analysis data");
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 800,
+      });
+
+      const analysisText = response.choices[0].message.content;
+      let websiteData;
+      
+      try {
+        // Extract JSON from the response
+        websiteData = JSON.parse(analysisText);
+      } catch (error) {
+        console.error("Failed to parse OpenAI response as JSON:", analysisText);
+        throw new Error("Failed to parse website analysis data");
+      }
+
+      console.log("Website analysis completed successfully");
+
+      // Return the analysis results
+      return new Response(JSON.stringify({ success: true, data: websiteData }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (openAiError) {
+      console.error("OpenAI API error:", openAiError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Error communicating with AI service" 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
-
-    console.log("Website analysis completed successfully");
-
-    // Return the analysis results
-    return new Response(JSON.stringify({ success: true, data: websiteData }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
     console.error("Error in analyze-website function:", error.message);
     return new Response(
