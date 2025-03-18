@@ -10,6 +10,11 @@ export const useImageGeneration = () => {
   const generateAdImage = async (prompt: string): Promise<string | null> => {
     if (!prompt) {
       console.error('No prompt provided for image generation');
+      toast({
+        title: "Missing Prompt",
+        description: "Please provide a description for the image you want to generate",
+        variant: "destructive",
+      });
       return null;
     }
 

@@ -75,42 +75,60 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
   try {
     const { keywords, callToAction, uniqueSellingPoints } = formatCampaignData(campaignData);
     
-    // Generate Meta/Instagram Ads using the advanced prompt structure
+    // Generate Meta/Instagram Ads using the enhanced expert prompt structure
     const prompt = `
-    You are a top-tier digital marketing expert specializing in high-converting online ads.
+    You are a top-tier **Instagram Ads expert**, specializing in **highly engaging and high-converting** ads.
+
+    Your goal is to generate **Instagram Ads (Text + Image)** that maximize **engagement, curiosity, and conversion** using Meta's **latest ad strategies**.
     
-    Your goal is to create 3 optimized Instagram/Meta ad variations for a company using the latest conversion-focused ad techniques.
+    ---
     
-    ### Company Information
-    Company: ${campaignData.companyName}
-    Business Description: ${campaignData.businessDescription || 'No description provided'}
-    Target Audience: ${campaignData.targetAudience || 'General audience'}
-    Brand Tone: ${campaignData.brandTone || 'Professional'}
+    ### 📌 **Ad Creation Guidelines**
+    - **Captions:** Short, engaging, **150 characters max**.
+    - **Emojis & Hashtags:** Use when relevant to boost engagement.
+    - **Call-to-Action (CTA):** Strong and clear (e.g., "Swipe Up!", "Get Yours Today!").
+    - **Persuasion Techniques:** Each variation should use a different **psychological trigger**:
+      - **Curiosity Hook:** "Why is everyone talking about this?! 👀"
+      - **Social Proof:** "🔥 Over 50,000 happy customers!"
+      - **Emotional Trigger:** "You deserve this! 💖"
+      - **Scarcity/Urgency:** "⏳ Last chance – only 2 days left!"
+      - **Exclusive Offer:** "🎁 Special Deal Inside – Swipe Up!"
+    
+    ---
+    
+    ### 📌 **Company Information**
+    Company: ${campaignData.companyName}  
+    Product/Service: ${campaignData.businessDescription || 'No description provided'}  
+    Target Audience: ${campaignData.targetAudience || 'General audience'}  
+    Brand Tone: ${campaignData.brandTone || 'Professional'}  
+    Unique Selling Points: ${uniqueSellingPoints || 'No USPs provided'}  
     Keywords: ${keywords || 'No keywords provided'}
-    Unique Selling Points: ${uniqueSellingPoints || 'No USPs provided'}
     Call-to-Action: ${callToAction || 'Learn more'}
     
-    ## Create 3 Instagram Ads
-    Requirements:
-    - Primary Text: Engaging caption with emojis (150-200 characters)
-    - Headline: Attention-grabbing headline (max 40 characters)
-    - Description: Additional details (max 30 characters)
-    - Include an image prompt that DALL-E could use to generate a matching image
+    ---
     
-    ### Format
+    ### 📌 **Output Format (JSON)**
     Return your answer ONLY as a JSON array with 3 ad objects that look exactly like this, with no additional text before or after:
     [
       {
         "primaryText": "Engaging caption with emojis",
         "headline": "Attention-grabbing headline",
         "description": "Additional details",
-        "imagePrompt": "Detailed description for DALL-E image generation"
+        "imagePrompt": "Detailed description for DALL-E image generation that will create a high-quality, professional Instagram ad image"
       },
       ... 2 more ad variations ...
     ]
+    
+    IMPORTANT:
+    1. Match the company's brand tone exactly
+    2. Use the company's actual unique selling points
+    3. Ensure the ad makes sense for the target audience
+    4. The FIRST ad variation will be used first, so make it the most compelling
+    5. For image prompts, describe a professional, eye-catching image that would work well on Instagram
+    6. Return ONLY the JSON array - no additional text before or after
     `;
     
-    console.log("Sending Meta/Instagram Ads prompt to OpenAI...");
+    console.log("Sending enhanced Instagram Ads prompt to OpenAI...");
     
     return await generateWithOpenAI(prompt);
   } catch (error) {
