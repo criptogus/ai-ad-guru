@@ -14,18 +14,22 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({ isAuthenticated }) =>
   const location = useLocation();
   const { user } = useAuth();
 
-  // Stripe checkout direct link
-  const stripeCheckoutUrl = "https://buy.stripe.com/test_7sIcNy8yG0jWgpy3cc";
+  // Base Stripe checkout URL
+  const baseStripeCheckoutUrl = "https://buy.stripe.com/test_7sIcNy8yG0jWgpy3cc";
 
   const handleCheckout = () => {
-    // Open the Stripe checkout in a new window
-    window.open(stripeCheckoutUrl, "_blank");
+    // If we have a user, append their ID as a query parameter
+    let checkoutUrl = baseStripeCheckoutUrl;
     
-    // If we have a user, we should try to associate this payment with them
-    // This is done through the webhook, but we'll also display a message
     if (user) {
-      console.log("Opening Stripe checkout for user:", user.id);
+      // Add the user ID as a client_reference_id equivalent through query params
+      // Stripe will pass these back in the success URL 
+      checkoutUrl = `${baseStripeCheckoutUrl}?client_reference_id=${user.id}`;
+      console.log(`Opening Stripe checkout for user: ${user.id}`);
     }
+    
+    // Open the Stripe checkout in a new window
+    window.open(checkoutUrl, "_blank");
   };
 
   if (!isAuthenticated) {

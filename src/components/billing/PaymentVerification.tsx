@@ -45,6 +45,11 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) 
     navigate("/billing");
   };
 
+  const handleTryAgain = () => {
+    // Reload the page to retry verification
+    window.location.reload();
+  };
+
   if (!sessionId) {
     return null;
   }
@@ -83,9 +88,14 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) 
                 Your payment verification is taking longer than expected. We'll continue processing 
                 it in the background and update your account when it's complete.
               </p>
-              <Button onClick={handleReturnToBilling} className="mt-4">
-                Return to Billing
-              </Button>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 justify-center">
+                <Button onClick={handleTryAgain} variant="outline" className="mt-4">
+                  Try Again
+                </Button>
+                <Button onClick={handleReturnToBilling} className="mt-4">
+                  Return to Billing
+                </Button>
+              </div>
             </>
           )}
           
@@ -96,10 +106,15 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({ sessionId }) 
               <p className="text-gray-600 mb-4">
                 We encountered an issue while activating your subscription. Please try again or contact support.
               </p>
-              <p className="text-sm text-red-600 mb-4">{error}</p>
-              <Button onClick={handleReturnToBilling} className="mt-4">
-                Return to Billing
-              </Button>
+              <p className="text-sm text-red-600 mb-4 bg-red-50 p-2 rounded">{error}</p>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 justify-center">
+                <Button onClick={handleTryAgain} variant="outline" className="mt-4">
+                  Try Again
+                </Button>
+                <Button onClick={handleReturnToBilling} className="mt-4">
+                  Return to Billing
+                </Button>
+              </div>
             </>
           )}
         </div>

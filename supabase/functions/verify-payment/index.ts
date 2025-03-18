@@ -65,11 +65,49 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get the user ID from the session
-    const userId = session.client_reference_id;
+    // Extract user ID from multiple possible sources
+    let userId = null;
+      
+    // Option 1: From client_reference_id
+    if (session.client_reference_id) {
+      userId = session.client_reference_id;
+      console.log('Found userId in client_reference_id:', userId);
+    }
+    
+    // Option 2: From custom metadata
+    else if (session.metadata && session.metadata.userId) {
+      userId = session.metadata.userId;
+      console.log('Found userId in metadata:', userId);
+    }
+    
+    // Option 3: From URL query parameters
+    else if (session.success_url && session.success_url.includes('client_reference_id=')) {
+      const url = new URL(session.success_url);
+      const params = new URLSearchParams(url.search);
+      userId = params.get('client_reference_id');
+      console.log('Found userId in success_url params:', userId);
+    }
+    
+    // Option 4: Look up by customer email
+    else if (session.customer_email) {
+      console.log('Looking up user by email:', session.customer_email);
+      const { data: userData, error: userError } = await supabase
+        .from('auth.users')
+        .select('id')
+        .eq('email', session.customer_email)
+        .single();
+        
+      if (userError) {
+        console.error('Error looking up user by email:', userError);
+      } else if (userData) {
+        userId = userData.id;
+        console.log('Found user by email:', userId);
+      }
+    }
+
     if (!userId) {
-      console.error('User ID not found in session metadata:', session);
-      throw new Error('User ID not found in session');
+      console.error('User ID not found in session:', session);
+      throw new Error('Unable to determine user from payment session');
     }
 
     console.log('User ID from session:', userId);

@@ -60,20 +60,34 @@ Deno.serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       
-      // Try to get user ID from client_reference_id
-      let userId = session.client_reference_id;
+      // Try to extract user ID from multiple possible sources
+      let userId = null;
       
-      // If userId is not available in client_reference_id, try to get it from metadata
-      if (!userId && session.metadata && session.metadata.userId) {
-        userId = session.metadata.userId;
+      // Option 1: From client_reference_id
+      if (session.client_reference_id) {
+        userId = session.client_reference_id;
+        console.log('Found userId in client_reference_id:', userId);
       }
       
-      // If userId is still not available, try to get user from customer email
-      if (!userId && session.customer_email) {
+      // Option 2: From URL parameters (which we set in the success_url)
+      else if (session.success_url && session.success_url.includes('client_reference_id=')) {
+        const urlParams = new URL(session.success_url).searchParams;
+        userId = urlParams.get('client_reference_id');
+        console.log('Found userId in success_url params:', userId);
+      }
+      
+      // Option 3: From custom metadata
+      else if (session.metadata && session.metadata.userId) {
+        userId = session.metadata.userId;
+        console.log('Found userId in metadata:', userId);
+      }
+      
+      // Option 4: Look up by customer email
+      else if (session.customer_email) {
         console.log('Looking up user by email:', session.customer_email);
         // Look up user by email
         const { data: userData, error: userError } = await supabase
-          .from('auth.users')
+          .from('profiles')
           .select('id')
           .eq('email', session.customer_email)
           .single();
@@ -83,6 +97,15 @@ Deno.serve(async (req) => {
         } else if (userData) {
           userId = userData.id;
           console.log('Found user by email:', userId);
+        }
+      }
+      
+      // Option 5: Try to extract from URL params in session.id
+      else if (session.id && session.id.includes('client_reference_id=')) {
+        const matches = session.id.match(/client_reference_id=([^&]+)/);
+        if (matches && matches[1]) {
+          userId = matches[1];
+          console.log('Extracted userId from session.id:', userId);
         }
       }
       
@@ -107,7 +130,7 @@ Deno.serve(async (req) => {
         
         console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
       } else {
-        console.error('No user ID found in session:', session);
+        console.error('No user ID found in session. Full session data:', JSON.stringify(session, null, 2));
       }
     } else if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object;

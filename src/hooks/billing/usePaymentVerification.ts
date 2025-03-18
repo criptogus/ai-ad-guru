@@ -65,6 +65,19 @@ export const usePaymentVerification = (sessionId: string | null) => {
           setTimeout(() => navigate("/dashboard"), 1500);
         } else if (data?.session?.payment_status === 'unpaid' || data?.session?.status === 'open') {
           console.log('Payment pending or incomplete:', data);
+          
+          // If we haven't exceeded max retries, try again
+          if (retries < MAX_RETRIES) {
+            console.log(`Payment not yet confirmed. Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
+            setRetries(prev => prev + 1);
+            
+            // Wait before retrying
+            setTimeout(() => {
+              verifyPayment();
+            }, 5000); // Longer wait for payment processing
+            return;
+          }
+          
           toast({
             title: "Payment pending",
             description: "Your payment is being processed. We'll update your account when it's complete.",
@@ -97,8 +110,6 @@ export const usePaymentVerification = (sessionId: string | null) => {
           description: error.message || "There was a problem verifying your payment. Please contact support.",
           variant: "destructive",
         });
-        // Clear the session ID from the URL
-        window.history.replaceState({}, document.title, "/billing");
       } finally {
         setVerifying(false);
       }
