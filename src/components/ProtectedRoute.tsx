@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresPayme
       if (!isAuthenticated) {
         // Store the attempted URL for redirection after login
         navigate("/login", { state: { from: location.pathname } });
-      } else if (requiresPayment && !user?.hasPaid) {
+      } else if (requiresPayment && user && !user.hasPaid) {
         // Redirect to billing page if payment is required but user hasn't paid
         navigate("/billing");
       }
@@ -44,7 +44,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresPayme
   }
 
   if (!isAuthenticated) return null;
-  if (requiresPayment && !user?.hasPaid) return null;
+  if (requiresPayment && user && !user.hasPaid) return null;
 
   return <>{children}</>;
 };

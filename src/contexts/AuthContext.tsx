@@ -1,14 +1,23 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   Session,
   User,
 } from '@supabase/supabase-js';
 
+// Define an extended User type that includes our custom properties
+interface CustomUser extends User {
+  name?: string;
+  avatar?: string;
+  credits?: number;
+  hasPaid?: boolean;
+}
+
 export interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -26,7 +35,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +51,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
 
         if (session) {
-          setUser(session.user);
+          // Type assertion to convert User to CustomUser
+          const customUser = session.user as CustomUser;
+          
+          // Add default values for our custom properties
+          if (!customUser.name) customUser.name = 'User';
+          if (!customUser.avatar) customUser.avatar = '';
+          if (!customUser.credits) customUser.credits = 0;
+          if (customUser.hasPaid === undefined) customUser.hasPaid = false;
+          
+          setUser(customUser);
           setIsAuthenticated(true);
         }
       } catch (error: any) {
@@ -57,7 +75,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) {
-        setUser(session.user);
+        // Type assertion to convert User to CustomUser
+        const customUser = session.user as CustomUser;
+        
+        // Add default values for our custom properties
+        if (!customUser.name) customUser.name = 'User';
+        if (!customUser.avatar) customUser.avatar = '';
+        if (!customUser.credits) customUser.credits = 0;
+        if (customUser.hasPaid === undefined) customUser.hasPaid = false;
+        
+        setUser(customUser);
         setIsAuthenticated(true);
       } else {
         setUser(null);
@@ -169,6 +196,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           data: {
             name: name,
             avatar_url: '',
+            credits: 100,  // Default credits for new users
+            hasPaid: false // Default payment status
           },
         },
       });
@@ -184,7 +213,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('Registration successful:', data);
-      setUser(data.user);
+      
+      // Type assertion to convert User to CustomUser and add custom properties
+      const customUser = data.user as CustomUser;
+      if (!customUser.name) customUser.name = name;
+      if (!customUser.avatar) customUser.avatar = '';
+      if (!customUser.credits) customUser.credits = 100;
+      if (customUser.hasPaid === undefined) customUser.hasPaid = false;
+      
+      setUser(customUser);
       setIsAuthenticated(true);
       navigate('/billing');
 
@@ -220,6 +257,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           data: {
             name: 'Test User',
             avatar_url: '',
+            credits: 500,  // More credits for test accounts
+            hasPaid: true  // Test accounts have paid status for full access
           },
         },
       });
