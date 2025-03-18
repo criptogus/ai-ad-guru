@@ -22,10 +22,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
 
   useEffect(() => {
     // Listen for the custom event to update form values
-    const handleTestAccountCreated = (event: CustomEvent) => {
+    const handleTestAccountCreated = (event: CustomEvent<{ email: string, password: string }>) => {
       const { email, password } = event.detail;
       setEmail(email);
       setPassword(password);
+      
+      // Show toast notification to guide the user
+      toast({
+        title: "Test credentials loaded",
+        description: "Click 'Sign in' to log in with the test account",
+      });
     };
 
     window.addEventListener('testAccountCreated' as any, handleTestAccountCreated);
@@ -33,7 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
     return () => {
       window.removeEventListener('testAccountCreated' as any, handleTestAccountCreated);
     };
-  }, []);
+  }, [toast]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -51,7 +57,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
       return;
     }
     
-    await onSubmit(email, password);
+    try {
+      await onSubmit(email, password);
+    } catch (error) {
+      console.error('Error in LoginForm handleSubmit:', error);
+      // Error handling is managed by the parent component
+    }
   };
 
   return (

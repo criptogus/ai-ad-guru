@@ -55,32 +55,38 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
 // Login with email and password
 export const loginWithEmail = async (email: string, password: string) => {
   console.log('Attempting to sign in with email:', email);
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password,
-  });
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-  if (error) {
-    console.error('Sign-in error:', error);
-    
-    // Handle specific error codes with more user-friendly messages
-    if (error.message.includes('Email not confirmed')) {
-      throw {
-        code: 'email_not_confirmed',
-        message: 'Please check your email and click the confirmation link to activate your account.'
-      };
-    } else if (error.message.includes('Invalid login credentials')) {
-      throw {
-        code: 'invalid_credentials',
-        message: 'The email or password you entered is incorrect. Please try again.'
-      };
+    if (error) {
+      console.error('Sign-in error:', error);
+      
+      // Handle specific error codes with more user-friendly messages
+      if (error.message.includes('Email not confirmed')) {
+        throw {
+          code: 'email_not_confirmed',
+          message: 'Please check your email and click the confirmation link to activate your account.'
+        };
+      } else if (error.message.includes('Invalid login credentials')) {
+        throw {
+          code: 'invalid_credentials',
+          message: 'The email or password you entered is incorrect. Please try again.'
+        };
+      }
+      
+      throw error;
     }
-    
+
+    console.log('Sign-in successful:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in loginWithEmail:', error);
     throw error;
   }
-
-  console.log('Sign-in successful:', data);
-  return data;
 };
 
 // Login with Google
@@ -155,6 +161,24 @@ export const createTestAccount = async () => {
   console.log(`Attempting to create test account with email: ${testEmail}`);
   
   try {
+    // First, check if the user can be signed in directly with these credentials 
+    // (in case we've already created this test user)
+    try {
+      const signInResult = await supabase.auth.signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+      
+      if (!signInResult.error) {
+        console.log("Test account already exists, signed in directly:", signInResult.data);
+        return { data: signInResult.data, testEmail, testPassword };
+      }
+    } catch (signInError) {
+      // If sign-in fails, proceed with creating a new account
+      console.log("Sign-in with test account failed, proceeding to create new one:", signInError);
+    }
+    
+    // Create a new test account
     const { data, error } = await supabase.auth.signUp({
       email: testEmail,
       password: testPassword,

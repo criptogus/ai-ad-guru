@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -20,7 +21,10 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
   const login = async (email: string, password: string): Promise<void> => {
     try {
       setLocalLoading(true);
-      await loginWithEmail(email, password);
+      console.log('Login attempt with email:', email);
+      
+      const authResult = await loginWithEmail(email, password);
+      console.log('Login successful:', authResult);
       
       // The user state will be updated automatically by onAuthStateChange
       navigate('/dashboard');
@@ -135,7 +139,7 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
       
       toast({
         title: "Test account created",
-        description: `Use ${testEmail} / ${testPassword} to log in`,
+        description: `Use the credentials to log in. Click Sign In button to continue.`,
       });
       
       // Dispatch a custom event with the test account credentials
