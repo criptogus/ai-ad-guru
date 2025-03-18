@@ -14,6 +14,7 @@ interface UseCampaignStepRendererProps {
   metaAds: MetaAd[];
   isAnalyzing: boolean;
   isGenerating: boolean;
+  loadingImageIndex: number | null;
   handleWebsiteAnalysis: (url: string) => Promise<WebsiteAnalysisResult | null>;
   handleGenerateGoogleAds: () => Promise<void>;
   handleGenerateMetaAds: () => Promise<void>;
@@ -33,6 +34,7 @@ export const useCampaignStepRenderer = ({
   metaAds,
   isAnalyzing,
   isGenerating,
+  loadingImageIndex,
   handleWebsiteAnalysis,
   handleGenerateGoogleAds,
   handleGenerateMetaAds,
@@ -72,6 +74,7 @@ export const useCampaignStepRenderer = ({
             googleAds={googleAds}
             metaAds={metaAds}
             isGenerating={isGenerating}
+            loadingImageIndex={loadingImageIndex}
             onGenerateGoogleAds={handleGenerateGoogleAds}
             onGenerateMetaAds={handleGenerateMetaAds}
             onGenerateImage={handleGenerateImage}

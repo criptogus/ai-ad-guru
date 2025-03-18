@@ -14,6 +14,7 @@ interface AdPreviewStepProps {
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   isGenerating: boolean;
+  loadingImageIndex: number | null;
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
@@ -28,6 +29,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   googleAds,
   metaAds,
   isGenerating,
+  loadingImageIndex,
   onGenerateGoogleAds,
   onGenerateMetaAds,
   onGenerateImage,
@@ -37,13 +39,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onBack
 }) => {
   const [activeTab, setActiveTab] = useState("google");
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-
-  const handleImageGeneration = async (ad: MetaAd, index: number) => {
-    setLoadingImageIndex(index);
-    await onGenerateImage(ad, index);
-    setLoadingImageIndex(null);
-  };
 
   return (
     <Card>
@@ -84,7 +79,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               isGenerating={isGenerating}
               loadingImageIndex={loadingImageIndex}
               onGenerateMetaAds={onGenerateMetaAds}
-              onGenerateImage={handleImageGeneration}
+              onGenerateImage={onGenerateImage}
               onUpdateAd={onUpdateMetaAd}
             />
           </TabsContent>

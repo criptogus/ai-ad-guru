@@ -20,9 +20,11 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   onGenerateGoogleAds,
   onUpdateAd
 }) => {
+  console.log("GoogleAdsTab - googleAds:", googleAds);
+  
   return (
     <div className="pt-4 space-y-4">
-      {googleAds.length === 0 ? (
+      {(!googleAds || googleAds.length === 0) ? (
         <EmptyAdState 
           platform="google"
           onGenerate={onGenerateGoogleAds}

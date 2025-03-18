@@ -24,9 +24,12 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   onGenerateImage,
   onUpdateAd
 }) => {
+  console.log("MetaAdsTab - metaAds:", metaAds);
+  console.log("MetaAdsTab - loadingImageIndex:", loadingImageIndex);
+  
   return (
     <div className="pt-4 space-y-4">
-      {metaAds.length === 0 ? (
+      {(!metaAds || metaAds.length === 0) ? (
         <EmptyAdState 
           platform="meta"
           onGenerate={onGenerateMetaAds}

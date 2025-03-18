@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaign } from "@/contexts/CampaignContext";
@@ -15,6 +15,7 @@ import StepNavigation from "./StepNavigation";
 const CampaignContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   
   const { 
     campaignData, 
@@ -105,6 +106,13 @@ const CampaignContent: React.FC = () => {
     }));
   };
 
+  // Wrapper for handling image generation with loading state
+  const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
+    setLoadingImageIndex(index);
+    await handleGenerateImage(ad, index);
+    setLoadingImageIndex(null);
+  };
+
   // Wrapper for next button to create campaign when needed
   const handleNextWrapper = () => {
     const shouldCreateCampaign = handleNext();
@@ -122,10 +130,11 @@ const CampaignContent: React.FC = () => {
     metaAds,
     isAnalyzing,
     isGenerating,
+    loadingImageIndex,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
-    handleGenerateImage,
+    handleGenerateImage: handleGenerateImageWrapper,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     setCampaignData,
