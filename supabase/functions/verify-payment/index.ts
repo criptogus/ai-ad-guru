@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
 
     // If payment was successful, update the user's subscription status
     if (session.payment_status === 'paid' || session.status === 'complete') {
-      const userId = session.metadata?.userId;
+      const userId = session.client_reference_id || session.metadata?.userId;
       
       if (userId) {
         console.log('Updating profile for user:', userId);

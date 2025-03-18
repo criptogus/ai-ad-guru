@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     // Handle specific webhook events
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const userId = session.metadata?.userId;
+      const userId = session.client_reference_id || session.metadata?.userId;
       
       if (userId) {
         // Update the user's profile to reflect payment
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ received: true }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
