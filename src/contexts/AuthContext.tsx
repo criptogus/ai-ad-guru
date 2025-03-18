@@ -1,4 +1,3 @@
-
 import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/useAuthState';
