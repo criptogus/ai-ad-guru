@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { CustomUser, Profile } from '@/types/auth';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 
 // Helper function to fetch user profile from Supabase
 export const fetchUserProfile = async (userId: string): Promise<Profile | null> => {
