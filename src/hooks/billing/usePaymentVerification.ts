@@ -45,6 +45,16 @@ export const usePaymentVerification = (sessionId: string | null) => {
             return;
           }
           
+          // For debugging - let's try to make a direct call to Stripe
+          const directVerificationAttempt = await supabase.functions.invoke("verify-payment", {
+            body: { 
+              sessionId,
+              direct: true 
+            },
+          });
+          
+          console.log('Direct verification attempt result:', directVerificationAttempt);
+          
           throw new Error(functionError.message || "Error verifying payment");
         }
 
