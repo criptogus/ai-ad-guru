@@ -1,8 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { OpenAI } from "https://esm.sh/openai@4.20.1";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+import { OpenAI } from "https://esm.sh/openai@4.20.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,10 +31,7 @@ serve(async (req) => {
       );
     }
 
-    // Initialize OpenAI client
-    const openai = new OpenAI({
-      apiKey: openaiApiKey,
-    });
+    console.log("OpenAI API key found, length:", openaiApiKey.length);
 
     // Parse request body
     const requestData = await req.json();
@@ -96,6 +92,12 @@ serve(async (req) => {
     `;
 
     try {
+      console.log("Initializing OpenAI client...");
+      // Initialize OpenAI client
+      const openai = new OpenAI({
+        apiKey: openaiApiKey,
+      });
+
       console.log("Sending request to OpenAI...");
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -137,7 +139,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Error communicating with AI service: ${openAiError.message}` 
+          error: `Error communicating with AI service: ${openAiError.message}`,
+          details: JSON.stringify(openAiError)
         }),
         { 
           status: 500, 
