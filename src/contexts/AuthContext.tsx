@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   updateUserPaymentStatus: (status: boolean) => void;
+  createTestAccount: () => Promise<void>;
 }
 
 // Create context with default values
@@ -36,6 +36,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   register: async () => {},
   updateUserPaymentStatus: () => {},
+  createTestAccount: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -230,10 +231,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     try {
       setIsLoading(true);
-      // Add additional logging to track the registration process
       console.log('Starting registration process:', { name, email });
       
-      // Log Supabase configuration - removed the problematic line that accessed supabaseUrl
       console.log('Current Supabase configuration:', {
         authEnabled: !!supabase.auth,
       });
@@ -246,7 +245,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name,
             avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`,
           },
-          // Make sure we're not requiring email confirmation
           emailRedirectTo: window.location.origin + '/dashboard',
         },
       });
@@ -263,7 +261,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Registration successful, response:', data);
       
-      // Set the user immediately after successful registration
       if (data.user) {
         const transformedUser = transformUser(data.user);
         setUser(transformedUser);
@@ -294,6 +291,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('adguru_user', JSON.stringify(updatedUser));
   };
 
+  const createTestAccount = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Creating test account...');
+      
+      const { data: { users }, error: fetchError } = await supabase.auth.admin.listUsers();
+      
+      if (fetchError) {
+        console.error("Error checking existing users:", fetchError);
+        throw fetchError;
+      }
+      
+      const testUser = users?.find(u => u.email === 'test@example.com');
+      
+      if (testUser) {
+        console.log('Test user already exists, deleting it first...');
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(testUser.id);
+        
+        if (deleteError) {
+          console.error("Error deleting existing test user:", deleteError);
+          throw deleteError;
+        }
+      }
+      
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: 'test@example.com',
+        password: 'Password123!',
+        email_confirm: true,
+        user_metadata: {
+          name: 'Test User',
+          avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent('Test User')}&background=6366f1&color=fff`,
+        },
+      });
+
+      if (error) {
+        console.error("Error creating test account:", error);
+        throw error;
+      }
+
+      console.log('Test account created successfully:', data);
+      
+      toast({
+        title: "Test account created",
+        description: "test@example.com / Password123!",
+      });
+    } catch (error: any) {
+      console.error("Error creating test account:", error);
+      toast({
+        title: "Failed to create test account",
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -305,6 +360,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         register,
         updateUserPaymentStatus,
+        createTestAccount,
       }}
     >
       {children}

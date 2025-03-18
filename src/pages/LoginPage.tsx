@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon } from 'lucide-react';
+import { AlertCircle, EyeIcon, EyeOffIcon, InfoIcon, RefreshCcwIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LoginPage: React.FC = () => {
@@ -14,8 +14,9 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingTestAccount, setIsCreatingTestAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { login, loginWithGoogle, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, createTestAccount } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -96,6 +97,25 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleCreateTestAccount = async () => {
+    try {
+      setError(null);
+      setIsCreatingTestAccount(true);
+      await createTestAccount();
+      setEmail('test@example.com');
+      setPassword('Password123!');
+      toast({
+        title: "Test account ready",
+        description: "You can now log in with the test account credentials.",
+      });
+    } catch (error: any) {
+      console.error('Error creating test account:', error);
+      setError(error?.message || 'Failed to create test account. Please try again.');
+    } finally {
+      setIsCreatingTestAccount(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900 p-4">
       <div className="w-full max-w-md">
@@ -125,6 +145,27 @@ const LoginPage: React.FC = () => {
                 For testing, use the account:<br />
                 Email: <strong>test@example.com</strong><br />
                 Password: <strong>Password123!</strong>
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-blue-700 border-blue-300" 
+                    onClick={handleCreateTestAccount}
+                    disabled={isCreatingTestAccount}
+                  >
+                    {isCreatingTestAccount ? (
+                      <>
+                        <RefreshCcwIcon className="h-3 w-3 mr-1 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCcwIcon className="h-3 w-3 mr-1" />
+                        Reset/Create Test Account
+                      </>
+                    )}
+                  </Button>
+                </div>
               </AlertDescription>
             </Alert>
             
