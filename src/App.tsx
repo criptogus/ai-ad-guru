@@ -13,6 +13,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
 import CreateCampaignPage from "@/pages/CreateCampaignPage";
+import CampaignsPage from "@/pages/CampaignsPage";
 import BillingPage from "@/pages/BillingPage";
 import NotFound from "@/pages/NotFound";
 
@@ -38,6 +39,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiresPayment={true}>
                   <DashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/campaigns" 
+              element={
+                <ProtectedRoute requiresPayment={true}>
+                  <CampaignsPage />
                 </ProtectedRoute>
               } 
             />
