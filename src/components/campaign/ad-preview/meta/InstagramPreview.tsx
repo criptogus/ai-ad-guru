@@ -1,17 +1,27 @@
 
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { Image } from "lucide-react";
+import { Image, Loader2 } from "lucide-react";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
+  imageKey?: number;
+  loadingImageIndex?: number | null;
+  index?: number;
+  onGenerateImage?: () => Promise<void>;
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
-  companyName
+  companyName,
+  imageKey,
+  loadingImageIndex,
+  index,
+  onGenerateImage
 }) => {
+  const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
+
   return (
     <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto">
       {/* Header */}
@@ -28,14 +38,37 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <div className="bg-gray-100 aspect-square relative">
         {ad.imageUrl ? (
           <img 
+            key={imageKey}
             src={ad.imageUrl} 
             alt={ad.headline}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error("Image failed to load:", ad.imageUrl);
+              e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
+            }}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4">
             <Image size={40} className="text-gray-400 mb-2" />
-            <p className="text-sm text-gray-500 text-center">Image preview will appear here</p>
+            {isLoading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-4 w-4 animate-spin mb-1" />
+                <span className="text-sm text-gray-500">Generating image...</span>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 text-center mb-2">No image generated yet</p>
+                {onGenerateImage && (
+                  <button 
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    onClick={onGenerateImage}
+                    disabled={isLoading}
+                  >
+                    Generate Image
+                  </button>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

@@ -55,6 +55,24 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
     }
   };
 
+  // Helper to render keywords safely
+  const renderKeywords = (keywords: string[] | string) => {
+    if (Array.isArray(keywords)) {
+      return keywords.map((keyword, idx) => (
+        <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
+          {keyword.trim()}
+        </span>
+      ));
+    } else if (typeof keywords === 'string') {
+      return keywords.split(",").map((keyword, idx) => (
+        <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
+          {keyword.trim()}
+        </span>
+      ));
+    }
+    return null;
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -103,18 +121,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                 <div>
                   <span className="text-muted-foreground text-sm">Keywords:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {typeof analysisResult.keywords === 'string' 
-                      ? analysisResult.keywords.split(",").map((keyword, idx) => (
-                          <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
-                            {keyword.trim()}
-                          </span>
-                        ))
-                      : analysisResult.keywords.map((keyword, idx) => (
-                          <span key={idx} className="bg-muted text-xs px-2 py-1 rounded">
-                            {keyword.trim()}
-                          </span>
-                        ))
-                    }
+                    {renderKeywords(analysisResult.keywords)}
                   </div>
                 </div>
               )}

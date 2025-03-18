@@ -107,7 +107,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
       
       <InstagramPreview 
         ad={displayAd}
-        analysisResult={analysisResult}
+        companyName={analysisResult.companyName}
         imageKey={imageKey}
         loadingImageIndex={loadingImageIndex}
         index={index}
