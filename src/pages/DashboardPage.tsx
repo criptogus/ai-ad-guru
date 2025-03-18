@@ -8,6 +8,13 @@ import StatsOverview from "@/components/dashboard/StatsOverview";
 import ActiveCampaigns from "@/components/dashboard/ActiveCampaigns";
 import CreditsStatus from "@/components/dashboard/CreditsStatus";
 
+// Create an interface that matches what the dashboard components expect
+interface DashboardUser {
+  name: string;
+  credits: number;
+  hasPaid: boolean;
+}
+
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
@@ -18,13 +25,20 @@ const DashboardPage: React.FC = () => {
     setCampaigns(mockCampaigns);
   }, []);
 
+  // Convert CustomUser to DashboardUser with required properties
+  const dashboardUser: DashboardUser = {
+    name: user?.name || 'User',
+    credits: user?.credits || 0,
+    hasPaid: user?.hasPaid || false
+  };
+
   return (
     <AppLayout activePage="dashboard">
       <div className="p-8">
-        <DashboardHeader user={user} />
+        <DashboardHeader user={dashboardUser} />
         <StatsOverview campaigns={campaigns} />
         <ActiveCampaigns campaigns={campaigns} />
-        <CreditsStatus user={user} />
+        <CreditsStatus user={dashboardUser} />
       </div>
     </AppLayout>
   );

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +24,7 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   createTestAccount: () => Promise<void>;
+  updateUserPaymentStatus: (hasPaid: boolean) => Promise<void>;
   session: Session | null;
 }
 
@@ -298,6 +298,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUserPaymentStatus = async (hasPaid: boolean): Promise<void> => {
+    try {
+      setIsLoading(true);
+      
+      if (!user) {
+        throw new Error('No user logged in');
+      }
+      
+      // Update the user in state
+      const updatedUser = { ...user, hasPaid };
+      setUser(updatedUser);
+      
+      // In a real application, we would also update this in the database
+      // For now, we're just updating it in the local state
+      toast({
+        title: hasPaid ? "Subscription activated" : "Subscription cancelled",
+        description: hasPaid ? "Your account has been upgraded." : "Your subscription has been cancelled.",
+      });
+      
+    } catch (error: any) {
+      console.error('Error updating payment status:', error);
+      toast({
+        title: 'Failed to update subscription',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated,
@@ -307,6 +338,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     register,
     createTestAccount,
+    updateUserPaymentStatus,
     session,
   };
 
