@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, ArrowRight } from "lucide-react";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const BillingPage = () => {
   const { user, updateUserPaymentStatus, isAuthenticated } = useAuth();
@@ -22,32 +23,50 @@ const BillingPage = () => {
     const sessionId = queryParams.get("session_id");
     
     if (sessionId) {
-      // In a real app, you would verify the payment with your backend
-      // Here we're just simulating a successful payment
       setLoading(true);
-      setTimeout(() => {
+      
+      const verifyPayment = async () => {
         try {
-          updateUserPaymentStatus(true);
-          toast({
-            title: "Payment successful!",
-            description: "Your subscription has been activated.",
+          // Call the edge function to verify the payment
+          const { data, error } = await supabase.functions.invoke("verify-payment", {
+            body: { sessionId },
           });
-          navigate("/dashboard");
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (data.verified) {
+            // Update local state
+            updateUserPaymentStatus(true);
+            toast({
+              title: "Payment successful!",
+              description: "Your subscription has been activated.",
+            });
+            navigate("/dashboard");
+          } else {
+            toast({
+              title: "Payment pending",
+              description: "Your payment is being processed. We'll update your account when it's complete.",
+            });
+          }
         } catch (error) {
-          console.error("Error updating payment status:", error);
+          console.error("Error verifying payment:", error);
           toast({
             title: "Error activating subscription",
-            description: "There was a problem activating your subscription. Please try again.",
+            description: "There was a problem verifying your payment. Please contact support.",
             variant: "destructive",
           });
         } finally {
           setLoading(false);
         }
-      }, 1500);
+      };
+
+      verifyPayment();
     }
   }, [location.search, navigate, toast, updateUserPaymentStatus]);
 
-  const handleStartSubscription = () => {
+  const handleStartSubscription = async () => {
     if (!isAuthenticated) {
       toast({
         title: "Not logged in",
@@ -60,23 +79,37 @@ const BillingPage = () => {
     
     setLoading(true);
     
-    // In a real app, this would call your backend to create a Stripe checkout session
-    // and redirect to the returned URL
-    setTimeout(() => {
-      try {
-        // Simulate a successful payment and return with a fake session_id
-        // In production, Stripe would redirect the user back with the real session_id
-        window.location.href = "/billing?session_id=demo_session_123";
-      } catch (error) {
-        console.error("Error redirecting to payment:", error);
-        toast({
-          title: "Error processing payment",
-          description: "There was a problem processing your payment. Please try again.",
-          variant: "destructive",
-        });
-        setLoading(false);
+    try {
+      // Get the current URL to use as return URL
+      const returnUrl = `${window.location.origin}/billing`;
+      
+      // Call the edge function to create a checkout session
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: { 
+          userId: user?.id,
+          returnUrl
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
       }
-    }, 1500);
+
+      // Redirect to the Stripe checkout page
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Error redirecting to payment:", error);
+      toast({
+        title: "Error processing payment",
+        description: "There was a problem setting up your payment. Please try again.",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
   };
 
   return (

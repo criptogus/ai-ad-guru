@@ -1,0 +1,83 @@
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import Stripe from 'https://esm.sh/stripe@12.14.0';
+
+// Define CORS headers for browser requests
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+// Handle preflight OPTIONS request
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const signature = req.headers.get('stripe-signature');
+  if (!signature) {
+    return new Response(
+      JSON.stringify({ error: 'Webhook Error: No signature provided' }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    );
+  }
+
+  try {
+    const body = await req.text();
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
+    
+    // Verify the webhook signature
+    const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+    const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+
+    // Initialize the Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Handle specific webhook events
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = session.metadata?.userId;
+      
+      if (userId) {
+        // Update the user's profile to reflect payment
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_paid: true })
+          .eq('id', userId);
+
+        if (error) {
+          throw new Error(`Failed to update user profile: ${error.message}`);
+        }
+        
+        console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
+      }
+    } else if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object;
+      // Handle subscription cancellation
+      // This would require storing the customer ID with the user
+      console.log('Subscription cancelled:', subscription.id);
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error) {
+    console.error('Webhook error:', error.message);
+    return new Response(
+      JSON.stringify({ error: `Webhook Error: ${error.message}` }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    );
+  }
+});
