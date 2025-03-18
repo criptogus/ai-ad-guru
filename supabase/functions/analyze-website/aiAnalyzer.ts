@@ -1,0 +1,69 @@
+
+import { OpenAI } from "https://esm.sh/openai@4.20.1";
+import { validateAnalysisResult, normalizeArrayFields } from "./utils.ts";
+
+// Function to create a prompt for the OpenAI analysis
+function createAnalysisPrompt(websiteData: any): string {
+  return `
+    Analyze the following website data:
+    - Title: ${websiteData.title}
+    - Description: ${websiteData.description}
+    - Keywords: ${websiteData.keywords}
+    - Content Preview: ${websiteData.visibleText.substring(0, 3000)}
+
+    Extract:
+    - companyName: Company Name
+    - businessDescription: Business Description (short, 1-2 sentences)
+    - targetAudience: Target Audience (who buys from them, be specific with demographics and interests)
+    - brandTone: Brand Tone (e.g., friendly, professional, luxury)
+    - keywords: Top 5 Keywords for Ads (list format)
+    - callToAction: 3 Call-to-Action suggestions (short phrases)
+    - uniqueSellingPoints: 3 Unique Selling Points (what makes them different)
+    
+    Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
+    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"]}
+    `;
+}
+
+// Function to analyze website data with OpenAI
+export async function analyzeWebsiteWithAI(websiteData: any, openaiApiKey: string) {
+  console.log("Initializing OpenAI client...");
+  // Initialize OpenAI client
+  const openai = new OpenAI({
+    apiKey: openaiApiKey,
+  });
+
+  const prompt = createAnalysisPrompt(websiteData);
+  
+  console.log("Sending request to OpenAI...");
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.7,
+    max_tokens: 800,
+    response_format: { type: "json_object" } // Added to ensure we get JSON back
+  });
+
+  console.log("Received response from OpenAI");
+  const analysisText = response.choices[0].message.content;
+  console.log("Raw OpenAI response:", analysisText);
+  
+  try {
+    // Extract JSON from the response
+    const websiteAnalysis = JSON.parse(analysisText);
+    console.log("Successfully parsed OpenAI response as JSON");
+    
+    // Validate the analysis result has all required fields
+    if (!validateAnalysisResult(websiteAnalysis)) {
+      throw new Error("Invalid analysis result: missing required fields");
+    }
+    
+    // Ensure arrays are properly formatted
+    return normalizeArrayFields(websiteAnalysis);
+    
+  } catch (error) {
+    console.error("Failed to parse OpenAI response as JSON:", error);
+    console.error("Raw response:", analysisText);
+    throw new Error(`Failed to parse website analysis data: ${error.message}`);
+  }
+}
