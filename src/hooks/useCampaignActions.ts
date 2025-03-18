@@ -13,8 +13,8 @@ export const useCampaignActions = (
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
   metaAds: MetaAd[],
-  generateGoogleAds: () => Promise<GoogleAd[] | null>,
-  generateMetaAds: () => Promise<MetaAd[] | null>,
+  generateGoogleAds: (campaignData: WebsiteAnalysisResult) => Promise<GoogleAd[] | null>,
+  generateMetaAds: (campaignData: WebsiteAnalysisResult) => Promise<MetaAd[] | null>,
   generateAdImage: (prompt: string) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
@@ -36,7 +36,7 @@ export const useCampaignActions = (
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) return;
     
-    const ads = await generateGoogleAds();
+    const ads = await generateGoogleAds(analysisResult);
     if (ads) {
       setCampaignData((prev: any) => ({
         ...prev,
@@ -48,7 +48,7 @@ export const useCampaignActions = (
   const handleGenerateMetaAds = async () => {
     if (!analysisResult) return;
     
-    const ads = await generateMetaAds();
+    const ads = await generateMetaAds(analysisResult);
     if (ads) {
       setCampaignData((prev: any) => ({
         ...prev,
