@@ -233,6 +233,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Add additional logging to track the registration process
       console.log('Starting registration process:', { name, email });
       
+      // Log Supabase configuration
+      console.log('Current Supabase configuration:', {
+        url: supabase.supabaseUrl,
+        authEnabled: !!supabase.auth,
+      });
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -241,21 +247,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name,
             avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`,
           },
+          // Make sure we're not requiring email confirmation
+          emailRedirectTo: window.location.origin + '/dashboard',
         },
       });
 
       if (error) {
         console.error("Registration error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          status: error.status,
+          code: error.code,
+        });
         throw error;
       }
 
       console.log('Registration successful, response:', data);
       
+      // Set the user immediately after successful registration
+      if (data.user) {
+        const transformedUser = transformUser(data.user);
+        setUser(transformedUser);
+      }
+
       toast({
         title: "Registration successful",
         description: "Welcome to AI Ad Guru!",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error details:", error);
       toast({
         title: "Registration failed",
