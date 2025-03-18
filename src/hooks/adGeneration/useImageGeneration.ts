@@ -5,20 +5,24 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateAdImage = async (prompt: string): Promise<string | null> => {
     if (!prompt) {
+      const errorMessage = "Please provide a description for the image you want to generate";
       console.error('No prompt provided for image generation');
+      setLastError(errorMessage);
       toast({
         title: "Missing Prompt",
-        description: "Please provide a description for the image you want to generate",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;
     }
 
     setIsGenerating(true);
+    setLastError(null);
     
     try {
       console.log('Generating image with prompt:', prompt);
@@ -29,29 +33,37 @@ export const useImageGeneration = () => {
 
       if (error) {
         console.error('Error generating image:', error);
-        throw error;
+        const errorMessage = error.message || "Service error while generating image";
+        setLastError(errorMessage);
+        throw new Error(errorMessage);
       }
 
       if (!data.success) {
         console.error('Image generation failed:', data.error);
-        throw new Error(data.error || "Failed to generate image");
+        const errorMessage = data.error || "Failed to generate image";
+        setLastError(errorMessage);
+        throw new Error(errorMessage);
       }
 
       if (!data.imageUrl) {
         console.error('No image URL returned from function');
-        throw new Error("No image URL returned");
+        const errorMessage = "No image URL returned";
+        setLastError(errorMessage);
+        throw new Error(errorMessage);
       }
 
       console.log('Image generated successfully, URL:', data.imageUrl);
       return data.imageUrl;
     } catch (error) {
       console.error('Error calling generate-image function:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate image";
+      setLastError(errorMessage);
       toast({
         title: "Image Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate image",
+        description: errorMessage,
         variant: "destructive",
       });
-      return null;
+      throw error; // Re-throw to allow component-level handling
     } finally {
       setIsGenerating(false);
     }
@@ -60,5 +72,7 @@ export const useImageGeneration = () => {
   return {
     generateAdImage,
     isGenerating,
+    lastError,
+    clearError: () => setLastError(null)
   };
 };

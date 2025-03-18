@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Image, Loader2 } from "lucide-react";
+import { Image, Loader2, AlertCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
@@ -22,6 +23,20 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   index,
   onGenerateImage
 }) => {
+  const [imageError, setImageError] = useState<boolean>(false);
+  const isLoading = loadingImageIndex === index;
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error("Image failed to load:", ad.imageUrl);
+    setImageError(true);
+    e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
+  };
+
+  const handleRetryGeneration = async () => {
+    setImageError(false);
+    await onGenerateImage();
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto">
       {/* Header */}
@@ -36,27 +51,37 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       {/* Image */}
       <div className="bg-gray-100 aspect-square relative">
-        {ad.imageUrl ? (
+        {ad.imageUrl && !isLoading && !imageError ? (
           <img 
             key={imageKey}
             src={ad.imageUrl} 
             alt={ad.headline}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              console.error("Image failed to load:", ad.imageUrl);
-              e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
-            }}
+            onError={handleImageError}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4">
-            <Image size={40} className="text-gray-400 mb-2" />
-            {loadingImageIndex === index ? (
+            {isLoading ? (
               <div className="flex flex-col items-center">
-                <Loader2 className="h-4 w-4 animate-spin mb-1" />
+                <Loader2 className="h-6 w-6 animate-spin mb-2" />
                 <span className="text-sm text-gray-500">Generating image...</span>
+              </div>
+            ) : imageError ? (
+              <div className="flex flex-col items-center text-center max-w-[80%]">
+                <AlertCircle className="h-10 w-10 text-destructive mb-2" />
+                <p className="text-sm font-medium text-destructive mb-1">Image generation failed</p>
+                <p className="text-xs text-gray-500 mb-3">There was a problem generating your image.</p>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleRetryGeneration}
+                >
+                  Try Again
+                </Button>
               </div>
             ) : (
               <>
+                <Image size={40} className="text-gray-400 mb-2" />
                 <p className="text-sm text-gray-500 text-center mb-2">No image generated yet</p>
                 <Button 
                   size="sm" 

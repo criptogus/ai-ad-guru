@@ -14,6 +14,7 @@ export const useAdGenerationActions = (
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const { toast } = useToast();
+  const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
 
   // Generate Google ads
   const handleGenerateGoogleAds = async () => {
@@ -87,7 +88,10 @@ export const useAdGenerationActions = (
 
   // Generate image for Meta ad
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    setImageGenerationError(null);
+    
     if (!ad.imagePrompt) {
+      setImageGenerationError("Image prompt is required");
       toast({
         title: "Image Prompt Required",
         description: "Please provide an image prompt",
@@ -130,11 +134,13 @@ export const useAdGenerationActions = (
       }
     } catch (error) {
       console.error("Error generating image:", error);
+      setImageGenerationError(error instanceof Error ? error.message : "Unknown error");
       toast({
         title: "Image Generation Failed",
         description: "Failed to generate image. Please try again.",
         variant: "destructive",
       });
+      throw error; // Re-throw to allow component-level handling
     }
   };
 
@@ -142,5 +148,7 @@ export const useAdGenerationActions = (
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateImage,
+    imageGenerationError,
+    clearImageGenerationError: () => setImageGenerationError(null)
   };
 };
