@@ -9,7 +9,10 @@ interface ProtectedRouteProps {
   requiresPayment?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresPayment = true }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requiresPayment = true 
+}) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,6 +46,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresPayme
     );
   }
 
+  // Don't render children when not authenticated or when payment is required but not paid
   if (!isAuthenticated) return null;
   if (requiresPayment && user && !user.hasPaid) return null;
 

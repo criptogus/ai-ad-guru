@@ -23,9 +23,17 @@ export const useAuthState = () => {
           const customUser = await createCustomUserWithProfile(session.user);
           setUser(customUser);
           setIsAuthenticated(true);
+        } else {
+          // Explicitly set these states to ensure consistency
+          setUser(null);
+          setIsAuthenticated(false);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error getting session:', error);
+        // Ensure consistent state on error
+        setUser(null);
+        setSession(null);
+        setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }
@@ -35,10 +43,17 @@ export const useAuthState = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      
       if (session) {
-        const customUser = await createCustomUserWithProfile(session.user);
-        setUser(customUser);
-        setIsAuthenticated(true);
+        try {
+          const customUser = await createCustomUserWithProfile(session.user);
+          setUser(customUser);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Error creating custom user:', error);
+          // Handle error but maintain session
+          setIsAuthenticated(!!session);
+        }
       } else {
         setUser(null);
         setIsAuthenticated(false);

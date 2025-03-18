@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +10,7 @@ import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 
 const BillingPage = () => {
-  const { user, updateUserPaymentStatus } = useAuth();
+  const { user, updateUserPaymentStatus, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -25,33 +26,56 @@ const BillingPage = () => {
       // Here we're just simulating a successful payment
       setLoading(true);
       setTimeout(() => {
-        updateUserPaymentStatus(true);
-        toast({
-          title: "Payment successful!",
-          description: "Your subscription has been activated.",
-        });
-        navigate("/dashboard");
-        setLoading(false);
+        try {
+          updateUserPaymentStatus(true);
+          toast({
+            title: "Payment successful!",
+            description: "Your subscription has been activated.",
+          });
+          navigate("/dashboard");
+        } catch (error) {
+          console.error("Error updating payment status:", error);
+          toast({
+            title: "Error activating subscription",
+            description: "There was a problem activating your subscription. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
       }, 1500);
     }
   }, [location.search, navigate, toast, updateUserPaymentStatus]);
 
   const handleStartSubscription = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Not logged in",
+        description: "You need to be logged in to start a subscription.",
+        variant: "destructive",
+      });
+      navigate("/login", { state: { from: location.pathname } });
+      return;
+    }
+    
     setLoading(true);
     
     // In a real app, this would call your backend to create a Stripe checkout session
     // and redirect to the returned URL
     setTimeout(() => {
-      // For demo purposes, we'll simulate the redirect and return
-      // Normally you would redirect to Stripe's checkout page
-      toast({
-        title: "Redirecting to payment page",
-        description: "Please complete your payment to activate your subscription.",
-      });
-      
-      // Simulate a successful payment and return with a fake session_id
-      // In production, Stripe would redirect the user back with the real session_id
-      window.location.href = "/billing?session_id=demo_session_123";
+      try {
+        // Simulate a successful payment and return with a fake session_id
+        // In production, Stripe would redirect the user back with the real session_id
+        window.location.href = "/billing?session_id=demo_session_123";
+      } catch (error) {
+        console.error("Error redirecting to payment:", error);
+        toast({
+          title: "Error processing payment",
+          description: "There was a problem processing your payment. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+      }
     }, 1500);
   };
 

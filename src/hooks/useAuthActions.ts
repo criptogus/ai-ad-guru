@@ -7,7 +7,8 @@ import {
   logout as signOut,
   register as signUp,
   createTestAccount as createTest,
-  updatePaymentStatus
+  updatePaymentStatus,
+  RegisterResult
 } from '@/services/authService';
 import { CustomUser } from '@/types/auth';
 
@@ -19,7 +20,7 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
   const login = async (email: string, password: string): Promise<void> => {
     try {
       setLocalLoading(true);
-      const data = await loginWithEmail(email, password);
+      await loginWithEmail(email, password);
       
       // The user state will be updated automatically by onAuthStateChange
       navigate('/dashboard');
@@ -34,22 +35,20 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
           description: error.message || 'Please check your email to confirm your account.',
           variant: 'destructive',
         });
-        throw error;
       } else if (error.code === 'invalid_credentials') {
         toast({
           title: 'Login failed',
           description: error.message || 'The email or password you entered is incorrect.',
           variant: 'destructive',
         });
-        throw error;
       } else {
         toast({
           title: 'Login failed',
           description: error.message || 'An unexpected error occurred',
           variant: 'destructive',
         });
-        throw error;
       }
+      throw error;
     } finally {
       setLocalLoading(false);
     }
@@ -97,7 +96,7 @@ export const useAuthActions = (user: CustomUser | null, setUser: (user: CustomUs
   const register = async (name: string, email: string, password: string): Promise<void> => {
     try {
       setLocalLoading(true);
-      const result = await signUp(name, email, password);
+      const result: RegisterResult = await signUp(name, email, password);
       
       if (result.confirmationRequired) {
         toast({
