@@ -10,6 +10,7 @@ export interface User {
   role: 'admin' | 'user';
   credits: number;
   avatar?: string;
+  hasPaid?: boolean;
 }
 
 interface AuthContextType {
@@ -20,6 +21,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  updateUserPaymentStatus: (status: boolean) => void;
 }
 
 // Create context with default values
@@ -31,6 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   loginWithGoogle: async () => {},
   logout: async () => {},
   register: async () => {},
+  updateUserPaymentStatus: () => {},
 });
 
 // Mock user data - In a real app, this would come from your backend API
@@ -41,6 +44,7 @@ const MOCK_USER: User = {
   role: 'user',
   credits: 400,
   avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=6366f1&color=fff',
+  hasPaid: false, // Default to not paid
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -144,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name,
         email,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`,
+        hasPaid: false, // New users start without a paid account
       };
       setUser(newUser);
       localStorage.setItem('adguru_user', JSON.stringify(newUser));
@@ -163,6 +168,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUserPaymentStatus = (status: boolean) => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, hasPaid: status };
+    setUser(updatedUser);
+    localStorage.setItem('adguru_user', JSON.stringify(updatedUser));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -173,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithGoogle,
         logout,
         register,
+        updateUserPaymentStatus,
       }}
     >
       {children}

@@ -6,19 +6,25 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiresPayment?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresPayment = true }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      // Store the attempted URL for redirection after login
-      navigate("/login", { state: { from: location.pathname } });
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        // Store the attempted URL for redirection after login
+        navigate("/login", { state: { from: location.pathname } });
+      } else if (requiresPayment && !user?.hasPaid) {
+        // Redirect to billing page if payment is required but user hasn't paid
+        navigate("/billing");
+      }
     }
-  }, [isAuthenticated, isLoading, navigate, location.pathname]);
+  }, [isAuthenticated, isLoading, navigate, location.pathname, requiresPayment, user]);
 
   if (isLoading) {
     return (
@@ -37,7 +43,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : null;
+  if (!isAuthenticated) return null;
+  if (requiresPayment && !user?.hasPaid) return null;
+
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

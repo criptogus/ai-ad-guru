@@ -21,7 +21,7 @@ const RegisterPage: React.FC = () => {
   // If user is already authenticated, redirect them
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/billing');
     }
   }, [isAuthenticated, navigate]);
 
@@ -50,7 +50,7 @@ const RegisterPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await register(name, email, password);
-      navigate('/dashboard');
+      navigate('/billing');
     } catch (error) {
       console.error('Registration error:', error);
       // Toast is shown in auth context
@@ -63,7 +63,7 @@ const RegisterPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       await loginWithGoogle();
-      navigate('/dashboard');
+      navigate('/billing');
     } catch (error) {
       console.error('Google login error:', error);
       // Toast is shown in auth context

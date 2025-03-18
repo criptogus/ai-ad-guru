@@ -13,6 +13,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";
 import CreateCampaignPage from "@/pages/CreateCampaignPage";
+import BillingPage from "@/pages/BillingPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,12 +30,13 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/billing" element={<BillingPage />} />
             
             {/* Protected Routes */}
             <Route 
               path="/dashboard" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiresPayment={true}>
                   <DashboardPage />
                 </ProtectedRoute>
               } 
@@ -42,7 +44,7 @@ const App = () => (
             <Route 
               path="/create-campaign" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiresPayment={true}>
                   <CreateCampaignPage />
                 </ProtectedRoute>
               } 
