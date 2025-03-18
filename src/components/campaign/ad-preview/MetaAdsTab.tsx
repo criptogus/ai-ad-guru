@@ -2,7 +2,7 @@
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAdCard } from "./meta";
+import { TabHeader, AdsList } from "./meta";
 import EmptyAdState from "./EmptyAdState";
 
 interface MetaAdsTabProps {
@@ -27,28 +27,30 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   console.log("MetaAdsTab - metaAds:", metaAds);
   console.log("MetaAdsTab - loadingImageIndex:", loadingImageIndex);
   
+  const hasAds = metaAds && metaAds.length > 0;
+  
   return (
     <div className="pt-4 space-y-4">
-      {(!metaAds || metaAds.length === 0) ? (
+      {!hasAds ? (
         <EmptyAdState 
           platform="meta"
           onGenerate={onGenerateMetaAds}
           isGenerating={isGenerating}
         />
       ) : (
-        <div className="space-y-6">
-          {metaAds.map((ad, index) => (
-            <MetaAdCard 
-              key={index} 
-              ad={ad} 
-              index={index} 
-              analysisResult={analysisResult}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateImage={onGenerateImage}
-              onUpdate={onUpdateAd}
-            />
-          ))}
-        </div>
+        <>
+          <TabHeader 
+            title="Meta/Instagram Ads" 
+            description="Preview and customize your Meta and Instagram ads below."
+          />
+          <AdsList 
+            metaAds={metaAds}
+            analysisResult={analysisResult}
+            loadingImageIndex={loadingImageIndex}
+            onGenerateImage={onGenerateImage}
+            onUpdateAd={onUpdateAd}
+          />
+        </>
       )}
     </div>
   );
