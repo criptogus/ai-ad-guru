@@ -1,3 +1,4 @@
+
 import { formatCampaignData } from "./utils.ts";
 import { generateWithOpenAI } from "./openai.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
@@ -14,9 +15,9 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
       tone: campaignData.brandTone
     });
     
-    // Generate Google Ads with stricter character limits and improved persuasion techniques
+    // Updated prompt for Google Ads that is industry-agnostic
     const prompt = `
-    You are a top-tier **Google Ads expert**, specializing in creating **high-converting search ads** using the latest best practices.
+    You are a senior marketing professional designing a state-of-the-art Google Search Ads campaign in 2025 to maximize clicks and conversions.
 
     ## 🎯 **1. Generate Google Search Ads**
     
@@ -31,11 +32,11 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     
     ### 🎭 **Persuasion Technique Requirements:**
     Each of the 5 ad variations MUST use a different persuasion technique:
-    1. **Scarcity/Urgency:** Create a sense of limited time or availability ("Limited offer!", "Act now!")
-    2. **Social Proof:** Emphasize customer base, reviews, or testimonials ("Trusted by thousands", "5-star rated")
-    3. **Problem-Solution:** Address a pain point and how the company solves it ("Struggling with X? We solve it")
-    4. **Direct Benefit:** Clearly state what the customer gains ("Save time", "Boost revenue")
-    5. **Emotional Appeal:** Connect with feelings and aspirations ("Feel confident", "Achieve peace of mind")
+    1. **Scarcity/Urgency:** Create a sense of limited time or availability
+    2. **Social Proof:** Emphasize customer base, reviews, or testimonials
+    3. **Problem-Solution:** Address a pain point and how the company solves it
+    4. **Direct Benefit:** Clearly state what the customer gains
+    5. **Emotional Appeal:** Connect with feelings and aspirations
     
     ---
     
@@ -90,6 +91,7 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     8. DO NOT create generic headlines that could apply to any business
     9. Write ALL content in the SAME LANGUAGE as the company information (NEVER mix languages)
     10. STRICTLY adhere to character limits: 30 chars for headlines, 90 chars for descriptions
+    11. Incorporate 2025 trends like AI-powered solutions or voice search compatibility where appropriate
     `;
     
     console.log("Sending improved Google Ads prompt to OpenAI...");
@@ -113,11 +115,11 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
       tone: campaignData.brandTone
     });
     
-    // Generate Meta/Instagram Ads using the enhanced expert prompt structure with stronger language consistency
+    // Updated prompt for Meta/Instagram Ads that is industry-agnostic
     const prompt = `
-    You are a top-tier **Instagram Ads expert**, specializing in **highly engaging and high-converting** ads.
+    You are a senior marketing professional crafting a cutting-edge Instagram Ads campaign in 2025 to drive clicks and conversions.
 
-    Your goal is to generate **Instagram Ads (Text + Image)** that maximize **engagement, curiosity, and conversion** using Meta's **latest ad strategies**.
+    Your goal is to generate **Instagram Ads (Text + Image)** that maximize **engagement, curiosity, and conversion** using Meta's **latest ad strategies** for ${campaignData.companyName}.
     
     ---
     
@@ -126,8 +128,8 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     - **Emojis & Hashtags:** Use when relevant to boost engagement.
     - **Call-to-Action (CTA):** Strong and clear, IN THE SAME LANGUAGE as the company information.
     - **Persuasion Techniques:** Each variation should use a different **psychological trigger**:
-      - **Curiosity Hook:** Create curiosity about ${campaignData.companyName}'s specific solutions
-      - **Social Proof:** Highlight ${campaignData.companyName}'s customer base or testimonials 
+      - **Curiosity Hook:** Create curiosity about specific solutions
+      - **Social Proof:** Highlight customer base or testimonials 
       - **Emotional Trigger:** Connect emotionally with the target audience's needs
     
     ---
@@ -176,6 +178,8 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
     6. Return ONLY the JSON array - no additional text before or after
     7. Write ALL content in the SAME LANGUAGE as the company information (NEVER mix languages)
     8. If company info is in Portuguese, use Portuguese CTAs and terms (not English)
+    9. Reflect 2025 Instagram trends like short-form video elements or interactive AR features
+    10. Incorporate visually compelling ideas that will drive engagement
     `;
     
     console.log("Sending enhanced Instagram Ads prompt to OpenAI...");
