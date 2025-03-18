@@ -13,6 +13,8 @@ interface DashboardUser {
   name: string;
   credits: number;
   hasPaid: boolean;
+  id?: string;
+  email?: string;
 }
 
 const DashboardPage: React.FC = () => {
@@ -29,7 +31,9 @@ const DashboardPage: React.FC = () => {
   const dashboardUser: DashboardUser = {
     name: user?.name || 'User',
     credits: user?.credits || 0,
-    hasPaid: user?.hasPaid || false
+    hasPaid: user?.hasPaid || false,
+    id: user?.id,
+    email: user?.email
   };
 
   return (

@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
 interface User {
-  id: string;
   name: string;
-  email: string;
-  credits: number;
+  credits?: number;
+  hasPaid?: boolean;
+  id?: string;
+  email?: string;
   avatar?: string;
 }
 
