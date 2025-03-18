@@ -45,7 +45,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL to prevent re-verification on page refresh
           window.history.replaceState({}, document.title, "/billing");
           // Navigate after a short delay to ensure state updates are processed
-          setTimeout(() => navigate("/dashboard"), 1000);
+          setTimeout(() => navigate("/dashboard"), 1500);
         } else if (data) {
           console.log('Payment pending or incomplete:', data);
           toast({
@@ -56,7 +56,7 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL
           window.history.replaceState({}, document.title, "/billing");
           // Navigate to dashboard after a delay
-          setTimeout(() => navigate("/dashboard"), 1000);
+          setTimeout(() => navigate("/billing"), 1500);
         } else {
           throw new Error("Invalid response from verification service");
         }

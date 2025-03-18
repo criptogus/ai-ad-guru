@@ -46,6 +46,8 @@ Deno.serve(async (req) => {
         status: session.status,
         payment_status: session.payment_status,
         client_reference_id: session.client_reference_id,
+        customer: session.customer,
+        subscription: session.subscription,
       });
     } catch (stripeError) {
       console.error('Error retrieving session from Stripe:', stripeError);
@@ -55,6 +57,11 @@ Deno.serve(async (req) => {
     // Initialize the Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing');
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get the user ID from the session
@@ -66,8 +73,24 @@ Deno.serve(async (req) => {
     console.log('User ID from session:', userId);
 
     // If payment was successful, update the user's subscription status
-    if (session.payment_status === 'paid' || session.status === 'complete') {
-      console.log('Updating profile for user:', userId);
+    const paymentSuccessful = session.payment_status === 'paid' || session.status === 'complete';
+    
+    if (paymentSuccessful) {
+      console.log('Payment verified. Updating profile for user:', userId);
+      
+      // Update the user's profile to reflect payment
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw new Error(`Failed to fetch user profile: ${profileError.message}`);
+      }
+      
+      console.log('Current profile status:', profile);
       
       // Update the user's profile to reflect payment
       const { error: updateError } = await supabase
@@ -80,6 +103,19 @@ Deno.serve(async (req) => {
         throw new Error(`Failed to update user profile: ${updateError.message}`);
       }
       
+      // Verify the update was successful
+      const { data: updatedProfile, error: verifyError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (verifyError) {
+        console.error('Error verifying profile update:', verifyError);
+      } else {
+        console.log('Profile updated successfully:', updatedProfile);
+      }
+      
       console.log(`Payment verified and profile updated for user: ${userId}`);
     } else {
       console.log(`Payment not completed. Status: ${session.status}, Payment status: ${session.payment_status}`);
@@ -88,7 +124,7 @@ Deno.serve(async (req) => {
     // Return the session status
     return new Response(
       JSON.stringify({ 
-        verified: session.payment_status === 'paid' || session.status === 'complete',
+        verified: paymentSuccessful,
         session: {
           id: session.id,
           status: session.status,
