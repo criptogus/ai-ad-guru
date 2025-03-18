@@ -12,6 +12,7 @@ interface MetaAdsTabProps {
   loadingImageIndex: number | null;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
+  onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
 }
 
 const MetaAdsTab: React.FC<MetaAdsTabProps> = ({ 
@@ -20,7 +21,8 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   isGenerating, 
   loadingImageIndex,
   onGenerateMetaAds,
-  onGenerateImage
+  onGenerateImage,
+  onUpdateAd
 }) => {
   return (
     <div className="pt-4 space-y-4">
@@ -40,6 +42,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
               analysisResult={analysisResult}
               loadingImageIndex={loadingImageIndex}
               onGenerateImage={onGenerateImage}
+              onUpdate={onUpdateAd}
             />
           ))}
         </div>

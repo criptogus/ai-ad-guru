@@ -17,7 +17,10 @@ interface AdPreviewStepProps {
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
+  onUpdateGoogleAd?: (index: number, updatedAd: GoogleAd) => void;
+  onUpdateMetaAd?: (index: number, updatedAd: MetaAd) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
 const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
@@ -28,7 +31,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onGenerateGoogleAds,
   onGenerateMetaAds,
   onGenerateImage,
+  onUpdateGoogleAd,
+  onUpdateMetaAd,
   onNext,
+  onBack
 }) => {
   const [activeTab, setActiveTab] = useState("google");
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
@@ -44,7 +50,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       <CardHeader>
         <CardTitle>Ad Previews</CardTitle>
         <CardDescription>
-          Preview and select AI-generated ads for your campaign
+          Preview, edit, and select AI-generated ads for your campaign
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -66,6 +72,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               analysisResult={analysisResult}
               isGenerating={isGenerating}
               onGenerateGoogleAds={onGenerateGoogleAds}
+              onUpdateAd={onUpdateGoogleAd}
             />
           </TabsContent>
           
@@ -78,6 +85,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               loadingImageIndex={loadingImageIndex}
               onGenerateMetaAds={onGenerateMetaAds}
               onGenerateImage={handleImageGeneration}
+              onUpdateAd={onUpdateMetaAd}
             />
           </TabsContent>
         </Tabs>
@@ -85,7 +93,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         <Separator />
         
         <div className="flex justify-between">
-          <Button variant="outline">
+          <Button variant="outline" onClick={onBack}>
             Back
           </Button>
           <Button 

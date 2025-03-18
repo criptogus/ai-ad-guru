@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
@@ -7,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import { useWebsiteAnalysis, WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { useAdGeneration } from "@/hooks/adGeneration";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { CampaignProvider, useCampaign } from "@/contexts/CampaignContext";
 import { useCampaignActions } from "@/hooks/useCampaignActions";
 
@@ -123,6 +122,32 @@ const CampaignContent: React.FC = () => {
     return result;
   };
 
+  // Handle updates to Google ads
+  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
+    const updatedAds = [...googleAds];
+    updatedAds[index] = updatedAd;
+    setGoogleAds(updatedAds);
+    
+    // Update campaign data as well
+    setCampaignData((prev) => ({
+      ...prev,
+      googleAds: updatedAds
+    }));
+  };
+
+  // Handle updates to Meta ads
+  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
+    const updatedAds = [...metaAds];
+    updatedAds[index] = updatedAd;
+    setMetaAds(updatedAds);
+    
+    // Update campaign data as well
+    setCampaignData((prev) => ({
+      ...prev,
+      metaAds: updatedAds
+    }));
+  };
+
   const getStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -154,7 +179,10 @@ const CampaignContent: React.FC = () => {
             onGenerateGoogleAds={handleGenerateGoogleAds}
             onGenerateMetaAds={handleGenerateMetaAds}
             onGenerateImage={handleGenerateImage}
+            onUpdateGoogleAd={handleUpdateGoogleAd}
+            onUpdateMetaAd={handleUpdateMetaAd}
             onNext={handleNext}
+            onBack={handleBack}
           />
         );
       default:

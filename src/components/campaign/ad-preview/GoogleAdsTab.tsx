@@ -10,13 +10,15 @@ interface GoogleAdsTabProps {
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateGoogleAds: () => Promise<void>;
+  onUpdateAd?: (index: number, updatedAd: GoogleAd) => void;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({ 
   googleAds, 
   analysisResult, 
   isGenerating, 
-  onGenerateGoogleAds 
+  onGenerateGoogleAds,
+  onUpdateAd
 }) => {
   return (
     <div className="pt-4 space-y-4">
@@ -33,7 +35,8 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               key={index} 
               ad={ad} 
               index={index} 
-              analysisResult={analysisResult} 
+              analysisResult={analysisResult}
+              onUpdate={onUpdateAd}
             />
           ))}
         </div>

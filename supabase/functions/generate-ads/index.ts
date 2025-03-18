@@ -16,6 +16,7 @@ serve(async (req) => {
     let requestData;
     try {
       requestData = await req.json();
+      console.log("Request data received:", JSON.stringify(requestData));
     } catch (error) {
       console.error("Failed to parse request body:", error);
       return new Response(
@@ -33,6 +34,7 @@ serve(async (req) => {
     const { platform, campaignData } = requestData;
     
     if (!platform || !campaignData) {
+      console.error("Missing required fields:", { platform, campaignData: !!campaignData });
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -49,6 +51,7 @@ serve(async (req) => {
     
     // Format campaign data for prompt
     const formattedData = formatCampaignData(campaignData);
+    console.log("Formatted campaign data:", formattedData);
     
     let adData;
     let response;
@@ -57,10 +60,14 @@ serve(async (req) => {
     try {
       if (platform === 'google') {
         response = await generateGoogleAds(campaignData);
+        console.log("Raw Google ad response:", response);
         adData = parseAdResponse(response, platform, campaignData);
+        console.log("Parsed Google ads:", adData);
       } else if (platform === 'meta') {
         response = await generateMetaAds(campaignData);
+        console.log("Raw Meta ad response:", response);
         adData = parseAdResponse(response, platform, campaignData);
+        console.log("Parsed Meta ads:", adData);
       } else {
         throw new Error('Invalid platform specified');
       }
