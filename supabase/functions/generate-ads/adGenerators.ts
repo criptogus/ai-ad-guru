@@ -8,7 +8,7 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
   try {
     const { keywords, callToAction, uniqueSellingPoints } = formatCampaignData(campaignData);
     
-    // Generate Google Ads using the improved expert prompt structure
+    // Generate Google Ads using the improved expert prompt structure with clearer headline instructions
     const prompt = `
     You are a top-tier **Google Ads expert**, specializing in creating **high-converting search ads** using the latest best practices.
 
@@ -17,7 +17,10 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     ---
     
     ### 📌 **Ad Creation Guidelines**
-    - **Headlines:** Short, compelling, **30 characters max**.
+    - **Headlines:** Create 3 short, compelling headlines for each ad, each **30 characters max**. Ensure they are relevant to the business.
+       - First headline should include the company name or main product/service
+       - Second headline should highlight a key benefit or feature
+       - Third headline should include a call to action
     - **Descriptions:** Persuasive, action-driven, **90 characters max**.
     - **Ad Variations:** Create **5 variations** to test different persuasion techniques.
     - **Call-to-Action (CTA):** Use direct action words (e.g., "Shop Now", "Try for Free").
@@ -59,6 +62,7 @@ export const generateGoogleAds = async (campaignData: WebsiteAnalysisResult) => 
     3. Ensure the ad makes sense for the target audience
     4. The FIRST ad variation will be used first, so make it the most compelling
     5. Return ONLY the JSON array - no additional text before or after
+    6. ALWAYS include the company name in at least one headline per ad
     `;
     
     console.log("Sending improved Google Ads prompt to OpenAI...");

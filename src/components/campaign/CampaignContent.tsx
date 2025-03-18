@@ -9,7 +9,7 @@ import { useCampaignActions } from "@/hooks/useCampaignActions";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
 import CampaignHeader from "./CampaignHeader";
 import StepNavigation from "./StepNavigation";
-import CampaignAdUpdates from "./CampaignAdUpdates";
+import { useCampaignAdUpdates } from "./CampaignAdUpdates";
 import { useCampaignDataSync } from "@/hooks/useCampaignDataSync";
 import { useCampaignFlow } from "@/hooks/useCampaignFlow";
 
@@ -79,13 +79,13 @@ const CampaignContent: React.FC = () => {
     createCampaign
   );
 
-  // Ad updates and image generation handling
+  // Ad updates and image generation handling - Now using the hook instead of component
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleGenerateImageWrapper,
     loadingImageIndex
-  } = CampaignAdUpdates({
+  } = useCampaignAdUpdates({
     googleAds,
     metaAds,
     setGoogleAds,

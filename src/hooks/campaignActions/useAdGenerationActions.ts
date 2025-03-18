@@ -86,7 +86,7 @@ export const useAdGenerationActions = (
   };
 
   // Generate image for Meta ad
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     if (!ad.imagePrompt) {
       toast({
         title: "Image Prompt Required",
@@ -125,8 +125,6 @@ export const useAdGenerationActions = (
           title: "Image Generated",
           description: "Ad image was successfully created",
         });
-        
-        return updatedAd;
       } else {
         throw new Error("Image generation returned null");
       }
@@ -137,7 +135,6 @@ export const useAdGenerationActions = (
         description: "Failed to generate image. Please try again.",
         variant: "destructive",
       });
-      return null;
     }
   };
 
