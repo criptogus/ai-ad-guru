@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MetaAd } from "@/hooks/useAdGeneration";
+import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MetaAdCard from "./MetaAdCard";
 import EmptyAdState from "./EmptyAdState";

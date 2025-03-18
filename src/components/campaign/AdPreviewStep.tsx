@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import MetaAdsTab from "./ad-preview/MetaAdsTab";

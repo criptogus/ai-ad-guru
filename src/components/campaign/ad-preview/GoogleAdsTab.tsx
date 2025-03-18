@@ -1,6 +1,6 @@
 
 import React from "react";
-import { GoogleAd } from "@/hooks/useAdGeneration";
+import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdCard from "./GoogleAdCard";
 import EmptyAdState from "./EmptyAdState";

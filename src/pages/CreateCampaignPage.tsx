@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import { useWebsiteAnalysis, WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { useAdGeneration } from "@/hooks/adGeneration";
 import { CampaignProvider, useCampaign } from "@/contexts/CampaignContext";
 import { useCampaignActions } from "@/hooks/useCampaignActions";
 

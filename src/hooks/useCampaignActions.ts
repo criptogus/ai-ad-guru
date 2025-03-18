@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { CustomUser } from "@/types/auth";

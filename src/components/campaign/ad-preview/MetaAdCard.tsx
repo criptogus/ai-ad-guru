@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { MetaAd } from "@/hooks/useAdGeneration";
+import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 interface MetaAdCardProps {
