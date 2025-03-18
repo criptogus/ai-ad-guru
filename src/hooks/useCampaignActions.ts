@@ -51,7 +51,7 @@ export const useCampaignActions = (
       
       toast({
         title: "Google Ads Generated",
-        description: `Successfully created ${ads.length} ad variations`,
+        description: `Successfully created ${ads.length} ad variations. The first ad will be used initially and automatically optimized based on performance.`,
       });
     } else {
       toast({
@@ -86,7 +86,7 @@ export const useCampaignActions = (
       
       toast({
         title: "Meta Ads Generated",
-        description: `Successfully created ${ads.length} ad variations`,
+        description: `Successfully created ${ads.length} ad variations. Generating images will make them more effective.`,
       });
     } else {
       toast({
@@ -116,8 +116,8 @@ export const useCampaignActions = (
       console.log("Generated image URL:", imageUrl);
       
       if (imageUrl) {
-        // Update the Meta ad with the generated image
-        const updatedAd = { ...ad, imageUrl };
+        // Create a new MetaAd object with the updated imageUrl
+        const updatedAd: MetaAd = { ...ad, imageUrl };
         console.log("Updated ad with image:", updatedAd);
         
         // Create a new array with the updated ad
@@ -149,6 +149,7 @@ export const useCampaignActions = (
         description: "Failed to generate image. Please try again.",
         variant: "destructive",
       });
+      return null;
     }
   };
 

@@ -7,7 +7,12 @@ export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const generateAdImage = async (prompt: string) => {
+  const generateAdImage = async (prompt: string): Promise<string | null> => {
+    if (!prompt) {
+      console.error('No prompt provided for image generation');
+      return null;
+    }
+
     setIsGenerating(true);
     
     try {
@@ -19,31 +24,26 @@ export const useImageGeneration = () => {
 
       if (error) {
         console.error('Error generating image:', error);
-        toast({
-          title: "Image Generation Failed",
-          description: error.message || "Failed to generate image",
-          variant: "destructive",
-        });
-        return null;
+        throw error;
       }
 
       if (!data.success) {
         console.error('Image generation failed:', data.error);
-        toast({
-          title: "Image Generation Failed",
-          description: data.error || "Failed to generate image",
-          variant: "destructive",
-        });
-        return null;
+        throw new Error(data.error || "Failed to generate image");
       }
 
-      console.log('Image generated successfully:', data.imageUrl);
+      if (!data.imageUrl) {
+        console.error('No image URL returned from function');
+        throw new Error("No image URL returned");
+      }
+
+      console.log('Image generated successfully, URL:', data.imageUrl);
       return data.imageUrl;
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error('Error calling generate-image function:', error);
       toast({
         title: "Image Generation Failed",
-        description: "An unexpected error occurred",
+        description: error instanceof Error ? error.message : "Failed to generate image",
         variant: "destructive",
       });
       return null;

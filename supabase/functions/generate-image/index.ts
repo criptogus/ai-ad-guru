@@ -42,9 +42,19 @@ serve(async (req) => {
       prompt: enhancedPrompt,
       n: 1,
       size: "1024x1024",
+      response_format: "url",
     });
 
+    if (!response.data || response.data.length === 0) {
+      throw new Error("No image was generated");
+    }
+
     const imageUrl = response.data[0].url;
+    
+    if (!imageUrl) {
+      throw new Error("Generated image URL is empty");
+    }
+    
     console.log("Image generation completed successfully");
     console.log("Generated image URL:", imageUrl);
 
