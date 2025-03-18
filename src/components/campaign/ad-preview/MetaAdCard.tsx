@@ -1,12 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Check, X, Image, Loader2 } from "lucide-react";
+import { Copy, Edit, Check, X, Image, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MetaAdCardProps {
   ad: MetaAd;
@@ -28,6 +29,15 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+  const [imageKey, setImageKey] = useState(Date.now()); // Force image refresh when URL changes
+
+  // Update imageKey when imageUrl changes to force a re-render
+  useEffect(() => {
+    if (ad.imageUrl) {
+      setImageKey(Date.now());
+      console.log("Image URL updated:", ad.imageUrl);
+    }
+  }, [ad.imageUrl]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -61,6 +71,10 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
 
   const handleInputChange = (field: keyof MetaAd, value: string) => {
     setEditedAd({ ...editedAd, [field]: value });
+  };
+
+  const handleGenerateImage = async () => {
+    await onGenerateImage(ad, index);
   };
 
   const displayAd = isEditing ? editedAd : ad;
@@ -108,6 +122,15 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
         </div>
       </div>
       
+      {index === 0 && (
+        <Alert className="mb-3 bg-blue-50 text-blue-700 border-blue-200">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            This ad will be automatically optimized based on campaign performance.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Instagram Ad Preview */}
       <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto">
         {/* Header */}
@@ -124,9 +147,14 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
         <div className="bg-gray-100 aspect-square relative">
           {displayAd.imageUrl ? (
             <img 
+              key={imageKey}
               src={displayAd.imageUrl} 
               alt={displayAd.headline}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Image failed to load:", displayAd.imageUrl);
+                e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
+              }}
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center p-4">
@@ -141,7 +169,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
                   <p className="text-sm text-gray-500 text-center mb-2">No image generated yet</p>
                   <Button 
                     size="sm" 
-                    onClick={() => onGenerateImage(displayAd, index)}
+                    onClick={handleGenerateImage}
                     disabled={loadingImageIndex !== null}
                   >
                     Generate Image
@@ -229,14 +257,14 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
         <div>
           <div className="flex justify-between">
             <span className="font-medium text-gray-700">Image Prompt:</span>
-            {!isEditing && displayAd.imageUrl && (
+            {!isEditing && (
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => onGenerateImage(displayAd, index)}
+                onClick={handleGenerateImage}
                 disabled={loadingImageIndex !== null}
               >
-                Regenerate Image
+                {displayAd.imageUrl ? "Regenerate Image" : "Generate Image"}
               </Button>
             )}
           </div>

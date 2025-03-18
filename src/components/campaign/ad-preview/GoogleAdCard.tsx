@@ -8,6 +8,8 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface GoogleAdCardProps {
   ad: GoogleAd;
@@ -115,6 +117,15 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           )}
         </div>
       </div>
+      
+      {index === 0 && (
+        <Alert className="mb-3 bg-blue-50 text-blue-700 border-blue-200">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            This ad will be automatically optimized based on campaign performance.
+          </AlertDescription>
+        </Alert>
+      )}
       
       {/* Google Ad Preview */}
       <div className="border rounded-md overflow-hidden mb-4">

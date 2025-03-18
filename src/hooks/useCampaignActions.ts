@@ -118,19 +118,27 @@ export const useCampaignActions = (
       if (imageUrl) {
         // Update the Meta ad with the generated image
         const updatedAd = { ...ad, imageUrl };
+        console.log("Updated ad with image:", updatedAd);
+        
+        // Create a new array with the updated ad
         const updatedAds = [...metaAds];
         updatedAds[index] = updatedAd;
         
         // Update both the Meta ads array and the campaign data
-        setCampaignData(prev => ({
-          ...prev,
-          metaAds: updatedAds
-        }));
+        setCampaignData(prev => {
+          console.log("Updating campaign data with new Meta ads:", updatedAds);
+          return {
+            ...prev,
+            metaAds: updatedAds
+          };
+        });
         
         toast({
           title: "Image Generated",
           description: "Ad image was successfully created",
         });
+        
+        return updatedAd;
       } else {
         throw new Error("Image generation returned null");
       }

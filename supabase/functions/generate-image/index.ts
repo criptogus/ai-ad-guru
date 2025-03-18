@@ -46,11 +46,18 @@ serve(async (req) => {
 
     const imageUrl = response.data[0].url;
     console.log("Image generation completed successfully");
+    console.log("Generated image URL:", imageUrl);
 
     // Return the generated image URL
-    return new Response(JSON.stringify({ success: true, imageUrl }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        imageUrl 
+      }), 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
     
   } catch (error) {
     console.error("Error in generate-image function:", error.message);
