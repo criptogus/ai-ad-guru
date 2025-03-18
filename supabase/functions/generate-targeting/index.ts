@@ -72,7 +72,7 @@ serve(async (req) => {
     try {
       // Extract JSON from the response
       const targetingData = JSON.parse(targetingText);
-      console.log('Successfully parsed OpenAI response as JSON');
+      console.log('Successfully parsed OpenAI response as JSON:', targetingData);
       
       return new Response(
         JSON.stringify({

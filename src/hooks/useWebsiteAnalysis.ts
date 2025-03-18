@@ -11,7 +11,7 @@ export interface WebsiteAnalysisResult {
   keywords: string[];
   callToAction: string[];
   uniqueSellingPoints: string[];
-  websiteUrl?: string; // Add this property
+  websiteUrl?: string;
 }
 
 export const useWebsiteAnalysis = () => {
@@ -56,6 +56,7 @@ export const useWebsiteAnalysis = () => {
 
       console.log('Analysis result:', data.data);
       const result = data.data as WebsiteAnalysisResult;
+      
       // Store the website URL in the result
       result.websiteUrl = formattedUrl;
       setAnalysisResult(result);

@@ -128,6 +128,11 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
 
     setIsGeneratingTargeting(true);
     try {
+      console.log('Starting targeting recommendation generation with data:', {
+        businessDescription: analysisResult.businessDescription,
+        targetAudience: analysisResult.targetAudience,
+      });
+      
       // Call Supabase edge function to generate targeting recommendations
       const { data, error } = await supabase.functions.invoke('generate-targeting', {
         body: { 
@@ -139,6 +144,8 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
         },
       });
 
+      console.log('Response from generate-targeting:', { data, error });
+
       if (error) {
         console.error('Error generating targeting recommendations:', error);
         throw error;
@@ -148,6 +155,8 @@ const CampaignSetupStep: React.FC<CampaignSetupProps> = ({
         console.error('Targeting recommendation generation failed:', data.error);
         throw new Error(data.error || "Failed to generate targeting recommendations");
       }
+
+      console.log('Successfully generated targeting recommendations:', data.data);
 
       // Update the campaign data with the AI recommendations
       onUpdateCampaignData({
