@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, formatCampaignData } from "./utils.ts";
 import { generateGoogleAds, generateMetaAds } from "./adGenerators.ts";
-import { parseAdResponse } from "./responseParser.ts";
+import { parseAdResponse, generateFallbackGoogleAds, generateFallbackMetaAds } from "./responseParser.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
 
 serve(async (req) => {
@@ -92,12 +92,10 @@ serve(async (req) => {
     } catch (error) {
       console.error(`Error generating ${platform} ads:`, error);
       
-      // Create fallback data directly from the response parser
+      // Create fallback data directly based on platform
       if (platform === 'google') {
-        const { generateFallbackGoogleAds } = await import("./responseParser.ts");
         adData = generateFallbackGoogleAds(campaignData);
       } else if (platform === 'meta') {
-        const { generateFallbackMetaAds } = await import("./responseParser.ts");
         adData = generateFallbackMetaAds(campaignData);
       } else {
         adData = [];
