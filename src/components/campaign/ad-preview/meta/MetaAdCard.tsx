@@ -30,6 +30,11 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const [imageKey, setImageKey] = useState(Date.now()); // Force image refresh when URL changes
   const [imageGenerationAttempts, setImageGenerationAttempts] = useState(0);
 
+  // Update editedAd when ad changes
+  useEffect(() => {
+    setEditedAd(ad);
+  }, [ad]);
+
   // Update imageKey when imageUrl changes to force a re-render
   useEffect(() => {
     if (ad.imageUrl) {
@@ -69,7 +74,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   };
 
   const handleInputChange = (field: keyof MetaAd, value: string) => {
-    setEditedAd({ ...editedAd, [field]: value });
+    setEditedAd(prev => ({ ...prev, [field]: value }));
   };
 
   const handleGenerateImage = async () => {
@@ -120,7 +125,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
         editedAd={editedAd}
         onInputChange={handleInputChange}
         onGenerateImage={handleGenerateImage}
-        loadingImageIndex={loadingImageIndex}
+        loadingImageIndex={loadingImageIndex === index}
       />
     </div>
   );

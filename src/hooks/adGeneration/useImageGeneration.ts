@@ -58,6 +58,14 @@ export const useImageGeneration = () => {
       }
 
       console.log('Image generated successfully, URL:', data.imageUrl);
+      
+      // Inform the user about credit usage (5 credits for Instagram ad image)
+      toast({
+        title: "Image Generated Successfully",
+        description: "5 credits have been used for this Instagram ad image",
+        duration: 5000,
+      });
+      
       return data.imageUrl;
     } catch (error) {
       console.error('Error calling generate-image function:', error);

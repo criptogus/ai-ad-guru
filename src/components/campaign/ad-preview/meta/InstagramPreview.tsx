@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { Image, Loader2 } from "lucide-react";
 
@@ -21,6 +21,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   onGenerateImage
 }) => {
   const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto bg-white">
@@ -36,7 +37,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       {/* Image */}
       <div className="bg-gray-100 aspect-square relative">
-        {ad.imageUrl ? (
+        {ad.imageUrl && !imageError ? (
           <img 
             key={imageKey}
             src={ad.imageUrl} 
@@ -44,7 +45,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
             className="w-full h-full object-cover"
             onError={(e) => {
               console.error("Image failed to load:", ad.imageUrl);
-              e.currentTarget.src = "https://placehold.co/600x600/e0e0e0/818181?text=Image+Not+Available";
+              setImageError(true);
             }}
           />
         ) : (
@@ -57,14 +58,16 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
               </div>
             ) : (
               <>
-                <p className="text-sm text-gray-500 text-center mb-2">No image generated yet</p>
+                <p className="text-sm text-gray-500 text-center mb-2">
+                  {imageError ? "Failed to load image" : "No image generated yet"}
+                </p>
                 {onGenerateImage && (
                   <button 
                     className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                     onClick={onGenerateImage}
                     disabled={isLoading}
                   >
-                    Generate Image
+                    {imageError ? "Try Again" : "Generate Image"}
                   </button>
                 )}
               </>
