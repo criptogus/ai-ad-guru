@@ -20,11 +20,11 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
       setIsLoading(true);
       const data = await fetchUserConnections(user.id);
       setConnections(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching connections:", error);
       toast({
         title: "Failed to load connections",
-        description: "There was an error loading your ad platform connections",
+        description: error.message || "There was an error loading your ad platform connections",
         variant: "destructive",
       });
     } finally {
@@ -47,7 +47,7 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
       
       toast({
         title: `${platform === 'google' ? 'Google' : 'Meta'} Ads Connection`,
-        description: "Initializing OAuth connection...",
+        description: "Initializing connection...",
       });
       
       // Prepare redirect URI - make sure it's the current origin plus the path
@@ -68,10 +68,11 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
       console.error(`Error connecting to ${platform} Ads:`, error);
       toast({
         title: "Connection Failed",
-        description: `${error.message}`,
+        description: error.message || `Failed to connect to ${platform} Ads`,
         variant: "destructive",
       });
       setIsConnecting(false);
+      throw error; // Re-throw for component to handle
     }
   };
 
@@ -120,11 +121,11 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
         title: "Connection Removed",
         description: `Your ${platformName} account has been disconnected`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error removing connection:", error);
       toast({
         title: "Failed to remove connection",
-        description: "There was an error disconnecting your account",
+        description: error.message || "There was an error disconnecting your account",
         variant: "destructive",
       });
     }

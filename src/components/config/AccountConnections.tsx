@@ -1,10 +1,11 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, Info } from "lucide-react";
 import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const AccountConnections: React.FC = () => {
   const {
@@ -16,6 +17,33 @@ const AccountConnections: React.FC = () => {
     removeConnection,
     fetchConnections
   } = useAdAccountConnections();
+
+  const [error, setError] = useState<string | null>(null);
+
+  // Clear error when connections change
+  useEffect(() => {
+    if (connections.length > 0) {
+      setError(null);
+    }
+  }, [connections]);
+
+  const handleGoogleConnection = async () => {
+    try {
+      setError(null);
+      await initiateGoogleConnection();
+    } catch (err: any) {
+      setError(err.message || "Failed to connect to Google Ads");
+    }
+  };
+
+  const handleMetaConnection = async () => {
+    try {
+      setError(null);
+      await initiateMetaConnection();
+    } catch (err: any) {
+      setError(err.message || "Failed to connect to Meta Ads");
+    }
+  };
 
   return (
     <Card>
@@ -37,6 +65,14 @@ const AccountConnections: React.FC = () => {
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {isLoading ? (
           <div className="flex justify-center p-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -87,7 +123,7 @@ const AccountConnections: React.FC = () => {
                 <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
                   <p className="text-muted-foreground mb-2">No Google Ads account connected</p>
                   <Button 
-                    onClick={initiateGoogleConnection} 
+                    onClick={handleGoogleConnection} 
                     disabled={isConnecting}
                   >
                     {isConnecting ? (
@@ -144,7 +180,7 @@ const AccountConnections: React.FC = () => {
                 <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
                   <p className="text-muted-foreground mb-2">No Meta Ads account connected</p>
                   <Button 
-                    onClick={initiateMetaConnection}
+                    onClick={handleMetaConnection}
                     disabled={isConnecting}
                   >
                     {isConnecting ? (
@@ -161,12 +197,17 @@ const AccountConnections: React.FC = () => {
             </div>
             
             <div className="bg-muted p-4 rounded-md mt-6">
-              <h4 className="font-medium mb-2">About Ad Account Connections</h4>
-              <p className="text-sm text-muted-foreground">
-                Connecting your ad accounts allows this application to create and manage 
-                campaigns on your behalf. Your credentials are securely stored and you 
-                can disconnect your accounts at any time.
-              </p>
+              <div className="flex items-start">
+                <Info className="h-5 w-5 mr-2 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium mb-2">About Ad Account Connections</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Connecting your ad accounts allows Zero Agency Ad Guru to create and manage 
+                    campaigns on your behalf. Your credentials are securely stored and you 
+                    can disconnect your accounts at any time.
+                  </p>
+                </div>
+              </div>
             </div>
           </>
         )}

@@ -9,44 +9,54 @@ export const initiateOAuth = async (params: OAuthParams) => {
   
   console.log(`Using redirect URI: ${redirectUri}`);
   
-  // Generate the OAuth URL from our edge function
-  const response = await supabase.functions.invoke('ad-account-auth', {
-    body: {
-      action: 'getAuthUrl',
+  try {
+    // Generate the OAuth URL from our edge function
+    const response = await supabase.functions.invoke('ad-account-auth', {
+      body: {
+        action: 'getAuthUrl',
+        platform,
+        redirectUri,
+        userId
+      }
+    });
+    
+    if (!response) {
+      console.error('No response from edge function');
+      throw new Error(`Failed to initialize ${platform} OAuth flow. No response from server.`);
+    }
+
+    if (response.error) {
+      console.error(`Error response from edge function:`, response.error);
+      let errorMessage = `Failed to initialize ${platform} OAuth flow: ${response.error.message || 'Unknown error'}`;
+      
+      // Check if the error contains information about missing environment variables
+      if (response.error.message && response.error.message.includes('Missing required')) {
+        errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    const data = response.data;
+    
+    if (!data || !data.success || !data.authUrl) {
+      console.error(`Invalid response from edge function:`, data);
+      throw new Error(data?.error || `Failed to get valid auth URL for ${platform}`);
+    }
+    
+    // Store that we're in the middle of an OAuth flow
+    sessionStorage.setItem(OAUTH_STORAGE_KEY, JSON.stringify({
       platform,
-      redirectUri,
+      inProgress: true,
       userId
-    }
-  });
-  
-  if (!response || response.error) {
-    console.error(`Error response from edge function:`, response);
-    let errorMessage = response?.error?.message || `Failed to initialize ${platform} OAuth flow`;
+    }));
     
-    // Check if the error contains information about missing environment variables
-    if (errorMessage.includes('Missing required')) {
-      errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
-    }
-    
-    throw new Error(errorMessage);
+    // Return the OAuth URL for redirection
+    return data.authUrl;
+  } catch (error) {
+    console.error(`Error in initiateOAuth:`, error);
+    throw error;
   }
-  
-  const data = response.data;
-  
-  if (!data || !data.success || !data.authUrl) {
-    console.error(`Invalid response from edge function:`, data);
-    throw new Error(data?.error || `Failed to get valid auth URL for ${platform}`);
-  }
-  
-  // Store that we're in the middle of an OAuth flow
-  sessionStorage.setItem(OAUTH_STORAGE_KEY, JSON.stringify({
-    platform,
-    inProgress: true,
-    userId
-  }));
-  
-  // Return the OAuth URL for redirection
-  return data.authUrl;
 };
 
 export const handleOAuthCallback = async (redirectUri: string) => {
@@ -81,31 +91,41 @@ export const handleOAuthCallback = async (redirectUri: string) => {
   
   console.log(`Using callback redirect URI: ${redirectUri}`);
   
-  // Exchange the code for tokens
-  const response = await supabase.functions.invoke('ad-account-auth', {
-    body: {
-      action: 'exchangeToken',
-      code,
-      state,
-      platform,
-      redirectUri,
-      userId
+  try {
+    // Exchange the code for tokens
+    const response = await supabase.functions.invoke('ad-account-auth', {
+      body: {
+        action: 'exchangeToken',
+        code,
+        state,
+        platform,
+        redirectUri,
+        userId
+      }
+    });
+    
+    if (!response) {
+      console.error('No response from token exchange');
+      throw new Error(`Failed to exchange token for ${platform}. No response from server.`);
     }
-  });
-  
-  if (!response || response.error) {
-    console.error(`Error response from exchange token:`, response);
-    throw new Error(response?.error?.message || `Failed to exchange token for ${platform}`);
+
+    if (response.error) {
+      console.error(`Error response from exchange token:`, response.error);
+      throw new Error(`Failed to exchange token for ${platform}: ${response.error.message || 'Unknown error'}`);
+    }
+    
+    const data = response.data;
+    
+    if (!data || !data.success) {
+      console.error(`Invalid response from token exchange:`, data);
+      throw new Error(data?.error || `Failed to complete ${platform} connection`);
+    }
+    
+    return { platform };
+  } catch (error) {
+    console.error(`Error in handleOAuthCallback:`, error);
+    throw error;
   }
-  
-  const data = response.data;
-  
-  if (!data || !data.success) {
-    console.error(`Invalid response from token exchange:`, data);
-    throw new Error(data?.error || `Failed to complete ${platform} connection`);
-  }
-  
-  return { platform };
 };
 
 export const isOAuthCallback = () => {

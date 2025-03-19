@@ -30,7 +30,16 @@ serve(async (req) => {
     
     if (!supabaseUrl || !supabaseKey) {
       console.error("Missing Supabase URL or service role key");
-      throw new Error("Server configuration error");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Server configuration error"
+        }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
@@ -41,7 +50,16 @@ serve(async (req) => {
       requestBody = await req.json();
     } catch (error) {
       console.error("Error parsing request body:", error);
-      throw new Error("Invalid request format");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Invalid request format"
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     const { action, platform, code, redirectUri, userId, state } = requestBody;
@@ -69,7 +87,16 @@ serve(async (req) => {
           if (!clientSecret) missingVars.push('GOOGLE_CLIENT_SECRET');
           if (!developerToken) missingVars.push('GOOGLE_DEVELOPER_TOKEN');
           
-          throw new Error(`Missing required Google Ads credentials: ${missingVars.join(', ')}`);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Missing required Google Ads credentials: ${missingVars.join(', ')}`
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
       } else if (platform === 'meta') {
         clientId = Deno.env.get('META_CLIENT_ID');
@@ -84,10 +111,28 @@ serve(async (req) => {
           if (!clientId) missingVars.push('META_CLIENT_ID');
           if (!clientSecret) missingVars.push('META_CLIENT_SECRET');
           
-          throw new Error(`Missing required Meta Ads credentials: ${missingVars.join(', ')}`);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Missing required Meta Ads credentials: ${missingVars.join(', ')}`
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
       } else {
-        throw new Error(`Unsupported platform: ${platform}`);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Unsupported platform: ${platform}`
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       // Generate a unique state parameter to prevent CSRF
@@ -112,7 +157,16 @@ serve(async (req) => {
       
       if (stateError) {
         console.error("Error storing OAuth state:", stateError);
-        throw new Error("Failed to prepare OAuth flow: " + stateError.message);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Failed to prepare OAuth flow: " + stateError.message
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       let authUrl;
@@ -139,12 +193,30 @@ serve(async (req) => {
     // Exchange code for token
     if (action === 'exchangeToken') {
       if (!code) {
-        throw new Error("Authorization code is required");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Authorization code is required"
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       // Validate state parameter to prevent CSRF attacks
       if (!state) {
-        throw new Error("State parameter is missing");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "State parameter is missing"
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       // Retrieve and validate the state
@@ -156,7 +228,16 @@ serve(async (req) => {
       
       if (stateError || !stateData) {
         console.error("Error retrieving OAuth state:", stateError);
-        throw new Error("Invalid or expired OAuth state");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Invalid or expired OAuth state"
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       // Use the stored data from the state
@@ -182,7 +263,16 @@ serve(async (req) => {
       
       if (!clientId || !clientSecret) {
         console.error(`${platform} OAuth credentials not configured`);
-        throw new Error(`${platform} OAuth credentials not configured in server environment`);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `${platform} OAuth credentials not configured in server environment`
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       // Exchange the code for tokens
@@ -212,7 +302,16 @@ serve(async (req) => {
         if (!tokenResponse.ok) {
           const errorText = await tokenResponse.text();
           console.error(`Token exchange failed (${tokenResponse.status}): ${errorText}`);
-          throw new Error(`Failed to exchange code for tokens: ${tokenResponse.status} - ${errorText}`);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Failed to exchange code for tokens: ${tokenResponse.status} - ${errorText}`
+            }),
+            {
+              status: tokenResponse.status,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
         
         const tokenData = await tokenResponse.json();
@@ -302,7 +401,16 @@ serve(async (req) => {
         
         if (error) {
           console.error('Error storing tokens:', error);
-          throw error;
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: error.message || "Failed to store connection details"
+            }),
+            {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
         
         return new Response(
@@ -318,11 +426,29 @@ serve(async (req) => {
         );
       } catch (fetchError) {
         console.error(`Error during token exchange:`, fetchError);
-        throw new Error(`Token exchange failed: ${fetchError.message}`);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: fetchError.message || "Token exchange failed"
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
     }
     
-    throw new Error(`Invalid action specified: ${action}`);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: `Invalid action specified: ${action}`
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
     
   } catch (error) {
     console.error(`Error processing request:`, error);
@@ -334,7 +460,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       }
     );
   }
