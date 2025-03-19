@@ -1,20 +1,17 @@
 
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import BillingFeatures from "@/components/billing/BillingFeatures";
 import LoadingState from "@/components/billing/LoadingState";
-import StripeBuyButton from "@/components/billing/StripeBuyButton";
 import PaymentVerification from "@/components/billing/PaymentVerification";
+import AuthenticationRequired from "@/components/billing/AuthenticationRequired";
+import BillingPageContent from "@/components/billing/BillingPageContent";
 import AppLayout from "@/components/AppLayout";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
-import { ArrowLeft, LogIn, Beaker, Plus } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const BillingPage: React.FC = () => {
-  const { isAuthenticated, user, isLoading, updateUserPaymentStatus } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const [showDevTools, setShowDevTools] = useState(false);
   
@@ -53,203 +50,16 @@ const BillingPage: React.FC = () => {
     if (isAuthenticated) {
       return (
         <AppLayout activePage="billing">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
-                  <ArrowLeft size={16} />
-                </Button>
-                <div>
-                  <h1 className="text-3xl font-bold">Billing</h1>
-                  <p className="text-muted-foreground">Manage your subscription</p>
-                </div>
-              </div>
-              
-              {/* Developer mode toggle button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={toggleDevTools}
-                className="flex items-center gap-1"
-              >
-                <Beaker size={16} />
-                <span>Dev Tools</span>
-              </Button>
-            </div>
-            
-            {/* Developer tools section */}
-            {showDevTools && (
-              <Card className="w-full max-w-2xl mx-auto mb-8 border-dashed border-amber-300 bg-amber-50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-amber-800 text-lg">Developer Tools</CardTitle>
-                  <CardDescription className="text-amber-700">
-                    Tools for testing payment flows
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-amber-100 rounded-md">
-                      <p className="text-sm text-amber-800 mb-3">
-                        These tools simulate payment actions without actually processing payments.
-                        For testing purposes only.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => updateUserPaymentStatus(true)}
-                          className="bg-amber-200 hover:bg-amber-300 text-amber-900"
-                        >
-                          Simulate Successful Payment
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => updateUserPaymentStatus(false)}
-                          className="border-amber-300 text-amber-800"
-                        >
-                          Simulate Cancellation
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            <div className="mb-8 space-y-8">
-              {/* Subscription Card */}
-              <Card className="w-full max-w-2xl mx-auto">
-                <CardHeader>
-                  <CardTitle>AI Ad Guru Pro</CardTitle>
-                  <CardDescription>
-                    Unlock unlimited AI-powered ad campaigns
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <BillingFeatures />
-                  <div className="text-center mt-6 space-y-2">
-                    <p className="text-3xl font-bold">$99.00</p>
-                    <p className="text-muted-foreground">per month</p>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col items-center">
-                  {user?.hasPaid ? (
-                    <div className="text-center space-y-4">
-                      <div className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-block">
-                        Active Subscription
-                      </div>
-                      <p className="text-muted-foreground">
-                        Your subscription is active. You have access to all premium features.
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => updateUserPaymentStatus(false)}
-                      >
-                        Cancel Subscription
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-full">
-                      <StripeBuyButton 
-                        isAuthenticated={isAuthenticated}
-                        userId={user?.id} 
-                        customerEmail={user?.email}
-                      />
-                    </div>
-                  )}
-                </CardFooter>
-              </Card>
-              
-              {/* Credits Purchase Card */}
-              <Card className="w-full max-w-2xl mx-auto">
-                <CardHeader>
-                  <CardTitle>Buy Additional Credits</CardTitle>
-                  <CardDescription>
-                    Add more credits to your account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-center">
-                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 w-full max-w-sm">
-                      <div className="flex items-center justify-center mb-4">
-                        <div className="bg-blue-50 p-3 rounded-full">
-                          <Plus className="h-8 w-8 text-blue-500" />
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-semibold text-center mb-2">200 Credits</h3>
-                      <ul className="space-y-2 mb-6">
-                        <li className="flex items-center text-sm">
-                          <span className="bg-green-100 p-1 rounded-full mr-2">
-                            <svg className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </span>
-                          Create additional campaigns
-                        </li>
-                        <li className="flex items-center text-sm">
-                          <span className="bg-green-100 p-1 rounded-full mr-2">
-                            <svg className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </span>
-                          Generate more AI ad variations
-                        </li>
-                        <li className="flex items-center text-sm">
-                          <span className="bg-green-100 p-1 rounded-full mr-2">
-                            <svg className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </span>
-                          One-time purchase (no subscription)
-                        </li>
-                      </ul>
-                      <div className="text-center mb-6">
-                        <p className="text-3xl font-bold">$49.99</p>
-                        <p className="text-muted-foreground text-sm">one-time payment</p>
-                      </div>
-                      <Button 
-                        className="w-full"
-                        onClick={() => window.open("https://buy.stripe.com/dR62brdyV4jR1XO7sv", "_blank")}
-                      >
-                        Buy Credits
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <BillingPageContent
+            showDevTools={showDevTools}
+            toggleDevTools={toggleDevTools}
+          />
         </AppLayout>
       );
     }
     
     // If not authenticated and not in payment verification, show login prompt
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please log in to access billing and subscription features
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center p-6">
-            <p className="mb-6 text-muted-foreground">
-              You need to be logged in to manage your subscription and billing information.
-            </p>
-            <Button 
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => navigate("/login")}
-            >
-              <LogIn size={18} />
-              <span>Go to Login</span>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AuthenticationRequired />;
   };
   
   // Show loading state while auth is initializing
@@ -261,4 +71,3 @@ const BillingPage: React.FC = () => {
 };
 
 export default BillingPage;
-
