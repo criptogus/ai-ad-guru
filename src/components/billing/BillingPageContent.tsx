@@ -1,13 +1,22 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Beaker, ArrowLeft } from "lucide-react";
+import { Beaker, ArrowLeft, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BillingSubscriptionCard from "./BillingSubscriptionCard";
 import CreditsPurchaseCard from "./CreditsPurchaseCard";
 import DevToolsSection from "./DevToolsSection";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import CreditUsageHistory from "./CreditUsageHistory";
 
 interface BillingPageContentProps {
   showDevTools: boolean;
@@ -19,7 +28,14 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   toggleDevTools 
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, updateUserPaymentStatus } = useAuth();
+  const [showCreditHistory, setShowCreditHistory] = useState(false);
+
+  // Check if we're coming from campaign creation with required credits
+  const state = location.state as { from?: string; requiredCredits?: number } | null;
+  const fromCampaign = state?.from === 'campaign';
+  const requiredCredits = state?.requiredCredits || 0;
 
   return (
     <div className="p-8">
@@ -34,16 +50,40 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
           </div>
         </div>
         
-        {/* Developer mode toggle button */}
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={toggleDevTools}
-          className="flex items-center gap-1"
-        >
-          <Beaker size={16} />
-          <span>Dev Tools</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <History size={16} />
+                <span>Credit History</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Credit Usage History</DialogTitle>
+                <DialogDescription>
+                  View your credit usage history and purchases
+                </DialogDescription>
+              </DialogHeader>
+              {user && <CreditUsageHistory userId={user.id} />}
+            </DialogContent>
+          </Dialog>
+          
+          {/* Developer mode toggle button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={toggleDevTools}
+            className="flex items-center gap-1"
+          >
+            <Beaker size={16} />
+            <span>Dev Tools</span>
+          </Button>
+        </div>
       </div>
       
       {/* Developer tools section */}
@@ -51,15 +91,25 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         <DevToolsSection updateUserPaymentStatus={updateUserPaymentStatus} />
       )}
       
+      {/* Show warning if coming from campaign with insufficient credits */}
+      {fromCampaign && requiredCredits > 0 && (
+        <Card className="p-4 mb-6 bg-amber-50 border-amber-200">
+          <p className="text-amber-800">
+            You need <strong>{requiredCredits} more credits</strong> to create this campaign. 
+            Please purchase more credits below.
+          </p>
+        </Card>
+      )}
+      
       <div className="mb-8 space-y-8">
+        {/* Credits Purchase Card */}
+        <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
+
         {/* Subscription Card */}
         <BillingSubscriptionCard 
           user={user} 
           updateUserPaymentStatus={updateUserPaymentStatus} 
         />
-        
-        {/* Credits Purchase Card */}
-        <CreditsPurchaseCard />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { consumeCredits, getCreditCosts } from "@/services/userRoles";
 
 export const useCampaignCreation = (
   user: any,
@@ -14,6 +15,7 @@ export const useCampaignCreation = (
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
+  const creditCosts = getCreditCosts();
 
   // Create campaign in database
   const createCampaign = async () => {
@@ -22,6 +24,25 @@ export const useCampaignCreation = (
     setIsCreating(true);
 
     try {
+      // Calculate required credits
+      const requiredCredits = creditCosts.campaignCreation;
+      const hasImages = metaAds.some(ad => ad.image);
+      const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
+      
+      // First consume credits
+      const creditSuccess = await consumeCredits(
+        user.id,
+        totalCredits,
+        'campaign_creation',
+        `Campaign: ${campaignData.name} - ${hasImages ? 'With images' : 'Text only'}`
+      );
+      
+      if (!creditSuccess) {
+        setIsCreating(false);
+        navigate('/billing', { state: { from: 'campaign', requiredCredits: totalCredits } });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('campaigns')
         .insert([
@@ -39,7 +60,8 @@ export const useCampaignCreation = (
             website_url: campaignData.websiteUrl,
             google_ads: googleAds,
             meta_ads: metaAds,
-            status: 'active'
+            status: 'active',
+            optimization_frequency: campaignData.optimizationFrequency || 'weekly'
           }
         ])
         .select();
@@ -47,12 +69,6 @@ export const useCampaignCreation = (
       if (error) {
         throw error;
       }
-
-      // Deduct credits
-      await supabase
-        .from('profiles')
-        .update({ credits: user.credits - 5 })
-        .eq('id', user.id);
 
       toast({
         title: "Campaign Created",
@@ -68,6 +84,22 @@ export const useCampaignCreation = (
         description: "There was an error creating your campaign",
         variant: "destructive",
       });
+      
+      // If we get here, try to refund the credits
+      try {
+        const requiredCredits = creditCosts.campaignCreation;
+        const hasImages = metaAds.some(ad => ad.image);
+        const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
+        
+        await supabase
+          .from('profiles')
+          .update({ 
+            credits: user.credits + totalCredits 
+          })
+          .eq('id', user.id);
+      } catch (refundError) {
+        console.error('Error refunding credits:', refundError);
+      }
     } finally {
       setIsCreating(false);
     }
