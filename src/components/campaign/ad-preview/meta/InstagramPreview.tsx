@@ -17,6 +17,7 @@ interface InstagramPreviewProps {
   loadingImageIndex?: number | null;
   index?: number;
   onGenerateImage?: () => Promise<void>;
+  onUpdateAd?: (updatedAd: MetaAd) => void; // Add callback to update parent
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
@@ -25,7 +26,8 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   imageKey,
   loadingImageIndex,
   index,
-  onGenerateImage
+  onGenerateImage,
+  onUpdateAd
 }) => {
   const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
   const [isUploading, setIsUploading] = useState(false);
@@ -52,6 +54,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       fetch(ad.imageUrl, { method: 'HEAD' })
         .then(response => {
           console.log(`Image URL accessibility check: ${response.status} ${response.statusText}`);
+          if (!response.ok) {
+            console.error(`Image URL not accessible: ${ad.imageUrl}`);
+          }
         })
         .catch(error => {
           console.error("Image URL accessibility check failed:", error);
@@ -123,6 +128,17 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       // Trigger re-render with new timestamp
       setImageTimestamp(Date.now());
+      
+      // Create updated ad with new image URL
+      const updatedAd = { ...ad, imageUrl: imageUrl };
+      
+      // Call parent update function if provided
+      if (onUpdateAd) {
+        console.log("Updating parent component with new image URL:", imageUrl);
+        onUpdateAd(updatedAd);
+      } else {
+        console.warn("onUpdateAd callback not provided - image URL won't be saved to ad state");
+      }
       
       // Force browser to reload the image (avoiding cache issues)
       const img = new Image();

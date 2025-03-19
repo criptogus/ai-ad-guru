@@ -23,22 +23,28 @@ const ImageContent: React.FC<ImageContentProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   
-  // Reset error state when the image URL changes
+  // Reset error state and set up image source when the image URL changes
   useEffect(() => {
     if (ad.imageUrl) {
       console.log("ImageContent - New image URL detected:", ad.imageUrl);
       setImageError(false);
       setIsImageLoaded(false);
+      setRetryCount(0);
       
-      // Force image reload by adding cache buster if not already present
-      if (imgRef.current) {
-        const currentSrc = imgRef.current.src;
-        if (!currentSrc.includes('?t=')) {
-          imgRef.current.src = `${ad.imageUrl}?t=${Date.now()}`;
-        }
-      }
+      // Add cache buster to URL
+      const cacheBuster = `t=${Date.now()}`;
+      const newSrc = ad.imageUrl.includes('?') 
+        ? `${ad.imageUrl}&${cacheBuster}` 
+        : `${ad.imageUrl}?${cacheBuster}`;
+      
+      console.log("Setting image src to:", newSrc);
+      setImageSrc(newSrc);
+    } else {
+      setImageSrc(null);
     }
   }, [ad.imageUrl]);
   
@@ -47,65 +53,71 @@ const ImageContent: React.FC<ImageContentProps> = ({
     console.log("ImageContent rendering with:", {
       hasImageUrl: !!ad.imageUrl,
       imageUrl: ad.imageUrl,
+      imageSrc,
       imageError,
       isImageLoaded,
-      imageKey
+      imageKey,
+      retryCount
     });
-  }, [ad.imageUrl, imageError, isImageLoaded, imageKey]);
-  
-  // Force image refresh when URL changes by using a unique key
-  const uniqueKey = `${imageKey || 0}-${ad.imageUrl || 'placeholder'}-${Date.now()}`;
+  }, [ad.imageUrl, imageSrc, imageError, isImageLoaded, imageKey, retryCount]);
   
   const handleImageLoad = () => {
-    console.log("Image loaded successfully:", ad.imageUrl);
+    console.log("Image loaded successfully:", imageSrc);
     setIsImageLoaded(true);
     setImageError(false);
   };
   
   const handleImageError = () => {
-    console.error("Image failed to load:", ad.imageUrl);
-    setImageError(true);
-    setIsImageLoaded(false);
+    console.error("Image failed to load:", imageSrc);
     
-    // Try to reload with cache buster
-    if (imgRef.current && ad.imageUrl) {
-      const withoutQuery = ad.imageUrl.split('?')[0];
-      const newSrc = `${withoutQuery}?nocache=${Date.now()}`;
-      console.log("Retrying with cache buster:", newSrc);
+    // Retry logic with exponential backoff
+    if (retryCount < 3 && ad.imageUrl) {
+      const nextRetry = retryCount + 1;
+      setRetryCount(nextRetry);
+      
+      const delay = Math.pow(2, nextRetry) * 1000; // Exponential backoff
+      console.log(`Retrying image load (attempt ${nextRetry}) after ${delay}ms`);
+      
       setTimeout(() => {
-        if (imgRef.current) imgRef.current.src = newSrc;
-      }, 1000);
+        if (imgRef.current) {
+          const withoutQuery = ad.imageUrl!.split('?')[0];
+          const newSrc = `${withoutQuery}?nocache=${Date.now()}-retry-${nextRetry}`;
+          console.log("Retrying with new src:", newSrc);
+          setImageSrc(newSrc);
+        }
+      }, delay);
+    } else {
+      setImageError(true);
+      setIsImageLoaded(false);
     }
   };
 
   // Preload image
   useEffect(() => {
-    if (ad.imageUrl) {
+    if (imageSrc) {
       const preloadImage = new Image();
       
       preloadImage.onload = () => {
-        console.log("Image preloaded successfully:", ad.imageUrl);
+        console.log("Image preloaded successfully:", imageSrc);
       };
       
       preloadImage.onerror = (e) => {
-        console.error("Image preload failed:", ad.imageUrl, e);
+        console.error("Image preload failed:", imageSrc, e);
       };
       
-      // Add cache buster
-      const cacheBuster = `?t=${Date.now()}`;
-      preloadImage.src = ad.imageUrl.includes('?') ? ad.imageUrl : ad.imageUrl + cacheBuster;
+      preloadImage.src = imageSrc;
     }
-  }, [ad.imageUrl]);
+  }, [imageSrc]);
   
-  const imageDisplay = ad.imageUrl && !imageError ? (
+  const imageDisplay = imageSrc && !imageError ? (
     <div className="w-full h-full relative">
       {!isImageLoaded && <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>}
       <img 
         ref={imgRef}
-        key={uniqueKey}
-        src={ad.imageUrl.includes('?') ? ad.imageUrl : `${ad.imageUrl}?t=${Date.now()}`}
+        key={`img-${imageKey || 0}-${retryCount}`}
+        src={imageSrc}
         alt={ad.headline || "Instagram ad"}
         className={cn(
           "w-full h-full object-cover transition-opacity duration-300",
@@ -131,13 +143,14 @@ const ImageContent: React.FC<ImageContentProps> = ({
       {imageDisplay}
       
       {/* Debug info - only visible in development */}
-      {process.env.NODE_ENV !== 'production' && ad.imageUrl && (
+      {process.env.NODE_ENV !== 'production' && (
         <div className="absolute bottom-0 left-0 right-0 p-1 bg-black bg-opacity-50 text-xs text-white">
           <div className="truncate">
             URL: {ad.imageUrl ? (ad.imageUrl.length > 30 ? ad.imageUrl.substring(0, 30) + '...' : ad.imageUrl) : 'None'}
           </div>
-          <div className="truncate">
-            Status: {isImageLoaded ? 'Loaded' : imageError ? 'Error' : 'Loading'}
+          <div className="flex justify-between">
+            <span>Status: {isImageLoaded ? 'Loaded' : imageError ? 'Error' : 'Loading'}</span>
+            <span>Retries: {retryCount}/3</span>
           </div>
         </div>
       )}
