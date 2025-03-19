@@ -4,6 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   InstagramPreviewHeader, 
   InstagramPreviewFooter, 
@@ -33,6 +34,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast: uiToast } = useToast();
+  const { user } = useAuth();
   
   // Force React to re-render the image when imageUrl changes
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
@@ -84,6 +86,14 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       return;
     }
 
+    // Ensure user is authenticated
+    if (!user) {
+      toast.error("You must be logged in to upload images", {
+        duration: 5000,
+      });
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -91,20 +101,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-user-uploaded.${fileExt}`;
       const filePath = `instagram-ads/${fileName}`;
+      const bucketName = 'ai-images';
 
-      // Check if ai-images bucket exists, create if not
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketName = 'ai-images'; // Use the same bucket as the AI generated images
-      const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
-      
-      if (!bucketExists) {
-        const { error: bucketError } = await supabase.storage
-          .createBucket(bucketName, {
-            public: true
-          });
-        
-        if (bucketError) throw bucketError;
-      }
+      console.log(`Uploading file to ${bucketName}/${filePath}`);
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
@@ -114,7 +113,10 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
           upsert: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
 
       // Get the public URL
       const imageUrl = supabase.storage
@@ -151,7 +153,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image", {
-        description: "Please try again later.",
+        description: "Please try again later. You may need to log in to upload images.",
         duration: 5000,
       });
     } finally {
@@ -165,6 +167,13 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   };
 
   const triggerFileUpload = () => {
+    if (!user) {
+      toast.error("You must be logged in to upload images", {
+        duration: 5000,
+      });
+      return;
+    }
+    
     fileInputRef.current?.click();
   };
 
@@ -176,7 +185,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       {/* Image */}
       <ImageContent 
         ad={ad}
-        imageKey={imageTimestamp} // Use timestamp as key to force re-render
+        imageKey={imageTimestamp} 
         isLoading={isLoading}
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
