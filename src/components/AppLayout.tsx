@@ -5,18 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  BarChart3, 
   PlusCircle, 
   CreditCard, 
   Settings, 
   LogOut,
-  LayoutDashboard,
-  Flag,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
   Sun,
-  Moon
+  Moon,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,34 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
-
-interface NavItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  href: string;
-  collapsed?: boolean;
-}
-
-const NavItem: React.FC<NavItemProps> = ({ icon, label, active, href, collapsed }) => {
-  const navigate = useNavigate();
-  
-  return (
-    <Button
-      variant="ghost"
-      className={cn(
-        "w-full justify-start gap-3 mb-1 h-10 px-3",
-        active 
-          ? "bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30" 
-          : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-      )}
-      onClick={() => navigate(href)}
-    >
-      {icon}
-      {!collapsed && <span>{label}</span>}
-    </Button>
-  );
-};
+import SidebarNavigation from "./navigation/SidebarNavigation";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -100,51 +69,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
           {!collapsed && <h1 className="text-lg font-medium">Ad Manager</h1>}
         </div>
 
-        {/* Navigation */}
-        <nav className="space-y-1 flex-1">
-          <NavItem 
-            icon={<LayoutDashboard size={20} />} 
-            label="Dashboard" 
-            active={activePage === "dashboard"} 
-            href="/dashboard" 
-            collapsed={collapsed}
-          />
-          <NavItem 
-            icon={<Flag size={20} />} 
-            label="Campaigns" 
-            active={activePage === "campaigns"} 
-            href="/campaigns" 
-            collapsed={collapsed}
-          />
-          <NavItem 
-            icon={<BarChart3 size={20} />} 
-            label="Analytics" 
-            active={activePage === "analytics"}
-            href="/analytics" 
-            collapsed={collapsed}
-          />
-          <NavItem 
-            icon={<Sparkles size={20} />} 
-            label="AI Insights" 
-            active={activePage === "insights"}
-            href="/insights" 
-            collapsed={collapsed}
-          />
-          <NavItem 
-            icon={<CreditCard size={20} />} 
-            label="Billing" 
-            active={activePage === "billing"}
-            href="/billing" 
-            collapsed={collapsed}
-          />
-          <NavItem 
-            icon={<Settings size={20} />} 
-            label="Settings" 
-            active={activePage === "settings"}
-            href="/settings" 
-            collapsed={collapsed}
-          />
-        </nav>
+        {/* Navigation - using our new component */}
+        <SidebarNavigation collapsed={collapsed} activePage={activePage} />
 
         {/* Create Button */}
         <Button 
