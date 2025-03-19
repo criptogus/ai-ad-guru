@@ -10,54 +10,70 @@ interface StorageConfig {
 export async function storeImageInSupabase(imageBlob: Blob, config: StorageConfig): Promise<string> {
   const { supabaseUrl, supabaseServiceKey } = config;
   
+  console.log(`Storing image in Supabase. Image size: ${imageBlob.size} bytes, Type: ${imageBlob.type}`);
+  
   // Initialize Supabase client
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   const fileName = `ad-${Date.now()}.png`;
   const bucketName = 'ai-images';
   
-  // Check if bucket exists, create if not
-  console.log("Checking if bucket exists...");
-  const { data: buckets } = await supabase.storage.listBuckets();
-  const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
-  
-  if (!bucketExists) {
-    console.log("Creating bucket:", bucketName);
-    const { error: bucketError } = await supabase.storage.createBucket(bucketName, {
-      public: true
-    });
+  try {
+    // Check if bucket exists, create if not
+    console.log("Checking if bucket exists:", bucketName);
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
     
-    if (bucketError) {
-      console.error("Error creating bucket:", bucketError);
-      throw new Error(`Failed to create storage bucket: ${bucketError.message}`);
+    if (!bucketExists) {
+      console.log("Creating bucket:", bucketName);
+      const { error: bucketError } = await supabase.storage.createBucket(bucketName, {
+        public: true
+      });
+      
+      if (bucketError) {
+        console.error("Error creating bucket:", bucketError);
+        throw new Error(`Failed to create storage bucket: ${bucketError.message}`);
+      }
     }
+    
+    // Upload the image to Supabase storage
+    console.log(`Uploading image '${fileName}' to Supabase storage bucket '${bucketName}'...`);
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(`instagram-ads/${fileName}`, imageBlob, {
+        contentType: 'image/png',
+        cacheControl: '3600'
+      });
+    
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw new Error(`Failed to upload image to storage: ${uploadError.message}`);
+    }
+    
+    if (!uploadData || !uploadData.path) {
+      console.error("Upload succeeded but no path returned");
+    }
+    
+    // Get the public URL
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(`instagram-ads/${fileName}`);
+    
+    if (!publicUrlData || !publicUrlData.publicUrl) {
+      console.error("Failed to get public URL for uploaded image");
+      throw new Error("Could not get public URL for uploaded image");
+    }
+    
+    const persistentImageUrl = publicUrlData.publicUrl;
+    
+    console.log("Image stored successfully in Supabase storage");
+    console.log("Persistent image URL:", persistentImageUrl);
+    
+    return persistentImageUrl;
+  } catch (error) {
+    console.error("Error in storeImageInSupabase:", error);
+    throw error;
   }
-  
-  // Upload the image to Supabase storage
-  console.log("Uploading image to Supabase storage...");
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from(bucketName)
-    .upload(`instagram-ads/${fileName}`, imageBlob, {
-      contentType: 'image/png',
-      cacheControl: '3600'
-    });
-  
-  if (uploadError) {
-    console.error("Upload error:", uploadError);
-    throw new Error(`Failed to upload image to storage: ${uploadError.message}`);
-  }
-  
-  // Get the public URL
-  const { data: publicUrlData } = supabase.storage
-    .from(bucketName)
-    .getPublicUrl(`instagram-ads/${fileName}`);
-  
-  const persistentImageUrl = publicUrlData.publicUrl;
-  
-  console.log("Image stored in Supabase storage");
-  console.log("Persistent image URL:", persistentImageUrl);
-  
-  return persistentImageUrl;
 }
 
 export function createErrorResponse(error: Error): Response {

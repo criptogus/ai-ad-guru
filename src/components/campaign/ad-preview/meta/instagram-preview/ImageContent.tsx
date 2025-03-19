@@ -27,6 +27,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
   // Reset error state when the image URL changes
   useEffect(() => {
     if (ad.imageUrl) {
+      console.log("New image URL detected:", ad.imageUrl);
       setImageError(false);
       setIsImageLoaded(false);
     }
@@ -76,6 +77,10 @@ const ImageContent: React.FC<ImageContentProps> = ({
   return (
     <div className="bg-gray-100 aspect-square relative overflow-hidden">
       {imageDisplay}
+      {/* Debug info */}
+      {ad.imageUrl && <div className="absolute bottom-0 left-0 right-0 p-1 bg-black bg-opacity-50 text-xs text-white">
+        <div className="truncate">Image URL: {ad.imageUrl ? (ad.imageUrl.length > 30 ? ad.imageUrl.substring(0, 30) + '...' : ad.imageUrl) : 'None'}</div>
+      </div>}
     </div>
   );
 };

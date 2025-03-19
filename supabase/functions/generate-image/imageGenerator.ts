@@ -37,13 +37,14 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
   const data = await response.json();
   
   if (!data.data || data.data.length === 0) {
-    console.error("OpenAI API response:", data);
-    throw new Error("No image was generated");
+    console.error("OpenAI API response:", JSON.stringify(data));
+    throw new Error(data.error?.message || "No image was generated");
   }
 
   const temporaryImageUrl = data.data[0].url;
   
   if (!temporaryImageUrl) {
+    console.error("Empty image URL in response:", JSON.stringify(data));
     throw new Error("Generated image URL is empty");
   }
   
@@ -56,12 +57,19 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
 }
 
 export async function downloadImage(imageUrl: string): Promise<Blob> {
-  console.log("Downloading image from OpenAI...");
-  const imageResponse = await fetch(imageUrl);
-  
-  if (!imageResponse.ok) {
-    throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+  console.log("Downloading image from OpenAI:", imageUrl);
+  try {
+    const imageResponse = await fetch(imageUrl);
+    
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+    }
+    
+    const blob = await imageResponse.blob();
+    console.log(`Image downloaded successfully. Size: ${blob.size} bytes, Type: ${blob.type}`);
+    return blob;
+  } catch (error) {
+    console.error("Error downloading image:", error);
+    throw error;
   }
-  
-  return await imageResponse.blob();
 }

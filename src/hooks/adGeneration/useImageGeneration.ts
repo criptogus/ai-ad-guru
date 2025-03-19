@@ -41,6 +41,8 @@ export const useImageGeneration = () => {
         },
       });
 
+      console.log('Image generation response:', data);
+
       if (error) {
         console.error('Error generating image:', error);
         const errorMessage = error.message || "Service error while generating image";
@@ -48,9 +50,9 @@ export const useImageGeneration = () => {
         throw new Error(errorMessage);
       }
 
-      if (!data.success) {
-        console.error('Image generation failed:', data.error);
-        const errorMessage = data.error || "Failed to generate image";
+      if (!data || !data.success) {
+        console.error('Image generation failed:', data?.error || 'Unknown error');
+        const errorMessage = data?.error || "Failed to generate image";
         setLastError(errorMessage);
         throw new Error(errorMessage);
       }
