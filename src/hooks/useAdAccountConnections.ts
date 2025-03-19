@@ -16,6 +16,7 @@ export const useAdAccountConnections = () => {
   const { toast } = useToast();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const fetchConnections = async () => {
     if (!user) return;
@@ -57,6 +58,8 @@ export const useAdAccountConnections = () => {
     }
     
     try {
+      setIsConnecting(true);
+      
       toast({
         title: `${platform === 'google' ? 'Google' : 'Meta'} Ads Connection`,
         description: "Initializing OAuth connection...",
@@ -78,7 +81,14 @@ export const useAdAccountConnections = () => {
       
       if (!response || response.error) {
         console.error(`Error response from edge function:`, response);
-        throw new Error(response?.error?.message || `Failed to initialize ${platform} OAuth flow`);
+        let errorMessage = response?.error?.message || `Failed to initialize ${platform} OAuth flow`;
+        
+        // Check if the error contains information about missing environment variables
+        if (errorMessage.includes('Missing required')) {
+          errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const data = response.data;
@@ -103,9 +113,10 @@ export const useAdAccountConnections = () => {
       console.error(`Error connecting to ${platform} Ads:`, error);
       toast({
         title: "Connection Failed",
-        description: `There was an error connecting to ${platform === 'google' ? 'Google' : 'Meta'} Ads: ${error.message}`,
+        description: `${error.message}`,
         variant: "destructive",
       });
+      setIsConnecting(false);
     }
   };
 
@@ -129,12 +140,16 @@ export const useAdAccountConnections = () => {
         description: `Authorization denied or cancelled: ${error}`,
         variant: "destructive",
       });
+      setIsConnecting(false);
       return;
     }
     
     // Retrieve stored OAuth flow data
     const storedAuthData = sessionStorage.getItem('adPlatformAuth');
-    if (!code || !state || !storedAuthData) return;
+    if (!code || !state || !storedAuthData) {
+      setIsConnecting(false);
+      return;
+    }
     
     try {
       const authData = JSON.parse(storedAuthData);
@@ -195,6 +210,8 @@ export const useAdAccountConnections = () => {
         description: error.message || "There was an error connecting your account",
         variant: "destructive",
       });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -240,6 +257,7 @@ export const useAdAccountConnections = () => {
   return {
     connections,
     isLoading,
+    isConnecting,
     fetchConnections,
     initiateGoogleConnection: () => initiateOAuth('google'),
     initiateMetaConnection: () => initiateOAuth('meta'),

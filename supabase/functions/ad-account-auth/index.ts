@@ -46,26 +46,48 @@ serve(async (req) => {
     
     const { action, platform, code, redirectUri, userId, state } = requestBody;
     
-    console.log(`Received auth request - action: ${action}, platform: ${platform}, userId: ${userId}`);
+    console.log(`Received auth request - action: ${action}, platform: ${platform}, userId: ${userId}, redirectUri: ${redirectUri}`);
     
     // Generate OAuth URL
     if (action === 'getAuthUrl') {
       let clientId;
       
-      // Get the client ID based on platform
+      // Check all required environment variables before proceeding
       if (platform === 'google') {
         clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-        console.log("Google Client ID available:", !!clientId);
+        const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+        const developerToken = Deno.env.get('GOOGLE_DEVELOPER_TOKEN');
+        
+        console.log("Google credentials available:", 
+          `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+          `Client Secret: ${clientSecret ? 'Yes' : 'No'}`,
+          `Developer Token: ${developerToken ? 'Yes' : 'No'}`);
+        
+        if (!clientId || !clientSecret || !developerToken) {
+          const missingVars = [];
+          if (!clientId) missingVars.push('GOOGLE_CLIENT_ID');
+          if (!clientSecret) missingVars.push('GOOGLE_CLIENT_SECRET');
+          if (!developerToken) missingVars.push('GOOGLE_DEVELOPER_TOKEN');
+          
+          throw new Error(`Missing required Google Ads credentials: ${missingVars.join(', ')}`);
+        }
       } else if (platform === 'meta') {
         clientId = Deno.env.get('META_CLIENT_ID');
-        console.log("Meta Client ID available:", !!clientId);
+        const clientSecret = Deno.env.get('META_CLIENT_SECRET');
+        
+        console.log("Meta credentials available:", 
+          `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+          `Client Secret: ${clientSecret ? 'Yes' : 'No'}`);
+        
+        if (!clientId || !clientSecret) {
+          const missingVars = [];
+          if (!clientId) missingVars.push('META_CLIENT_ID');
+          if (!clientSecret) missingVars.push('META_CLIENT_SECRET');
+          
+          throw new Error(`Missing required Meta Ads credentials: ${missingVars.join(', ')}`);
+        }
       } else {
         throw new Error(`Unsupported platform: ${platform}`);
-      }
-      
-      if (!clientId) {
-        console.error(`${platform} client ID not configured`);
-        throw new Error(`${platform} client ID not configured in server environment`);
       }
       
       // Generate a unique state parameter to prevent CSRF

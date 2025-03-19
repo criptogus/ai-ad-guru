@@ -10,6 +10,7 @@ const AccountConnections: React.FC = () => {
   const {
     connections,
     isLoading,
+    isConnecting,
     initiateGoogleConnection,
     initiateMetaConnection,
     removeConnection,
@@ -29,7 +30,7 @@ const AccountConnections: React.FC = () => {
           variant="ghost" 
           size="icon" 
           onClick={fetchConnections}
-          disabled={isLoading}
+          disabled={isLoading || isConnecting}
           title="Refresh connections"
         >
           <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
@@ -62,6 +63,11 @@ const AccountConnections: React.FC = () => {
                               <AlertCircle size={14} className="mr-1" />
                               No ad accounts found
                             </span>
+                          ) : conn.account_id === "developer-token-missing" ? (
+                            <span className="flex items-center text-amber-500">
+                              <AlertCircle size={14} className="mr-1" />
+                              Developer token missing
+                            </span>
                           ) : (
                             `ID: ${conn.account_id}`
                           )}
@@ -71,6 +77,7 @@ const AccountConnections: React.FC = () => {
                         variant="outline" 
                         size="sm"
                         onClick={() => removeConnection(conn.id, "Google Ads")}
+                        disabled={isConnecting}
                       >
                         Disconnect
                       </Button>
@@ -79,7 +86,19 @@ const AccountConnections: React.FC = () => {
               ) : (
                 <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
                   <p className="text-muted-foreground mb-2">No Google Ads account connected</p>
-                  <Button onClick={initiateGoogleConnection}>Connect Google Ads</Button>
+                  <Button 
+                    onClick={initiateGoogleConnection} 
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? (
+                      <>
+                        <span className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
+                        Connecting...
+                      </>
+                    ) : (
+                      'Connect Google Ads'
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -115,6 +134,7 @@ const AccountConnections: React.FC = () => {
                         variant="outline" 
                         size="sm"
                         onClick={() => removeConnection(conn.id, "Meta Ads")}
+                        disabled={isConnecting}
                       >
                         Disconnect
                       </Button>
@@ -123,7 +143,19 @@ const AccountConnections: React.FC = () => {
               ) : (
                 <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
                   <p className="text-muted-foreground mb-2">No Meta Ads account connected</p>
-                  <Button onClick={initiateMetaConnection}>Connect Meta Ads</Button>
+                  <Button 
+                    onClick={initiateMetaConnection}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? (
+                      <>
+                        <span className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
+                        Connecting...
+                      </>
+                    ) : (
+                      'Connect Meta Ads'
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
