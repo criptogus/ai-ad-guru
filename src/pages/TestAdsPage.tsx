@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Trash, RefreshCw, Globe, Goal } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Goal, Globe } from "lucide-react";
+import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
+import ConnectionTestCard from "@/components/testing/ConnectionTestCard";
 
 const TestAdsPage = () => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("google");
+  const [activeTab, setActiveTab] = useState<string>("connections");
+  const { isLoading, connectionStatus, statusDetails, testConnection } = useConnectionTest();
 
   return (
     <AppLayout activePage="testing">
@@ -18,7 +19,7 @@ const TestAdsPage = () => {
         <div className="mb-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">Ad Testing Area</h1>
-            <p className="text-muted-foreground">Test ad generation without creating campaigns</p>
+            <p className="text-muted-foreground">Test API connections and ad generation</p>
           </div>
         </div>
 
@@ -26,13 +27,16 @@ const TestAdsPage = () => {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Test Mode</AlertTitle>
           <AlertDescription>
-            This area allows you to test ad generation without spending credits or creating campaigns.
-            Generated ads will not be saved.
+            This area allows you to test API connections and ad generation without spending credits or creating campaigns.
+            Test results will not be saved.
           </AlertDescription>
         </Alert>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
+            <TabsTrigger value="connections" className="flex items-center gap-1">
+              API Connections
+            </TabsTrigger>
             <TabsTrigger value="google" className="flex items-center gap-1">
               <Goal className="h-4 w-4" />
               Google Ads
@@ -46,6 +50,34 @@ const TestAdsPage = () => {
               Microsoft Ads
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="connections">
+            <div className="grid md:grid-cols-3 gap-4">
+              <ConnectionTestCard 
+                platform="linkedin"
+                isLoading={isLoading.linkedin}
+                status={connectionStatus.linkedin}
+                statusDetails={statusDetails.linkedin}
+                onTest={() => testConnection('linkedin')}
+              />
+              
+              <ConnectionTestCard 
+                platform="microsoft"
+                isLoading={isLoading.microsoft}
+                status={connectionStatus.microsoft}
+                statusDetails={statusDetails.microsoft}
+                onTest={() => testConnection('microsoft')}
+              />
+              
+              <ConnectionTestCard 
+                platform="google"
+                isLoading={isLoading.google}
+                status={connectionStatus.google}
+                statusDetails={statusDetails.google}
+                onTest={() => testConnection('google')}
+              />
+            </div>
+          </TabsContent>
 
           <TabsContent value="google">
             <Card>
