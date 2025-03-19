@@ -66,7 +66,7 @@ export const useCampaignActions = (
     user,
     campaignData,
     googleAds,
-    linkedInAds
+    metaAds // Use the converted metaAds here instead of linkedInAds
   );
 
   return {

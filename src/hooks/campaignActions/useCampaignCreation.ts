@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ export const useCampaignCreation = (
   user: any,
   campaignData: any,
   googleAds: GoogleAd[],
-  metaAds: MetaAd[]
+  metaAds: MetaAd[] // Changed parameter type from LinkedInAd[] to MetaAd[]
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
