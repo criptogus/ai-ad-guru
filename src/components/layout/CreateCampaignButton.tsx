@@ -21,7 +21,7 @@ const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed }
       onClick={() => navigate("/create-campaign")}
     >
       <PlusCircle size={collapsed ? 20 : 16} />
-      {!collapsed && <span>Create</span>}
+      {!collapsed && <span>Create Campaign</span>}
     </Button>
   );
 };

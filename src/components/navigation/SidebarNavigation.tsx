@@ -9,7 +9,9 @@ import {
   CreditCard,
   Users,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  Link2
 } from "lucide-react";
 import {
   Collapsible,
@@ -150,6 +152,13 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           href="/campaigns"
           collapsed={collapsed}
         />
+        <NavItem
+          icon={<Plus size={16} />}
+          label="Create Campaign"
+          active={activePage === "create-campaign"}
+          href="/create-campaign"
+          collapsed={collapsed}
+        />
       </SubMenu>
       
       <SubMenu
@@ -170,7 +179,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       <SubMenu
         icon={<Settings size={20} />}
         label="Settings"
-        active={isPathActive("/settings") || isPathActive("/billing") || isPathActive("/roles")}
+        active={isPathActive("/settings") || isPathActive("/billing") || isPathActive("/roles") || isPathActive("/config")}
         collapsed={collapsed}
       >
         <NavItem
@@ -185,6 +194,13 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           label="User Roles"
           active={activePage === "roles"}
           href="/settings/roles"
+          collapsed={collapsed}
+        />
+        <NavItem
+          icon={<Link2 size={16} />}
+          label="Connections"
+          active={activePage === "config"}
+          href="/config"
           collapsed={collapsed}
         />
       </SubMenu>
