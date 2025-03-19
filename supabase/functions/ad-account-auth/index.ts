@@ -47,7 +47,6 @@ serve(async (req) => {
       const stateParam = crypto.randomUUID();
       
       // Store the state parameter with user ID temporarily
-      // In a production app, you should use a more persistent storage
       const tempState = {
         userId,
         platform,
@@ -55,8 +54,7 @@ serve(async (req) => {
         created: new Date().toISOString()
       };
       
-      // In a real implementation, you'd store this in a database
-      // For now, we'll store it in Supabase's key-value storage
+      // Store state in Supabase's oauth_states table
       const { error: stateError } = await supabaseClient
         .from('oauth_states')
         .insert({
@@ -102,7 +100,7 @@ serve(async (req) => {
         throw new Error("State parameter is missing");
       }
       
-      // In a real implementation, retrieve and validate the state
+      // Retrieve and validate the state
       const { data: stateData, error: stateError } = await supabaseClient
         .from('oauth_states')
         .select('data')
