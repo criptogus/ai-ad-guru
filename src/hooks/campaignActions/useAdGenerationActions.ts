@@ -19,12 +19,14 @@ export const useAdGenerationActions = (
   // Use the smaller, more focused hooks
   const { handleGenerateGoogleAds } = useGoogleAdActions(
     analysisResult,
+    googleAds,
     generateGoogleAds, 
     setCampaignData
   );
   
   const { handleGenerateMetaAds } = useMetaAdActions(
     analysisResult,
+    metaAds,
     generateMetaAds, 
     setCampaignData
   );
