@@ -10,7 +10,7 @@ export interface MetaAd {
   primaryText: string;
   headline: string;
   description: string;
-  imagePrompt: string;
+  imagePrompt: string; // This is required in MetaAd
   imageUrl?: string; // Added after image generation
 }
 

@@ -42,7 +42,7 @@ const CampaignContent: React.FC = () => {
     primaryText: ad.primaryText,
     headline: ad.headline,
     description: ad.description,
-    imagePrompt: ad.imagePrompt || '',
+    imagePrompt: ad.imagePrompt || '', // Ensure imagePrompt is never undefined
     imageUrl: ad.imageUrl
   }));
 
