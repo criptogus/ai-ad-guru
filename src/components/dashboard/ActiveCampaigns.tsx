@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Campaign } from "@/models/CampaignTypes";
+import { Campaign, CampaignStatus } from "@/models/CampaignTypes";
 import { ChevronRight, Flag, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -68,8 +68,9 @@ const CampaignItem: React.FC<CampaignItemProps> = ({ campaign }) => {
     switch (campaign.status) {
       case 'active': return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
       case 'paused': return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-      case 'pending': return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      case 'expired': return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+      case 'draft': return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      case 'completed': return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+      case 'archived': return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
       default: return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
     }
   };
