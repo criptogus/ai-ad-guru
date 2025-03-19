@@ -115,24 +115,21 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
       console.log("Image uploaded successfully, URL:", imageUrl);
 
-      // Update the ad with the new image URL
-      if (ad.id) {
-        toast.success("Image uploaded successfully", {
-          description: "Your image has been added to the ad.",
-          duration: 3000,
-        });
-        
-        // Trigger re-render with new timestamp
-        setImageTimestamp(Date.now());
-        
-        // Force browser to reload the image (avoiding cache issues)
-        const img = new Image();
-        img.src = `${imageUrl}?t=${Date.now()}`;
-        img.onload = () => {
-          console.log("Image preloaded successfully");
-        };
-      }
-
+      // Update the ad with the new image URL - removed reference to ad.id
+      toast.success("Image uploaded successfully", {
+        description: "Your image has been added to the ad.",
+        duration: 3000,
+      });
+      
+      // Trigger re-render with new timestamp
+      setImageTimestamp(Date.now());
+      
+      // Force browser to reload the image (avoiding cache issues)
+      const img = new Image();
+      img.src = `${imageUrl}?t=${Date.now()}`;
+      img.onload = () => {
+        console.log("Image preloaded successfully");
+      };
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image", {
