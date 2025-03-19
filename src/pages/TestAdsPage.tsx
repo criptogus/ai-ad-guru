@@ -7,6 +7,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Goal, Globe } from "lucide-react";
 import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import ConnectionTestCard from "@/components/testing/ConnectionTestCard";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
+import MetaAdsTestArea from "@/components/testing/MetaAdsTestArea";
+import GoogleAdsTestArea from "@/components/testing/GoogleAdsTestArea";
+import MicrosoftAdsTestArea from "@/components/testing/MicrosoftAdsTestArea";
+import LinkedInAdsTestArea from "@/components/testing/LinkedInAdsTestArea";
 
 const TestAdsPage = () => {
   const [activeTab, setActiveTab] = useState<string>("connections");
@@ -91,59 +96,19 @@ const TestAdsPage = () => {
           </TabsContent>
 
           <TabsContent value="google">
-            <Card>
-              <CardHeader>
-                <CardTitle>Google Ads Testing</CardTitle>
-                <CardDescription>Generate test Google Ads without creating a campaign</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-8">
-                  <p className="text-muted-foreground">Google Ads test area is coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <GoogleAdsTestArea />
           </TabsContent>
 
           <TabsContent value="linkedin">
-            <Card>
-              <CardHeader>
-                <CardTitle>LinkedIn Ads Testing</CardTitle>
-                <CardDescription>Generate test LinkedIn Ads without creating a campaign</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-8">
-                  <p className="text-muted-foreground">LinkedIn Ads test area is coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <LinkedInAdsTestArea />
           </TabsContent>
 
           <TabsContent value="microsoft">
-            <Card>
-              <CardHeader>
-                <CardTitle>Microsoft Ads Testing</CardTitle>
-                <CardDescription>Generate test Microsoft Ads without creating a campaign</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-8">
-                  <p className="text-muted-foreground">Microsoft Ads test area is coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <MicrosoftAdsTestArea />
           </TabsContent>
           
           <TabsContent value="meta">
-            <Card>
-              <CardHeader>
-                <CardTitle>Meta Ads Testing</CardTitle>
-                <CardDescription>Generate test Meta Ads without creating a campaign</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-8">
-                  <p className="text-muted-foreground">Meta Ads test area is coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <MetaAdsTestArea />
           </TabsContent>
         </Tabs>
       </div>
