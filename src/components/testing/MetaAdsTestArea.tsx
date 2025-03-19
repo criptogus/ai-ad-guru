@@ -18,7 +18,7 @@ const defaultAnalysisResult = {
   brandTone: "Professional",
   targetAudience: "Developers and testers",
   uniqueSellingPoints: ["Easy debugging", "Fast testing", "Reliable results"],
-  callToAction: "Test Now",
+  callToAction: ["Test Now"],  // Changed to array
   keywords: ["test", "debug", "development"]
 };
 
@@ -199,8 +199,8 @@ const MetaAdsTestArea: React.FC = () => {
               index={index}
               analysisResult={defaultAnalysisResult}
               loadingImageIndex={loadingImageIndex}
-              onGenerateImage={handleGenerateImage}
-              onUpdate={handleUpdateAd}
+              onGenerateImage={(ad) => handleGenerateImage(ad, index)}
+              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
             />
           ))
         )}

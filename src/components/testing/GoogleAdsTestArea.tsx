@@ -17,7 +17,7 @@ const defaultAnalysisResult = {
   brandTone: "Professional",
   targetAudience: "Developers and testers",
   uniqueSellingPoints: ["Easy debugging", "Fast testing", "Reliable results"],
-  callToAction: "Test Now",
+  callToAction: ["Test Now"],  // Changed to array
   keywords: ["test", "debug", "development"]
 };
 
@@ -105,7 +105,7 @@ const GoogleAdsTestArea: React.FC = () => {
               ad={ad}
               index={index}
               analysisResult={defaultAnalysisResult}
-              onUpdate={handleUpdateAd}
+              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
             />
           ))
         )}

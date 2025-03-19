@@ -11,7 +11,11 @@ import {
   Sparkles,
   BugPlay
 } from "lucide-react";
-import { SidebarItem } from "@/components/ui/sidebar";
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from "@/components/ui/sidebar";
 
 export function SidebarNavigationItems() {
   const location = useLocation();
@@ -30,57 +34,96 @@ export function SidebarNavigationItems() {
   };
 
   return (
-    <>
-      <SidebarItem
-        href="/dashboard"
-        icon={LayoutDashboard}
-        text="Dashboard"
-        active={isActive("/dashboard")}
-      />
-      <SidebarItem
-        href="/campaigns"
-        icon={Megaphone}
-        text="Campaigns"
-        active={isActive("/campaigns")}
-      />
-      <SidebarItem
-        href="/analytics"
-        icon={BarChart}
-        text="Analytics"
-        active={isActive("/analytics")}
-      />
-      <SidebarItem
-        href="/insights"
-        icon={Sparkles}
-        text="AI Insights"
-        active={isActive("/insights")}
-      />
-      <SidebarItem
-        href="/config"
-        icon={Cog}
-        text="Connections"
-        active={isActive("/config")}
-      />
-      <SidebarItem
-        href="/billing"
-        icon={CreditCard}
-        text="Billing"
-        active={isActive("/billing")}
-      />
-      <SidebarItem
-        href="/users"
-        icon={Users}
-        text="Users & Roles"
-        active={isActive("/users")}
-      />
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/dashboard"
+          tooltip="Dashboard"
+          isActive={isActive("/dashboard")}
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          <span>Dashboard</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/campaigns"
+          tooltip="Campaigns"
+          isActive={isActive("/campaigns")}
+        >
+          <Megaphone className="h-5 w-5" />
+          <span>Campaigns</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/analytics"
+          tooltip="Analytics"
+          isActive={isActive("/analytics")}
+        >
+          <BarChart className="h-5 w-5" />
+          <span>Analytics</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/insights"
+          tooltip="AI Insights"
+          isActive={isActive("/insights")}
+        >
+          <Sparkles className="h-5 w-5" />
+          <span>AI Insights</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/config"
+          tooltip="Connections"
+          isActive={isActive("/config")}
+        >
+          <Cog className="h-5 w-5" />
+          <span>Connections</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/billing"
+          tooltip="Billing"
+          isActive={isActive("/billing")}
+        >
+          <CreditCard className="h-5 w-5" />
+          <span>Billing</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          href="/users"
+          tooltip="Users & Roles"
+          isActive={isActive("/users")}
+        >
+          <Users className="h-5 w-5" />
+          <span>Users & Roles</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
       {process.env.NODE_ENV !== 'production' && (
-        <SidebarItem
-          href="/test-ads"
-          icon={BugPlay}
-          text="Test Ads"
-          active={isActive("/test-ads")}
-        />
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            href="/test-ads"
+            tooltip="Test Ads"
+            isActive={isActive("/test-ads")}
+          >
+            <BugPlay className="h-5 w-5" />
+            <span>Test Ads</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
       )}
-    </>
+    </SidebarMenu>
   );
 }
