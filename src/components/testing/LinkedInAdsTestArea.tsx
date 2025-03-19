@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { MetaAd } from "@/hooks/useAdGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdPreview from "@/components/campaign/ad-preview/linkedin/LinkedInAdPreview";
+import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
 
 const defaultAnalysisResult: WebsiteAnalysisResult = {
   companyName: "Your Business",
@@ -31,6 +32,7 @@ const LinkedInAdsTestArea: React.FC = () => {
   });
   
   const [companyInfo, setCompanyInfo] = useState<WebsiteAnalysisResult>(defaultAnalysisResult);
+  const { generateAdImage, isGenerating, lastError } = useImageGeneration();
 
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
@@ -50,6 +52,42 @@ const LinkedInAdsTestArea: React.FC = () => {
     });
     setCompanyInfo(defaultAnalysisResult);
     toast.info("Test ad reset to default values");
+  };
+
+  const handleGenerateImage = async () => {
+    if (!testAd.imagePrompt) {
+      toast.error("Please provide an image prompt first");
+      return;
+    }
+
+    toast.info("Generating LinkedIn ad image...", {
+      description: "This might take a few moments. No credits will be consumed in test mode.",
+      duration: 3000,
+    });
+
+    try {
+      // Pass additional context from companyInfo to enhance image generation
+      const additionalInfo = {
+        companyName: companyInfo.companyName,
+        brandTone: companyInfo.brandTone,
+        targetAudience: companyInfo.targetAudience,
+        uniqueSellingPoints: companyInfo.uniqueSellingPoints,
+        imageFormat: "square" // LinkedIn images work best in square format
+      };
+
+      const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
+      
+      if (imageUrl) {
+        setTestAd(prev => ({ ...prev, imageUrl }));
+        toast.success("LinkedIn ad image generated successfully");
+      }
+    } catch (error) {
+      console.error("Error generating LinkedIn ad image:", error);
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Please try again later",
+        duration: 5000,
+      });
+    }
   };
 
   return (
@@ -112,7 +150,29 @@ const LinkedInAdsTestArea: React.FC = () => {
                 </div>
               </div>
 
-              <Button onClick={handleReset} variant="outline">Reset to Default</Button>
+              <div>
+                <Label htmlFor="imagePrompt">Image Prompt</Label>
+                <Textarea
+                  id="imagePrompt"
+                  value={testAd.imagePrompt}
+                  onChange={(e) => handleAdChange('imagePrompt', e.target.value)}
+                  placeholder="Describe the image you want to generate..."
+                  rows={3}
+                />
+                <div className="flex justify-between mt-2">
+                  <Button 
+                    onClick={handleGenerateImage} 
+                    disabled={isGenerating || !testAd.imagePrompt}
+                    variant="default"
+                  >
+                    {isGenerating ? "Generating..." : "Generate Image"}
+                  </Button>
+                  <Button onClick={handleReset} variant="outline">Reset to Default</Button>
+                </div>
+                {lastError && (
+                  <p className="text-sm text-red-500 mt-2">{lastError}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -121,11 +181,13 @@ const LinkedInAdsTestArea: React.FC = () => {
                 <LinkedInAdPreview 
                   ad={testAd} 
                   analysisResult={companyInfo}
+                  isGeneratingImage={isGenerating}
+                  onGenerateImage={handleGenerateImage}
                 />
               </div>
               <div className="text-xs text-muted-foreground">
                 <p>This preview shows how your LinkedIn ad might appear. Actual appearance may vary.</p>
-                <p className="mt-2">Note: Image generation is not available in test mode. Only text content can be previewed.</p>
+                <p className="mt-2">Note: Images generated in test mode don't consume credits and are for preview purposes only.</p>
               </div>
             </div>
           </div>
