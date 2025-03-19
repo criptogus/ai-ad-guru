@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
     session,
+    setUser, // Added the missing setUser property here
   };
 
   return (
