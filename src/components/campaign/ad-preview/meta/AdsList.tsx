@@ -2,7 +2,7 @@
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAdCard } from "./index";
+import { MetaAdCard } from "./card";
 
 interface AdsListProps {
   metaAds: MetaAd[];

@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MetaAdCardHeader from "./MetaAdCardHeader";
-import InstagramPreview from "./InstagramPreview";
+import { InstagramPreview } from "../";
 import AdDetailsSection from "./AdDetailsSection";
 
 interface MetaAdCardProps {
