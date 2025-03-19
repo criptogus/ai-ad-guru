@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { UserPlus } from "lucide-react";
 import InviteUserModal, { UserRole } from "@/components/roles/InviteUserModal";
-import { getTeamMembers, getRolePermissions, inviteUser, TeamMember } from "@/services/userRoles";
+import { getTeamMembers, getRolePermissions, inviteUser, TeamMember } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 
 const UserRolesPage = () => {

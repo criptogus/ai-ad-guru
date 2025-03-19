@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, Loader2, Plus, CreditCard } from "lucide-react";
 import { CheckCircle } from "lucide-react";
-import { addCredits } from "@/services/userRoles";
+import { addCredits } from "@/services";
 
 interface CreditOption {
   amount: number;
@@ -27,13 +26,11 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     { amount: 500, price: 99 }
   ];
 
-  // Mock function for simulation
   const simulatePurchase = async (amount: number) => {
     if (!userId) return;
     
     setPurchasing(true);
     try {
-      // For demo purposes, simulate a purchase
       await new Promise(resolve => setTimeout(resolve, 1500));
       await addCredits(userId, amount, `Purchased ${amount} credits`);
       setSelectedOption(null);

@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Minus } from "lucide-react";
-import { getCreditUsageHistory, CreditUsage } from "@/services/userRoles";
+import { getCreditUsageHistory, CreditUsage } from "@/services";
 
 interface CreditUsageHistoryProps {
   userId: string;
