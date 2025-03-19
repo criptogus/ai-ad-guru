@@ -18,11 +18,7 @@ import {
   Bar
 } from "recharts";
 import { ChevronRight, TrendingUp, TrendingDown, Zap, Award, AlertCircle } from "lucide-react";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from "@/components/ui/chart";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -199,7 +195,7 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
                       <div className="flex items-center">
                         <Award className="h-4 w-4 mr-1 text-amber-500" />
                         <span>{campaign.name}</span>
-                        <Badge className="ml-2 bg-gray-100 text-gray-800" variant="outline">
+                        <Badge variant="outline" className="ml-2 bg-gray-100 text-gray-800">
                           {campaign.platform === "google" ? "Google" : "Meta"}
                         </Badge>
                       </div>
@@ -225,7 +221,7 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
                       <div className="flex items-center">
                         <AlertCircle className="h-4 w-4 mr-1 text-red-500" />
                         <span>{campaign.name}</span>
-                        <Badge className="ml-2 bg-gray-100 text-gray-800" variant="outline">
+                        <Badge variant="outline" className="ml-2 bg-gray-100 text-gray-800">
                           {campaign.platform === "google" ? "Google" : "Meta"}
                         </Badge>
                       </div>
@@ -250,7 +246,7 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
                     <div key={campaign.id} className="space-y-1">
                       <div className="flex justify-between items-center text-sm">
                         <span>{campaign.name}</span>
-                        <Badge className="bg-gray-100 text-gray-800" variant="outline">
+                        <Badge variant="outline" className="bg-gray-100 text-gray-800">
                           {campaign.platform === "google" ? "Google" : "Meta"}
                         </Badge>
                       </div>
@@ -348,25 +344,6 @@ const Icons = {
       <path d="M10 14c.5-1 2-1.5 3-1a2 2 0 0 1 1 2.5c-.5 1-2 1.5-3 1a2 2 0 0 1-1-2.5" />
     </svg>
   ),
-};
-
-// Badge component for the AnalyticsOverview
-const Badge = ({ children, className, variant = "default" }: { 
-  children: React.ReactNode; 
-  className?: string;
-  variant?: "default" | "outline";
-}) => {
-  return (
-    <span 
-      className={`
-        inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
-        ${variant === "outline" ? "border " : ""}
-        ${className || ""}
-      `}
-    >
-      {children}
-    </span>
-  );
 };
 
 export default AnalyticsOverview;
