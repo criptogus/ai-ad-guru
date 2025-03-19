@@ -1,98 +1,108 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Linkedin, MicrosoftIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { GoogleIcon, LucideIcon, GlobeIcon } from "lucide-react";
 import { Connection } from "@/hooks/adConnections/types";
 
 interface PlatformConnectionCardProps {
-  platform: "google" | "linkedin" | "microsoft";
-  platformDisplayName: string;
-  connections: Connection[];
+  platform: 'google' | 'linkedin' | 'microsoft';
   isConnecting: boolean;
-  onConnect: () => Promise<void>;
-  onDisconnect: (id: string, platformName: string) => Promise<void>;
+  errorType: string | null;
+  errorDetails: string | null;
+  connections: Connection[];
+  onConnect: () => void;
+  onRemove: (id: string, platformName: string) => Promise<void>;
 }
 
 const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   platform,
-  platformDisplayName,
-  connections,
   isConnecting,
+  errorType,
+  errorDetails,
+  connections,
   onConnect,
-  onDisconnect,
+  onRemove,
 }) => {
-  const platformConnections = connections.filter((conn) => conn.platform === platform);
-  const isConnected = platformConnections.length > 0;
-
-  const getPlatformIcon = () => {
+  const getPlatformDetails = (platform: string) => {
     switch (platform) {
-      case "linkedin":
-        return <Linkedin size={16} className="mr-2" />;
-      case "microsoft":
-        return <MicrosoftIcon size={16} className="mr-2" />;
+      case 'google':
+        return {
+          title: 'Google Ads',
+          description: 'Connect your Google Ads account to create and manage campaigns',
+          icon: GoogleIcon,
+        };
+      case 'linkedin':
+        return {
+          title: 'LinkedIn Ads',
+          description: 'Connect your LinkedIn Ads account to create and manage campaigns',
+          icon: GlobeIcon,
+        };
+      case 'microsoft':
+        return {
+          title: 'Microsoft Ads',
+          description: 'Connect your Microsoft Ads account to create and manage campaigns',
+          icon: GlobeIcon,
+        };
       default:
-        return null;
+        return {
+          title: platform,
+          description: 'Connect your account',
+          icon: GlobeIcon,
+        };
     }
   };
 
+  const platformDetails = getPlatformDetails(platform);
+  const Icon = platformDetails.icon;
+  const platformConnections = connections.filter(conn => conn.platform === platform);
+  const isConnected = platformConnections.length > 0;
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">{platformDisplayName}</h3>
-      {isConnected ? (
-        platformConnections.map((conn) => (
-          <div key={conn.id} className="flex items-center justify-between border p-3 rounded-md">
-            <div>
-              <p className="font-medium">Connected Account</p>
-              <p className="text-sm text-muted-foreground">
-                {conn.account_id === "unknown" || conn.account_id === "error-retrieving" ? (
-                  <span className="flex items-center text-amber-500">
-                    <AlertCircle size={14} className="mr-1" />
-                    Unable to retrieve account details
-                  </span>
-                ) : conn.account_id === "no-accounts" ? (
-                  <span className="flex items-center text-amber-500">
-                    <AlertCircle size={14} className="mr-1" />
-                    No ad accounts found
-                  </span>
-                ) : conn.account_id === "developer-token-missing" ? (
-                  <span className="flex items-center text-amber-500">
-                    <AlertCircle size={14} className="mr-1" />
-                    Developer token missing
-                  </span>
-                ) : (
-                  `ID: ${conn.account_id}`
-                )}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDisconnect(conn.id, `${platformDisplayName}`)}
-              disabled={isConnecting}
-            >
-              Disconnect
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="flex flex-col space-y-1.5">
+          <CardTitle className="text-lg font-semibold">{platformDetails.title}</CardTitle>
+          <CardDescription>{platformDetails.description}</CardDescription>
+        </div>
+        <Icon size={22} />
+      </CardHeader>
+      <CardContent>
+        {isConnected ? (
+          <div className="space-y-2">
+            {platformConnections.map((connection) => (
+              <div key={connection.id} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Account ID: {connection.account_id}</span>
+                  <span className="text-xs text-muted-foreground">Connected on {new Date(connection.created_at).toLocaleDateString()}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => onRemove(connection.id, platformDetails.title)}
+                >
+                  Disconnect
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center">
+            <Button onClick={onConnect} disabled={isConnecting}>
+              {isConnecting ? 'Connecting...' : `Connect ${platformDetails.title}`}
             </Button>
           </div>
-        ))
-      ) : (
-        <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
-          <p className="text-muted-foreground mb-2">No {platformDisplayName} account connected</p>
-          <Button onClick={onConnect} disabled={isConnecting} className="flex items-center">
-            {isConnecting ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
-                Connecting...
-              </>
-            ) : (
-              <>
-                {getPlatformIcon()}
-                Connect {platformDisplayName}
-              </>
-            )}
-          </Button>
-        </div>
+        )}
+      </CardContent>
+      {errorType && (
+        <CardFooter className="bg-destructive/10 p-3">
+          <div className="text-sm text-destructive">
+            <p className="font-semibold">{errorType === 'credentials' ? 'Configuration Error' : 'Connection Error'}</p>
+            <p>{errorDetails}</p>
+          </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 };
 
