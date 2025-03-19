@@ -1,6 +1,7 @@
 
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration";
+import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { useAdGenerationActions } from "./useAdGenerationActions";
 import { useCampaignCreation } from "./useCampaignCreation";
 import { useWebsiteAnalysisActions } from "./useWebsiteAnalysisActions";
@@ -10,9 +11,11 @@ export const useCampaignActions = (
   campaignData: any,
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
-  metaAds: MetaAd[],
+  linkedInAds: LinkedInAd[],
+  microsoftAds: MicrosoftAd[],
   generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>,
-  generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>,
+  generateLinkedInAds: (campaignData: any) => Promise<LinkedInAd[] | null>,
+  generateMicrosoftAds: (campaignData: any) => Promise<MicrosoftAd[] | null>,
   generateAdImage: (prompt: string) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
@@ -24,14 +27,19 @@ export const useCampaignActions = (
   // Ad generation actions
   const {
     handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateImage
+    handleGenerateLinkedInAds,
+    handleGenerateMicrosoftAds,
+    handleGenerateImage,
+    imageGenerationError,
+    clearImageGenerationError
   } = useAdGenerationActions(
     analysisResult,
     googleAds,
-    metaAds,
+    linkedInAds,
+    microsoftAds,
     generateGoogleAds,
-    generateMetaAds,
+    generateLinkedInAds,
+    generateMicrosoftAds,
     generateAdImage,
     setCampaignData
   );
@@ -44,14 +52,17 @@ export const useCampaignActions = (
     user,
     campaignData,
     googleAds,
-    metaAds
+    linkedInAds
   );
 
   return {
     handleAnalyzeWebsite,
     handleGenerateGoogleAds,
-    handleGenerateMetaAds,
+    handleGenerateLinkedInAds,
+    handleGenerateMicrosoftAds,
     handleGenerateImage,
+    imageGenerationError,
+    clearImageGenerationError,
     createCampaign,
     isCreating
   };

@@ -1,150 +1,53 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCampaign } from "@/contexts/CampaignContext";
-import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
-import { useAdGeneration } from "@/hooks/adGeneration";
-import { useCampaignActions } from "@/hooks/useCampaignActions";
+import React, { useContext } from "react";
+import { CampaignStep } from "@/hooks/useCampaignFlow";
+import { CampaignContext } from "@/contexts/CampaignContext";
+import { useToast } from "@/hooks/use-toast";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
-import CampaignHeader from "./CampaignHeader";
-import StepNavigation from "./StepNavigation";
-import { useCampaignAdUpdates } from "./CampaignAdUpdates";
-import { useCampaignDataSync } from "@/hooks/useCampaignDataSync";
-import { useCampaignFlow } from "@/hooks/useCampaignFlow";
 
 const CampaignContent: React.FC = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  
-  const { 
-    campaignData, 
-    setCampaignData, 
-    analysisResult, 
-    setAnalysisResult,
-    updateAnalysisResult,
-    googleAds, 
-    setGoogleAds, 
-    metaAds, 
-    setMetaAds, 
-    currentStep, 
-    setCurrentStep 
-  } = useCampaign();
-
-  // Website analysis and ad generation hooks
-  const { analyzeWebsite, isAnalyzing } = useWebsiteAnalysis();
-  const { 
-    generateGoogleAds, 
-    generateMetaAds, 
-    generateAdImage, 
-    isGenerating,
-    googleAds: adGenerationGoogleAds,
-    metaAds: adGenerationMetaAds
-  } = useAdGeneration();
-
-  // Sync ads from the adGeneration hook to the campaign context
-  useCampaignDataSync(
-    adGenerationGoogleAds,
-    adGenerationMetaAds,
-    setGoogleAds,
-    setMetaAds
-  );
-
-  // Campaign actions
+  const { toast } = useToast();
   const {
-    handleAnalyzeWebsite,
-    handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateImage,
-    createCampaign,
-    isCreating
-  } = useCampaignActions(
-    user, 
-    campaignData, 
-    analysisResult, 
-    googleAds, 
-    metaAds,
-    generateGoogleAds,
-    generateMetaAds,
-    generateAdImage,
-    setCampaignData
-  );
-
-  // Campaign flow (back, next, create campaign)
-  const { handleBack, handleNextWrapper } = useCampaignFlow(
-    currentStep,
-    setCurrentStep,
-    analysisResult,
+    activeCampaignStep,
+    setActiveCampaignStep,
     campaignData,
-    user,
-    createCampaign
-  );
-
-  const {
-    handleUpdateGoogleAd,
-    handleUpdateMetaAd,
-    handleGenerateImageWrapper,
-    loadingImageIndex
-  } = useCampaignAdUpdates({
-    googleAds,
-    metaAds,
-    setGoogleAds,
-    setMetaAds,
     setCampaignData,
-    handleGenerateImage
-  });
+    analysisResult,
+    setAnalysisResult,
+    googleAds,
+    setGoogleAds,
+    linkedInAds,
+    setLinkedInAds,
+    microsoftAds,
+    setMicrosoftAds,
+    resetCampaign,
+    isRequiredStep,
+  } = useContext(CampaignContext);
 
-  // Custom handler for website analysis that also updates the campaign data
-  const handleWebsiteAnalysis = async (url: string) => {
-    const result = await analyzeWebsite(url);
-    if (result) {
-      setCampaignData(prev => ({
-        ...prev,
-        websiteUrl: url,
-        businessInfo: result,
-        name: `${result.companyName} Campaign`,
-        description: result.businessDescription,
-        targetAudience: result.targetAudience
-      }));
-      setAnalysisResult(result);
+  const handleSetStep = (step: CampaignStep) => {
+    if (!isRequiredStep(step)) {
+      setActiveCampaignStep(step);
+    } else {
+      toast({
+        title: "Complete required steps first",
+        description: "Please complete all required steps before proceeding",
+        variant: "destructive",
+      });
     }
-    return result;
   };
 
-  // Step content renderer
-  const { getStepContent } = useCampaignStepRenderer({
-    currentStep,
-    analysisResult,
+  const { renderActiveStep } = useCampaignStepRenderer({
+    activeCampaignStep,
+    setActiveCampaignStep,
     campaignData,
-    googleAds,
-    metaAds,
-    isAnalyzing,
-    isGenerating,
-    loadingImageIndex,
-    isCreating,
-    handleWebsiteAnalysis,
-    handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateImage: handleGenerateImageWrapper,
-    handleUpdateGoogleAd,
-    handleUpdateMetaAd,
     setCampaignData,
-    handleBack,
-    handleNextWrapper,
-    createCampaign
+    analysisResult,
+    setAnalysisResult,
+    handleSetStep,
+    resetCampaign,
   });
 
-  return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
-      <CampaignHeader onBack={handleBack} />
-      <div className="mb-8">
-        <StepNavigation totalSteps={4} currentStep={currentStep} />
-        <div className="transition-all duration-300">
-          {getStepContent()}
-        </div>
-      </div>
-    </div>
-  );
+  return <div>{renderActiveStep()}</div>;
 };
 
 export default CampaignContent;

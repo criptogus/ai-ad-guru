@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Linkedin, Windows } from "lucide-react";
+import { AlertCircle, Linkedin, MicrosoftIcon } from "lucide-react";
 import { Connection } from "@/hooks/adConnections/types";
 
 interface PlatformConnectionCardProps {
@@ -29,7 +29,7 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
       case "linkedin":
         return <Linkedin size={16} className="mr-2" />;
       case "microsoft":
-        return <Windows size={16} className="mr-2" />;
+        return <MicrosoftIcon size={16} className="mr-2" />;
       default:
         return null;
     }

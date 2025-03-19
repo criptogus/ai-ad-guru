@@ -48,7 +48,7 @@ export const useAdGenerationActions = (
     clearImageGenerationError 
   } = useImageGenerationActions(
     analysisResult,
-    linkedInAds, // Changed from metaAds to linkedInAds
+    linkedInAds,
     generateAdImage,
     setCampaignData
   );
