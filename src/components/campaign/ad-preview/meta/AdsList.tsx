@@ -28,8 +28,8 @@ const AdsList: React.FC<AdsListProps> = ({
           index={index} 
           analysisResult={analysisResult}
           loadingImageIndex={loadingImageIndex}
-          onGenerateImage={onGenerateImage}
-          onUpdate={onUpdateAd}
+          onGenerateImage={() => onGenerateImage(ad, index)}
+          onUpdate={onUpdateAd ? (updatedAd) => onUpdateAd(index, updatedAd) : undefined}
         />
       ))}
     </div>

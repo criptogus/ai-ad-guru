@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
@@ -11,8 +12,8 @@ interface MetaAdCardProps {
   index: number;
   analysisResult: WebsiteAnalysisResult;
   loadingImageIndex: number | null;
-  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
-  onUpdate?: (index: number, updatedAd: MetaAd) => void;
+  onGenerateImage: () => Promise<void>;
+  onUpdate?: (updatedAd: MetaAd) => void;
 }
 
 const MetaAdCard: React.FC<MetaAdCardProps> = ({
@@ -30,16 +31,12 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
     setLocalAd(ad);
   }, [ad]);
 
-  const handleGenerateImage = async () => {
-    await onGenerateImage(localAd, index);
-  };
-
   const handleUpdateAd = (updatedAd: MetaAd) => {
     setLocalAd(updatedAd);
     
     if (onUpdate) {
       console.log(`MetaAdCard (index: ${index}) - Updating ad with new values:`, updatedAd);
-      onUpdate(index, updatedAd);
+      onUpdate(updatedAd);
     }
   };
 
@@ -55,7 +52,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const handleSave = () => {
     setIsEditing(false);
     if (onUpdate) {
-      onUpdate(index, localAd);
+      onUpdate(localAd);
     }
   };
 
@@ -91,7 +88,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
               companyName={analysisResult?.companyName || "Your Company"}
               loadingImageIndex={loadingImageIndex}
               index={index}
-              onGenerateImage={handleGenerateImage}
+              onGenerateImage={onGenerateImage}
               onUpdateAd={handleUpdateAd}
             />
           </div>
