@@ -22,10 +22,11 @@ export interface AdConnectionsActions {
   initiateGoogleConnection: () => void;
   initiateLinkedInConnection: () => void;
   initiateMicrosoftConnection: () => void;
+  initiateMetaConnection?: () => void;
   removeConnection: (id: string, platformName: string) => Promise<void>;
 }
 
-export type AdPlatform = 'google' | 'linkedin' | 'microsoft';
+export type AdPlatform = 'google' | 'linkedin' | 'microsoft' | 'meta';
 
 export interface OAuthParams {
   platform: AdPlatform;

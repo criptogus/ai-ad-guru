@@ -9,17 +9,20 @@ export const useConnectionTest = () => {
   const [isLoading, setIsLoading] = useState<Record<AdPlatform, boolean>>({
     google: false,
     microsoft: false,
-    linkedin: false
+    linkedin: false,
+    meta: false
   });
   const [connectionStatus, setConnectionStatus] = useState<Record<AdPlatform, 'untested' | 'success' | 'error'>>({
     google: 'untested',
     microsoft: 'untested',
-    linkedin: 'untested'
+    linkedin: 'untested',
+    meta: 'untested'
   });
   const [statusDetails, setStatusDetails] = useState<Record<AdPlatform, string>>({
     google: '',
     microsoft: '',
-    linkedin: ''
+    linkedin: '',
+    meta: ''
   });
 
   const testConnection = async (platform: AdPlatform) => {

@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -49,10 +48,14 @@ const TestAdsPage = () => {
               <Globe className="h-4 w-4" />
               Microsoft Ads
             </TabsTrigger>
+            <TabsTrigger value="meta" className="flex items-center gap-1">
+              <Globe className="h-4 w-4" />
+              Meta Ads
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="connections">
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <ConnectionTestCard 
                 platform="linkedin"
                 isLoading={isLoading.linkedin}
@@ -75,6 +78,14 @@ const TestAdsPage = () => {
                 status={connectionStatus.google}
                 statusDetails={statusDetails.google}
                 onTest={() => testConnection('google')}
+              />
+              
+              <ConnectionTestCard 
+                platform="meta"
+                isLoading={isLoading.meta}
+                status={connectionStatus.meta}
+                statusDetails={statusDetails.meta}
+                onTest={() => testConnection('meta')}
               />
             </div>
           </TabsContent>
@@ -116,6 +127,20 @@ const TestAdsPage = () => {
               <CardContent>
                 <div className="text-center p-8">
                   <p className="text-muted-foreground">Microsoft Ads test area is coming soon</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="meta">
+            <Card>
+              <CardHeader>
+                <CardTitle>Meta Ads Testing</CardTitle>
+                <CardDescription>Generate test Meta Ads without creating a campaign</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center p-8">
+                  <p className="text-muted-foreground">Meta Ads test area is coming soon</p>
                 </div>
               </CardContent>
             </Card>

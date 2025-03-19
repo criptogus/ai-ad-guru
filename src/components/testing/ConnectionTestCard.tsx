@@ -23,7 +23,7 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
   const platformName = 
     platform === 'google' ? 'Google Ads' : 
     platform === 'microsoft' ? 'Microsoft Ads' : 
-    'LinkedIn Ads';
+    platform === 'meta' ? 'Meta Ads' : 'LinkedIn Ads';
 
   return (
     <Card>

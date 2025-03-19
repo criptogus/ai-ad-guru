@@ -35,6 +35,8 @@ serve(async (req) => {
       return await testMicrosoftConnection();
     } else if (platform === 'google') {
       return await testGoogleConnection();
+    } else if (platform === 'meta') {
+      return await testMetaConnection();
     } else {
       return new Response(
         JSON.stringify({ 
@@ -313,6 +315,81 @@ async function testGoogleConnection() {
       JSON.stringify({ 
         success: false, 
         message: `Error testing Google Ads connection: ${error.message}` 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+}
+
+async function testMetaConnection() {
+  const clientId = Deno.env.get('META_CLIENT_ID');
+  const clientSecret = Deno.env.get('META_CLIENT_SECRET');
+  
+  // Verify credentials are configured
+  if (!clientId || !clientSecret) {
+    console.error('Meta Ads API credentials not configured');
+    const missingCredentials = [];
+    if (!clientId) missingCredentials.push('META_CLIENT_ID');
+    if (!clientSecret) missingCredentials.push('META_CLIENT_SECRET');
+    
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        message: `Missing Meta Ads API credentials: ${missingCredentials.join(', ')}` 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+  
+  try {
+    // Test the OAuth flow by validating client credentials
+    const tokenUrl = 'https://graph.facebook.com/v19.0/oauth/access_token';
+    const params = new URLSearchParams();
+    params.append('client_id', clientId);
+    params.append('client_secret', clientSecret);
+    params.append('grant_type', 'client_credentials');
+    
+    const response = await fetch(tokenUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
+    });
+    
+    if (response.ok) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Meta Ads API credentials are valid' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } else {
+      const errorData = await response.text();
+      console.error('Meta OAuth validation failed:', errorData);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: `Meta Ads API credentials are invalid. Error: ${errorData}` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Error testing Meta Ads connection:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        message: `Error testing Meta Ads connection: ${error.message}` 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
