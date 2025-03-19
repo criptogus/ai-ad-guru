@@ -1,7 +1,4 @@
 
-// Update ImageLoadingTest.tsx to ensure the Auth user is properly passed to child components
-// and to ensure the image upload handler works correctly
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +56,7 @@ const ImageLoadingTest: React.FC<ImageLoadingTestProps> = ({
         <CardContent>
           <div className="text-xs space-y-1">
             <p>User authenticated: {user ? "Yes" : "No"}</p>
+            <p>User ID: {user ? user.id.substring(0, 8) + '...' : "Not logged in"}</p>
             <p>Image URL: {debugImageUrl || "None"}</p>
             <p>Status: {
               !debugImageUrl ? "No URL" : 

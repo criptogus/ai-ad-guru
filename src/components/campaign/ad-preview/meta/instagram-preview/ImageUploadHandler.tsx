@@ -51,13 +51,13 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
     try {
       // Create a unique file name using timestamp and original name
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-user-uploaded.${fileExt}`;
+      const fileName = `${Date.now()}-${user.id.substring(0, 8)}.${fileExt}`;
       const filePath = `instagram-ads/${fileName}`;
       const bucketName = 'ai-images';
 
       console.log(`Uploading file to ${bucketName}/${filePath}`);
 
-      // Upload to Supabase Storage using storage.from().upload() with authentication
+      // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file, {
@@ -70,7 +70,7 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
         throw error;
       }
 
-      // Get the public URL
+      // Get the public URL using Supabase's built-in method
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
         .getPublicUrl(filePath);
