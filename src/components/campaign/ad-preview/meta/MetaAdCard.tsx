@@ -29,7 +29,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
   const [imageKey, setImageKey] = useState(Date.now()); // Force image refresh when URL changes
   const [imageGenerationAttempts, setImageGenerationAttempts] = useState(0);
-  const [imageError, setImageError] = useState(false); // Changed from boolean to match number | null pattern
+  const [imageError, setImageError] = useState<boolean>(false); // Fixed type to boolean explicitly
 
   // Update editedAd when ad changes
   useEffect(() => {
