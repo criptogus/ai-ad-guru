@@ -1,10 +1,9 @@
 
 import React from "react";
-import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Save, X } from "lucide-react";
+import { Copy, Pencil, Save, X } from "lucide-react";
 
-interface MicrosoftAdCardHeaderProps {
+export interface MicrosoftAdCardHeaderProps {
   adIndex: number;
   isEditing: boolean;
   onEdit: () => void;
@@ -20,49 +19,43 @@ const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   onCancel
 }) => {
   return (
-    <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
-      <CardTitle className="text-lg flex items-center gap-2">
-        <svg width="16" height="16" viewBox="0 0 24 24" className="text-blue-500">
-          <path fill="currentColor" d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z" />
-        </svg>
-        <span>Microsoft Ad {adIndex + 1}</span>
-      </CardTitle>
-      
-      <div className="flex items-center gap-2">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="font-medium">Microsoft Ad Variation {adIndex + 1}</h3>
+      <div className="flex space-x-2">
         {isEditing ? (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={onCancel}
               className="text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4 mr-1" />
               Cancel
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={onSave}
-              className="text-green-600 hover:text-green-700"
+              className="text-blue-500 hover:text-blue-700"
             >
               <Save className="h-4 w-4 mr-1" />
               Save
             </Button>
           </>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
+          <Button 
+            variant="ghost" 
+            size="sm" 
             onClick={onEdit}
-            className="text-blue-600 hover:text-blue-700"
+            className="text-gray-500 hover:text-gray-700"
           >
-            <Edit2 className="h-4 w-4 mr-1" />
+            <Pencil className="h-4 w-4 mr-1" />
             Edit
           </Button>
         )}
       </div>
-    </CardHeader>
+    </div>
   );
 };
 
