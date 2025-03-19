@@ -17,6 +17,7 @@ export const useImageGeneration = () => {
         title: "Missing Prompt",
         description: errorMessage,
         variant: "destructive",
+        duration: 3000,
       });
       return null;
     }
@@ -63,7 +64,7 @@ export const useImageGeneration = () => {
       toast({
         title: "Image Generated Successfully",
         description: "5 credits have been used for this Instagram ad image",
-        duration: 5000,
+        duration: 3000,
       });
       
       return data.imageUrl;
@@ -75,6 +76,7 @@ export const useImageGeneration = () => {
         title: "Image Generation Failed",
         description: errorMessage,
         variant: "destructive",
+        duration: 3000,
       });
       throw error; // Re-throw to allow component-level handling
     } finally {

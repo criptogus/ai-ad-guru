@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { getCreditCosts } from "@/services";
+import { getCreditCosts, consumeCredits } from "@/services";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useImageGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -12,6 +13,7 @@ export const useImageGenerationActions = (
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
   const creditCosts = getCreditCosts();
 
@@ -29,6 +31,15 @@ export const useImageGenerationActions = (
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to generate images",
+        variant: "destructive",
+      });
+      return;
+    }
+
     console.log("Generating image for ad:", ad);
     console.log("With prompt:", ad.imagePrompt);
     console.log("Using analysis result:", analysisResult);
@@ -40,6 +51,23 @@ export const useImageGenerationActions = (
         description: `This will use ${creditCosts.imageGeneration} credits to generate this Instagram ad image`,
         duration: 3000,
       });
+      
+      // Consume credits before generating the image
+      const creditSuccess = await consumeCredits(
+        user.id,
+        creditCosts.imageGeneration,
+        'image_generation',
+        `Instagram ad image for "${ad.headline}"`
+      );
+      
+      if (!creditSuccess) {
+        toast({
+          title: "Insufficient Credits",
+          description: "You don't have enough credits to generate this image",
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Pass additional context from the analysis result to enhance image generation
       const additionalInfo = analysisResult ? {
@@ -73,6 +101,7 @@ export const useImageGenerationActions = (
         toast({
           title: "Image Generated",
           description: `Ad image was successfully created using ${creditCosts.imageGeneration} credits`,
+          duration: 3000,
         });
       } else {
         throw new Error("Image generation returned null");
@@ -84,7 +113,19 @@ export const useImageGenerationActions = (
         title: "Image Generation Failed",
         description: "Failed to generate image. Please try again.",
         variant: "destructive",
+        duration: 5000,
       });
+      
+      // Refund credits on failure
+      if (user) {
+        await consumeCredits(
+          user.id,
+          -creditCosts.imageGeneration, // Negative amount to refund
+          'credit_refund',
+          'Refund for failed image generation'
+        );
+      }
+      
       throw error; // Re-throw to allow component-level handling
     }
   };

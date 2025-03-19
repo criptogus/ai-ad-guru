@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +29,17 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast: uiToast } = useToast();
+  const { toast } = useToast();
+  
+  // Force React to re-render the image when imageUrl changes
+  const [imageTimestamp, setImageTimestamp] = useState(Date.now());
+  
+  useEffect(() => {
+    // Update the timestamp whenever the image URL changes
+    if (ad.imageUrl) {
+      setImageTimestamp(Date.now());
+    }
+  }, [ad.imageUrl]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,20 +47,22 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
     // Check if file is an image
     if (!file.type.startsWith('image/')) {
-      uiToast({
+      toast({
         title: "Invalid File",
         description: "Please upload an image file (JPEG, PNG, etc.)",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
 
     // Check file size (limit to 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      uiToast({
+      toast({
         title: "File Too Large",
         description: "Please upload an image smaller than 5MB",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -76,9 +88,10 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         .getPublicUrl(filePath).data.publicUrl;
 
       // Notify the parent component about the new image URL
-      uiToast({
+      toast({
         title: "Image Uploaded",
         description: "Your image has been uploaded successfully. You'll need to use the 'Update' button to save it to your ad.",
+        duration: 3000,
       });
 
       // Simulate an image URL update by reloading the page
@@ -88,10 +101,11 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
     } catch (error) {
       console.error("Error uploading image:", error);
-      uiToast({
+      toast({
         title: "Upload Failed",
         description: "There was an error uploading your image. Please try again.",
         variant: "destructive",
+        duration: 3000,
       });
     } finally {
       setIsUploading(false);
@@ -110,7 +124,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       {/* Image */}
       <ImageContent 
         ad={ad}
-        imageKey={imageKey}
+        imageKey={imageTimestamp} // Use timestamp as key to force re-render
         isLoading={isLoading}
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
