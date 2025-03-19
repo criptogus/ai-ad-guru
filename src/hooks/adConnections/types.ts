@@ -12,6 +12,9 @@ export interface AdConnectionsState {
   connections: Connection[];
   isLoading: boolean;
   isConnecting: boolean;
+  error: string | null;
+  errorDetails: string | null;
+  errorType: string | null;
 }
 
 export interface AdConnectionsActions {
