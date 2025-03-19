@@ -1,52 +1,79 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { getCreditCosts } from "@/services";
 
 export const useMetaAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
+  metaAds: MetaAd[],
   generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const { toast } = useToast();
-  
-  // Generate Meta ads
-  const handleGenerateMetaAds = async () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const creditCosts = getCreditCosts();
+
+  // Generate Meta Ads
+  const handleGenerateMetaAds = async (): Promise<void> => {
     if (!analysisResult) {
       toast({
-        title: "Analysis Required",
-        description: "Please analyze your website first",
+        title: "Website Analysis Required",
+        description: "Please analyze a website first",
         variant: "destructive",
       });
       return;
     }
 
-    console.log("Generating Meta ads with analysis result:", analysisResult);
-    const ads = await generateMetaAds(analysisResult);
-    console.log("Generated Meta ads:", ads);
-    
-    if (ads && ads.length > 0) {
-      // Update campaign data with generated ads
-      setCampaignData(prev => ({
-        ...prev,
-        metaAds: ads
-      }));
-      
+    setIsGenerating(true);
+    try {
+      // Show credit usage preview
       toast({
-        title: "Meta Ads Generated",
-        description: `Successfully created ${ads.length} ad variations. Generating images will make them more effective.`,
+        title: "Credit Usage Preview",
+        description: `This will use ${creditCosts.campaignCreation} credits to generate Instagram ad variations. Image generation costs ${creditCosts.imageGeneration} credits per image.`,
+        duration: 5000,
       });
-    } else {
+
+      const generatedAds = await generateMetaAds({
+        websiteUrl: analysisResult.websiteUrl,
+        companyName: analysisResult.companyName,
+        usps: analysisResult.uniqueSellingPoints,
+        targetAudience: analysisResult.targetAudience,
+        callToAction: analysisResult.callToAction,
+        brandTone: analysisResult.brandTone,
+        keywords: analysisResult.keywords,
+      });
+
+      if (generatedAds) {
+        setCampaignData(prev => ({ ...prev, metaAds: generatedAds }));
+        toast({
+          title: "Instagram Ads Generated",
+          description: `${generatedAds.length} ads were created successfully`,
+        });
+      }
+    } catch (error) {
+      console.error("Error generating Meta ads:", error);
       toast({
-        title: "Ad Generation Failed",
-        description: "Unable to generate Meta ads. Please try again.",
+        title: "Failed to Generate Instagram Ads",
+        description: "There was an error generating your ads",
         variant: "destructive",
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
+  // Update a specific Meta Ad
+  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd): void => {
+    const updatedAds = [...metaAds];
+    updatedAds[index] = updatedAd;
+    setCampaignData(prev => ({ ...prev, metaAds: updatedAds }));
+  };
+
   return {
-    handleGenerateMetaAds
+    handleGenerateMetaAds,
+    handleUpdateMetaAd,
+    isGenerating
   };
 };

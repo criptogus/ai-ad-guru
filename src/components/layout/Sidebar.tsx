@@ -7,6 +7,8 @@ import SidebarNavigation from "../navigation/SidebarNavigation";
 import CreateCampaignButton from "./CreateCampaignButton";
 import ThemeToggle from "./ThemeToggle";
 import ProfileDropdown from "./ProfileDropdown";
+import { useAuth } from "@/contexts/AuthContext";
+import { getCreditCosts } from "@/services";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -19,6 +21,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   setCollapsed, 
   activePage = "dashboard" 
 }) => {
+  const { user } = useAuth();
+  const credits = user?.credits || 0;
+
   return (
     <div className={cn(
       "relative h-screen bg-background border-r p-3 flex flex-col transition-all duration-300 ease-in-out",
@@ -32,6 +37,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Logo */}
       <SidebarHeader collapsed={collapsed} />
+
+      {/* Credits Display */}
+      <div className={cn(
+        "mb-4 px-2 py-2 border rounded-lg text-center bg-purple-50 dark:bg-purple-900/20 transition-all",
+        collapsed ? "mx-0 p-2" : "mx-1"
+      )}>
+        {collapsed ? (
+          <div className="text-center font-semibold text-purple-700 dark:text-purple-300">
+            {credits}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Credits</span>
+              <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">{credits}</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Navigation */}
       <SidebarNavigation collapsed={collapsed} activePage={activePage} />

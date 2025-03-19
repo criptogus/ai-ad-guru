@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { getCreditCosts } from "@/services";
 
 export const useImageGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -12,6 +13,7 @@ export const useImageGenerationActions = (
 ) => {
   const { toast } = useToast();
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
+  const creditCosts = getCreditCosts();
 
   // Generate image for Meta ad
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
@@ -32,6 +34,13 @@ export const useImageGenerationActions = (
     console.log("Using analysis result:", analysisResult);
     
     try {
+      // Show credit usage preview
+      toast({
+        title: "Credit Usage Preview",
+        description: `This will use ${creditCosts.imageGeneration} credits to generate this Instagram ad image`,
+        duration: 3000,
+      });
+      
       // Pass additional context from the analysis result to enhance image generation
       const additionalInfo = analysisResult ? {
         companyName: analysisResult.companyName,
@@ -63,7 +72,7 @@ export const useImageGenerationActions = (
         
         toast({
           title: "Image Generated",
-          description: "Ad image was successfully created",
+          description: `Ad image was successfully created using ${creditCosts.imageGeneration} credits`,
         });
       } else {
         throw new Error("Image generation returned null");
