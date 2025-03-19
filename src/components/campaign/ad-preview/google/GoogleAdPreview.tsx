@@ -14,7 +14,7 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, analysisResult, d
   const displayDomain = domain || (analysisResult ? getUrlFromCompanyName(analysisResult.companyName) : "example.com");
   
   return (
-    <div className="border rounded-md p-3 bg-white shadow-sm text-sm w-full max-w-md">
+    <div className="border rounded-md p-3 bg-white shadow-sm text-sm w-full">
       {/* Ad URL */}
       <div className="text-green-700 truncate text-xs">
         www.{displayDomain}
@@ -35,7 +35,6 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, analysisResult, d
         {ad.descriptions.map((description, i) => (
           <div key={i} className="mb-1">
             {description}
-            <span className="text-xs ml-1 text-gray-400">({description.length}/90)</span>
           </div>
         ))}
       </div>

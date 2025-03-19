@@ -94,14 +94,20 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
       
       {index === 0 && <GoogleAdOptimizationAlert />}
       
-      <GoogleAdPreview ad={displayAd} domain={domain} />
-      
-      <GoogleAdDetails 
-        ad={displayAd}
-        isEditing={isEditing}
-        onHeadlineChange={handleHeadlineChange}
-        onDescriptionChange={handleDescriptionChange}
-      />
+      <div className="md:flex md:gap-6 items-start">
+        <div className="md:w-1/2 mb-4 md:mb-0">
+          <GoogleAdPreview ad={displayAd} domain={domain} />
+        </div>
+        
+        <div className="md:w-1/2">
+          <GoogleAdDetails 
+            ad={displayAd}
+            isEditing={isEditing}
+            onHeadlineChange={handleHeadlineChange}
+            onDescriptionChange={handleDescriptionChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

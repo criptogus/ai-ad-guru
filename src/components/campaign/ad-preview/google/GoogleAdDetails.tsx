@@ -18,10 +18,10 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
   onDescriptionChange,
 }) => {
   return (
-    <div className="space-y-3 text-sm">
-      <div>
-        <span className="font-medium text-gray-700">Headlines:</span>
-        <div className="space-y-2 mt-1">
+    <div className="mt-4 p-3 bg-[#F1F0FB] border border-[#aaadb0] rounded-md shadow-sm text-sm">
+      <div className="mb-3">
+        <span className="font-medium text-gray-700 block mb-2">Headlines:</span>
+        <div className="space-y-1.5">
           {ad.headlines.map((headline, i) => (
             <div key={i} className="flex flex-col">
               {isEditing ? (
@@ -39,8 +39,8 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <span className="ml-2 text-sm">{i+1}. {headline}</span>
-                  <span className="ml-2 text-xs text-gray-500">{headline.length}/30 characters</span>
+                  <span className="text-[#403E43]">{i+1}. {headline}</span>
+                  <span className="text-xs text-gray-500">{headline.length}/30 characters</span>
                 </div>
               )}
             </div>
@@ -49,8 +49,8 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
       </div>
       
       <div>
-        <span className="font-medium text-gray-700">Descriptions:</span>
-        <div className="space-y-2 mt-1">
+        <span className="font-medium text-gray-700 block mb-2">Descriptions:</span>
+        <div className="space-y-1.5">
           {ad.descriptions.map((desc, i) => (
             <div key={i} className="flex flex-col">
               {isEditing ? (
@@ -68,8 +68,8 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <span className="ml-2 text-sm">{i+1}. {desc}</span>
-                  <span className="ml-2 text-xs text-gray-500">{desc.length}/90 characters</span>
+                  <span className="text-[#403E43]">{i+1}. {desc}</span>
+                  <span className="text-xs text-gray-500">{desc.length}/90 characters</span>
                 </div>
               )}
             </div>
