@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -15,65 +15,37 @@ const AccountConnections: React.FC = () => {
     connections,
     isLoading,
     isConnecting,
+    error,
+    errorDetails,
+    errorType,
     initiateGoogleConnection,
     initiateMetaConnection,
     removeConnection,
     fetchConnections
   } = useAdAccountConnections();
 
-  const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
-  const [errorType, setErrorType] = useState<string | null>(null);
-
   // Clear error when connections change
   useEffect(() => {
-    if (connections.length > 0) {
-      setError(null);
-      setErrorDetails(null);
-      setErrorType(null);
-    }
+    console.log("Connections updated:", connections);
   }, [connections]);
 
   const handleGoogleConnection = async () => {
     try {
-      setError(null);
-      setErrorDetails(null);
-      setErrorType(null);
+      console.log("Initiating Google connection...");
       await initiateGoogleConnection();
     } catch (err: any) {
-      setError(err.message || "Failed to connect to Google Ads");
-      
-      // Set more detailed error information if available
-      if (err.message && err.message.includes("Admin needs to configure")) {
-        setErrorType("credentials");
-        setErrorDetails("Please ensure all required Google API credentials are set in Supabase Edge Function secrets: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_DEVELOPER_TOKEN.");
-      } else if (err.message && err.message.includes("Edge function error")) {
-        setErrorType("edge_function");
-        setErrorDetails("There may be an issue with the Supabase Edge Function configuration. Check the Edge Function logs for more details.");
-      } else if (err.message && err.message.includes("non-2xx status")) {
-        setErrorType("edge_function");
-        setErrorDetails("The Supabase Edge Function returned an error. Verify that all Google API credentials are properly configured in the Edge Function secrets and that the function is correctly deployed.");
-      }
+      console.error("Google connection error:", err);
+      // Error is already handled in the hook
     }
   };
 
   const handleMetaConnection = async () => {
     try {
-      setError(null);
-      setErrorDetails(null);
-      setErrorType(null);
+      console.log("Initiating Meta connection...");
       await initiateMetaConnection();
     } catch (err: any) {
-      setError(err.message || "Failed to connect to Meta Ads");
-      
-      // Set more detailed error information if available
-      if (err.message && err.message.includes("Admin needs to configure")) {
-        setErrorType("credentials");
-        setErrorDetails("Please ensure all required Meta API credentials are set in Supabase Edge Function secrets: META_CLIENT_ID and META_CLIENT_SECRET.");
-      } else if (err.message && err.message.includes("Edge function error")) {
-        setErrorType("edge_function");
-        setErrorDetails("There may be an issue with the Supabase Edge Function configuration. Check the Edge Function logs for more details.");
-      }
+      console.error("Meta connection error:", err);
+      // Error is already handled in the hook
     }
   };
 
