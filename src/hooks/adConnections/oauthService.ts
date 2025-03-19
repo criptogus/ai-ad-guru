@@ -27,12 +27,26 @@ export const initiateOAuth = async (params: OAuthParams) => {
 
     if (response.error) {
       console.error(`Error response from edge function:`, response.error);
+      
+      // Enhanced error handling with more specific information
       let errorMessage = `Failed to initialize ${platform} OAuth flow: ${response.error.message || 'Unknown error'}`;
       
-      // Check if the error contains information about missing environment variables
+      // Provide more specific error messages for common issues
       if (response.error.message && response.error.message.includes('Missing required')) {
         errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
+      } else if (response.error.message && response.error.message.includes('non-2xx status')) {
+        errorMessage = `Edge function error: ${response.error.message}. Check if Supabase edge function is deployed correctly.`;
+      } else if (response.error.message && response.error.message.includes('Failed to prepare OAuth flow')) {
+        errorMessage = `Database error: ${response.error.message}. Please check database permissions or connection.`;
       }
+      
+      // Log detailed error for debugging
+      console.error(`OAuth initialization error details:`, {
+        errorMessage,
+        originalError: response.error,
+        platform,
+        redirectUri
+      });
       
       throw new Error(errorMessage);
     }

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, RefreshCw, Info } from "lucide-react";
+import { AlertCircle, RefreshCw, Info, ExternalLink } from "lucide-react";
 import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -19,29 +19,47 @@ const AccountConnections: React.FC = () => {
   } = useAdAccountConnections();
 
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   // Clear error when connections change
   useEffect(() => {
     if (connections.length > 0) {
       setError(null);
+      setErrorDetails(null);
     }
   }, [connections]);
 
   const handleGoogleConnection = async () => {
     try {
       setError(null);
+      setErrorDetails(null);
       await initiateGoogleConnection();
     } catch (err: any) {
       setError(err.message || "Failed to connect to Google Ads");
+      
+      // Set more detailed error information if available
+      if (err.message && err.message.includes("Admin needs to configure")) {
+        setErrorDetails("Please ensure all required Google API credentials are set in Supabase");
+      } else if (err.message && err.message.includes("Edge function error")) {
+        setErrorDetails("There may be an issue with the Supabase Edge Function configuration");
+      }
     }
   };
 
   const handleMetaConnection = async () => {
     try {
       setError(null);
+      setErrorDetails(null);
       await initiateMetaConnection();
     } catch (err: any) {
       setError(err.message || "Failed to connect to Meta Ads");
+      
+      // Set more detailed error information if available
+      if (err.message && err.message.includes("Admin needs to configure")) {
+        setErrorDetails("Please ensure all required Meta API credentials are set in Supabase");
+      } else if (err.message && err.message.includes("Edge function error")) {
+        setErrorDetails("There may be an issue with the Supabase Edge Function configuration");
+      }
     }
   };
 
@@ -69,7 +87,12 @@ const AccountConnections: React.FC = () => {
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              <p>{error}</p>
+              {errorDetails && (
+                <p className="mt-2 text-sm">{errorDetails}</p>
+              )}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -206,6 +229,17 @@ const AccountConnections: React.FC = () => {
                     campaigns on your behalf. Your credentials are securely stored and you 
                     can disconnect your accounts at any time.
                   </p>
+                  
+                  {error && (
+                    <div className="mt-3 pt-3 border-t border-muted-foreground/20">
+                      <h5 className="font-medium text-sm mb-1">Troubleshooting</h5>
+                      <p className="text-xs text-muted-foreground">
+                        If you're experiencing connection issues, please ensure that all required 
+                        API credentials are properly configured in your Supabase project. This includes 
+                        client ID, client secret, and any platform-specific tokens.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
