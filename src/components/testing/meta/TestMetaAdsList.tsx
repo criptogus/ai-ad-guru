@@ -35,7 +35,7 @@ const TestMetaAdsList: React.FC<TestMetaAdsListProps> = ({
             index={index} 
             analysisResult={defaultAnalysisResult}
             loadingImageIndex={loadingImageIndex}
-            onGenerateImage={handleGenerateImage}
+            onGenerateImage={(ad) => handleGenerateImage(ad, index)}
             onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
           />
         ))

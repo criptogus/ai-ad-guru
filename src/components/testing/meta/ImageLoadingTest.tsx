@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ interface ImageLoadingTestProps {
   handleTestImageLoad: (url: string) => void;
   debugImageLoaded: boolean;
   debugImageError: boolean;
+  setDebugImageLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  setDebugImageError: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ImageLoadingTest: React.FC<ImageLoadingTestProps> = ({
@@ -17,7 +19,9 @@ const ImageLoadingTest: React.FC<ImageLoadingTestProps> = ({
   setDebugImageUrl,
   handleTestImageLoad,
   debugImageLoaded,
-  debugImageError
+  debugImageError,
+  setDebugImageLoaded,
+  setDebugImageError
 }) => {
   return (
     <div className="grid md:grid-cols-2 gap-4">

@@ -111,6 +111,8 @@ const MetaAdsTestArea: React.FC = () => {
             handleTestImageLoad={handleTestImageLoad}
             debugImageLoaded={debugImageLoaded}
             debugImageError={debugImageError}
+            setDebugImageLoaded={setDebugImageLoaded}
+            setDebugImageError={setDebugImageError}
           />
         </CardContent>
       </Card>
