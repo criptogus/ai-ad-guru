@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useWebsiteAnalysisActions = () => {
   const { toast } = useToast();
@@ -73,4 +74,3 @@ export const useWebsiteAnalysisActions = () => {
     isAnalyzing
   };
 };
-

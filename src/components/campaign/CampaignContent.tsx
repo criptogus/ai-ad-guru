@@ -8,11 +8,11 @@ import { useAdGeneration } from "@/hooks/useAdGeneration";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useCampaignFlow } from "@/hooks/useCampaignFlow";
 import { useCampaignActions } from "@/hooks/campaignActions";
-import { useAuthActions } from "@/hooks/useAuthActions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CampaignContent: React.FC = () => {
   const { toast } = useToast();
-  const { user } = useAuthActions();
+  const { user } = useAuth();
   
   const {
     currentStep,
@@ -113,6 +113,11 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds(newAds);
   };
 
+  // Wrap handleGenerateLinkedInAds to return void to match expected type
+  const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
+    await handleGenerateLinkedInAds();
+  };
+
   // Step renderer props
   const stepRendererProps = {
     currentStep,
@@ -126,7 +131,7 @@ const CampaignContent: React.FC = () => {
     isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
-    handleGenerateMetaAds: handleGenerateLinkedInAds,
+    handleGenerateMetaAds: handleGenerateMetaAdsWrapper,
     handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
