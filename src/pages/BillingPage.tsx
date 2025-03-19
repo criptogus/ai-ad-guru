@@ -128,7 +128,7 @@ const BillingPage: React.FC = () => {
                 <CardContent>
                   <BillingFeatures />
                   <div className="text-center mt-6 space-y-2">
-                    <p className="text-3xl font-bold">$49.99</p>
+                    <p className="text-3xl font-bold">$99.00</p>
                     <p className="text-muted-foreground">per month</p>
                   </div>
                 </CardContent>
