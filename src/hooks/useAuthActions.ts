@@ -13,7 +13,7 @@ export const useAuthActions = (
   setUser?: (user: CustomUser | null) => void
 ) => {
   // If no arguments are provided, just return what's needed for read-only operations
-  if (arguments.length === 0) {
+  if (user === undefined && setUser === undefined) {
     return {
       user: null,
       isLoading: false,
