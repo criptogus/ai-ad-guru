@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import ImagePlaceholder from "./ImagePlaceholder";
-import ImageDisplay from "./ImageDisplay";
+import ImageLoader from "./ImageLoader";
 import DebugInfo from "./DebugInfo";
 
 interface ImageContentProps {
@@ -43,43 +43,18 @@ const ImageContent: React.FC<ImageContentProps> = ({
       
       console.log("Setting image src to:", newSrc);
       setImageSrc(newSrc);
-      
-      // Preload the image
-      const preloadImage = new Image();
-      preloadImage.src = newSrc;
-      console.log("Preloading and validating generated image:", newSrc);
-      
-      preloadImage.onload = () => {
-        console.log("Generated image preloaded successfully");
-      };
-      
-      preloadImage.onerror = (e) => {
-        console.error("Error preloading image:", e);
-        // Don't set an error, just log it
-      };
     } else {
       setImageSrc(null);
     }
   }, [ad.imageUrl]);
   
-  // Debug output to track component state
-  useEffect(() => {
-    console.log("ImageContent rendering with:", {
-      hasImageUrl: !!ad.imageUrl,
-      imageUrl: ad.imageUrl,
-      imageSrc,
-      imageError,
-      isImageLoaded,
-      imageKey,
-      retryCount
-    });
-  }, [ad.imageUrl, imageSrc, imageError, isImageLoaded, imageKey, retryCount]);
-  
+  // Handle image load success
   const handleImageLoad = () => {
     setIsImageLoaded(true);
     setImageError(false);
   };
   
+  // Handle image load failure with retry logic
   const handleImageError = () => {
     console.error("Image failed to load:", imageSrc);
     
@@ -106,7 +81,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
   return (
     <div className="bg-gray-100 aspect-square relative overflow-hidden">
       {imageSrc && !imageError ? (
-        <ImageDisplay 
+        <ImageLoader 
           imageSrc={imageSrc}
           altText={ad.headline || "Instagram ad"}
           imageKey={imageKey}

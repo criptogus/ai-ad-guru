@@ -1,4 +1,3 @@
-
 import { corsHeaders } from "./utils.ts";
 
 interface ImageGenerationConfig {

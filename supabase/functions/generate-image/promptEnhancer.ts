@@ -26,35 +26,29 @@ export function enhancePrompt(data: PromptData): string {
   // Get brand tone style from utility function
   const brandToneStyle = getBrandToneStyle(brandTone);
   
-  // Create enhanced prompt for DALL-E 3
+  // Create enhanced prompt for DALL-E 3 with optimized structure for advertising images
   return `
-Create a photorealistic, high-converting Instagram ad image for ${companyName || 'the company'}, with the following details:
+Generate a high-end, photorealistic advertising image designed for an Instagram ad campaign.
 
-${prompt}
+📌 Product & Brand: ${companyName || 'the company'} - ${prompt}
+📌 Target Audience: ${targetAudience || 'General consumers'}
+📌 Unique Selling Points: ${formattedUSPs}
+📌 Visual Style: ${brandToneStyle}
+📌 Composition: Professional product showcase with balanced framing, cinematic lighting, and subtle depth of field
+📌 Background: A realistic, high-end commercial setting matching the brand tone
+📌 Mood & Emotion: Engaging, aspirational, eye-catching
+📌 Color Palette: Vibrant, high contrast, optimized for social media engagement
+📌 Photography Standard: Commercial studio-grade quality, natural shadows, crisp details
+📌 Avoid: Abstract elements, surreal distortions, unnatural proportions, excessive blur, ANY TEXT OVERLAYS
 
-🔹 Image Requirements:
-- 100% PHOTOREALISTIC, NOT digital artwork or illustration
-- Professional studio-quality photography
-- Sharp focus, high resolution, and excellent lighting
-- High contrast and vibrant, eye-catching colors
-- NO text overlay (Meta restricts excessive text in ad images)
-- Clean, uncluttered composition focusing on the main product/message
+🎯 Goal: Create a realistic and high-conversion Instagram ad image that will drive clicks and engagement.
 
-🎨 Instagram Ad Style:
-${brandToneStyle}
-
-🎭 Target Audience & Context:
-- Target Audience: ${targetAudience || 'General consumers'}
-- Unique Selling Points: ${formattedUSPs}
-- Show the product/service in a real-world context that resonates with this audience
-- Include natural emotional reactions from people interacting with the product
-
-🔥 Conversion Optimization:
-- Emphasize the emotional benefits (how it makes customers feel)
-- Use aspirational imagery that shows the "after" state of using the product
-- Include subtle lifestyle elements that the target audience identifies with
-- Frame the image to draw attention to the key value proposition
-
-IMPORTANT: This MUST be PHOTOREALISTIC with the quality of a professional advertising photograph taken by a commercial photographer with high-end equipment. NO cartoon styles, NO digital art styles, NO illustrations.
+CRITICAL REQUIREMENTS:
+1. This MUST be a PHOTOREALISTIC commercial photograph, NOT digital art or illustration
+2. Use professional studio-quality photography techniques
+3. Show the product/service in a real-world context that resonates with ${targetAudience || 'the target audience'}
+4. Include subtle emotional elements that highlight the benefits
+5. NO text overlay (Meta restricts excessive text in ad images)
+6. Image must be clean, uncluttered, and focus on the main product/message
 `.trim();
 }
