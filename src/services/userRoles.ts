@@ -15,24 +15,6 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
   console.log(`Inviting ${email} as ${role}`);
   
   try {
-    // Check if the user is already in the team
-    const { data: existingMembers } = await supabase
-      .from('team_members')
-      .select('email')
-      .eq('email', email)
-      .single();
-    
-    if (existingMembers) {
-      throw new Error('User with this email is already a team member');
-    }
-    
-    // Create an invitation record in Supabase
-    const { error } = await supabase
-      .from('team_invitations')
-      .insert([{ email, role }]);
-      
-    if (error) throw error;
-    
     // Call the Supabase Edge Function to send an invitation email
     const { error: inviteError } = await supabase.functions.invoke("send-team-invitation", {
       body: { email, role }
@@ -50,24 +32,7 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
 // Function to get team members - in a real app, this would fetch from Supabase
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
-    // Fetch actual team members from Supabase
-    const { data, error } = await supabase
-      .from('team_members')
-      .select('*');
-      
-    if (error) throw error;
-    
-    if (data && data.length > 0) {
-      return data.map((member: any) => ({
-        id: member.id,
-        name: member.name || member.email.split('@')[0],
-        email: member.email,
-        role: member.role,
-        lastActive: member.last_active || 'Never'
-      }));
-    }
-    
-    // Fallback to mock data if no real data exists
+    // Mock data for now since we don't have real team_members yet
     const mockData: TeamMember[] = [
       { id: "1", name: "John Doe", email: "john@example.com", role: "Admin", lastActive: "2 hours ago" },
       { id: "2", name: "Jane Smith", email: "jane@example.com", role: "Analyst", lastActive: "1 day ago" },

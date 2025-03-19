@@ -37,14 +37,12 @@ serve(async (req) => {
     // Store the invitation in the database
     const { error: dbError } = await supabase
       .from('team_invitations')
-      .upsert([
-        {
-          email,
-          role,
-          invitation_token: token,
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        }
-      ]);
+      .insert({
+        email,
+        role,
+        invitation_token: token,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      });
       
     if (dbError) {
       console.error('Database error:', dbError);

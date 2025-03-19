@@ -127,6 +127,66 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invitations: {
+        Row: {
+          accepted: boolean | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          role: string
+        }
+        Insert: {
+          accepted?: boolean | null
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          invitation_token: string
+          role: string
+        }
+        Update: {
+          accepted?: boolean | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          last_active: string | null
+          name: string | null
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          last_active?: string | null
+          name?: string | null
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          last_active?: string | null
+          name?: string | null
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_integrations: {
         Row: {
           access_token: string
