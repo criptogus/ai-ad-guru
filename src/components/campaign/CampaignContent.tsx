@@ -113,9 +113,19 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds(newAds);
   };
 
-  // Wrap handleGenerateLinkedInAds to return void to match expected type
+  const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
+    const newAds = [...microsoftAds];
+    newAds[index] = updatedAd;
+    setMicrosoftAds(newAds);
+  };
+
+  // Wrap handlers to return void to match expected type
   const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
     await handleGenerateLinkedInAds();
+  };
+
+  const handleGenerateMicrosoftAdsWrapper = async (): Promise<void> => {
+    await handleGenerateMicrosoftAds();
   };
 
   // Step renderer props
@@ -125,6 +135,7 @@ const CampaignContent: React.FC = () => {
     campaignData,
     googleAds,
     metaAds: convertedMetaAds,
+    microsoftAds,
     isAnalyzing: isAnalyzing || isAnalyzingState,
     isGenerating,
     loadingImageIndex: null,
@@ -132,9 +143,11 @@ const CampaignContent: React.FC = () => {
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
     handleGenerateMetaAds: handleGenerateMetaAdsWrapper,
+    handleGenerateMicrosoftAds: handleGenerateMicrosoftAdsWrapper,
     handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
+    handleUpdateMicrosoftAd,
     setCampaignData,
     handleBack,
     handleNextWrapper,

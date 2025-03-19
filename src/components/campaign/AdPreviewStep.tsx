@@ -8,18 +8,22 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import MetaAdsTab from "./ad-preview/MetaAdsTab";
+import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
+  microsoftAds: GoogleAd[]; // Microsoft ads use same format as Google Ads
   isGenerating: boolean;
   loadingImageIndex: number | null;
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
+  onGenerateMicrosoftAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd?: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd?: (index: number, updatedAd: MetaAd) => void;
+  onUpdateMicrosoftAd?: (index: number, updatedAd: GoogleAd) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -28,13 +32,16 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   analysisResult,
   googleAds,
   metaAds,
+  microsoftAds,
   isGenerating,
   loadingImageIndex,
   onGenerateGoogleAds,
   onGenerateMetaAds,
+  onGenerateMicrosoftAds,
   onGenerateImage,
   onUpdateGoogleAd,
   onUpdateMetaAd,
+  onUpdateMicrosoftAd,
   onNext,
   onBack
 }) => {
@@ -55,9 +62,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="google">Google Ads</TabsTrigger>
-            <TabsTrigger value="meta">Meta/Instagram Ads</TabsTrigger>
+            <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
+            <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
           </TabsList>
           
           {/* Google Ads Content */}
@@ -83,6 +91,17 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               onUpdateAd={onUpdateMetaAd}
             />
           </TabsContent>
+          
+          {/* Microsoft Ads Content */}
+          <TabsContent value="microsoft">
+            <MicrosoftAdsTab 
+              microsoftAds={microsoftAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              onGenerateMicrosoftAds={onGenerateMicrosoftAds}
+              onUpdateAd={onUpdateMicrosoftAd}
+            />
+          </TabsContent>
         </Tabs>
         
         <Separator />
@@ -95,7 +114,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             onClick={onNext}
             disabled={
               (activeTab === "google" && googleAds.length === 0) || 
-              (activeTab === "meta" && metaAds.length === 0)
+              (activeTab === "meta" && metaAds.length === 0) ||
+              (activeTab === "microsoft" && microsoftAds.length === 0)
             }
           >
             Next Step

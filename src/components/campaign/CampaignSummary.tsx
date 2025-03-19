@@ -8,6 +8,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useNavigate } from "react-router-dom";
 import GoogleAdPreview from "./ad-preview/google/GoogleAdPreview";
 import { InstagramPreview } from "./ad-preview/meta";
+import { MicrosoftAdPreview } from "./ad-preview/microsoft";
 
 interface CampaignSummaryProps {
   campaignName: string;
@@ -22,6 +23,7 @@ interface CampaignSummaryProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
+  microsoftAds: GoogleAd[];
   onApprove: () => Promise<void>;
   onEdit: () => void;
   isLoading: boolean;
@@ -40,6 +42,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   analysisResult,
   googleAds,
   metaAds,
+  microsoftAds,
   onApprove,
   onEdit,
   isLoading
@@ -73,6 +76,59 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
     return null;
   };
 
+  // Get the appropriate ads to display based on platform
+  const getAdPreviews = () => {
+    switch(platform) {
+      case 'google':
+        return googleAds.length > 0 ? (
+          <div className="space-y-4">
+            <h4 className="text-md font-medium">Google Ads</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {googleAds.slice(0, 2).map((ad, index) => (
+                <div key={index} className="border rounded-md p-2">
+                  <GoogleAdPreview ad={ad} domain={getDomain(websiteUrl)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      
+      case 'meta':
+        return metaAds.length > 0 ? (
+          <div className="space-y-4">
+            <h4 className="text-md font-medium">Instagram Ads</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {metaAds.slice(0, 2).map((ad, index) => (
+                <div key={index} className="border rounded-md p-2">
+                  <InstagramPreview 
+                    ad={ad}
+                    companyName={analysisResult.companyName}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      
+      case 'microsoft':
+        return microsoftAds.length > 0 ? (
+          <div className="space-y-4">
+            <h4 className="text-md font-medium">Microsoft Ads</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {microsoftAds.slice(0, 2).map((ad, index) => (
+                <div key={index} className="border rounded-md p-2">
+                  <MicrosoftAdPreview ad={ad} domain={getDomain(websiteUrl)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -92,7 +148,10 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Platform:</span>
-                <span className="font-medium">{platform === 'google' ? 'Google Ads' : 'Meta Ads'}</span>
+                <span className="font-medium">
+                  {platform === 'google' ? 'Google Ads' : 
+                   platform === 'meta' ? 'Instagram Ads' : 'Microsoft Ads'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Budget:</span>
@@ -133,42 +192,16 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
         
         <div>
           <h3 className="text-lg font-semibold mb-2">Ad Previews</h3>
-          
-          {platform === 'google' && googleAds.length > 0 && (
-            <div className="space-y-4">
-              <h4 className="text-md font-medium">Google Ads</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {googleAds.slice(0, 2).map((ad, index) => (
-                  <div key={index} className="border rounded-md p-2">
-                    <GoogleAdPreview ad={ad} domain={getDomain(websiteUrl)} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {platform === 'meta' && metaAds.length > 0 && (
-            <div className="space-y-4">
-              <h4 className="text-md font-medium">Meta/Instagram Ads</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {metaAds.slice(0, 2).map((ad, index) => (
-                  <div key={index} className="border rounded-md p-2">
-                    <InstagramPreview 
-                      ad={ad}
-                      companyName={analysisResult.companyName}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {getAdPreviews()}
         </div>
         
         <Separator />
         
         <div className="flex items-center justify-between pt-4">
           <p className="text-sm text-muted-foreground">
-            By approving, your campaign will be prepared for launch to {platform === 'google' ? 'Google Ads' : 'Meta Ads'}.
+            By approving, your campaign will be prepared for launch to 
+            {platform === 'google' ? ' Google Ads' : 
+             platform === 'meta' ? ' Instagram Ads' : ' Microsoft Ads'}.
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onEdit}>
