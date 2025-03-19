@@ -119,18 +119,23 @@ export const generateLinkedInAds = async (campaignData: WebsiteAnalysisResult) =
     const prompt = `
     You are a senior marketing professional crafting a cutting-edge LinkedIn Ads campaign in 2025 to drive B2B engagement and conversions.
 
+    ## 🎯 **Generate LinkedIn Ads**
+
     Your goal is to generate **LinkedIn Ads (Text + Image)** that maximize **professional engagement, business interest, and conversion** using LinkedIn's **latest ad strategies** for ${campaignData.companyName}.
     
     ---
     
-    ### 📌 **Ad Creation Guidelines**
+    ### 📋 **Ad Format Requirements:**
     - **Headline:** Attention-grabbing, professional, **150 characters max**.
+    - **Primary Text:** Engaging opening text, **600 characters max**.
     - **Description:** Clear value proposition, **600 characters max**.
     - **Image Prompt:** Description for an image that would work well on LinkedIn (professional, business-focused).
-    - **Persuasion Techniques:** Each variation should use a different **B2B psychological trigger**:
-      - **Professional Social Proof:** Highlight industry credentials or existing business clients
-      - **Business Problem-Solution:** Address specific business pain points and solutions
-      - **ROI/Value Based:** Focus on concrete business outcomes and ROI
+    
+    ### 🎭 **Persuasion Technique Requirements:**
+    Each of the 3 ad variations should use a different **B2B psychological trigger**:
+    1. **Professional Social Proof:** Highlight industry credentials or existing business clients
+    2. **Business Problem-Solution:** Address specific business pain points and solutions
+    3. **ROI/Value Based:** Focus on concrete business outcomes and ROI
     
     ---
     
@@ -151,7 +156,7 @@ export const generateLinkedInAds = async (campaignData: WebsiteAnalysisResult) =
     - If the company's business description is in Spanish, all ad content must be in Spanish.
     - If the company's business description is in English, all ad content must be in English.
     - NEVER mix languages in any part of the ad.
-    - ALL fields (headline, description, imagePrompt) MUST be in the SAME LANGUAGE.
+    - ALL fields (headline, primaryText, description, imagePrompt) MUST be in the SAME LANGUAGE.
     
     ---
     
@@ -160,6 +165,7 @@ export const generateLinkedInAds = async (campaignData: WebsiteAnalysisResult) =
     [
       {
         "headline": "Attention-grabbing professional headline",
+        "primaryText": "Engaging opening paragraph that appears above the image",
         "description": "Compelling description with clear value proposition for professional audience",
         "imagePrompt": "Detailed description for image generation that will create a high-quality, professional LinkedIn ad image"
       },
@@ -174,7 +180,7 @@ export const generateLinkedInAds = async (campaignData: WebsiteAnalysisResult) =
     5. For image prompts, describe a professional, business-appropriate image that would work well on LinkedIn
     6. Return ONLY the JSON array - no additional text before or after
     7. Write ALL content in the SAME LANGUAGE as the company information (NEVER mix languages)
-    8. Adhere to LinkedIn's character limits: 150 for headline, 600 for description
+    8. Adhere to LinkedIn's character limits: 150 for headline, 600 for primaryText, 600 for description
     9. Reflect 2025 LinkedIn trends like AI integration, future of work, or professional development themes
     10. Incorporate visually compelling but professionally appropriate ideas for images
     `;

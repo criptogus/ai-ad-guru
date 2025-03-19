@@ -76,6 +76,7 @@ const validateAndCleanLinkedInAds = (parsedData: any[], campaignData: WebsiteAna
   return parsedData.map((ad: any) => {
     return {
       headline: ad.headline?.substring(0, 150) || `${campaignData.companyName} - Professional Solutions`,
+      primaryText: ad.primaryText?.substring(0, 600) || `Looking for innovative business solutions? ${campaignData.companyName} offers cutting-edge services tailored for professionals like you.`,
       description: ad.description?.substring(0, 600) || `${campaignData.companyName} provides professional solutions for businesses. Our services are designed to meet your specific needs and help your business grow.`,
       imagePrompt: ad.imagePrompt || `Professional image of business people in a modern office setting for ${campaignData.companyName}`
     };
@@ -91,16 +92,19 @@ export const generateFallbackLinkedInAds = (campaignData: WebsiteAnalysisResult)
   return [
     {
       headline: `${companyName} - Professional Solutions for Your Business`,
+      primaryText: `Are you looking to optimize your business operations and drive growth? At ${companyName}, we understand the challenges that modern businesses face in today's competitive landscape.`,
       description: `${shortDesc} We provide top-quality services tailored to meet the needs of ${targetAudience}. Contact us today to learn how we can help your business grow and succeed in today's competitive market.`,
       imagePrompt: `Professional image of business people in a modern office setting for ${companyName}`
     },
     {
       headline: `Transform Your Business with ${companyName}`,
+      primaryText: `In today's fast-paced business environment, staying ahead requires innovative solutions and strategic partnerships. ${companyName} delivers results that matter.`,
       description: `Looking for innovative solutions? ${companyName} offers cutting-edge services designed to boost your productivity and ROI. Join hundreds of satisfied clients who have already elevated their business performance with our expert solutions.`,
       imagePrompt: `Clean, professional image showing business growth chart or success metrics for ${companyName}`
     },
     {
       headline: `${companyName}: Industry Leaders in Professional Solutions`,
+      primaryText: `What separates industry leaders from the competition? The right tools, strategies, and partners. ${companyName} helps businesses reach their full potential.`,
       description: `With years of experience serving ${targetAudience}, we understand your unique challenges. Our team of experts is ready to provide customized solutions that drive real results. Schedule a consultation today to discover how we can support your business goals.`,
       imagePrompt: `Professional team of diverse business experts representing ${companyName} in a corporate setting`
     }

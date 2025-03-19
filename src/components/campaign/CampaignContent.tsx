@@ -12,7 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const CampaignContent: React.FC = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const auth = useAuth();
+  const user = auth?.user;
   
   const {
     currentStep,
@@ -107,7 +108,7 @@ const CampaignContent: React.FC = () => {
     setGoogleAds(newAds);
   };
 
-  const handleUpdateMetaAd = (index: number, updatedAd: any) => {
+  const handleUpdateLinkedInAd = (index: number, updatedAd: any) => {
     const newAds = [...linkedInAds];
     newAds[index] = updatedAd;
     setLinkedInAds(newAds);
@@ -120,7 +121,7 @@ const CampaignContent: React.FC = () => {
   };
 
   // Wrap handlers to return void to match expected type
-  const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
+  const handleGenerateLinkedInAdsWrapper = async (): Promise<void> => {
     await handleGenerateLinkedInAds();
   };
 
@@ -142,11 +143,11 @@ const CampaignContent: React.FC = () => {
     isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
-    handleGenerateMetaAds: handleGenerateMetaAdsWrapper,
+    handleGenerateMetaAds: handleGenerateLinkedInAdsWrapper,
     handleGenerateMicrosoftAds: handleGenerateMicrosoftAdsWrapper,
     handleGenerateImage,
     handleUpdateGoogleAd,
-    handleUpdateMetaAd,
+    handleUpdateMetaAd: handleUpdateLinkedInAd,
     handleUpdateMicrosoftAd,
     setCampaignData,
     handleBack,

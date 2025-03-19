@@ -8,6 +8,7 @@ export interface GoogleAd {
 
 export interface LinkedInAd {
   headline: string;
+  primaryText: string;
   description: string;
   imagePrompt?: string;
   imageUrl?: string;

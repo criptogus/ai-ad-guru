@@ -2,9 +2,9 @@
 import React from "react";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Save, X } from "lucide-react";
+import { Edit2, Save, X, Linkedin } from "lucide-react";
 
-interface MicrosoftAdCardHeaderProps {
+interface LinkedInAdCardHeaderProps {
   adIndex: number;
   isEditing: boolean;
   onEdit: () => void;
@@ -12,7 +12,7 @@ interface MicrosoftAdCardHeaderProps {
   onCancel: () => void;
 }
 
-const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
+const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
   adIndex,
   isEditing,
   onEdit,
@@ -22,10 +22,8 @@ const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   return (
     <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
       <CardTitle className="text-lg flex items-center gap-2">
-        <svg width="16" height="16" viewBox="0 0 24 24" className="text-blue-500">
-          <path fill="currentColor" d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z" />
-        </svg>
-        <span>Microsoft Ad {adIndex + 1}</span>
+        <Linkedin className="h-5 w-5 text-blue-700" />
+        <span>LinkedIn Ad {adIndex + 1}</span>
       </CardTitle>
       
       <div className="flex items-center gap-2">
@@ -66,4 +64,4 @@ const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   );
 };
 
-export default MicrosoftAdCardHeader;
+export default LinkedInAdCardHeader;

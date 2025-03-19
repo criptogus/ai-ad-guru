@@ -7,7 +7,7 @@ import { GoogleAd } from "@/hooks/adGeneration";
 export interface LinkedInAd {
   headline: string;
   description: string;
-  primaryText: string; // Changed from optional to required
+  primaryText: string; 
   imagePrompt?: string;
   imageUrl?: string;
 }
