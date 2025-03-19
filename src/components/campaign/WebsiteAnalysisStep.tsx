@@ -93,14 +93,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   };
 
   return (
-    <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle>Website Analysis</CardTitle>
-        <CardDescription>
+    <Card className="shadow-md border border-accent/20 overflow-hidden">
+      <CardHeader className="bg-card pb-4">
+        <CardTitle className="text-xl text-foreground">Website Analysis</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Enter your website URL so our AI can analyze it and suggest campaign settings
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="space-y-6">
           <WebsiteUrlInput
             website={website}
@@ -110,7 +110,12 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           />
 
           {(isAnalyzing || analysisResult) && (
-            <Progress value={progress} className="w-full h-2" />
+            <div className="my-4">
+              <Progress value={progress} className="w-full h-2" />
+              {isAnalyzing && (
+                <p className="text-xs text-muted-foreground mt-1 text-right">{progress}%</p>
+              )}
+            </div>
           )}
 
           {analysisResult && editedResult && (

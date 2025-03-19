@@ -10,17 +10,17 @@ interface StepNavigationProps {
 
 const StepNavigation: React.FC<StepNavigationProps> = ({ 
   currentStep = 1,
-  totalSteps = 4 // Updated to 4 steps
+  totalSteps = 4
 }) => {
   const steps = [
     { number: 1, title: "Website Analysis" },
     { number: 2, title: "Campaign Setup" },
     { number: 3, title: "Ad Creation" },
-    { number: 4, title: "Review & Launch" } // New summary step
+    { number: 4, title: "Review & Launch" }
   ];
 
   return (
-    <Card className="p-4 mb-6">
+    <Card className="p-6 mb-6 shadow-md border-accent/20">
       <div className="flex flex-wrap justify-between">
         {steps.slice(0, totalSteps).map((step) => (
           <StepIndicator

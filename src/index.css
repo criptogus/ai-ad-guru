@@ -157,4 +157,40 @@
   .card-container {
     @apply rounded-lg border shadow-sm overflow-hidden;
   }
+  
+  /* Campaign step styles */
+  .campaign-step-card {
+    @apply transition-all duration-300 shadow-md border border-accent/20;
+  }
+  
+  /* Campaign wizard navigation styles */
+  .step-nav-item {
+    @apply flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-md transition-colors;
+  }
+  
+  .step-nav-item.active {
+    @apply bg-primary/10 text-primary;
+  }
+  
+  .step-nav-item.completed {
+    @apply text-green-600;
+  }
+  
+  /* Enhanced form inputs */
+  .campaign-input {
+    @apply border border-input px-3 py-2 rounded-md bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200;
+  }
+  
+  /* Button enhancements */
+  .action-button {
+    @apply flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200;
+  }
+  
+  .action-button.primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+  
+  .action-button.secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
 }

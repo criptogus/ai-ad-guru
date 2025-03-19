@@ -80,7 +80,6 @@ const CampaignContent: React.FC = () => {
     createCampaign
   );
 
-  // Ad updates and image generation handling - Now using the hook instead of component
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
@@ -136,11 +135,13 @@ const CampaignContent: React.FC = () => {
   });
 
   return (
-    <div className="p-8">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
       <CampaignHeader onBack={handleBack} />
       <div className="mb-8">
         <StepNavigation totalSteps={4} currentStep={currentStep} />
-        {getStepContent()}
+        <div className="transition-all duration-300">
+          {getStepContent()}
+        </div>
       </div>
     </div>
   );

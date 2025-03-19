@@ -8,11 +8,11 @@ interface SidebarHeaderProps {
 
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({ collapsed }) => {
   return (
-    <div className={cn("mb-6 flex items-center", collapsed ? "justify-center" : "gap-2")}>
-      <div className="h-8 w-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold">
+    <div className={cn("mb-6 flex items-center", collapsed ? "justify-center" : "justify-start px-2")}>
+      <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-sm">
         ZA
       </div>
-      {!collapsed && <h1 className="text-lg font-medium">Zero Agency</h1>}
+      {!collapsed && <h1 className="text-lg font-medium ml-2">Zero Agency</h1>}
     </div>
   );
 };

@@ -21,7 +21,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6 max-w-[1400px] mx-auto">
+        <div className="p-4 sm:p-6 max-w-[1400px] mx-auto transition-all duration-300">
           {children}
         </div>
       </div>
