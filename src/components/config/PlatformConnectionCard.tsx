@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoogleIcon, LucideIcon, GlobeIcon } from "lucide-react";
+import { LucideIcon, Globe, Goal } from "lucide-react";
 import { Connection } from "@/hooks/adConnections/types";
 
 interface PlatformConnectionCardProps {
@@ -30,25 +30,25 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
         return {
           title: 'Google Ads',
           description: 'Connect your Google Ads account to create and manage campaigns',
-          icon: GoogleIcon,
+          icon: Goal, // Using Goal icon instead of GoogleIcon which doesn't exist
         };
       case 'linkedin':
         return {
           title: 'LinkedIn Ads',
           description: 'Connect your LinkedIn Ads account to create and manage campaigns',
-          icon: GlobeIcon,
+          icon: Globe,
         };
       case 'microsoft':
         return {
           title: 'Microsoft Ads',
           description: 'Connect your Microsoft Ads account to create and manage campaigns',
-          icon: GlobeIcon,
+          icon: Globe,
         };
       default:
         return {
           title: platform,
           description: 'Connect your account',
-          icon: GlobeIcon,
+          icon: Globe,
         };
     }
   };

@@ -7,7 +7,7 @@ import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import AdPreviewStep from "@/components/campaign/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
 
-interface UseCampaignStepRendererProps {
+export interface UseCampaignStepRendererProps {
   currentStep: number;
   analysisResult: WebsiteAnalysisResult | null;
   campaignData: any;

@@ -27,6 +27,7 @@ const CampaignContent: React.FC = () => {
     setMicrosoftAds,
     resetCampaign,
     isRequiredStep,
+    currentStep
   } = campaignContext;
 
   const handleSetStep = (step: string) => {
@@ -41,6 +42,29 @@ const CampaignContent: React.FC = () => {
     }
   };
 
+  // Mock data for rendering steps
+  const mockStepRendererProps = {
+    currentStep,
+    analysisResult,
+    campaignData,
+    googleAds,
+    metaAds: [], // Empty array for compatibility
+    isAnalyzing: false,
+    isGenerating: false,
+    loadingImageIndex: null,
+    isCreating: false,
+    handleWebsiteAnalysis: async () => null,
+    handleGenerateGoogleAds: async () => {},
+    handleGenerateMetaAds: async () => {},
+    handleGenerateImage: async () => {},
+    handleUpdateGoogleAd: () => {},
+    handleUpdateMetaAd: () => {},
+    setCampaignData,
+    handleBack: () => {},
+    handleNextWrapper: () => {},
+    createCampaign: async () => {}
+  };
+
   const stepRendererProps = {
     activeCampaignStep,
     setActiveCampaignStep,
@@ -52,7 +76,7 @@ const CampaignContent: React.FC = () => {
     resetCampaign,
   };
 
-  const { getStepContent } = useCampaignStepRenderer(stepRendererProps);
+  const { getStepContent } = useCampaignStepRenderer(mockStepRendererProps);
 
   return <div>{getStepContent()}</div>;
 };

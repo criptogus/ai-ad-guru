@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Trash, RefreshCw, GoogleIcon, GlobeIcon } from "lucide-react";
+import { AlertCircle, Trash, RefreshCw, Globe, Goal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const TestAdsPage = () => {
@@ -34,15 +34,15 @@ const TestAdsPage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="google" className="flex items-center gap-1">
-              <GoogleIcon className="h-4 w-4" />
+              <Goal className="h-4 w-4" />
               Google Ads
             </TabsTrigger>
             <TabsTrigger value="linkedin" className="flex items-center gap-1">
-              <GlobeIcon className="h-4 w-4" />
+              <Globe className="h-4 w-4" />
               LinkedIn Ads
             </TabsTrigger>
             <TabsTrigger value="microsoft" className="flex items-center gap-1">
-              <GlobeIcon className="h-4 w-4" />
+              <Globe className="h-4 w-4" />
               Microsoft Ads
             </TabsTrigger>
           </TabsList>

@@ -47,9 +47,13 @@ interface CampaignContextType {
   setMicrosoftAds: React.Dispatch<React.SetStateAction<MicrosoftAd[]>>;
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  activeCampaignStep: string;
+  setActiveCampaignStep: React.Dispatch<React.SetStateAction<string>>;
+  resetCampaign: () => void;
+  isRequiredStep: (step: string) => boolean;
 }
 
-const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
+export const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [campaignData, setCampaignData] = useState<CampaignData>({
@@ -74,6 +78,7 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+  const [activeCampaignStep, setActiveCampaignStep] = useState("website-analysis");
 
   // Function to update analysis result and also update the campaign data
   const updateAnalysisResult = (updatedResult: WebsiteAnalysisResult) => {
@@ -84,6 +89,47 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
       targetAudience: updatedResult.targetAudience,
       description: updatedResult.businessDescription
     }));
+  };
+  
+  // Function to reset the campaign data
+  const resetCampaign = () => {
+    setCampaignData({
+      name: "",
+      platform: "google",
+      budget: 50,
+      budgetType: "daily",
+      startDate: "",
+      endDate: "",
+      objective: "traffic",
+      targetAudience: "",
+      description: "",
+      websiteUrl: "",
+      businessInfo: null,
+      googleAds: [],
+      linkedInAds: [],
+      microsoftAds: [],
+    });
+    setAnalysisResult(null);
+    setGoogleAds([]);
+    setLinkedInAds([]);
+    setMicrosoftAds([]);
+    setCurrentStep(1);
+    setActiveCampaignStep("website-analysis");
+  };
+  
+  // Function to check if a step is required
+  const isRequiredStep = (step: string) => {
+    // Define the order and requirements for steps
+    const stepOrder = ["website-analysis", "campaign-setup", "ad-preview", "campaign-summary"];
+    const currentIndex = stepOrder.indexOf(activeCampaignStep);
+    const targetIndex = stepOrder.indexOf(step);
+    
+    // Can't skip steps forward
+    if (targetIndex > currentIndex + 1) {
+      return true;
+    }
+    
+    return false;
   };
 
   return (
@@ -100,7 +146,11 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
       microsoftAds,
       setMicrosoftAds,
       currentStep,
-      setCurrentStep
+      setCurrentStep,
+      activeCampaignStep,
+      setActiveCampaignStep,
+      resetCampaign,
+      isRequiredStep
     }}>
       {children}
     </CampaignContext.Provider>
