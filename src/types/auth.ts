@@ -32,4 +32,5 @@ export interface AuthContextType {
   updateUserPaymentStatus: (hasPaid: boolean) => Promise<any>;
   simulateSuccessfulPayment: () => Promise<any>;
   session: Session | null;
+  setUser: (user: CustomUser | null) => void;
 }

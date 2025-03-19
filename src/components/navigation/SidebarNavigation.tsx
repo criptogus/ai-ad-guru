@@ -1,55 +1,42 @@
 
-import { LayoutDashboard, LineChart, Lightbulb, UserRound, Settings, CreditCard, Users } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import navigationItems from './SidebarNavigationItems';
+import { cn } from '@/lib/utils';
 
-const navigationItems = [
-  {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
-    href: '/dashboard',
-    activePattern: /^\/dashboard$/,
-  },
-  {
-    title: 'Campaigns',
-    icon: LineChart, // Using LineChart icon for Campaigns
-    href: '/campaigns',
-    activePattern: /^\/campaigns(\/.*)?$/,
-  },
-  {
-    title: 'Analytics',
-    icon: LineChart,
-    href: '/analytics',
-    activePattern: /^\/analytics$/,
-  },
-  {
-    title: 'AI Insights',
-    icon: Lightbulb,
-    href: '/insights',
-    activePattern: /^\/insights$/,
-  },
-  {
-    title: 'Profile',
-    icon: UserRound,
-    href: '/profile',
-    activePattern: /^\/profile$/,
-  },
-  {
-    title: 'Configuration',
-    icon: Settings,
-    href: '/config',
-    activePattern: /^\/config$/,
-  },
-  {
-    title: 'Billing',
-    icon: CreditCard,
-    href: '/billing',
-    activePattern: /^\/billing$/,
-  },
-  {
-    title: 'User Roles',
-    icon: Users,
-    href: '/roles',
-    activePattern: /^\/roles$/,
-  },
-];
+interface SidebarNavigationProps {
+  collapsed: boolean;
+  activePage?: string;
+}
 
-export default navigationItems;
+const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, activePage }) => {
+  return (
+    <div className="flex-1 py-6">
+      <nav className="space-y-1">
+        {navigationItems.map((item) => {
+          const isActive = item.activePattern.test(`/${activePage}`);
+          const IconComponent = item.icon;
+          
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                isActive 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                collapsed && "justify-center"
+              )}
+            >
+              <IconComponent className={cn("h-5 w-5", collapsed ? "mx-0" : "mr-2")} />
+              {!collapsed && <span>{item.title}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
+};
+
+export default SidebarNavigation;
