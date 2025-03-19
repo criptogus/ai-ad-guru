@@ -1,17 +1,23 @@
 
+// Update ImageLoadingTest.tsx to ensure the Auth user is properly passed to child components
+// and to ensure the image upload handler works correctly
+
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ImageLoader } from "@/components/campaign/ad-preview/meta/instagram-preview";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ImageLoadingTestProps {
   debugImageUrl: string;
-  setDebugImageUrl: React.Dispatch<React.SetStateAction<string>>;
+  setDebugImageUrl: (url: string) => void;
   handleTestImageLoad: (url: string) => void;
   debugImageLoaded: boolean;
   debugImageError: boolean;
-  setDebugImageLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-  setDebugImageError: React.Dispatch<React.SetStateAction<boolean>>;
+  setDebugImageLoaded: (loaded: boolean) => void;
+  setDebugImageError: (error: boolean) => void;
 }
 
 const ImageLoadingTest: React.FC<ImageLoadingTestProps> = ({
@@ -23,45 +29,63 @@ const ImageLoadingTest: React.FC<ImageLoadingTestProps> = ({
   setDebugImageLoaded,
   setDebugImageError
 }) => {
+  const { user } = useAuth();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDebugImageUrl(e.target.value);
+  };
+
+  const testImage = () => {
+    handleTestImageLoad(debugImageUrl);
+  };
+
   return (
-    <div className="grid md:grid-cols-2 gap-4">
-      <div>
-        <Label htmlFor="imageUrl">Image URL to Test</Label>
-        <div className="flex gap-2">
-          <Input 
-            id="imageUrl" 
-            value={debugImageUrl}
-            onChange={(e) => setDebugImageUrl(e.target.value)}
-            placeholder="Enter image URL to test loading"
-          />
-          <Button onClick={() => handleTestImageLoad(debugImageUrl)}>Test</Button>
-        </div>
-        
-        <div className="mt-4">
-          <p>Status: {debugImageLoaded ? "✅ Loaded" : debugImageError ? "❌ Error" : "⏳ Not loaded yet"}</p>
-          {debugImageUrl && (
-            <div className="text-xs mt-2 break-all">
-              <p>URL: {debugImageUrl}</p>
-            </div>
-          )}
-        </div>
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Input 
+          type="text" 
+          value={debugImageUrl} 
+          onChange={handleInputChange} 
+          placeholder="Enter image URL to test" 
+          className="flex-1"
+        />
+        <Button onClick={testImage}>Test Load</Button>
       </div>
       
-      <div className="bg-gray-100 aspect-square relative overflow-hidden">
-        {debugImageUrl ? (
-          <img 
-            src={debugImageUrl}
-            alt="Test image"
-            className="w-full h-full object-cover"
-            onLoad={() => setDebugImageLoaded(true)}
-            onError={() => setDebugImageError(true)}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Enter an image URL to test
+      <Card className="bg-gray-50">
+        <CardHeader className="pb-2">
+          <h3 className="text-sm font-medium">Image Load Status</h3>
+        </CardHeader>
+        <CardContent>
+          <div className="text-xs space-y-1">
+            <p>User authenticated: {user ? "Yes" : "No"}</p>
+            <p>Image URL: {debugImageUrl || "None"}</p>
+            <p>Status: {
+              !debugImageUrl ? "No URL" : 
+              debugImageLoaded ? "Loaded successfully" : 
+              debugImageError ? "Failed to load" : 
+              "Loading..."
+            }</p>
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
+      
+      {debugImageUrl && (
+        <>
+          <Separator />
+          <div className="aspect-square max-w-sm mx-auto border rounded overflow-hidden">
+            {debugImageUrl && (
+              <ImageLoader
+                imageSrc={debugImageUrl}
+                altText="Test image"
+                retryCount={0}
+                onImageLoad={() => setDebugImageLoaded(true)}
+                onImageError={() => setDebugImageError(true)}
+              />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };

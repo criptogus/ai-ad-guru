@@ -57,7 +57,7 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
 
       console.log(`Uploading file to ${bucketName}/${filePath}`);
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage using storage.from().upload() with authentication
       const { data, error } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file, {
@@ -71,11 +71,11 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
       }
 
       // Get the public URL
-      const imageUrl = supabase.storage
+      const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
-        .getPublicUrl(filePath).data.publicUrl;
+        .getPublicUrl(filePath);
 
-      console.log("Image uploaded successfully, URL:", imageUrl);
+      console.log("Image uploaded successfully, URL:", publicUrl);
 
       toast.success("Image uploaded successfully", {
         description: "Your image has been added to the ad.",
@@ -83,11 +83,11 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
       });
       
       // Call parent with the new image URL
-      onImageUploaded(imageUrl);
+      onImageUploaded(publicUrl);
       
       // Force browser to reload the image (avoiding cache issues)
       const img = new Image();
-      img.src = `${imageUrl}?t=${Date.now()}`;
+      img.src = `${publicUrl}?t=${Date.now()}`;
       img.onload = () => {
         console.log("Image preloaded successfully");
       };
