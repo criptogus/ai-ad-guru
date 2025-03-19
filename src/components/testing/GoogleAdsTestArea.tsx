@@ -8,23 +8,25 @@ import NewGoogleAdForm from "./google/NewGoogleAdForm";
 import GoogleAdCard from "@/components/campaign/ad-preview/GoogleAdCard";
 
 // Sample data for testing
-const defaultBusiness = {
-  name: "Test Company",
-  description: "A test business for ad previews",
-  url: "www.example.com"
+const defaultAnalysisResult = {
+  companyName: "Test Company",
+  businessDescription: "A test business for ad previews",
+  targetAudience: "General audience",
+  brandTone: "Professional",
+  keywords: ["test", "sample", "preview"],
+  callToAction: ["Learn More", "Get Started"],
+  uniqueSellingPoints: ["Quality", "Affordability", "Service"],
+  websiteUrl: "https://example.com"
 };
 
 const GoogleAdsTestArea: React.FC = () => {
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
-  const [newAd, setNewAd] = useState<GoogleAd>({
-    headline1: "Test Headline 1",
-    headline2: "Test Headline 2",
-    headline3: "Test Headline 3",
-    description1: "Test description line 1 for the ad.",
-    description2: "Test description line 2 for the ad.",
-    path1: "path1",
-    path2: "path2",
-    finalUrl: "https://example.com",
+  const [newAd, setNewAd] = useState<{
+    headlines: string[];
+    descriptions: string[];
+  }>({
+    headlines: ["Test Headline 1", "Test Headline 2", "Test Headline 3"],
+    descriptions: ["Test description line 1 for the ad.", "Test description line 2 for the ad."],
   });
 
   const handleAddTestAd = () => {
@@ -75,9 +77,8 @@ const GoogleAdsTestArea: React.FC = () => {
             <GoogleAdCard 
               key={index} 
               ad={ad} 
-              index={index} 
-              displayUrl={`${defaultBusiness.url}/${ad.path1}/${ad.path2}`}
-              onRemove={() => handleRemoveAd(index)}
+              index={index}
+              analysisResult={defaultAnalysisResult}
               onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
             />
           ))
