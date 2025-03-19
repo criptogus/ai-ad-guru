@@ -62,18 +62,30 @@ export const useAdAccountConnections = () => {
         description: "Initializing OAuth connection...",
       });
       
+      // Prepare redirect URI - make sure it's the current origin plus the path
+      const redirectUri = `${window.location.origin}/config`;
+      console.log(`Using redirect URI: ${redirectUri}`);
+      
       // Generate the OAuth URL from our edge function
-      const { data, error } = await supabase.functions.invoke('ad-account-auth', {
+      const response = await supabase.functions.invoke('ad-account-auth', {
         body: {
           action: 'getAuthUrl',
           platform,
-          redirectUri: window.location.origin + '/config',
+          redirectUri,
           userId: user.id
         }
       });
       
-      if (error || !data.success || !data.authUrl) {
-        throw new Error(error || data.error || 'Failed to initialize OAuth flow');
+      if (!response || response.error) {
+        console.error(`Error response from edge function:`, response);
+        throw new Error(response?.error?.message || `Failed to initialize ${platform} OAuth flow`);
+      }
+      
+      const data = response.data;
+      
+      if (!data || !data.success || !data.authUrl) {
+        console.error(`Invalid response from edge function:`, data);
+        throw new Error(data?.error || `Failed to get valid auth URL for ${platform}`);
       }
       
       // Store that we're in the middle of an OAuth flow
@@ -84,6 +96,7 @@ export const useAdAccountConnections = () => {
       }));
       
       // Redirect the user to the OAuth consent screen
+      console.log(`Redirecting to OAuth URL: ${data.authUrl}`);
       window.location.href = data.authUrl;
       
     } catch (error: any) {
@@ -139,20 +152,32 @@ export const useAdAccountConnections = () => {
         description: "Completing connection...",
       });
       
+      // Prepare redirect URI - use the same one we used for the initial request
+      const redirectUri = `${window.location.origin}/config`;
+      console.log(`Using callback redirect URI: ${redirectUri}`);
+      
       // Exchange the code for tokens
-      const { data, error } = await supabase.functions.invoke('ad-account-auth', {
+      const response = await supabase.functions.invoke('ad-account-auth', {
         body: {
           action: 'exchangeToken',
           code,
           state,
           platform,
-          redirectUri: window.location.origin + '/config',
+          redirectUri,
           userId
         }
       });
       
-      if (error || !data.success) {
-        throw new Error(error || data.error || 'Failed to complete connection');
+      if (!response || response.error) {
+        console.error(`Error response from exchange token:`, response);
+        throw new Error(response?.error?.message || `Failed to exchange token for ${platform}`);
+      }
+      
+      const data = response.data;
+      
+      if (!data || !data.success) {
+        console.error(`Invalid response from token exchange:`, data);
+        throw new Error(data?.error || `Failed to complete ${platform} connection`);
       }
       
       // Refresh the connections list

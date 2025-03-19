@@ -24,23 +24,48 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { action, platform, code, redirectUri, userId, state } = await req.json();
+    // Create the Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase URL or service role key");
+      throw new Error("Server configuration error");
+    }
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+    
+    // Parse the request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (error) {
+      console.error("Error parsing request body:", error);
+      throw new Error("Invalid request format");
+    }
+    
+    const { action, platform, code, redirectUri, userId, state } = requestBody;
     
     console.log(`Received auth request - action: ${action}, platform: ${platform}, userId: ${userId}`);
     
     // Generate OAuth URL
     if (action === 'getAuthUrl') {
-      const clientId = platform === 'google' 
-        ? Deno.env.get('GOOGLE_CLIENT_ID') 
-        : Deno.env.get('META_CLIENT_ID');
+      let clientId;
+      
+      // Get the client ID based on platform
+      if (platform === 'google') {
+        clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+        console.log("Google Client ID available:", !!clientId);
+      } else if (platform === 'meta') {
+        clientId = Deno.env.get('META_CLIENT_ID');
+        console.log("Meta Client ID available:", !!clientId);
+      } else {
+        throw new Error(`Unsupported platform: ${platform}`);
+      }
       
       if (!clientId) {
-        throw new Error(`${platform} client ID not configured`);
+        console.error(`${platform} client ID not configured`);
+        throw new Error(`${platform} client ID not configured in server environment`);
       }
       
       // Generate a unique state parameter to prevent CSRF
@@ -65,7 +90,7 @@ serve(async (req) => {
       
       if (stateError) {
         console.error("Error storing OAuth state:", stateError);
-        throw new Error("Failed to prepare OAuth flow");
+        throw new Error("Failed to prepare OAuth flow: " + stateError.message);
       }
       
       let authUrl;
@@ -73,9 +98,9 @@ serve(async (req) => {
         authUrl = `${GOOGLE_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(GOOGLE_SCOPE)}&response_type=code&state=${stateParam}&access_type=offline&prompt=consent`;
       } else if (platform === 'meta') {
         authUrl = `${META_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(META_SCOPE)}&response_type=code&state=${stateParam}`;
-      } else {
-        throw new Error("Unsupported platform");
       }
+      
+      console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
       
       return new Response(
         JSON.stringify({ 
@@ -121,16 +146,21 @@ serve(async (req) => {
         .delete()
         .eq('state', state);
       
-      const clientId = platform === 'google' 
-        ? Deno.env.get('GOOGLE_CLIENT_ID') 
-        : Deno.env.get('META_CLIENT_ID');
+      let clientId, clientSecret;
       
-      const clientSecret = platform === 'google' 
-        ? Deno.env.get('GOOGLE_CLIENT_SECRET') 
-        : Deno.env.get('META_CLIENT_SECRET');
+      if (platform === 'google') {
+        clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+        clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+        console.log("Google credentials available:", !!clientId, !!clientSecret);
+      } else if (platform === 'meta') {
+        clientId = Deno.env.get('META_CLIENT_ID');
+        clientSecret = Deno.env.get('META_CLIENT_SECRET');
+        console.log("Meta credentials available:", !!clientId, !!clientSecret);
+      }
       
       if (!clientId || !clientSecret) {
-        throw new Error(`${platform} OAuth credentials not configured`);
+        console.error(`${platform} OAuth credentials not configured`);
+        throw new Error(`${platform} OAuth credentials not configured in server environment`);
       }
       
       // Exchange the code for tokens
@@ -146,117 +176,131 @@ serve(async (req) => {
       
       const tokenUrl = platform === 'google' ? GOOGLE_TOKEN_URL : META_TOKEN_URL;
       
-      console.log(`Exchanging code for tokens at ${tokenUrl}`);
-      const tokenResponse = await fetch(tokenUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: tokenParams.toString()
-      });
+      console.log(`Exchanging code for tokens at ${tokenUrl} with redirect_uri: ${redirectUri}`);
       
-      if (!tokenResponse.ok) {
-        const errorText = await tokenResponse.text();
-        console.error(`Token exchange failed: ${errorText}`);
-        throw new Error(`Failed to exchange code for tokens: ${tokenResponse.status}`);
-      }
-      
-      const tokenData = await tokenResponse.json();
-      console.log('Token exchange successful');
-      
-      // For Google, we need to make an additional request to get account information
-      let accountId = '';
-      
-      if (platform === 'google') {
-        const accessToken = tokenData.access_token;
-        const googleAdsUrl = 'https://googleads.googleapis.com/v14/customers:listAccessibleCustomers';
-        
-        try {
-          const customerResponse = await fetch(googleAdsUrl, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'developer-token': Deno.env.get('GOOGLE_DEVELOPER_TOKEN') || '',
-            }
-          });
-          
-          if (!customerResponse.ok) {
-            console.warn('Failed to retrieve Google Ads customer info:', await customerResponse.text());
-            accountId = 'unknown';
-          } else {
-            const customerData = await customerResponse.json();
-            if (customerData.resourceNames && customerData.resourceNames.length > 0) {
-              // Extract the customer ID from the resource name (format: customers/1234567890)
-              accountId = customerData.resourceNames[0].split('/')[1] || 'unknown';
-            } else {
-              accountId = 'no-accounts';
-            }
-          }
-        } catch (error) {
-          console.error('Error retrieving Google Ads account info:', error);
-          accountId = 'error-retrieving';
-        }
-      } else if (platform === 'meta') {
-        // For Meta, we need to make an additional request to get Ad Account information
-        try {
-          const meResponse = await fetch(`https://graph.facebook.com/v17.0/me/adaccounts?access_token=${tokenData.access_token}`);
-          
-          if (!meResponse.ok) {
-            console.warn('Failed to retrieve Meta Ad accounts:', await meResponse.text());
-            accountId = 'unknown';
-          } else {
-            const meData = await meResponse.json();
-            if (meData.data && meData.data.length > 0) {
-              // Take the first Ad Account ID
-              accountId = meData.data[0].id || 'unknown';
-            } else {
-              accountId = 'no-accounts';
-            }
-          }
-        } catch (error) {
-          console.error('Error retrieving Meta Ad account info:', error);
-          accountId = 'error-retrieving';
-        }
-      }
-      
-      // Calculate token expiration (if provided by the platform)
-      let expiresAt = null;
-      if (tokenData.expires_in) {
-        expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
-      }
-      
-      // Store the tokens in Supabase
-      const { data, error } = await supabaseClient
-        .from('user_integrations')
-        .upsert({
-          user_id: userId,
-          platform,
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || null,
-          account_id: accountId,
-          expires_at: expiresAt
-        }, {
-          onConflict: 'user_id,platform'
+      try {
+        const tokenResponse = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: tokenParams.toString()
         });
-      
-      if (error) {
-        console.error('Error storing tokens:', error);
-        throw error;
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Successfully connected to ${platform === 'google' ? 'Google' : 'Meta'} Ads`,
-          accountId
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
+        
+        if (!tokenResponse.ok) {
+          const errorText = await tokenResponse.text();
+          console.error(`Token exchange failed (${tokenResponse.status}): ${errorText}`);
+          throw new Error(`Failed to exchange code for tokens: ${tokenResponse.status} - ${errorText}`);
         }
-      );
+        
+        const tokenData = await tokenResponse.json();
+        console.log('Token exchange successful');
+        
+        // For Google, we need to make an additional request to get account information
+        let accountId = '';
+        
+        if (platform === 'google') {
+          const accessToken = tokenData.access_token;
+          const googleAdsUrl = 'https://googleads.googleapis.com/v14/customers:listAccessibleCustomers';
+          
+          try {
+            const developerToken = Deno.env.get('GOOGLE_DEVELOPER_TOKEN');
+            if (!developerToken) {
+              console.warn('Google developer token not configured');
+              accountId = 'developer-token-missing';
+            } else {
+              const customerResponse = await fetch(googleAdsUrl, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'developer-token': developerToken,
+                }
+              });
+              
+              if (!customerResponse.ok) {
+                const errorText = await customerResponse.text();
+                console.warn('Failed to retrieve Google Ads customer info:', errorText);
+                accountId = 'retrieval-error';
+              } else {
+                const customerData = await customerResponse.json();
+                if (customerData.resourceNames && customerData.resourceNames.length > 0) {
+                  // Extract the customer ID from the resource name (format: customers/1234567890)
+                  accountId = customerData.resourceNames[0].split('/')[1] || 'unknown';
+                } else {
+                  accountId = 'no-accounts';
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error retrieving Google Ads account info:', error);
+            accountId = 'error-retrieving';
+          }
+        } else if (platform === 'meta') {
+          // For Meta, we need to make an additional request to get Ad Account information
+          try {
+            const meResponse = await fetch(`https://graph.facebook.com/v17.0/me/adaccounts?access_token=${tokenData.access_token}`);
+            
+            if (!meResponse.ok) {
+              const errorText = await meResponse.text();
+              console.warn('Failed to retrieve Meta Ad accounts:', errorText);
+              accountId = 'unknown';
+            } else {
+              const meData = await meResponse.json();
+              if (meData.data && meData.data.length > 0) {
+                // Take the first Ad Account ID
+                accountId = meData.data[0].id || 'unknown';
+              } else {
+                accountId = 'no-accounts';
+              }
+            }
+          } catch (error) {
+            console.error('Error retrieving Meta Ad account info:', error);
+            accountId = 'error-retrieving';
+          }
+        }
+        
+        // Calculate token expiration (if provided by the platform)
+        let expiresAt = null;
+        if (tokenData.expires_in) {
+          expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
+        }
+        
+        // Store the tokens in Supabase
+        const { data, error } = await supabaseClient
+          .from('user_integrations')
+          .upsert({
+            user_id: userId,
+            platform,
+            access_token: tokenData.access_token,
+            refresh_token: tokenData.refresh_token || null,
+            account_id: accountId,
+            expires_at: expiresAt
+          }, {
+            onConflict: 'user_id,platform'
+          });
+        
+        if (error) {
+          console.error('Error storing tokens:', error);
+          throw error;
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Successfully connected to ${platform === 'google' ? 'Google' : 'Meta'} Ads`,
+            accountId
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
+      } catch (fetchError) {
+        console.error(`Error during token exchange:`, fetchError);
+        throw new Error(`Token exchange failed: ${fetchError.message}`);
+      }
     }
     
-    throw new Error("Invalid action specified");
+    throw new Error(`Invalid action specified: ${action}`);
     
   } catch (error) {
     console.error(`Error processing request:`, error);
