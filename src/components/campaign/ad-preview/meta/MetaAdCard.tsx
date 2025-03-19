@@ -29,7 +29,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
   const [imageKey, setImageKey] = useState(Date.now()); // Force image refresh when URL changes
   const [imageGenerationAttempts, setImageGenerationAttempts] = useState(0);
-  const [imageError, setImageError] = useState<boolean>(false); // Fixed type to boolean explicitly
+  const [imageError, setImageError] = useState<boolean>(false);
 
   // Update editedAd when ad changes
   useEffect(() => {
@@ -85,7 +85,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
       await onGenerateImage(ad, index);
     } catch (error) {
       console.error("Error handling image generation:", error);
-      setImageError(true); // Set to true on error
+      setImageError(true);
       toast({
         title: "Image Generation Failed",
         description: "There was an error generating your image. Please try again.",
