@@ -43,6 +43,19 @@ const ImageContent: React.FC<ImageContentProps> = ({
       
       console.log("Setting image src to:", newSrc);
       setImageSrc(newSrc);
+      
+      // Preload the image
+      const preloadImage = new Image();
+      preloadImage.src = newSrc;
+      console.log("Preloading and validating generated image:", newSrc);
+      
+      preloadImage.onload = () => {
+        console.log("Generated image preloaded successfully");
+      };
+      
+      preloadImage.onerror = (e) => {
+        console.error("Error preloading image:", e);
+      };
     } else {
       setImageSrc(null);
     }
@@ -62,7 +75,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
   }, [ad.imageUrl, imageSrc, imageError, isImageLoaded, imageKey, retryCount]);
   
   const handleImageLoad = () => {
-    console.log("Image loaded successfully:", imageSrc);
+    console.log("The generated image URL loaded successfully");
     setIsImageLoaded(true);
     setImageError(false);
   };
@@ -92,23 +105,6 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
 
-  // Preload image
-  useEffect(() => {
-    if (imageSrc) {
-      const preloadImage = new Image();
-      
-      preloadImage.onload = () => {
-        console.log("Image preloaded successfully:", imageSrc);
-      };
-      
-      preloadImage.onerror = (e) => {
-        console.error("Image preload failed:", imageSrc, e);
-      };
-      
-      preloadImage.src = imageSrc;
-    }
-  }, [imageSrc]);
-  
   const imageDisplay = imageSrc && !imageError ? (
     <div className="w-full h-full relative">
       {!isImageLoaded && <div className="absolute inset-0 flex items-center justify-center bg-gray-100">

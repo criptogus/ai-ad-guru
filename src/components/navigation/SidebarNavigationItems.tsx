@@ -1,49 +1,86 @@
 
-import { LayoutDashboard, LineChart, Lightbulb, UserRound, Settings, CreditCard, Users } from 'lucide-react';
+import React from "react";
+import { useLocation } from "react-router-dom";
+import {
+  BarChart,
+  Cog,
+  CreditCard,
+  LayoutDashboard,
+  Megaphone,
+  Users,
+  Sparkles,
+  BugPlay
+} from "lucide-react";
+import { SidebarItem } from "@/components/ui/sidebar";
 
-const navigationItems = [
-  {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
-    href: '/dashboard',
-    activePattern: /^\/dashboard$/,
-  },
-  {
-    title: 'Campaigns',
-    icon: LineChart, // Using LineChart icon for Campaigns
-    href: '/campaigns',
-    activePattern: /^\/campaigns(\/.*)?$/,
-  },
-  {
-    title: 'AI Insights & Analytics',
-    icon: Lightbulb,
-    href: '/insights',
-    activePattern: /^\/insights$/,
-  },
-  {
-    title: 'Profile',
-    icon: UserRound,
-    href: '/profile',
-    activePattern: /^\/profile$/,
-  },
-  {
-    title: 'Configuration',
-    icon: Settings,
-    href: '/config',
-    activePattern: /^\/config$/,
-  },
-  {
-    title: 'Billing',
-    icon: CreditCard,
-    href: '/billing',
-    activePattern: /^\/billing$/,
-  },
-  {
-    title: 'User Roles',
-    icon: Users,
-    href: '/roles',
-    activePattern: /^\/roles$/,
-  },
-];
+export function SidebarNavigationItems() {
+  const location = useLocation();
+  const pathname = location.pathname;
 
-export default navigationItems;
+  const isActive = (path: string) => {
+    if (path === "/dashboard" && pathname === "/dashboard") {
+      return true;
+    }
+    
+    if (path !== "/dashboard" && pathname.startsWith(path)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  return (
+    <>
+      <SidebarItem
+        href="/dashboard"
+        icon={LayoutDashboard}
+        text="Dashboard"
+        active={isActive("/dashboard")}
+      />
+      <SidebarItem
+        href="/campaigns"
+        icon={Megaphone}
+        text="Campaigns"
+        active={isActive("/campaigns")}
+      />
+      <SidebarItem
+        href="/analytics"
+        icon={BarChart}
+        text="Analytics"
+        active={isActive("/analytics")}
+      />
+      <SidebarItem
+        href="/insights"
+        icon={Sparkles}
+        text="AI Insights"
+        active={isActive("/insights")}
+      />
+      <SidebarItem
+        href="/config"
+        icon={Cog}
+        text="Connections"
+        active={isActive("/config")}
+      />
+      <SidebarItem
+        href="/billing"
+        icon={CreditCard}
+        text="Billing"
+        active={isActive("/billing")}
+      />
+      <SidebarItem
+        href="/users"
+        icon={Users}
+        text="Users & Roles"
+        active={isActive("/users")}
+      />
+      {process.env.NODE_ENV !== 'production' && (
+        <SidebarItem
+          href="/test-ads"
+          icon={BugPlay}
+          text="Test Ads"
+          active={isActive("/test-ads")}
+        />
+      )}
+    </>
+  );
+}

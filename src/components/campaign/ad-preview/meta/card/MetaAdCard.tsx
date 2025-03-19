@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -25,21 +24,27 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   onUpdate
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [localAd, setLocalAd] = useState<MetaAd>(ad);
+  
+  useEffect(() => {
+    setLocalAd(ad);
+  }, [ad]);
 
   const handleGenerateImage = async () => {
-    await onGenerateImage(ad, index);
+    await onGenerateImage(localAd, index);
   };
 
   const handleUpdateAd = (updatedAd: MetaAd) => {
+    setLocalAd(updatedAd);
+    
     if (onUpdate) {
-      console.log(`MetaAdCard (index: ${index}) - Updating ad with new image URL:`, updatedAd.imageUrl);
+      console.log(`MetaAdCard (index: ${index}) - Updating ad with new values:`, updatedAd);
       onUpdate(index, updatedAd);
     }
   };
 
   const handleCopy = () => {
-    // Create a text representation of the ad that can be copied
-    const adText = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
+    const adText = `Headline: ${localAd.headline}\nPrimary Text: ${localAd.primaryText}\nDescription: ${localAd.description}`;
     navigator.clipboard.writeText(adText);
   };
 
@@ -49,11 +54,23 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
 
   const handleSave = () => {
     setIsEditing(false);
+    if (onUpdate) {
+      onUpdate(index, localAd);
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
+    setLocalAd(ad);
   };
+
+  useEffect(() => {
+    console.log(`MetaAdCard ${index} rendering with:`, {
+      adImageUrl: localAd.imageUrl,
+      isLoading: loadingImageIndex === index,
+      isEditing,
+    });
+  }, [localAd, loadingImageIndex, index, isEditing]);
 
   return (
     <Card className="overflow-hidden">
@@ -68,10 +85,9 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
         />
         
         <div className="grid md:grid-cols-2 gap-4 p-4">
-          {/* Instagram Preview */}
           <div>
             <InstagramPreview 
-              ad={ad}
+              ad={localAd}
               companyName={analysisResult?.companyName || "Your Company"}
               loadingImageIndex={loadingImageIndex}
               index={index}
@@ -80,11 +96,10 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
             />
           </div>
           
-          {/* Ad Details Editor */}
           <div>
             <AdDetailsSection 
-              ad={ad} 
-              onUpdate={onUpdate ? (updatedAd) => onUpdate(index, updatedAd) : undefined}
+              ad={localAd} 
+              onUpdate={handleUpdateAd}
             />
           </div>
         </div>

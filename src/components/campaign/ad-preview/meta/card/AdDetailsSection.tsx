@@ -17,6 +17,8 @@ const AdDetailsSection: React.FC<AdDetailsSectionProps> = ({
   const handleChange = (field: keyof MetaAd, value: string) => {
     if (onUpdate) {
       const updatedAd = { ...ad, [field]: value };
+      console.log(`AdDetailsSection - Updating field "${field}" with value:`, value);
+      console.log("AdDetailsSection - Full updated ad:", updatedAd);
       onUpdate(updatedAd);
     }
   };
@@ -64,7 +66,7 @@ const AdDetailsSection: React.FC<AdDetailsSectionProps> = ({
         />
       </div>
       
-      {/* Debugging section - only in development */}
+      {/* Display image URL for debugging */}
       {process.env.NODE_ENV !== 'production' && ad.imageUrl && (
         <div className="text-xs text-gray-500 border-t pt-2 mt-4">
           <p className="font-semibold">Debug Info:</p>

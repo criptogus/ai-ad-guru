@@ -1,72 +1,59 @@
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { Toaster } from './components/ui/toaster';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import ProtectedRoute from './components/ProtectedRoute';
-import ProfilePage from './pages/ProfilePage';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { HelmetProvider } from "react-helmet-async";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Pages
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import CampaignsPage from './pages/CampaignsPage';
-import CreateCampaignPage from './pages/CreateCampaignPage';
-import BillingPage from './pages/BillingPage';
-import ConfigPage from './pages/ConfigPage';
-import AIInsightsPage from './pages/AIInsightsPage';
-import UserRolesPage from './pages/UserRolesPage';
-import NotFound from './pages/NotFound';
-import AnalyticsPage from './pages/AnalyticsPage';
-import OpenAITestPage from './pages/OpenAITestPage';
+import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import DashboardPage from "@/pages/DashboardPage";
+import CampaignsPage from "@/pages/CampaignsPage";
+import CreateCampaignPage from "@/pages/CreateCampaignPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import ConfigPage from "@/pages/ConfigPage";
+import BillingPage from "@/pages/BillingPage";
+import ProfilePage from "@/pages/ProfilePage";
+import AIInsightsPage from "@/pages/AIInsightsPage";
+import UserRolesPage from "@/pages/UserRolesPage";
+import TestAdsPage from "@/pages/TestAdsPage";
+import NotFound from "@/pages/NotFound";
 
-import './App.css';
-
-// Create a client
-const queryClient = new QueryClient();
+import "./App.css";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          
-          <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-          
-          <Route path="/campaigns/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
-          
-          {/* Redirect old path to the correct path */}
-          <Route path="/create-campaign" element={<Navigate to="/campaigns/create" replace />} />
-          
-          {/* Redirect /analytics to /insights */}
-          <Route path="/analytics" element={<Navigate to="/insights" replace />} />
-          
-          <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
-          
-          <Route path="/ai-insights" element={<Navigate to="/insights" replace />} />
-          
-          <Route path="/settings/roles" element={<ProtectedRoute><UserRolesPage /></ProtectedRoute>} />
-          
-          <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
-          
-          <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-          
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          
-          <Route path="/debug/openai" element={<ProtectedRoute><OpenAITestPage /></ProtectedRoute>} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <ThemeProvider defaultTheme="light" storageKey="adguru-theme">
+        <AuthProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+              <Route path="/campaigns/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
+              <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+              <Route path="/users" element={<ProtectedRoute><UserRolesPage /></ProtectedRoute>} />
+              <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          <Toaster />
+          <SonnerToaster position="top-right" />
+        </AuthProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 
