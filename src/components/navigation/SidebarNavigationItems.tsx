@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import {
   BarChart,
   Cog,
@@ -11,11 +11,7 @@ import {
   Sparkles,
   BugPlay
 } from "lucide-react";
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export function SidebarNavigationItems() {
   const location = useLocation();
@@ -33,97 +29,76 @@ export function SidebarNavigationItems() {
     return false;
   };
 
+  const linkClasses = "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted";
+  const activeLinkClasses = "bg-muted font-medium";
+
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/dashboard"
-          tooltip="Dashboard"
-          isActive={isActive("/dashboard")}
-        >
-          <LayoutDashboard className="h-5 w-5" />
-          <span>Dashboard</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+    <div className="space-y-1">
+      <Link 
+        to="/dashboard" 
+        className={cn(linkClasses, isActive("/dashboard") && activeLinkClasses)}
+      >
+        <LayoutDashboard className="h-5 w-5" />
+        <span>Dashboard</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/campaigns"
-          tooltip="Campaigns"
-          isActive={isActive("/campaigns")}
-        >
-          <Megaphone className="h-5 w-5" />
-          <span>Campaigns</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/campaigns" 
+        className={cn(linkClasses, isActive("/campaigns") && activeLinkClasses)}
+      >
+        <Megaphone className="h-5 w-5" />
+        <span>Campaigns</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/analytics"
-          tooltip="Analytics"
-          isActive={isActive("/analytics")}
-        >
-          <BarChart className="h-5 w-5" />
-          <span>Analytics</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/analytics" 
+        className={cn(linkClasses, isActive("/analytics") && activeLinkClasses)}
+      >
+        <BarChart className="h-5 w-5" />
+        <span>Analytics</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/insights"
-          tooltip="AI Insights"
-          isActive={isActive("/insights")}
-        >
-          <Sparkles className="h-5 w-5" />
-          <span>AI Insights</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/insights" 
+        className={cn(linkClasses, isActive("/insights") && activeLinkClasses)}
+      >
+        <Sparkles className="h-5 w-5" />
+        <span>AI Insights</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/config"
-          tooltip="Connections"
-          isActive={isActive("/config")}
-        >
-          <Cog className="h-5 w-5" />
-          <span>Connections</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/config" 
+        className={cn(linkClasses, isActive("/config") && activeLinkClasses)}
+      >
+        <Cog className="h-5 w-5" />
+        <span>Connections</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/billing"
-          tooltip="Billing"
-          isActive={isActive("/billing")}
-        >
-          <CreditCard className="h-5 w-5" />
-          <span>Billing</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/billing" 
+        className={cn(linkClasses, isActive("/billing") && activeLinkClasses)}
+      >
+        <CreditCard className="h-5 w-5" />
+        <span>Billing</span>
+      </Link>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          href="/users"
-          tooltip="Users & Roles"
-          isActive={isActive("/users")}
-        >
-          <Users className="h-5 w-5" />
-          <span>Users & Roles</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <Link 
+        to="/users" 
+        className={cn(linkClasses, isActive("/users") && activeLinkClasses)}
+      >
+        <Users className="h-5 w-5" />
+        <span>Users & Roles</span>
+      </Link>
       
       {process.env.NODE_ENV !== 'production' && (
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            href="/test-ads"
-            tooltip="Test Ads"
-            isActive={isActive("/test-ads")}
-          >
-            <BugPlay className="h-5 w-5" />
-            <span>Test Ads</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        <Link 
+          to="/test-ads" 
+          className={cn(linkClasses, isActive("/test-ads") && activeLinkClasses)}
+        >
+          <BugPlay className="h-5 w-5" />
+          <span>Test Ads</span>
+        </Link>
       )}
-    </SidebarMenu>
+    </div>
   );
 }

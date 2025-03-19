@@ -1,24 +1,23 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { MetaAd } from "@/hooks/adGeneration";
-import { useAdGeneration } from "@/hooks/useAdGeneration";
-import MetaAdCard from "@/components/campaign/ad-preview/meta/card/MetaAdCard";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { MetaAd } from "@/hooks/adGeneration";
+import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import NewMetaAdForm from "./meta/NewMetaAdForm";
+import ImageLoadingTest from "./meta/ImageLoadingTest";
+import TestMetaAdsList from "./meta/TestMetaAdsList";
 
-const defaultAnalysisResult = {
+const defaultAnalysisResult: WebsiteAnalysisResult = {
   companyName: "Test Company",
   businessDescription: "A test company for debugging purposes",
   websiteUrl: "https://example.com",
   brandTone: "Professional",
   targetAudience: "Developers and testers",
   uniqueSellingPoints: ["Easy debugging", "Fast testing", "Reliable results"],
-  callToAction: ["Test Now"],  // Changed to array
+  callToAction: ["Test Now"],
   keywords: ["test", "debug", "development"]
 };
 
@@ -92,44 +91,11 @@ const MetaAdsTestArea: React.FC = () => {
           <CardTitle>Meta/Instagram Ads Test</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="primaryText">Primary Text</Label>
-              <Textarea 
-                id="primaryText" 
-                value={newAd.primaryText}
-                onChange={(e) => setNewAd({...newAd, primaryText: e.target.value})}
-                className="min-h-[80px]"
-              />
-            </div>
-            <div>
-              <Label htmlFor="headline">Headline</Label>
-              <Input 
-                id="headline" 
-                value={newAd.headline}
-                onChange={(e) => setNewAd({...newAd, headline: e.target.value})}
-              />
-              
-              <Label htmlFor="description" className="mt-4">Description</Label>
-              <Input 
-                id="description" 
-                value={newAd.description}
-                onChange={(e) => setNewAd({...newAd, description: e.target.value})}
-              />
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="imagePrompt">Image Prompt</Label>
-            <Textarea 
-              id="imagePrompt" 
-              value={newAd.imagePrompt}
-              onChange={(e) => setNewAd({...newAd, imagePrompt: e.target.value})}
-              className="min-h-[100px]"
-            />
-          </div>
-          
-          <Button onClick={handleAddTestAd}>Add Test Ad</Button>
+          <NewMetaAdForm 
+            newAd={newAd}
+            setNewAd={setNewAd}
+            onAddTestAd={handleAddTestAd}
+          />
         </CardContent>
       </Card>
       
@@ -139,72 +105,26 @@ const MetaAdsTestArea: React.FC = () => {
           <CardTitle>Image Loading Test</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="imageUrl">Image URL to Test</Label>
-              <div className="flex gap-2">
-                <Input 
-                  id="imageUrl" 
-                  value={debugImageUrl}
-                  onChange={(e) => setDebugImageUrl(e.target.value)}
-                  placeholder="Enter image URL to test loading"
-                />
-                <Button onClick={() => handleTestImageLoad(debugImageUrl)}>Test</Button>
-              </div>
-              
-              <div className="mt-4">
-                <p>Status: {debugImageLoaded ? "✅ Loaded" : debugImageError ? "❌ Error" : "⏳ Not loaded yet"}</p>
-                {debugImageUrl && (
-                  <div className="text-xs mt-2 break-all">
-                    <p>URL: {debugImageUrl}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="bg-gray-100 aspect-square relative overflow-hidden">
-              {debugImageUrl ? (
-                <img 
-                  src={debugImageUrl}
-                  alt="Test image"
-                  className="w-full h-full object-cover"
-                  onLoad={() => setDebugImageLoaded(true)}
-                  onError={() => setDebugImageError(true)}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  Enter an image URL to test
-                </div>
-              )}
-            </div>
-          </div>
+          <ImageLoadingTest 
+            debugImageUrl={debugImageUrl}
+            setDebugImageUrl={setDebugImageUrl}
+            handleTestImageLoad={handleTestImageLoad}
+            debugImageLoaded={debugImageLoaded}
+            debugImageError={debugImageError}
+          />
         </CardContent>
       </Card>
       
       <Separator />
       
       {/* Display generated ads */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-semibold">Test Ads ({metaAds.length})</h2>
-        
-        {metaAds.length === 0 ? (
-          <div className="text-center py-12 bg-muted rounded-lg">
-            <p>No test ads created yet. Add one above.</p>
-          </div>
-        ) : (
-          metaAds.map((ad, index) => (
-            <MetaAdCard 
-              key={index}
-              ad={ad}
-              index={index}
-              analysisResult={defaultAnalysisResult}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateImage={(ad) => handleGenerateImage(ad, index)}
-              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
-            />
-          ))
-        )}
-      </div>
+      <TestMetaAdsList 
+        metaAds={metaAds}
+        defaultAnalysisResult={defaultAnalysisResult}
+        loadingImageIndex={loadingImageIndex}
+        handleGenerateImage={handleGenerateImage}
+        handleUpdateAd={handleUpdateAd}
+      />
     </div>
   );
 };
