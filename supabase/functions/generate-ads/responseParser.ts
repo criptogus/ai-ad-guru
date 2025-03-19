@@ -1,132 +1,171 @@
 
-import { GoogleAd, MetaAd } from "./types.ts";
-import { WebsiteAnalysisResult } from "./types.ts";
-import { 
-  detectLanguagesInAdContent, 
-  isEnglishText, 
-  isPortugueseText, 
-  isSpanishText 
-} from "./utils/languageDetection.ts";
-import { 
-  generateFallbackGoogleAds, 
-  fixLanguageConsistency 
-} from "./fallbacks/googleAdsFallbacks.ts";
-import { 
-  generateFallbackMetaAds 
-} from "./fallbacks/metaAdsFallbacks.ts";
+import { WebsiteAnalysisResult, GoogleAd, LinkedInAd, MicrosoftAd } from "./types.ts";
+import { generateFallbackGoogleAds as googleFallbacks } from "./fallbacks/googleAdsFallbacks.ts";
 
-// Export fallback generation functions for external use
-export { generateFallbackGoogleAds, generateFallbackMetaAds };
-
-/**
- * Parses OpenAI response into properly formatted ads
- */
-export const parseAdResponse = (generatedContent: string, platform: string, campaignData: WebsiteAnalysisResult) => {
-  console.log(`OpenAI response for ${platform} ads:`, generatedContent);
+// Parse raw JSON response from OpenAI into structured ad objects
+export const parseAdResponse = (responseText: string | null, platform: string, campaignData: WebsiteAnalysisResult) => {
+  if (!responseText) {
+    console.error("Empty response from OpenAI");
+    return platform === 'google' 
+      ? generateFallbackGoogleAds(campaignData)
+      : platform === 'linkedin'
+      ? generateFallbackLinkedInAds(campaignData)
+      : generateFallbackMicrosoftAds(campaignData);
+  }
   
   try {
-    // Find JSON in the response
-    const jsonMatch = generatedContent.match(/\[\s*{[\s\S]*}\s*\]/);
-    let adData;
+    // Extract JSON array from response text, in case OpenAI adds extra text
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     
-    if (jsonMatch) {
-      adData = JSON.parse(jsonMatch[0]);
-    } else {
-      // If not found, try to parse the entire response as JSON
-      try {
-        adData = JSON.parse(generatedContent);
-      } catch (error) {
-        console.error(`Failed to parse OpenAI response as JSON for ${platform} ads:`, error.message);
-        throw new Error('Invalid response format');
-      }
+    if (!jsonMatch) {
+      console.error("No JSON array found in response:", responseText);
+      return platform === 'google' 
+        ? generateFallbackGoogleAds(campaignData)
+        : platform === 'linkedin'
+        ? generateFallbackLinkedInAds(campaignData)
+        : generateFallbackMicrosoftAds(campaignData);
     }
     
-    // Handle both array and non-array responses
-    if (!Array.isArray(adData)) {
-      // If the response is not an array, check if it contains an array property
-      const possibleArrayProperties = Object.values(adData).filter(value => Array.isArray(value));
-      if (possibleArrayProperties.length > 0) {
-        // Use the first array found
-        adData = possibleArrayProperties[0];
-      } else {
-        console.error(`No array found in response for ${platform} ads:`, adData);
-        throw new Error('No ad array found in response');
-      }
+    const jsonString = jsonMatch[0];
+    const parsedData = JSON.parse(jsonString);
+    
+    if (!Array.isArray(parsedData) || parsedData.length === 0) {
+      console.error("No valid ad data found in parsed response:", parsedData);
+      return platform === 'google' 
+        ? generateFallbackGoogleAds(campaignData)
+        : platform === 'linkedin'
+        ? generateFallbackLinkedInAds(campaignData)
+        : generateFallbackMicrosoftAds(campaignData);
+    }
+
+    // For LinkedIn ads, validate and clean
+    if (platform === 'linkedin') {
+      return validateAndCleanLinkedInAds(parsedData, campaignData);
     }
     
-    // Validate and fix the ad content
-    if (platform === 'google' && Array.isArray(adData)) {
-      adData = adData.map((ad, index) => {
-        // Store original headlines and descriptions for language analysis
-        const origHeadlines = [...ad.headlines];
-        const origDescriptions = [...ad.descriptions];
-        
-        // Check for language consistency in the ad
-        const detectedLanguages = detectLanguagesInAdContent(ad);
-        console.log(`Ad ${index + 1} detected languages:`, detectedLanguages);
-        
-        if (detectedLanguages.mixed) {
-          console.log(`Mixed languages detected in ad ${index + 1}, attempting to fix`);
-          ad = fixLanguageConsistency(ad, campaignData);
-        }
-        
-        // Ensure at least one headline contains the company name
-        const companyNameLower = campaignData.companyName.toLowerCase();
-        const hasCompanyName = ad.headlines.some(headline => 
-          headline.toLowerCase().includes(companyNameLower)
-        );
-        
-        if (!hasCompanyName && ad.headlines.length > 0) {
-          // Replace first headline with company name if missing
-          ad.headlines[0] = campaignData.companyName;
-        }
-        
-        // Log the changes made for debugging
-        if (ad.headlines.some((h, i) => h !== origHeadlines[i]) || 
-            ad.descriptions.some((d, i) => d !== origDescriptions[i])) {
-          console.log(`Fixed ad ${index + 1}:`, {
-            before: { headlines: origHeadlines, descriptions: origDescriptions },
-            after: { headlines: ad.headlines, descriptions: ad.descriptions }
-          });
-        }
-        
-        return ad;
-      });
-    }
+    // For Google and Microsoft ads, validate headlines and descriptions
+    return parsedData.map((ad: any, index: number) => {
+      // Ensure all required fields exist
+      return {
+        headlines: Array.isArray(ad.headlines) ? 
+          ad.headlines.slice(0, 3).map((h: string) => h.substring(0, 30)) : 
+          [`${campaignData.companyName}`, "Quality Services", "Learn More"].map(h => h.substring(0, 30)),
+        descriptions: Array.isArray(ad.descriptions) ? 
+          ad.descriptions.slice(0, 2).map((d: string) => d.substring(0, 90)) : 
+          ["We provide top-quality services for your business needs.", "Contact us today to learn more!"].map(d => d.substring(0, 90))
+      };
+    });
     
-    // Final check to ensure we have desired number of ad variations
-    if (!Array.isArray(adData) || adData.length === 0) {
-      console.error(`Invalid ${platform} ad format received:`, adData);
-      
-      // Generate fallback ad variations if the response was invalid
-      if (platform === 'google') {
-        adData = generateFallbackGoogleAds(campaignData);
-      } else if (platform === 'meta') {
-        adData = generateFallbackMetaAds(campaignData);
-      }
-    } else if (platform === 'google' && adData.length < 5) {
-      // Ensure we have at least 5 Google ad variations
-      console.log(`Only ${adData.length} Google ad variations received, generating additional fallbacks`);
-      const fallbacks = generateFallbackGoogleAds(campaignData);
-      adData = [...adData, ...fallbacks.slice(0, 5 - adData.length)];
-    } else if (platform === 'meta' && adData.length < 3) {
-      // Ensure we have at least 3 Meta ad variations
-      console.log(`Only ${adData.length} Meta ad variations received, generating additional fallbacks`);
-      const fallbacks = generateFallbackMetaAds(campaignData);
-      adData = [...adData, ...fallbacks.slice(0, 3 - adData.length)];
-    }
-    
-    return adData;
   } catch (error) {
-    console.error(`Failed to parse OpenAI response for ${platform} ads:`, error.message);
-    
-    // Return fallback ads on any parsing error
-    if (platform === 'google') {
-      return generateFallbackGoogleAds(campaignData);
-    } else if (platform === 'meta') {
-      return generateFallbackMetaAds(campaignData);
-    } else {
-      return [];
-    }
+    console.error("Error parsing OpenAI response:", error, "Raw response:", responseText);
+    return platform === 'google' 
+      ? generateFallbackGoogleAds(campaignData)
+      : platform === 'linkedin'
+      ? generateFallbackLinkedInAds(campaignData)
+      : generateFallbackMicrosoftAds(campaignData);
   }
+};
+
+// Generate fallback Google ads
+export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult): GoogleAd[] => {
+  return googleFallbacks(campaignData);
+};
+
+// Validate and clean LinkedIn ads
+const validateAndCleanLinkedInAds = (parsedData: any[], campaignData: WebsiteAnalysisResult): LinkedInAd[] => {
+  return parsedData.map((ad: any) => {
+    return {
+      headline: ad.headline?.substring(0, 150) || `${campaignData.companyName} - Professional Solutions`,
+      description: ad.description?.substring(0, 600) || `${campaignData.companyName} provides professional solutions for businesses. Our services are designed to meet your specific needs and help your business grow.`,
+      imagePrompt: ad.imagePrompt || `Professional image of business people in a modern office setting for ${campaignData.companyName}`
+    };
+  });
+};
+
+// Generate fallback LinkedIn ads
+export const generateFallbackLinkedInAds = (campaignData: WebsiteAnalysisResult): LinkedInAd[] => {
+  const { companyName, businessDescription = "", targetAudience = "business professionals" } = campaignData;
+  
+  const shortDesc = businessDescription.substring(0, 100);
+  
+  return [
+    {
+      headline: `${companyName} - Professional Solutions for Your Business`,
+      description: `${shortDesc} We provide top-quality services tailored to meet the needs of ${targetAudience}. Contact us today to learn how we can help your business grow and succeed in today's competitive market.`,
+      imagePrompt: `Professional image of business people in a modern office setting for ${companyName}`
+    },
+    {
+      headline: `Transform Your Business with ${companyName}`,
+      description: `Looking for innovative solutions? ${companyName} offers cutting-edge services designed to boost your productivity and ROI. Join hundreds of satisfied clients who have already elevated their business performance with our expert solutions.`,
+      imagePrompt: `Clean, professional image showing business growth chart or success metrics for ${companyName}`
+    },
+    {
+      headline: `${companyName}: Industry Leaders in Professional Solutions`,
+      description: `With years of experience serving ${targetAudience}, we understand your unique challenges. Our team of experts is ready to provide customized solutions that drive real results. Schedule a consultation today to discover how we can support your business goals.`,
+      imagePrompt: `Professional team of diverse business experts representing ${companyName} in a corporate setting`
+    }
+  ];
+};
+
+// Generate fallback Microsoft ads
+export const generateFallbackMicrosoftAds = (campaignData: WebsiteAnalysisResult): MicrosoftAd[] => {
+  const { companyName } = campaignData;
+  
+  return [
+    {
+      headlines: [
+        `${companyName}`,
+        "Professional Services",
+        "Contact Us Today"
+      ],
+      descriptions: [
+        "We provide top-quality business solutions designed for Microsoft ecosystem users.",
+        "Search on Bing to find more about our exclusive offers and services."
+      ]
+    },
+    {
+      headlines: [
+        `${companyName} Solutions`,
+        "Premium Business Tools",
+        "Learn More Now"
+      ],
+      descriptions: [
+        "Tailored services for businesses using Microsoft technologies and platforms.",
+        "Discover how we can enhance your business operations and productivity."
+      ]
+    },
+    {
+      headlines: [
+        `Discover ${companyName}`,
+        "Enterprise-Grade Services",
+        "Schedule Demo Today"
+      ],
+      descriptions: [
+        "Professional solutions designed for Microsoft users and business professionals.",
+        "Optimize your workflow with our specialized services and expert support."
+      ]
+    },
+    {
+      headlines: [
+        `${companyName} Experts`,
+        "Microsoft-Compatible",
+        "Free Consultation"
+      ],
+      descriptions: [
+        "Our services integrate seamlessly with Microsoft Office, Azure, and the entire ecosystem.",
+        "Trusted by businesses who rely on Microsoft technologies for their operations."
+      ]
+    },
+    {
+      headlines: [
+        `Business Solutions`,
+        `${companyName} Services`,
+        "Book a Meeting"
+      ],
+      descriptions: [
+        "Professional services tailored for Bing users and Microsoft professionals.",
+        "Enhance your business performance with our specialized solutions."
+      ]
+    }
+  ];
 };

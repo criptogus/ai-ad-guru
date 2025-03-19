@@ -1,11 +1,11 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Linkedin, Windows } from "lucide-react";
 import { Connection } from "@/hooks/adConnections/types";
 
 interface PlatformConnectionCardProps {
-  platform: "google" | "meta";
+  platform: "google" | "linkedin" | "microsoft";
   platformDisplayName: string;
   connections: Connection[];
   isConnecting: boolean;
@@ -23,6 +23,17 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
 }) => {
   const platformConnections = connections.filter((conn) => conn.platform === platform);
   const isConnected = platformConnections.length > 0;
+
+  const getPlatformIcon = () => {
+    switch (platform) {
+      case "linkedin":
+        return <Linkedin size={16} className="mr-2" />;
+      case "microsoft":
+        return <Windows size={16} className="mr-2" />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -66,14 +77,17 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
       ) : (
         <div className="border p-4 rounded-md bg-muted/30 flex flex-col items-center justify-center">
           <p className="text-muted-foreground mb-2">No {platformDisplayName} account connected</p>
-          <Button onClick={onConnect} disabled={isConnecting}>
+          <Button onClick={onConnect} disabled={isConnecting} className="flex items-center">
             {isConnecting ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
                 Connecting...
               </>
             ) : (
-              `Connect ${platformDisplayName}`
+              <>
+                {getPlatformIcon()}
+                Connect {platformDisplayName}
+              </>
             )}
           </Button>
         </div>

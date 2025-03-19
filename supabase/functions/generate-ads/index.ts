@@ -1,8 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, formatCampaignData } from "./utils.ts";
-import { generateGoogleAds, generateMetaAds } from "./adGenerators.ts";
-import { parseAdResponse, generateFallbackGoogleAds, generateFallbackMetaAds } from "./responseParser.ts";
+import { generateGoogleAds, generateLinkedInAds, generateMicrosoftAds } from "./adGenerators.ts";
+import { parseAdResponse, generateFallbackGoogleAds, generateFallbackLinkedInAds, generateFallbackMicrosoftAds } from "./responseParser.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
 
 serve(async (req) => {
@@ -81,11 +81,16 @@ serve(async (req) => {
         console.log("Raw Google ad response:", response);
         adData = parseAdResponse(response, platform, campaignData);
         console.log("Parsed Google ads:", adData);
-      } else if (platform === 'meta') {
-        response = await generateMetaAds(campaignData);
-        console.log("Raw Meta ad response:", response);
+      } else if (platform === 'linkedin') {
+        response = await generateLinkedInAds(campaignData);
+        console.log("Raw LinkedIn ad response:", response);
         adData = parseAdResponse(response, platform, campaignData);
-        console.log("Parsed Meta ads:", adData);
+        console.log("Parsed LinkedIn ads:", adData);
+      } else if (platform === 'microsoft') {
+        response = await generateMicrosoftAds(campaignData);
+        console.log("Raw Microsoft ad response:", response);
+        adData = parseAdResponse(response, platform, campaignData);
+        console.log("Parsed Microsoft ads:", adData);
       } else {
         throw new Error('Invalid platform specified');
       }
@@ -95,8 +100,10 @@ serve(async (req) => {
       // Create fallback data directly based on platform
       if (platform === 'google') {
         adData = generateFallbackGoogleAds(campaignData);
-      } else if (platform === 'meta') {
-        adData = generateFallbackMetaAds(campaignData);
+      } else if (platform === 'linkedin') {
+        adData = generateFallbackLinkedInAds(campaignData);
+      } else if (platform === 'microsoft') {
+        adData = generateFallbackMicrosoftAds(campaignData);
       } else {
         adData = [];
       }

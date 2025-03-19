@@ -19,7 +19,8 @@ const AccountConnections: React.FC = () => {
     errorDetails,
     errorType,
     initiateGoogleConnection,
-    initiateMetaConnection,
+    initiateLinkedInConnection,
+    initiateMicrosoftConnection,
     removeConnection,
     fetchConnections
   } = useAdAccountConnections();
@@ -39,12 +40,22 @@ const AccountConnections: React.FC = () => {
     }
   };
 
-  const handleMetaConnection = async () => {
+  const handleLinkedInConnection = async () => {
     try {
-      console.log("Initiating Meta connection...");
-      await initiateMetaConnection();
+      console.log("Initiating LinkedIn connection...");
+      await initiateLinkedInConnection();
     } catch (err: any) {
-      console.error("Meta connection error:", err);
+      console.error("LinkedIn connection error:", err);
+      // Error is already handled in the hook
+    }
+  };
+
+  const handleMicrosoftConnection = async () => {
+    try {
+      console.log("Initiating Microsoft Ads connection...");
+      await initiateMicrosoftConnection();
+    } catch (err: any) {
+      console.error("Microsoft Ads connection error:", err);
       // Error is already handled in the hook
     }
   };
@@ -55,7 +66,7 @@ const AccountConnections: React.FC = () => {
         <div>
           <CardTitle>Ad Platform Connections</CardTitle>
           <CardDescription>
-            Connect your Google Ads and Meta Ads accounts to manage campaigns
+            Connect your Google Ads, LinkedIn Ads, and Microsoft Ads accounts to manage campaigns
           </CardDescription>
         </div>
         <Button 
@@ -93,11 +104,22 @@ const AccountConnections: React.FC = () => {
             <Separator />
 
             <PlatformConnectionCard
-              platform="meta"
-              platformDisplayName="Meta Ads"
+              platform="linkedin"
+              platformDisplayName="LinkedIn Ads"
               connections={connections}
               isConnecting={isConnecting}
-              onConnect={handleMetaConnection}
+              onConnect={handleLinkedInConnection}
+              onDisconnect={removeConnection}
+            />
+            
+            <Separator />
+
+            <PlatformConnectionCard
+              platform="microsoft"
+              platformDisplayName="Microsoft Ads"
+              connections={connections}
+              isConnecting={isConnecting}
+              onConnect={handleMicrosoftConnection}
               onDisconnect={removeConnection}
             />
             

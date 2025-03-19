@@ -1,18 +1,22 @@
 
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration";
+import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { 
   useGoogleAdActions, 
-  useMetaAdActions, 
+  useLinkedInAdActions,
+  useMicrosoftAdActions,
   useImageGenerationActions 
 } from "./adGeneration";
 
 export const useAdGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
-  metaAds: MetaAd[],
+  linkedInAds: LinkedInAd[],
+  microsoftAds: MicrosoftAd[],
   generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>,
-  generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>,
+  generateLinkedInAds: (campaignData: any) => Promise<LinkedInAd[] | null>,
+  generateMicrosoftAds: (campaignData: any) => Promise<MicrosoftAd[] | null>,
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
@@ -24,10 +28,17 @@ export const useAdGenerationActions = (
     setCampaignData
   );
   
-  const { handleGenerateMetaAds } = useMetaAdActions(
+  const { handleGenerateLinkedInAds } = useLinkedInAdActions(
     analysisResult,
-    metaAds,
-    generateMetaAds, 
+    linkedInAds,
+    generateLinkedInAds,
+    setCampaignData
+  );
+  
+  const { handleGenerateMicrosoftAds } = useMicrosoftAdActions(
+    analysisResult,
+    microsoftAds,
+    generateMicrosoftAds,
     setCampaignData
   );
   
@@ -37,14 +48,15 @@ export const useAdGenerationActions = (
     clearImageGenerationError 
   } = useImageGenerationActions(
     analysisResult,
-    metaAds,
+    linkedInAds, // Changed from metaAds to linkedInAds
     generateAdImage,
     setCampaignData
   );
 
   return {
     handleGenerateGoogleAds,
-    handleGenerateMetaAds,
+    handleGenerateLinkedInAds,
+    handleGenerateMicrosoftAds,
     handleGenerateImage,
     imageGenerationError,
     clearImageGenerationError

@@ -6,12 +6,16 @@ export interface GoogleAd {
   descriptions: string[];
 }
 
-export interface MetaAd {
-  primaryText: string;
+export interface LinkedInAd {
   headline: string;
   description: string;
-  imagePrompt: string;
-  imageUrl?: string; // Added after image generation
+  imagePrompt?: string;
+  imageUrl?: string;
+}
+
+export interface MicrosoftAd {
+  headlines: string[];
+  descriptions: string[];
 }
 
 // Copied from /src/hooks/useWebsiteAnalysis.ts to avoid import issues

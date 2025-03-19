@@ -97,7 +97,8 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
     errorType,
     fetchConnections,
     initiateGoogleConnection: () => handleConnectionInitiation('google', user?.id),
-    initiateMetaConnection: () => handleConnectionInitiation('meta', user?.id),
+    initiateLinkedInConnection: () => handleConnectionInitiation('linkedin', user?.id),
+    initiateMicrosoftConnection: () => handleConnectionInitiation('microsoft', user?.id),
     removeConnection
   };
 };

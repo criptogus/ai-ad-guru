@@ -1,11 +1,24 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
+import { GoogleAd } from "@/hooks/useAdGeneration";
+
+// Define new ad types for LinkedIn and Microsoft
+export interface LinkedInAd {
+  headline: string;
+  description: string;
+  imagePrompt?: string;
+  imageUrl?: string;
+}
+
+export interface MicrosoftAd {
+  headlines: string[];
+  descriptions: string[];
+}
 
 export interface CampaignData {
   name: string;
-  platform: "google" | "meta";
+  platform: "google" | "linkedin" | "microsoft";
   budget: number;
   budgetType: string;
   startDate: string;
@@ -16,7 +29,8 @@ export interface CampaignData {
   websiteUrl: string;
   businessInfo: WebsiteAnalysisResult | null;
   googleAds: GoogleAd[];
-  metaAds: MetaAd[];
+  linkedInAds: LinkedInAd[];
+  microsoftAds: MicrosoftAd[];
 }
 
 interface CampaignContextType {
@@ -27,8 +41,10 @@ interface CampaignContextType {
   updateAnalysisResult: (updatedResult: WebsiteAnalysisResult) => void;
   googleAds: GoogleAd[];
   setGoogleAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
-  metaAds: MetaAd[];
-  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  linkedInAds: LinkedInAd[];
+  setLinkedInAds: React.Dispatch<React.SetStateAction<LinkedInAd[]>>;
+  microsoftAds: MicrosoftAd[];
+  setMicrosoftAds: React.Dispatch<React.SetStateAction<MicrosoftAd[]>>;
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -49,12 +65,14 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
     websiteUrl: "",
     businessInfo: null,
     googleAds: [],
-    metaAds: [],
+    linkedInAds: [],
+    microsoftAds: [],
   });
   
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
-  const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
+  const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
+  const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
 
   // Function to update analysis result and also update the campaign data
@@ -77,8 +95,10 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
       updateAnalysisResult,
       googleAds,
       setGoogleAds,
-      metaAds,
-      setMetaAds,
+      linkedInAds,
+      setLinkedInAds,
+      microsoftAds,
+      setMicrosoftAds,
       currentStep,
       setCurrentStep
     }}>

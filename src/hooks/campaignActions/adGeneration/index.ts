@@ -1,4 +1,5 @@
 
 export * from './useGoogleAdActions';
-export * from './useMetaAdActions';
+export * from './useLinkedInAdActions';
+export * from './useMicrosoftAdActions';
 export * from './useImageGenerationActions';

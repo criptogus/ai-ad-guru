@@ -28,7 +28,7 @@ export const useConnectionInitiation = () => {
       setErrorType(null);
       
       toast({
-        title: `${platform === 'google' ? 'Google' : 'Meta'} Ads Connection`,
+        title: `${platform === 'google' ? 'Google' : platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'} Ads Connection`,
         description: "Initializing connection...",
       });
       

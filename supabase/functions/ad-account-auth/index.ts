@@ -12,10 +12,15 @@ const GOOGLE_OAUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_SCOPE = "https://www.googleapis.com/auth/adwords";
 
-// Meta OAuth constants
-const META_OAUTH_URL = "https://www.facebook.com/v17.0/dialog/oauth";
-const META_TOKEN_URL = "https://graph.facebook.com/v17.0/oauth/access_token";
-const META_SCOPE = "ads_management,ads_read,business_management";
+// LinkedIn OAuth constants
+const LINKEDIN_OAUTH_URL = "https://www.linkedin.com/oauth/v2/authorization";
+const LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
+const LINKEDIN_SCOPE = "r_liteprofile r_emailaddress w_member_social rw_ads";
+
+// Microsoft OAuth constants
+const MICROSOFT_OAUTH_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
+const MICROSOFT_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+const MICROSOFT_SCOPE = "offline_access https://ads.microsoft.com/msads.manage";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -98,23 +103,50 @@ serve(async (req) => {
             }
           );
         }
-      } else if (platform === 'meta') {
-        clientId = Deno.env.get('META_CLIENT_ID');
-        const clientSecret = Deno.env.get('META_CLIENT_SECRET');
+      } else if (platform === 'linkedin') {
+        clientId = Deno.env.get('LINKEDIN_CLIENT_ID');
+        const clientSecret = Deno.env.get('LINKEDIN_CLIENT_SECRET');
         
-        console.log("Meta credentials available:", 
+        console.log("LinkedIn credentials available:", 
           `Client ID: ${clientId ? 'Yes' : 'No'}`, 
           `Client Secret: ${clientSecret ? 'Yes' : 'No'}`);
         
         if (!clientId || !clientSecret) {
           const missingVars = [];
-          if (!clientId) missingVars.push('META_CLIENT_ID');
-          if (!clientSecret) missingVars.push('META_CLIENT_SECRET');
+          if (!clientId) missingVars.push('LINKEDIN_CLIENT_ID');
+          if (!clientSecret) missingVars.push('LINKEDIN_CLIENT_SECRET');
           
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: `Missing required Meta Ads credentials: ${missingVars.join(', ')}`
+              error: `Missing required LinkedIn Ads credentials: ${missingVars.join(', ')}`
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
+      } else if (platform === 'microsoft') {
+        clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
+        const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
+        const developerToken = Deno.env.get('MICROSOFT_DEVELOPER_TOKEN');
+        
+        console.log("Microsoft credentials available:", 
+          `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+          `Client Secret: ${clientSecret ? 'Yes' : 'No'}`,
+          `Developer Token: ${developerToken ? 'Yes' : 'No'}`);
+        
+        if (!clientId || !clientSecret || !developerToken) {
+          const missingVars = [];
+          if (!clientId) missingVars.push('MICROSOFT_CLIENT_ID');
+          if (!clientSecret) missingVars.push('MICROSOFT_CLIENT_SECRET');
+          if (!developerToken) missingVars.push('MICROSOFT_DEVELOPER_TOKEN');
+          
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Missing required Microsoft Ads credentials: ${missingVars.join(', ')}`
             }),
             {
               status: 400,
@@ -172,8 +204,10 @@ serve(async (req) => {
       let authUrl;
       if (platform === 'google') {
         authUrl = `${GOOGLE_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(GOOGLE_SCOPE)}&response_type=code&state=${stateParam}&access_type=offline&prompt=consent`;
-      } else if (platform === 'meta') {
-        authUrl = `${META_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(META_SCOPE)}&response_type=code&state=${stateParam}`;
+      } else if (platform === 'linkedin') {
+        authUrl = `${LINKEDIN_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(LINKEDIN_SCOPE)}&response_type=code&state=${stateParam}`;
+      } else if (platform === 'microsoft') {
+        authUrl = `${MICROSOFT_OAUTH_URL}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(MICROSOFT_SCOPE)}&response_type=code&state=${stateParam}`;
       }
       
       console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
@@ -255,10 +289,14 @@ serve(async (req) => {
         clientId = Deno.env.get('GOOGLE_CLIENT_ID');
         clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
         console.log("Google credentials available:", !!clientId, !!clientSecret);
-      } else if (platform === 'meta') {
-        clientId = Deno.env.get('META_CLIENT_ID');
-        clientSecret = Deno.env.get('META_CLIENT_SECRET');
-        console.log("Meta credentials available:", !!clientId, !!clientSecret);
+      } else if (platform === 'linkedin') {
+        clientId = Deno.env.get('LINKEDIN_CLIENT_ID');
+        clientSecret = Deno.env.get('LINKEDIN_CLIENT_SECRET');
+        console.log("LinkedIn credentials available:", !!clientId, !!clientSecret);
+      } else if (platform === 'microsoft') {
+        clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
+        clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
+        console.log("Microsoft credentials available:", !!clientId, !!clientSecret);
       }
       
       if (!clientId || !clientSecret) {
@@ -282,11 +320,18 @@ serve(async (req) => {
       tokenParams.append('code', code);
       tokenParams.append('redirect_uri', redirectUri);
       
-      if (platform === 'google') {
+      if (platform === 'google' || platform === 'microsoft') {
         tokenParams.append('grant_type', 'authorization_code');
       }
       
-      const tokenUrl = platform === 'google' ? GOOGLE_TOKEN_URL : META_TOKEN_URL;
+      let tokenUrl;
+      if (platform === 'google') {
+        tokenUrl = GOOGLE_TOKEN_URL;
+      } else if (platform === 'linkedin') {
+        tokenUrl = LINKEDIN_TOKEN_URL;
+      } else if (platform === 'microsoft') {
+        tokenUrl = MICROSOFT_TOKEN_URL;
+      }
       
       console.log(`Exchanging code for tokens at ${tokenUrl} with redirect_uri: ${redirectUri}`);
       
@@ -317,10 +362,11 @@ serve(async (req) => {
         const tokenData = await tokenResponse.json();
         console.log('Token exchange successful');
         
-        // For Google, we need to make an additional request to get account information
+        // Retrieve account information based on platform
         let accountId = '';
         
         if (platform === 'google') {
+          // Google Ads account retrieval logic
           const accessToken = tokenData.access_token;
           const googleAdsUrl = 'https://googleads.googleapis.com/v14/customers:listAccessibleCustomers';
           
@@ -355,26 +401,85 @@ serve(async (req) => {
             console.error('Error retrieving Google Ads account info:', error);
             accountId = 'error-retrieving';
           }
-        } else if (platform === 'meta') {
-          // For Meta, we need to make an additional request to get Ad Account information
+        } else if (platform === 'linkedin') {
+          // LinkedIn Ads account retrieval logic
           try {
-            const meResponse = await fetch(`https://graph.facebook.com/v17.0/me/adaccounts?access_token=${tokenData.access_token}`);
+            const accessToken = tokenData.access_token;
+            // Get LinkedIn user profile to get the account ID
+            const profileResponse = await fetch('https://api.linkedin.com/v2/me', {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              }
+            });
             
-            if (!meResponse.ok) {
-              const errorText = await meResponse.text();
-              console.warn('Failed to retrieve Meta Ad accounts:', errorText);
-              accountId = 'unknown';
+            if (!profileResponse.ok) {
+              const errorText = await profileResponse.text();
+              console.warn('Failed to retrieve LinkedIn profile:', errorText);
+              accountId = 'retrieval-error';
             } else {
-              const meData = await meResponse.json();
-              if (meData.data && meData.data.length > 0) {
-                // Take the first Ad Account ID
-                accountId = meData.data[0].id || 'unknown';
-              } else {
-                accountId = 'no-accounts';
+              const profileData = await profileResponse.json();
+              accountId = profileData.id || 'unknown';
+              
+              // Try to get ad accounts if available
+              try {
+                const adAccountsResponse = await fetch('https://api.linkedin.com/v2/adAccountsV2?q=search&search.account.reference-locale.language=en&search.account.reference-locale.country=US', {
+                  headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                  }
+                });
+                
+                if (adAccountsResponse.ok) {
+                  const adAccountsData = await adAccountsResponse.json();
+                  if (adAccountsData.elements && adAccountsData.elements.length > 0) {
+                    // Use the first ad account's ID
+                    accountId = adAccountsData.elements[0].id || accountId;
+                  }
+                }
+              } catch (adAccountError) {
+                console.error('Error retrieving LinkedIn ad accounts:', adAccountError);
+                // Continue with just the profile ID
               }
             }
           } catch (error) {
-            console.error('Error retrieving Meta Ad account info:', error);
+            console.error('Error retrieving LinkedIn account info:', error);
+            accountId = 'error-retrieving';
+          }
+        } else if (platform === 'microsoft') {
+          // Microsoft Ads account retrieval logic
+          try {
+            const accessToken = tokenData.access_token;
+            const developerToken = Deno.env.get('MICROSOFT_DEVELOPER_TOKEN');
+            
+            if (!developerToken) {
+              console.warn('Microsoft developer token not configured');
+              accountId = 'developer-token-missing';
+            } else {
+              // Get Microsoft Ads accounts
+              const msAdsUrl = 'https://api.ads.microsoft.com/v13/customer-management/accounts';
+              
+              const accountsResponse = await fetch(msAdsUrl, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'DeveloperToken': developerToken
+                }
+              });
+              
+              if (!accountsResponse.ok) {
+                const errorText = await accountsResponse.text();
+                console.warn('Failed to retrieve Microsoft Ads accounts:', errorText);
+                accountId = 'retrieval-error';
+              } else {
+                const accountsData = await accountsResponse.json();
+                if (accountsData.value && accountsData.value.length > 0) {
+                  // Use the first account's ID
+                  accountId = accountsData.value[0].Id.toString() || 'unknown';
+                } else {
+                  accountId = 'no-accounts';
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error retrieving Microsoft Ads account info:', error);
             accountId = 'error-retrieving';
           }
         }
@@ -416,7 +521,7 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             success: true, 
-            message: `Successfully connected to ${platform === 'google' ? 'Google' : 'Meta'} Ads`,
+            message: `Successfully connected to ${platform === 'google' ? 'Google' : platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'} Ads`,
             accountId
           }),
           {
