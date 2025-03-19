@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/components/roles/InviteUserModal";
 import { toast } from "sonner";
@@ -15,7 +14,7 @@ export interface CreditUsage {
   id: string;
   userId: string;
   amount: number;
-  action: 'campaign_creation' | 'ai_optimization' | 'image_generation';
+  action: 'campaign_creation' | 'ai_optimization' | 'image_generation' | 'credit_purchase';
   description: string;
   createdAt: string;
 }
@@ -137,20 +136,19 @@ export const consumeCredits = async (
     
     if (updateError) throw updateError;
     
-    // Log the credit usage
-    const { error: logError } = await supabase
-      .from('credit_usage')
-      .insert({
-        user_id: userId,
-        amount: amount,
-        action: action,
-        description: description
-      });
+    // Log the credit usage in local storage since we don't have a credit_usage table
+    const creditUsageKey = `credit_usage_${userId}`;
+    const existingUsage = JSON.parse(localStorage.getItem(creditUsageKey) || '[]');
+    const newUsage = {
+      id: `local_${Date.now()}`, 
+      userId,
+      amount: amount,
+      action,
+      description,
+      createdAt: new Date().toISOString()
+    };
     
-    if (logError) {
-      console.error("Error logging credit usage:", logError);
-      // Continue even if logging fails
-    }
+    localStorage.setItem(creditUsageKey, JSON.stringify([newUsage, ...existingUsage]));
     
     toast.success(`${amount} credits have been used for ${description}.`);
     return true;
@@ -164,21 +162,17 @@ export const consumeCredits = async (
 // Function to get credit usage history
 export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage[]> => {
   try {
-    const { data, error } = await supabase
-      .from('credit_usage')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    // Since there's no credit_usage table, get usage from localStorage
+    const creditUsageKey = `credit_usage_${userId}`;
+    const localUsage = JSON.parse(localStorage.getItem(creditUsageKey) || '[]');
     
-    if (error) throw error;
-    
-    return data.map(item => ({
+    return localUsage.map((item: any) => ({
       id: item.id,
-      userId: item.user_id,
+      userId: item.userId,
       amount: item.amount,
       action: item.action,
       description: item.description,
-      createdAt: item.created_at
+      createdAt: item.createdAt
     })) || [];
   } catch (error) {
     console.error("Error fetching credit usage history:", error);
@@ -210,20 +204,19 @@ export const addCredits = async (userId: string, amount: number, reason: string)
     
     if (updateError) throw updateError;
     
-    // Log the credit addition
-    const { error: logError } = await supabase
-      .from('credit_usage')
-      .insert({
-        user_id: userId,
-        amount: -amount, // Negative amount signifies credits added
-        action: 'credit_purchase',
-        description: reason
-      });
+    // Log the credit addition in local storage
+    const creditUsageKey = `credit_usage_${userId}`;
+    const existingUsage = JSON.parse(localStorage.getItem(creditUsageKey) || '[]');
+    const newUsage = {
+      id: `local_${Date.now()}`,
+      userId,
+      amount: -amount, // Negative amount signifies credits added
+      action: 'credit_purchase',
+      description: reason,
+      createdAt: new Date().toISOString()
+    };
     
-    if (logError) {
-      console.error("Error logging credit addition:", logError);
-      // Continue even if logging fails
-    }
+    localStorage.setItem(creditUsageKey, JSON.stringify([newUsage, ...existingUsage]));
     
     toast.success(`${amount} credits have been added to your account.`);
     return true;
@@ -246,4 +239,3 @@ export const getCreditCosts = () => {
     imageGeneration: 5
   };
 };
-

@@ -26,7 +26,7 @@ export const useCampaignCreation = (
     try {
       // Calculate required credits
       const requiredCredits = creditCosts.campaignCreation;
-      const hasImages = metaAds.some(ad => ad.image);
+      const hasImages = metaAds.some(ad => ad.imageUrl);
       const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
       
       // First consume credits
@@ -88,7 +88,7 @@ export const useCampaignCreation = (
       // If we get here, try to refund the credits
       try {
         const requiredCredits = creditCosts.campaignCreation;
-        const hasImages = metaAds.some(ad => ad.image);
+        const hasImages = metaAds.some(ad => ad.imageUrl);
         const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
         
         await supabase
