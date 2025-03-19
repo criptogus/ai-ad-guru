@@ -76,12 +76,16 @@ serve(async (req) => {
 
     console.log("Image generation process completed successfully");
     console.log("Persistent image URL:", persistentImageUrl);
+    
+    // Add cache-busting timestamp to the URL
+    const cacheBustedUrl = `${persistentImageUrl}?t=${Date.now()}`;
 
     // Return the persistent image URL and the revised prompt used by DALL-E
     return new Response(
       JSON.stringify({ 
         success: true, 
-        imageUrl: persistentImageUrl,
+        imageUrl: cacheBustedUrl,
+        originalUrl: persistentImageUrl,
         prompt: enhancedPrompt,
         revisedPrompt: revisedPrompt || enhancedPrompt
       }), 

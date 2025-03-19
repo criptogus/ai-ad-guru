@@ -1,12 +1,33 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // This effect attempts to validate and preload the image URL when it's generated
+  useEffect(() => {
+    if (generatedImageUrl) {
+      console.log("Preloading and validating generated image:", generatedImageUrl);
+      
+      const preloadImage = new Image();
+      preloadImage.onload = () => {
+        console.log("Generated image preloaded successfully");
+      };
+      preloadImage.onerror = (err) => {
+        console.error("Generated image failed to preload:", err);
+        // Don't set an error, just log it
+      };
+      
+      // Add a timestamp to prevent caching
+      const cacheBuster = generatedImageUrl.includes('?') ? '&t=' : '?t=';
+      preloadImage.src = generatedImageUrl + cacheBuster + Date.now();
+    }
+  }, [generatedImageUrl]);
 
   const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     if (!prompt) {
@@ -24,6 +45,7 @@ export const useImageGeneration = () => {
 
     setIsGenerating(true);
     setLastError(null);
+    setGeneratedImageUrl(null); // Reset previous URL
     
     try {
       console.log('Generating image with prompt:', prompt);
@@ -67,15 +89,23 @@ export const useImageGeneration = () => {
       console.log('Image generated successfully, URL:', data.imageUrl);
       console.log('DALL-E revised prompt:', data.revisedPrompt || 'No revised prompt');
       
+      // Store the generated URL in state
+      setGeneratedImageUrl(data.imageUrl);
+      
+      // Ensure the URL has a cache-busting parameter
+      const imageUrl = data.imageUrl.includes('?') 
+        ? data.imageUrl 
+        : `${data.imageUrl}?t=${Date.now()}`;
+      
       // Test the image URL to make sure it's accessible
       const img = new Image();
       img.onerror = () => {
-        console.error('The generated image URL failed to load:', data.imageUrl);
+        console.error('The generated image URL failed to load:', imageUrl);
       };
       img.onload = () => {
         console.log('The generated image URL loaded successfully');
       };
-      img.src = data.imageUrl + '?t=' + Date.now(); // Add timestamp to prevent caching
+      img.src = imageUrl;
       
       // Inform the user about credit usage (5 credits for Instagram ad image)
       toast({
@@ -84,7 +114,7 @@ export const useImageGeneration = () => {
         duration: 3000,
       });
       
-      return data.imageUrl;
+      return imageUrl;
     } catch (error) {
       console.error('Error calling generate-image function:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to generate image";
@@ -105,6 +135,7 @@ export const useImageGeneration = () => {
     generateAdImage,
     isGenerating,
     lastError,
+    generatedImageUrl,
     clearError: () => setLastError(null)
   };
 };

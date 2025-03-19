@@ -27,7 +27,8 @@ export async function storeImageInSupabase(imageBlob: Blob, config: StorageConfi
     if (!bucketExists) {
       console.log("Creating bucket:", bucketName);
       const { error: bucketError } = await supabase.storage.createBucket(bucketName, {
-        public: true
+        public: true,
+        fileSizeLimit: 10485760 // 10MB
       });
       
       if (bucketError) {
@@ -70,6 +71,19 @@ export async function storeImageInSupabase(imageBlob: Blob, config: StorageConfi
     
     console.log("Image stored successfully in Supabase storage");
     console.log("Persistent image URL:", persistentImageUrl);
+    
+    // Validate the URL is accessible
+    try {
+      const checkResponse = await fetch(persistentImageUrl, { method: 'HEAD' });
+      if (!checkResponse.ok) {
+        console.warn(`URL validation check returned status: ${checkResponse.status}`);
+      } else {
+        console.log("URL validation check successful");
+      }
+    } catch (checkError) {
+      console.warn("URL validation check failed:", checkError);
+      // Continue despite check failure - it might be a CORS issue
+    }
     
     return persistentImageUrl;
   } catch (error) {

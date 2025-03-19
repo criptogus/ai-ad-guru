@@ -35,18 +35,28 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   // Force React to re-render the image when imageUrl changes
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
   
+  // Update timestamp whenever the image URL changes to force re-render
   useEffect(() => {
-    // Update the timestamp whenever the image URL changes
     if (ad.imageUrl) {
-      setImageTimestamp(Date.now());
-      console.log("Image timestamp updated for URL:", ad.imageUrl);
+      const newTimestamp = Date.now();
+      setImageTimestamp(newTimestamp);
+      console.log(`Image timestamp updated for URL: ${ad.imageUrl} (${newTimestamp})`);
     }
   }, [ad.imageUrl]);
 
-  // Debug the ad prop to see if imageUrl is present
+  // Debug the ad prop
   useEffect(() => {
     console.log("InstagramPreview - Ad data:", JSON.stringify(ad, null, 2));
-    console.log("Image URL from ad:", ad.imageUrl || "No image URL");
+    if (ad.imageUrl) {
+      // Attempt to ping the image URL to check if it's accessible
+      fetch(ad.imageUrl, { method: 'HEAD' })
+        .then(response => {
+          console.log(`Image URL accessibility check: ${response.status} ${response.statusText}`);
+        })
+        .catch(error => {
+          console.error("Image URL accessibility check failed:", error);
+        });
+    }
   }, [ad]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,9 +87,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       const fileName = `${Date.now()}-user-uploaded.${fileExt}`;
       const filePath = `instagram-ads/${fileName}`;
 
-      // Check if ads-images bucket exists, create if not
+      // Check if ai-images bucket exists, create if not
       const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketName = 'ads-images';
+      const bucketName = 'ai-images'; // Use the same bucket as the AI generated images
       const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
       
       if (!bucketExists) {
@@ -103,21 +113,25 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         .from(bucketName)
         .getPublicUrl(filePath).data.publicUrl;
 
-      // Notify the parent component about the new image URL
-      toast.success("Image uploaded successfully", {
-        description: "You'll need to use the 'Update' button to save it to your ad.",
-        duration: 3000,
-      });
+      console.log("Image uploaded successfully, URL:", imageUrl);
 
-      // Set a temporary state to show the image
-      setImageTimestamp(Date.now());
-
-      // Force browser to reload the image (avoiding cache issues)
-      const img = new Image();
-      img.src = imageUrl + '?t=' + Date.now();
-      img.onload = () => {
-        console.log("Image preloaded successfully");
-      };
+      // Update the ad with the new image URL
+      if (ad.id) {
+        toast.success("Image uploaded successfully", {
+          description: "Your image has been added to the ad.",
+          duration: 3000,
+        });
+        
+        // Trigger re-render with new timestamp
+        setImageTimestamp(Date.now());
+        
+        // Force browser to reload the image (avoiding cache issues)
+        const img = new Image();
+        img.src = `${imageUrl}?t=${Date.now()}`;
+        img.onload = () => {
+          console.log("Image preloaded successfully");
+        };
+      }
 
     } catch (error) {
       console.error("Error uploading image:", error);
