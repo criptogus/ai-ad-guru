@@ -1,8 +1,9 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
 
 const AccountConnections: React.FC = () => {
@@ -11,16 +12,28 @@ const AccountConnections: React.FC = () => {
     isLoading,
     initiateGoogleConnection,
     initiateMetaConnection,
-    removeConnection
+    removeConnection,
+    fetchConnections
   } = useAdAccountConnections();
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Ad Platform Connections</CardTitle>
-        <CardDescription>
-          Connect your Google Ads and Meta Ads accounts to manage campaigns
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Ad Platform Connections</CardTitle>
+          <CardDescription>
+            Connect your Google Ads and Meta Ads accounts to manage campaigns
+          </CardDescription>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={fetchConnections}
+          disabled={isLoading}
+          title="Refresh connections"
+        >
+          <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
+        </Button>
       </CardHeader>
       <CardContent className="space-y-6">
         {isLoading ? (
@@ -38,7 +51,21 @@ const AccountConnections: React.FC = () => {
                     <div key={conn.id} className="flex items-center justify-between border p-3 rounded-md">
                       <div>
                         <p className="font-medium">Connected Account</p>
-                        <p className="text-sm text-muted-foreground">{conn.account_id}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {conn.account_id === "unknown" || conn.account_id === "error-retrieving" ? (
+                            <span className="flex items-center text-amber-500">
+                              <AlertCircle size={14} className="mr-1" />
+                              Unable to retrieve account details
+                            </span>
+                          ) : conn.account_id === "no-accounts" ? (
+                            <span className="flex items-center text-amber-500">
+                              <AlertCircle size={14} className="mr-1" />
+                              No ad accounts found
+                            </span>
+                          ) : (
+                            `ID: ${conn.account_id}`
+                          )}
+                        </p>
                       </div>
                       <Button 
                         variant="outline" 
@@ -68,7 +95,21 @@ const AccountConnections: React.FC = () => {
                     <div key={conn.id} className="flex items-center justify-between border p-3 rounded-md">
                       <div>
                         <p className="font-medium">Connected Account</p>
-                        <p className="text-sm text-muted-foreground">{conn.account_id}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {conn.account_id === "unknown" || conn.account_id === "error-retrieving" ? (
+                            <span className="flex items-center text-amber-500">
+                              <AlertCircle size={14} className="mr-1" />
+                              Unable to retrieve account details
+                            </span>
+                          ) : conn.account_id === "no-accounts" ? (
+                            <span className="flex items-center text-amber-500">
+                              <AlertCircle size={14} className="mr-1" />
+                              No ad accounts found
+                            </span>
+                          ) : (
+                            `ID: ${conn.account_id}`
+                          )}
+                        </p>
                       </div>
                       <Button 
                         variant="outline" 
@@ -85,6 +126,15 @@ const AccountConnections: React.FC = () => {
                   <Button onClick={initiateMetaConnection}>Connect Meta Ads</Button>
                 </div>
               )}
+            </div>
+            
+            <div className="bg-muted p-4 rounded-md mt-6">
+              <h4 className="font-medium mb-2">About Ad Account Connections</h4>
+              <p className="text-sm text-muted-foreground">
+                Connecting your ad accounts allows this application to create and manage 
+                campaigns on your behalf. Your credentials are securely stored and you 
+                can disconnect your accounts at any time.
+              </p>
             </div>
           </>
         )}

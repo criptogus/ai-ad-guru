@@ -127,6 +127,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_integrations: {
+        Row: {
+          access_token: string
+          account_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          platform: string
+          refresh_token: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          platform: string
+          refresh_token?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          platform?: string
+          refresh_token?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       "Zero Digital Agency LLC": {
         Row: {
           created_at: string
