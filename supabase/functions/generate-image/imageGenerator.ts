@@ -1,3 +1,4 @@
+
 import { corsHeaders } from "./utils.ts";
 
 interface ImageGenerationConfig {
@@ -10,7 +11,13 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
   const { prompt, imageFormat, openaiApiKey } = config;
   
   // Determine image size based on requested format
-  const imageSize = imageFormat === "portrait" ? "1024x1792" : "1024x1024";
+  let imageSize = "1024x1024"; // Default square format
+  
+  if (imageFormat === "portrait") {
+    imageSize = "1024x1792"; // Portrait format
+  } else if (imageFormat === "landscape") {
+    imageSize = "1792x1024"; // Landscape format for LinkedIn (approximating 1200x627 ratio)
+  }
   
   console.log("Enhanced DALL-E 3 prompt:", prompt);
   console.log(`Image format: ${imageFormat}, size: ${imageSize}`);

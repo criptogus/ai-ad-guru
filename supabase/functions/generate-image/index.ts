@@ -36,6 +36,9 @@ serve(async (req) => {
       companyName, 
       targetAudience, 
       uniqueSellingPoints,
+      platform = "instagram", // Default platform is instagram
+      industry,
+      adTheme,
       imageFormat = "square" // Default to square format (1024x1024)
     } = requestBody;
     
@@ -45,7 +48,7 @@ serve(async (req) => {
     
     console.log(`Generating image with prompt: ${prompt}`);
     console.log(`Company: ${companyName}, Brand Tone: ${brandTone}`);
-    console.log(`Image format: ${imageFormat}`);
+    console.log(`Platform: ${platform}, Image format: ${imageFormat}`);
     
     // Create enhanced prompt for DALL-E 3
     const enhancedPrompt = enhancePrompt({
@@ -53,7 +56,11 @@ serve(async (req) => {
       companyName,
       brandTone,
       targetAudience,
-      uniqueSellingPoints
+      uniqueSellingPoints,
+      platform,
+      industry,
+      adTheme,
+      imageFormat
     });
     
     console.log("Enhanced prompt:", enhancedPrompt);

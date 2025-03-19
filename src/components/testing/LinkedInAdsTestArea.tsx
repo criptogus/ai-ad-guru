@@ -10,6 +10,7 @@ import { MetaAd } from "@/hooks/useAdGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdPreview from "@/components/campaign/ad-preview/linkedin/LinkedInAdPreview";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const defaultAnalysisResult: WebsiteAnalysisResult = {
   companyName: "Your Business",
@@ -22,6 +23,34 @@ const defaultAnalysisResult: WebsiteAnalysisResult = {
   keywords: ["business", "professional", "solutions"]
 };
 
+// LinkedIn-specific business themes
+const businessThemes = [
+  "Innovation & Technology",
+  "Leadership & Management",
+  "Digital Transformation",
+  "Professional Services",
+  "Business Growth",
+  "Data Analytics",
+  "Enterprise Solutions",
+  "B2B Marketing",
+  "Talent Acquisition",
+  "Corporate Training"
+];
+
+// LinkedIn-specific industries
+const industries = [
+  "Technology",
+  "Finance",
+  "Healthcare",
+  "Manufacturing",
+  "Professional Services",
+  "Marketing & Advertising",
+  "Education",
+  "Real Estate",
+  "Telecommunications",
+  "SaaS"
+];
+
 const LinkedInAdsTestArea: React.FC = () => {
   const [testAd, setTestAd] = useState<MetaAd>({
     headline: "Transform Your Business with Our Solutions",
@@ -33,6 +62,11 @@ const LinkedInAdsTestArea: React.FC = () => {
   
   const [companyInfo, setCompanyInfo] = useState<WebsiteAnalysisResult>(defaultAnalysisResult);
   const { generateAdImage, isGenerating, lastError } = useImageGeneration();
+  
+  // LinkedIn-specific image generation parameters
+  const [industry, setIndustry] = useState("Technology");
+  const [adTheme, setAdTheme] = useState("Innovation & Technology");
+  const [imageFormat, setImageFormat] = useState("square"); // square (1080x1080) or landscape (1200x627)
 
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
@@ -51,6 +85,9 @@ const LinkedInAdsTestArea: React.FC = () => {
       imageUrl: ""
     });
     setCompanyInfo(defaultAnalysisResult);
+    setIndustry("Technology");
+    setAdTheme("Innovation & Technology");
+    setImageFormat("square");
     toast.info("Test ad reset to default values");
   };
 
@@ -66,19 +103,36 @@ const LinkedInAdsTestArea: React.FC = () => {
     });
 
     try {
+      // Enhanced LinkedIn-specific prompt with B2B focus
+      const enhancedPrompt = `
+${testAd.imagePrompt}
+
+This should be a high-quality, professional LinkedIn ad image optimized for B2B marketing with these specifications:
+- Industry: ${industry}
+- Ad Theme: ${adTheme}
+- Target Audience: ${companyInfo.targetAudience}
+- Setting: Modern corporate environment, professional context
+- Visual Style: Clean, well-lit, crisp, with a focus on credibility and professionalism
+- Mood: Trustworthy, authoritative, success-driven
+- Brand Elements: Subtle professional color palette
+      `.trim();
+
       // Pass additional context from companyInfo to enhance image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
         brandTone: companyInfo.brandTone,
         targetAudience: companyInfo.targetAudience,
         uniqueSellingPoints: companyInfo.uniqueSellingPoints,
-        imageFormat: "square" // LinkedIn images work best in square format
+        industry: industry,
+        adTheme: adTheme,
+        imageFormat: imageFormat, // square or landscape format for LinkedIn
+        platform: "linkedin" // Specify platform for image generation
       };
 
-      const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
+      const imageUrl = await generateAdImage(enhancedPrompt, additionalInfo);
       
       if (imageUrl) {
-        setTestAd(prev => ({ ...prev, imageUrl }));
+        setTestAd(prev => ({ ...prev, imageUrl, imagePrompt: enhancedPrompt }));
         toast.success("LinkedIn ad image generated successfully");
       }
     } catch (error) {
@@ -107,6 +161,61 @@ const LinkedInAdsTestArea: React.FC = () => {
                   onChange={(e) => handleCompanyNameChange(e.target.value)}
                   placeholder="Your Business"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="industry">Industry</Label>
+                  <Select
+                    value={industry}
+                    onValueChange={setIndustry}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries.map((ind) => (
+                        <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="adTheme">Ad Theme</Label>
+                  <Select
+                    value={adTheme}
+                    onValueChange={setAdTheme}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {businessThemes.map((theme) => (
+                        <SelectItem key={theme} value={theme}>{theme}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="imageFormat">Image Format</Label>
+                <Select
+                  value={imageFormat}
+                  onValueChange={setImageFormat}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Image Format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="square">Square (1080×1080) - Best for Mobile</SelectItem>
+                    <SelectItem value="landscape">Landscape (1200×627) - Standard</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Square format tends to perform better on mobile devices
+                </div>
               </div>
 
               <div>
@@ -156,7 +265,7 @@ const LinkedInAdsTestArea: React.FC = () => {
                   id="imagePrompt"
                   value={testAd.imagePrompt}
                   onChange={(e) => handleAdChange('imagePrompt', e.target.value)}
-                  placeholder="Describe the image you want to generate..."
+                  placeholder="Describe the professional LinkedIn image you want to generate..."
                   rows={3}
                 />
                 <div className="flex justify-between mt-2">
@@ -165,7 +274,7 @@ const LinkedInAdsTestArea: React.FC = () => {
                     disabled={isGenerating || !testAd.imagePrompt}
                     variant="default"
                   >
-                    {isGenerating ? "Generating..." : "Generate Image"}
+                    {isGenerating ? "Generating..." : "Generate LinkedIn Image"}
                   </Button>
                   <Button onClick={handleReset} variant="outline">Reset to Default</Button>
                 </div>

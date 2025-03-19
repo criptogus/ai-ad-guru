@@ -1,5 +1,4 @@
-
-import { getBrandToneStyle } from "./utils.ts";
+import { getBrandToneStyle, enhanceLinkedInPrompt } from "./utils.ts";
 
 interface PromptData {
   prompt: string;
@@ -7,9 +6,19 @@ interface PromptData {
   brandTone?: string;
   targetAudience?: string;
   uniqueSellingPoints?: string[] | string;
+  platform?: string;
+  industry?: string;
+  adTheme?: string;
+  imageFormat?: string;
 }
 
 export function enhancePrompt(data: PromptData): string {
+  // If this is specifically for LinkedIn, use LinkedIn-specific enhancer
+  if (data.platform === "linkedin") {
+    return enhanceLinkedInPrompt(data);
+  }
+  
+  // Otherwise, use the Instagram/Meta enhancer (default)
   const {
     prompt,
     companyName,

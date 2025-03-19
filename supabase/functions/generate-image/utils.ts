@@ -41,6 +41,61 @@ export function getBrandToneStyle(brandTone?: string): string {
   return "High-quality professional product photography with lifestyle context, natural lighting, and authentic setting";
 }
 
+// Enhanced function to get LinkedIn-specific brand colors
+export function getLinkedInPalette(): string {
+  return "Professional color palette with combinations of: #0077B5 (LinkedIn blue), #313335 (charcoal gray), #F5F5F5 (light gray), #FFFFFF (white), with subtle accents of #0073B1 (darker blue) for corporate identity";
+}
+
+// LinkedIn-specific image prompt enhancer
+export function enhanceLinkedInPrompt(data: any): string {
+  const {
+    prompt,
+    companyName,
+    brandTone,
+    targetAudience,
+    uniqueSellingPoints,
+    industry,
+    adTheme
+  } = data;
+  
+  // Format unique selling points if they exist
+  const formattedUSPs = Array.isArray(uniqueSellingPoints) 
+    ? uniqueSellingPoints.join(', ') 
+    : uniqueSellingPoints || 'Professional solutions, reliability, expertise';
+  
+  // Get brand tone style from utility function
+  const brandToneStyle = getBrandToneStyle(brandTone);
+  const linkedInPalette = getLinkedInPalette();
+  
+  // Create enhanced prompt for DALL-E 3 with LinkedIn-specific structure
+  return `
+Generate a high-quality, professional LinkedIn advertising image designed for B2B marketing.
+
+📌 Business Context: ${companyName || 'the company'} - ${prompt}
+📌 Industry: ${industry || 'Business/Technology'}
+📌 Ad Theme: ${adTheme || 'Professional Services'}
+📌 Target Audience: ${targetAudience || 'Business professionals, executives, and decision-makers'} 
+📌 Unique Selling Points: ${formattedUSPs}
+📌 Setting: Modern corporate environment, professional workspace, business meeting, or data-driven context
+📌 Visual Style: ${brandToneStyle}
+📌 Composition: Clean, well-balanced, corporate aesthetic with clear focal point and professional environment
+📌 Color Palette: ${linkedInPalette}
+📌 Mood & Emotion: Authoritative, trustworthy, success-oriented, professional, credible
+📌 Background: Professional business context appropriate for LinkedIn B2B advertising
+📌 Photography Standard: Corporate photography style, premium lighting, realistic professional environment
+
+🎯 Goal: Create a business-appropriate LinkedIn ad image that resonates with professionals and drives B2B engagement.
+
+CRITICAL REQUIREMENTS:
+1. Image MUST look PROFESSIONAL, CORPORATE, and BUSINESS-APPROPRIATE
+2. Must be PHOTOREALISTIC with professional business context
+3. No abstract art or playful elements that would be inappropriate for LinkedIn
+4. NO text overlay (LinkedIn restricts excessive text in ad images)
+5. Must convey trustworthiness, credibility, and professional expertise
+6. Image must be clean, uncluttered, and appropriate for B2B marketing
+`.trim();
+}
+
 // Handle CORS for preflight requests
 export function handleCorsRequest(req: Request) {
   if (req.method === 'OPTIONS') {
