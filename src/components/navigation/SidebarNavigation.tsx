@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard,
@@ -11,13 +12,16 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
-  Link2
+  Link2,
+  Coins
 } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useAuth } from "@/contexts/AuthContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -26,6 +30,7 @@ interface NavItemProps {
   href: string;
   collapsed?: boolean;
   onClick?: () => void;
+  rightContent?: React.ReactNode;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ 
@@ -34,7 +39,8 @@ const NavItem: React.FC<NavItemProps> = ({
   active, 
   href, 
   collapsed, 
-  onClick 
+  onClick,
+  rightContent
 }) => {
   const navigate = useNavigate();
   
@@ -57,7 +63,12 @@ const NavItem: React.FC<NavItemProps> = ({
       onClick={handleClick}
     >
       {icon}
-      {!collapsed && <span className="flex-1 text-left">{label}</span>}
+      {!collapsed && (
+        <>
+          <span className="flex-1 text-left">{label}</span>
+          {rightContent}
+        </>
+      )}
     </button>
   );
 };
@@ -126,8 +137,23 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
+  const [credits, setCredits] = useState<number>(0);
+  
+  useEffect(() => {
+    if (user?.credits) {
+      setCredits(user.credits);
+    }
+  }, [user]);
   
   const isPathActive = (path: string) => currentPath.startsWith(path);
+  
+  const CreditsDisplay = () => (
+    <div className="flex items-center gap-1 text-sm font-medium px-2 py-1 bg-blue-50 text-blue-600 rounded-full dark:bg-blue-900/30 dark:text-blue-400">
+      <Coins size={14} />
+      <span>{credits}</span>
+    </div>
+  );
   
   return (
     <nav className="space-y-1 flex-1">
@@ -138,6 +164,29 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         href="/dashboard" 
         collapsed={collapsed}
       />
+      
+      {collapsed ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex justify-center my-2">
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-full dark:bg-blue-900/30 dark:text-blue-400">
+                  <Coins size={16} />
+                  <span>{credits}</span>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Available Credits</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <div className="flex justify-between items-center px-3 py-2 mb-1">
+          <span className="text-sm text-muted-foreground">Credits</span>
+          <CreditsDisplay />
+        </div>
+      )}
       
       <SubMenu
         icon={<Flag size={20} />}

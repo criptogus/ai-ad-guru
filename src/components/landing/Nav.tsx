@@ -14,9 +14,9 @@ export const Nav: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <div className="h-8 w-8 rounded bg-brand-600 text-white flex items-center justify-center font-bold">
-              AG
+              ZA
             </div>
-            <span className="ml-2 text-xl font-bold">AI Ad Guru</span>
+            <span className="ml-2 text-xl font-bold">Zero Agency Ad Guru</span>
           </div>
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (

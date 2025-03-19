@@ -22,16 +22,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user }) => {
   const timeOfDay = getTimeOfDay();
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 bg-background p-4 rounded-md">
       <div>
         <h1 className="text-xl font-medium text-foreground">
-          {timeOfDay}, {user?.name.split(' ')[0]}
+          {timeOfDay}, {user?.name?.split(' ')[0] || 'User'}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Here's what's happening with your campaigns
         </p>
       </div>
-      <Button onClick={() => navigate("/create-campaign")} className="gap-2">
+      <Button onClick={() => navigate("/create-campaign")} className="gap-2 whitespace-nowrap">
         <PlusCircle size={18} />
         <span>Create Campaign</span>
       </Button>
