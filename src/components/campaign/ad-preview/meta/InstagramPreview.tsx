@@ -43,6 +43,12 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     }
   }, [ad.imageUrl]);
 
+  // Debug the ad prop to see if imageUrl is present
+  useEffect(() => {
+    console.log("InstagramPreview - Ad data:", JSON.stringify(ad, null, 2));
+    console.log("Image URL from ad:", ad.imageUrl || "No image URL");
+  }, [ad]);
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;

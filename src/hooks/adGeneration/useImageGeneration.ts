@@ -27,7 +27,7 @@ export const useImageGeneration = () => {
     
     try {
       console.log('Generating image with prompt:', prompt);
-      console.log('Additional context:', additionalInfo);
+      console.log('Additional context:', JSON.stringify(additionalInfo, null, 2));
       
       // Prepare parameters for image generation
       const imageFormat = additionalInfo?.imageFormat || "square";
@@ -41,7 +41,7 @@ export const useImageGeneration = () => {
         },
       });
 
-      console.log('Image generation response:', data);
+      console.log('Image generation response:', JSON.stringify(data, null, 2));
 
       if (error) {
         console.error('Error generating image:', error);
@@ -66,6 +66,16 @@ export const useImageGeneration = () => {
 
       console.log('Image generated successfully, URL:', data.imageUrl);
       console.log('DALL-E revised prompt:', data.revisedPrompt || 'No revised prompt');
+      
+      // Test the image URL to make sure it's accessible
+      const img = new Image();
+      img.onerror = () => {
+        console.error('The generated image URL failed to load:', data.imageUrl);
+      };
+      img.onload = () => {
+        console.log('The generated image URL loaded successfully');
+      };
+      img.src = data.imageUrl + '?t=' + Date.now(); // Add timestamp to prevent caching
       
       // Inform the user about credit usage (5 credits for Instagram ad image)
       toast({

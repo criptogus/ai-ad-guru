@@ -34,21 +34,28 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
     })
   });
   
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("OpenAI API error:", response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+  }
+  
   const data = await response.json();
   
   if (!data.data || data.data.length === 0) {
-    console.error("OpenAI API response:", JSON.stringify(data));
+    console.error("OpenAI API response:", JSON.stringify(data, null, 2));
     throw new Error(data.error?.message || "No image was generated");
   }
 
   const temporaryImageUrl = data.data[0].url;
   
   if (!temporaryImageUrl) {
-    console.error("Empty image URL in response:", JSON.stringify(data));
+    console.error("Empty image URL in response:", JSON.stringify(data, null, 2));
     throw new Error("Generated image URL is empty");
   }
   
   console.log("OpenAI image generation completed successfully");
+  console.log("Temporary image URL (first 50 chars):", temporaryImageUrl.substring(0, 50) + "...");
   
   return { 
     url: temporaryImageUrl, 
@@ -57,16 +64,31 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
 }
 
 export async function downloadImage(imageUrl: string): Promise<Blob> {
-  console.log("Downloading image from OpenAI:", imageUrl);
+  console.log("Downloading image from OpenAI:", imageUrl.substring(0, 50) + "...");
+  
   try {
-    const imageResponse = await fetch(imageUrl);
+    // Add a timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    const imageResponse = await fetch(imageUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
     
     if (!imageResponse.ok) {
-      throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+      throw new Error(`Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`);
     }
+    
+    const contentType = imageResponse.headers.get('content-type');
+    console.log(`Image response content type: ${contentType}`);
     
     const blob = await imageResponse.blob();
     console.log(`Image downloaded successfully. Size: ${blob.size} bytes, Type: ${blob.type}`);
+    
+    // Verify the blob is valid
+    if (blob.size === 0) {
+      throw new Error("Downloaded image has zero size");
+    }
+    
     return blob;
   } catch (error) {
     console.error("Error downloading image:", error);

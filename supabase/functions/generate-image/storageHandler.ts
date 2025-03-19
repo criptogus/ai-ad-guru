@@ -42,7 +42,8 @@ export async function storeImageInSupabase(imageBlob: Blob, config: StorageConfi
       .from(bucketName)
       .upload(`instagram-ads/${fileName}`, imageBlob, {
         contentType: 'image/png',
-        cacheControl: '3600'
+        cacheControl: '3600',
+        upsert: true
       });
     
     if (uploadError) {
@@ -52,6 +53,7 @@ export async function storeImageInSupabase(imageBlob: Blob, config: StorageConfi
     
     if (!uploadData || !uploadData.path) {
       console.error("Upload succeeded but no path returned");
+      throw new Error("Upload succeeded but no path returned");
     }
     
     // Get the public URL

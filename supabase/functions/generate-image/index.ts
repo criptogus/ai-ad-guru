@@ -11,6 +11,8 @@ serve(async (req) => {
   if (corsResponse) return corsResponse;
   
   try {
+    console.log("Starting image generation process...");
+    
     // Get API keys from environment variables
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -25,6 +27,9 @@ serve(async (req) => {
     }
 
     // Parse request body
+    const requestBody = await req.json();
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
+    
     const { 
       prompt, 
       brandTone, 
@@ -32,7 +37,7 @@ serve(async (req) => {
       targetAudience, 
       uniqueSellingPoints,
       imageFormat = "square" // Default to square format (1024x1024)
-    } = await req.json();
+    } = requestBody;
     
     if (!prompt) {
       throw new Error('Image prompt is required');
@@ -40,6 +45,7 @@ serve(async (req) => {
     
     console.log(`Generating image with prompt: ${prompt}`);
     console.log(`Company: ${companyName}, Brand Tone: ${brandTone}`);
+    console.log(`Image format: ${imageFormat}`);
     
     // Create enhanced prompt for DALL-E 3
     const enhancedPrompt = enhancePrompt({
@@ -49,6 +55,8 @@ serve(async (req) => {
       targetAudience,
       uniqueSellingPoints
     });
+    
+    console.log("Enhanced prompt:", enhancedPrompt);
     
     // Generate image with DALL-E 3
     const { url: temporaryImageUrl, revisedPrompt } = await generateImageWithDallE({
@@ -66,6 +74,9 @@ serve(async (req) => {
       supabaseServiceKey
     });
 
+    console.log("Image generation process completed successfully");
+    console.log("Persistent image URL:", persistentImageUrl);
+
     // Return the persistent image URL and the revised prompt used by DALL-E
     return new Response(
       JSON.stringify({ 
@@ -75,7 +86,11 @@ serve(async (req) => {
         revisedPrompt: revisedPrompt || enhancedPrompt
       }), 
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        },
       }
     );
     

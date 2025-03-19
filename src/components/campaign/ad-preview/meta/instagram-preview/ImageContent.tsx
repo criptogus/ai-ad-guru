@@ -27,11 +27,21 @@ const ImageContent: React.FC<ImageContentProps> = ({
   // Reset error state when the image URL changes
   useEffect(() => {
     if (ad.imageUrl) {
-      console.log("New image URL detected:", ad.imageUrl);
+      console.log("ImageContent - New image URL detected:", ad.imageUrl);
       setImageError(false);
       setIsImageLoaded(false);
     }
   }, [ad.imageUrl]);
+  
+  // Debug output to track component state
+  useEffect(() => {
+    console.log("ImageContent rendering with:", {
+      hasImageUrl: !!ad.imageUrl,
+      imageError,
+      isImageLoaded,
+      imageKey
+    });
+  }, [ad.imageUrl, imageError, isImageLoaded, imageKey]);
   
   // Force image refresh when URL changes by using a unique key
   const uniqueKey = `${imageKey || 0}-${ad.imageUrl || 'placeholder'}-${Date.now()}`;
@@ -46,6 +56,21 @@ const ImageContent: React.FC<ImageContentProps> = ({
     setImageError(true);
     setIsImageLoaded(false);
   };
+
+  // Test image validity using a separate image object
+  useEffect(() => {
+    if (ad.imageUrl) {
+      console.log("Testing image validity with URL:", ad.imageUrl);
+      const img = new Image();
+      img.onload = () => {
+        console.log("Test image loaded successfully");
+      };
+      img.onerror = () => {
+        console.error("Test image failed to load");
+      };
+      img.src = ad.imageUrl + "?t=" + Date.now(); // Add timestamp to prevent caching
+    }
+  }, [ad.imageUrl]);
   
   const imageDisplay = ad.imageUrl && !imageError ? (
     <div className="w-full h-full relative">
@@ -62,6 +87,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
         )}
         onLoad={handleImageLoad}
         onError={handleImageError}
+        crossOrigin="anonymous" // Add crossOrigin for CORS images
       />
     </div>
   ) : (

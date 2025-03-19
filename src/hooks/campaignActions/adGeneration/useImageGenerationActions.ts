@@ -39,9 +39,9 @@ export const useImageGenerationActions = (
       return;
     }
 
-    console.log("Generating image for ad:", ad);
+    console.log("Generating image for ad:", JSON.stringify(ad, null, 2));
     console.log("With prompt:", ad.imagePrompt);
-    console.log("Using analysis result:", analysisResult);
+    console.log("Using analysis result:", analysisResult ? "Yes" : "No");
     
     try {
       // Show credit usage preview
@@ -81,7 +81,7 @@ export const useImageGenerationActions = (
       };
       
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
-      console.log("Generated image URL:", imageUrl);
+      console.log("useAdGeneration - Generated image URL:", imageUrl);
       
       if (imageUrl) {
         // Create a new MetaAd object with the updated imageUrl
