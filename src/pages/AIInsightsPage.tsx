@@ -3,6 +3,7 @@ import React from "react";
 import AppLayout from "@/components/AppLayout";
 import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { optimizationData, insightsData } from "@/components/analytics/data/mockData";
 
 const AIInsightsPage = () => {
   return (
@@ -16,8 +17,13 @@ const AIInsightsPage = () => {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <AIOptimizationCard />
-          <AIInsightsCard />
+          <AIOptimizationCard 
+            lastOptimizationTime="2 days ago"
+            topPerformers={optimizationData.topPerformers}
+            lowPerformers={optimizationData.lowPerformers}
+            budgetReallocations={optimizationData.budgetReallocation}
+          />
+          <AIInsightsCard insights={insightsData} />
         </div>
 
         <Card>
