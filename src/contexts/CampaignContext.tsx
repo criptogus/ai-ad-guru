@@ -1,12 +1,12 @@
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd } from "@/hooks/useAdGeneration";
+import { GoogleAd } from "@/hooks/adGeneration";
 
 // Define new ad types for LinkedIn and Microsoft
 export interface LinkedInAd {
   headline: string;
   description: string;
+  primaryText?: string; // Added to make compatible with MetaAd
   imagePrompt?: string;
   imageUrl?: string;
 }
@@ -31,6 +31,7 @@ export interface CampaignData {
   googleAds: GoogleAd[];
   linkedInAds: LinkedInAd[];
   microsoftAds: MicrosoftAd[];
+  metaAds?: any[]; // Added for compatibility
 }
 
 interface CampaignContextType {

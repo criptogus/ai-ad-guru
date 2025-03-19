@@ -94,33 +94,36 @@ const AccountConnections: React.FC = () => {
           <>
             <PlatformConnectionCard
               platform="google"
-              platformDisplayName="Google Ads"
               connections={connections}
               isConnecting={isConnecting}
               onConnect={handleGoogleConnection}
-              onDisconnect={removeConnection}
+              onRemove={removeConnection}
+              errorType={errorType}
+              errorDetails={errorDetails}
             />
 
             <Separator />
 
             <PlatformConnectionCard
               platform="linkedin"
-              platformDisplayName="LinkedIn Ads"
               connections={connections}
               isConnecting={isConnecting}
               onConnect={handleLinkedInConnection}
-              onDisconnect={removeConnection}
+              onRemove={removeConnection}
+              errorType={errorType}
+              errorDetails={errorDetails}
             />
             
             <Separator />
 
             <PlatformConnectionCard
               platform="microsoft"
-              platformDisplayName="Microsoft Ads"
               connections={connections}
               isConnecting={isConnecting}
               onConnect={handleMicrosoftConnection}
-              onDisconnect={removeConnection}
+              onRemove={removeConnection}
+              errorType={errorType}
+              errorDetails={errorDetails}
             />
             
             <ConnectionInfoBox hasError={!!error} />

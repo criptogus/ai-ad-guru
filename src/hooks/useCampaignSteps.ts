@@ -47,14 +47,21 @@ export const useCampaignSteps = (
 
     // Check if we have ads before proceeding to summary
     if (currentStep === 3) {
-      const platformAds = campaignData.platform === 'google' 
-        ? campaignData.googleAds 
-        : campaignData.metaAds;
+      const platform = campaignData.platform;
+      let platformAds;
+      
+      if (platform === 'google') {
+        platformAds = campaignData.googleAds;
+      } else if (platform === 'linkedin') {
+        platformAds = campaignData.linkedInAds;
+      } else if (platform === 'microsoft') {
+        platformAds = campaignData.microsoftAds;
+      }
         
       if (!platformAds || platformAds.length === 0) {
         toast({
           title: "Ads Required",
-          description: `Please generate ${campaignData.platform} ads before proceeding`,
+          description: `Please generate ${platform} ads before proceeding`,
           variant: "destructive",
         });
         return;

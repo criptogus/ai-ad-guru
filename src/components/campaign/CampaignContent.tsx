@@ -1,17 +1,11 @@
 
-import React, { useContext } from "react";
-import { CampaignContext } from "@/contexts/CampaignContext";
+import React from "react";
+import { useCampaign, CampaignContext } from "@/contexts/CampaignContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
 
 const CampaignContent: React.FC = () => {
   const { toast } = useToast();
-  const campaignContext = useContext(CampaignContext);
-  
-  if (!campaignContext) {
-    return <div>Loading campaign...</div>;
-  }
-  
   const {
     activeCampaignStep,
     setActiveCampaignStep,
@@ -28,7 +22,7 @@ const CampaignContent: React.FC = () => {
     resetCampaign,
     isRequiredStep,
     currentStep
-  } = campaignContext;
+  } = useCampaign();
 
   const handleSetStep = (step: string) => {
     if (!isRequiredStep(step)) {
@@ -48,7 +42,7 @@ const CampaignContent: React.FC = () => {
     analysisResult,
     campaignData,
     googleAds,
-    metaAds: [], // Empty array for compatibility
+    metaAds: linkedInAds, // Use linkedInAds as metaAds for compatibility
     isAnalyzing: false,
     isGenerating: false,
     loadingImageIndex: null,
@@ -63,17 +57,6 @@ const CampaignContent: React.FC = () => {
     handleBack: () => {},
     handleNextWrapper: () => {},
     createCampaign: async () => {}
-  };
-
-  const stepRendererProps = {
-    activeCampaignStep,
-    setActiveCampaignStep,
-    campaignData,
-    setCampaignData,
-    analysisResult,
-    setAnalysisResult,
-    handleSetStep,
-    resetCampaign,
   };
 
   const { getStepContent } = useCampaignStepRenderer(mockStepRendererProps);

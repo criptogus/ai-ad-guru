@@ -1,6 +1,6 @@
 
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { 
   useGoogleAdActions, 
@@ -8,6 +8,17 @@ import {
   useMicrosoftAdActions,
   useImageGenerationActions 
 } from "./adGeneration";
+
+// Helper to convert LinkedInAd to MetaAd format for compatibility
+const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
+  return linkedInAds.map(ad => ({
+    primaryText: ad.primaryText || ad.description,
+    headline: ad.headline,
+    description: ad.description,
+    imagePrompt: ad.imagePrompt || '',
+    imageUrl: ad.imageUrl
+  }));
+};
 
 export const useAdGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -42,13 +53,16 @@ export const useAdGenerationActions = (
     setCampaignData
   );
   
+  // Convert LinkedInAds to MetaAds for compatibility
+  const metaAds = convertToMetaAds(linkedInAds);
+  
   const { 
     handleGenerateImage,
     imageGenerationError,
     clearImageGenerationError 
   } = useImageGenerationActions(
     analysisResult,
-    linkedInAds,
+    metaAds,  // Pass the converted metaAds
     generateAdImage,
     setCampaignData
   );

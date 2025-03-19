@@ -8,8 +8,8 @@ import { Connection } from "@/hooks/adConnections/types";
 interface PlatformConnectionCardProps {
   platform: 'google' | 'linkedin' | 'microsoft';
   isConnecting: boolean;
-  errorType: string | null;
-  errorDetails: string | null;
+  errorType?: string | null;
+  errorDetails?: string | null;
   connections: Connection[];
   onConnect: () => void;
   onRemove: (id: string, platformName: string) => Promise<void>;
