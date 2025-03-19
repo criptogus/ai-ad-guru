@@ -44,6 +44,17 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
       return;
     }
     
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email format",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       setIsLoading(true);
       await onInvite(email, role);
