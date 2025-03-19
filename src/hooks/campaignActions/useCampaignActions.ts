@@ -5,6 +5,7 @@ import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { useAdGenerationActions } from "./useAdGenerationActions";
 import { useCampaignCreation } from "./useCampaignCreation";
 import { useWebsiteAnalysisActions } from "./useWebsiteAnalysisActions";
+import { supabase } from "@/integrations/supabase/client";
 
 // Helper to convert LinkedInAd to MetaAd
 const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
@@ -32,7 +33,8 @@ export const useCampaignActions = (
 ) => {
   // Website analysis actions
   const { 
-    handleAnalyzeWebsite 
+    handleAnalyzeWebsite,
+    isAnalyzing
   } = useWebsiteAnalysisActions();
 
   // Convert LinkedInAds to MetaAds for compatibility
@@ -71,6 +73,7 @@ export const useCampaignActions = (
 
   return {
     handleAnalyzeWebsite,
+    isAnalyzing,
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
     handleGenerateMicrosoftAds,

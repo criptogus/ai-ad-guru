@@ -1,15 +1,22 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
-import { MetaAd } from "@/hooks/adGeneration/types";
+import { MetaAd } from "@/hooks/adGeneration";
+import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import { useCampaignFlow } from "@/hooks/useCampaignFlow";
+import { useCampaignActions } from "@/hooks/campaignActions";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 const CampaignContent: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuthActions();
+  
   const {
-    activeCampaignStep,
-    setActiveCampaignStep,
+    currentStep,
+    setCurrentStep,
     campaignData,
     setCampaignData,
     analysisResult,
@@ -19,23 +26,19 @@ const CampaignContent: React.FC = () => {
     linkedInAds,
     setLinkedInAds,
     microsoftAds,
-    setMicrosoftAds,
-    resetCampaign,
-    isRequiredStep,
-    currentStep
+    setMicrosoftAds
   } = useCampaign();
 
-  const handleSetStep = (step: string) => {
-    if (!isRequiredStep(step)) {
-      setActiveCampaignStep(step);
-    } else {
-      toast({
-        title: "Complete required steps first",
-        description: "Please complete all required steps before proceeding",
-        variant: "destructive",
-      });
-    }
-  };
+  // Initialize the ad generation hook
+  const { 
+    generateGoogleAds, 
+    generateMetaAds, 
+    generateAdImage, 
+    isGenerating 
+  } = useAdGeneration();
+  
+  // Initialize the website analysis hook for error state tracking
+  const { isAnalyzing: isAnalyzingState } = useWebsiteAnalysis();
 
   // Convert LinkedInAds to MetaAds format for compatibility
   const convertedMetaAds: MetaAd[] = linkedInAds.map(ad => ({
@@ -46,30 +49,94 @@ const CampaignContent: React.FC = () => {
     imageUrl: ad.imageUrl
   }));
 
-  // Mock data for rendering steps
-  const mockStepRendererProps = {
+  // Campaign actions (website analysis, ad generation, campaign creation)
+  const {
+    handleAnalyzeWebsite,
+    isAnalyzing,
+    handleGenerateGoogleAds,
+    handleGenerateLinkedInAds,
+    handleGenerateMicrosoftAds,
+    handleGenerateImage,
+    imageGenerationError,
+    clearImageGenerationError,
+    createCampaign,
+    isCreating
+  } = useCampaignActions(
+    user,
+    campaignData,
+    analysisResult,
+    googleAds,
+    linkedInAds,
+    microsoftAds,
+    generateGoogleAds,
+    generateMetaAds, // Use generateMetaAds for LinkedIn ads
+    generateGoogleAds, // Reuse for Microsoft ads
+    generateAdImage,
+    setCampaignData
+  );
+
+  // Campaign flow (navigation and validation)
+  const { handleBack, handleNextWrapper } = useCampaignFlow(
+    currentStep,
+    setCurrentStep,
+    analysisResult,
+    campaignData,
+    user,
+    createCampaign
+  );
+
+  // Callback to update website analysis results
+  const handleWebsiteAnalysis = async (url: string) => {
+    const result = await handleAnalyzeWebsite(url);
+    if (result) {
+      setAnalysisResult(result);
+      setCampaignData({
+        ...campaignData,
+        websiteUrl: url,
+        targetAudience: result.targetAudience,
+        description: result.businessDescription
+      });
+    }
+    return result;
+  };
+
+  // Callbacks for updating ads
+  const handleUpdateGoogleAd = (index: number, updatedAd: any) => {
+    const newAds = [...googleAds];
+    newAds[index] = updatedAd;
+    setGoogleAds(newAds);
+  };
+
+  const handleUpdateMetaAd = (index: number, updatedAd: any) => {
+    const newAds = [...linkedInAds];
+    newAds[index] = updatedAd;
+    setLinkedInAds(newAds);
+  };
+
+  // Step renderer props
+  const stepRendererProps = {
     currentStep,
     analysisResult,
     campaignData,
     googleAds,
-    metaAds: convertedMetaAds, // Use the properly converted MetaAds
-    isAnalyzing: false,
-    isGenerating: false,
+    metaAds: convertedMetaAds,
+    isAnalyzing: isAnalyzing || isAnalyzingState,
+    isGenerating,
     loadingImageIndex: null,
-    isCreating: false,
-    handleWebsiteAnalysis: async () => null,
-    handleGenerateGoogleAds: async () => {},
-    handleGenerateMetaAds: async () => {},
-    handleGenerateImage: async () => {},
-    handleUpdateGoogleAd: () => {},
-    handleUpdateMetaAd: () => {},
+    isCreating,
+    handleWebsiteAnalysis,
+    handleGenerateGoogleAds,
+    handleGenerateMetaAds: handleGenerateLinkedInAds,
+    handleGenerateImage,
+    handleUpdateGoogleAd,
+    handleUpdateMetaAd,
     setCampaignData,
-    handleBack: () => {},
-    handleNextWrapper: () => {},
-    createCampaign: async () => {}
+    handleBack,
+    handleNextWrapper,
+    createCampaign
   };
 
-  const { getStepContent } = useCampaignStepRenderer(mockStepRendererProps);
+  const { getStepContent } = useCampaignStepRenderer(stepRendererProps);
 
   return <div>{getStepContent()}</div>;
 };
