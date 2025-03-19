@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
@@ -11,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-// Define interface for the raw campaign data from Supabase
 interface SupabaseCampaign {
   id: string;
   user_id: string;
@@ -40,7 +38,6 @@ const CampaignsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Fetch campaigns for the current user
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ['campaigns', user?.id],
     queryFn: async () => {
@@ -56,7 +53,6 @@ const CampaignsPage = () => {
         throw error;
       }
       
-      // Map Supabase data to Campaign model
       return (data as SupabaseCampaign[]).map(item => ({
         id: item.id,
         userId: item.user_id,
@@ -65,7 +61,6 @@ const CampaignsPage = () => {
         status: item.status as CampaignStatus,
         budget: item.budget,
         budgetType: item.budget_type as 'daily' | 'lifetime',
-        // We don't have these fields in the database, so provide defaults
         businessInfo: {
           name: '',
           description: '',
@@ -77,15 +72,14 @@ const CampaignsPage = () => {
         },
         adType: 'search',
         adVariations: [],
-        // Map performance data if available
         performance: item.campaign_performance && item.campaign_performance.length > 0 ? {
           impressions: item.campaign_performance[0].impressions || 0,
           clicks: item.campaign_performance[0].clicks || 0,
           ctr: item.campaign_performance[0].ctr || 0,
-          conversions: 0, // Not in database, default to 0
-          costPerClick: 0, // Not in database, default to 0
+          conversions: 0,
+          costPerClick: 0,
           spend: item.campaign_performance[0].spend || 0,
-          roi: 0, // Not in database, default to 0
+          roi: 0,
           lastUpdated: item.campaign_performance[0].updated_at
         } : undefined,
         createdAt: item.created_at,
@@ -111,7 +105,7 @@ const CampaignsPage = () => {
             <h1 className="text-3xl font-bold">Campaigns</h1>
             <p className="text-muted-foreground">Manage your advertising campaigns</p>
           </div>
-          <Button onClick={() => navigate("/create-campaign")} className="gap-2">
+          <Button onClick={() => navigate("/campaigns/create")} className="gap-2">
             <PlusCircle size={16} />
             Create Campaign
           </Button>
@@ -189,7 +183,7 @@ const CampaignsPage = () => {
                 <p className="text-muted-foreground mb-4">
                   Let AI help you create effective ad campaigns for your business.
                 </p>
-                <Button onClick={() => navigate("/create-campaign")}>
+                <Button onClick={() => navigate("/campaigns/create")}>
                   Create Your First Campaign
                 </Button>
               </div>

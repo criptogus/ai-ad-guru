@@ -42,6 +42,9 @@ function App() {
           
           <Route path="/campaigns/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
           
+          {/* Redirect old path to the correct path */}
+          <Route path="/create-campaign" element={<Navigate to="/campaigns/create" replace />} />
+          
           {/* Redirect /analytics to /insights */}
           <Route path="/analytics" element={<Navigate to="/insights" replace />} />
           
