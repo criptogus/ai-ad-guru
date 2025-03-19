@@ -55,7 +55,7 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
       const filePath = `instagram-ads/${fileName}`;
       const bucketName = 'ai-images';
 
-      console.log(`Uploading file to ${bucketName}/${filePath}`);
+      console.log(`Uploading file to ${bucketName}/${filePath}`, { userId: user.id });
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
