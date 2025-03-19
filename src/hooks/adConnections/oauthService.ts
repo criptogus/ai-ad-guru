@@ -11,6 +11,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
   
   try {
     // Generate the OAuth URL from our edge function
+    console.log(`Invoking edge function for ${platform} OAuth URL generation`);
     const response = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'getAuthUrl',
@@ -25,6 +26,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(`Failed to initialize ${platform} OAuth flow. No response from server.`);
     }
 
+    // Check the status of the response
     if (response.error) {
       console.error(`Error response from edge function:`, response.error);
       
@@ -35,7 +37,8 @@ export const initiateOAuth = async (params: OAuthParams) => {
       if (response.error.message && response.error.message.includes('Missing required')) {
         errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
       } else if (response.error.message && response.error.message.includes('non-2xx status')) {
-        errorMessage = `Edge function error: ${response.error.message}. Check if Supabase edge function is deployed correctly.`;
+        // Handle edge function non-2xx status explicitly
+        errorMessage = `Edge function error: The Supabase edge function returned a non-2xx status code. Check if the edge function is deployed correctly and all required credentials are set.`;
       } else if (response.error.message && response.error.message.includes('Failed to prepare OAuth flow')) {
         errorMessage = `Database error: ${response.error.message}. Please check database permissions or connection.`;
       }
