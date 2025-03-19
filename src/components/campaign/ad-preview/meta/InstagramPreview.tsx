@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   InstagramPreviewHeader, 
   InstagramPreviewFooter, 
@@ -29,7 +30,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const isLoading = loadingImageIndex !== undefined && index !== undefined && loadingImageIndex === index;
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   
   // Force React to re-render the image when imageUrl changes
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
@@ -38,6 +39,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     // Update the timestamp whenever the image URL changes
     if (ad.imageUrl) {
       setImageTimestamp(Date.now());
+      console.log("Image timestamp updated for URL:", ad.imageUrl);
     }
   }, [ad.imageUrl]);
 
@@ -47,22 +49,16 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
     // Check if file is an image
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid File",
-        description: "Please upload an image file (JPEG, PNG, etc.)",
-        variant: "destructive",
-        duration: 3000,
+      toast.error("Please upload an image file (JPEG, PNG, etc.)", {
+        duration: 5000,
       });
       return;
     }
 
     // Check file size (limit to 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File Too Large",
-        description: "Please upload an image smaller than 5MB",
-        variant: "destructive",
-        duration: 3000,
+      toast.error("Please upload an image smaller than 5MB", {
+        duration: 5000,
       });
       return;
     }
@@ -75,40 +71,61 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       const fileName = `${Date.now()}-user-uploaded.${fileExt}`;
       const filePath = `instagram-ads/${fileName}`;
 
+      // Check if ads-images bucket exists, create if not
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketName = 'ads-images';
+      const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
+      
+      if (!bucketExists) {
+        const { error: bucketError } = await supabase.storage
+          .createBucket(bucketName, {
+            public: true
+          });
+        
+        if (bucketError) throw bucketError;
+      }
+
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('ads-images')
+        .from(bucketName)
         .upload(filePath, file);
 
       if (error) throw error;
 
       // Get the public URL
       const imageUrl = supabase.storage
-        .from('ads-images')
+        .from(bucketName)
         .getPublicUrl(filePath).data.publicUrl;
 
       // Notify the parent component about the new image URL
-      toast({
-        title: "Image Uploaded",
-        description: "Your image has been uploaded successfully. You'll need to use the 'Update' button to save it to your ad.",
+      toast.success("Image uploaded successfully", {
+        description: "You'll need to use the 'Update' button to save it to your ad.",
         duration: 3000,
       });
 
-      // Simulate an image URL update by reloading the page
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Set a temporary state to show the image
+      setImageTimestamp(Date.now());
+
+      // Force browser to reload the image (avoiding cache issues)
+      const img = new Image();
+      img.src = imageUrl + '?t=' + Date.now();
+      img.onload = () => {
+        console.log("Image preloaded successfully");
+      };
 
     } catch (error) {
       console.error("Error uploading image:", error);
-      toast({
-        title: "Upload Failed",
-        description: "There was an error uploading your image. Please try again.",
-        variant: "destructive",
-        duration: 3000,
+      toast.error("Failed to upload image", {
+        description: "Please try again.",
+        duration: 5000,
       });
     } finally {
       setIsUploading(false);
+      
+      // Clear the file input to allow uploading the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -117,7 +134,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto bg-white">
+    <div className="border rounded-lg overflow-hidden mb-4 max-w-md mx-auto bg-white shadow-sm">
       {/* Header */}
       <InstagramPreviewHeader companyName={companyName} />
       

@@ -17,7 +17,7 @@ export const useImageGeneration = () => {
         title: "Missing Prompt",
         description: errorMessage,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
       return null;
     }
@@ -29,10 +29,14 @@ export const useImageGeneration = () => {
       console.log('Generating image with prompt:', prompt);
       console.log('Additional context:', additionalInfo);
       
+      // Prepare parameters for image generation
+      const imageFormat = additionalInfo?.imageFormat || "square";
+      
       // Include additional context in the function call
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt,
+          imageFormat,
           ...additionalInfo
         },
       });
@@ -59,6 +63,7 @@ export const useImageGeneration = () => {
       }
 
       console.log('Image generated successfully, URL:', data.imageUrl);
+      console.log('DALL-E revised prompt:', data.revisedPrompt || 'No revised prompt');
       
       // Inform the user about credit usage (5 credits for Instagram ad image)
       toast({
@@ -76,7 +81,7 @@ export const useImageGeneration = () => {
         title: "Image Generation Failed",
         description: errorMessage,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
       throw error; // Re-throw to allow component-level handling
     } finally {

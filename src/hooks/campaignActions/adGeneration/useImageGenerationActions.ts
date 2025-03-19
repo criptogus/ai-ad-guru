@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { getCreditCosts, consumeCredits } from "@/services";
@@ -12,7 +13,7 @@ export const useImageGenerationActions = (
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const { user } = useAuth();
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
   const creditCosts = getCreditCosts();
@@ -23,19 +24,17 @@ export const useImageGenerationActions = (
     
     if (!ad.imagePrompt) {
       setImageGenerationError("Image prompt is required");
-      toast({
-        title: "Image Prompt Required",
+      toast.error("Image Prompt Required", {
         description: "Please provide an image prompt",
-        variant: "destructive",
+        duration: 5000,
       });
       return;
     }
 
     if (!user) {
-      toast({
-        title: "Authentication Required",
+      toast.error("Authentication Required", {
         description: "Please log in to generate images",
-        variant: "destructive",
+        duration: 5000,
       });
       return;
     }
@@ -46,8 +45,7 @@ export const useImageGenerationActions = (
     
     try {
       // Show credit usage preview
-      toast({
-        title: "Credit Usage Preview",
+      toast.info("Credit Usage Preview", {
         description: `This will use ${creditCosts.imageGeneration} credits to generate this Instagram ad image`,
         duration: 3000,
       });
@@ -61,21 +59,26 @@ export const useImageGenerationActions = (
       );
       
       if (!creditSuccess) {
-        toast({
-          title: "Insufficient Credits",
+        toast.error("Insufficient Credits", {
           description: "You don't have enough credits to generate this image",
-          variant: "destructive",
+          duration: 5000,
         });
         return;
       }
       
+      // Add image format preference based on Instagram ad best practices
+      const imageFormat = "square"; // Default to square format for Instagram ads
+      
       // Pass additional context from the analysis result to enhance image generation
-      const additionalInfo = analysisResult ? {
-        companyName: analysisResult.companyName,
-        brandTone: analysisResult.brandTone,
-        targetAudience: analysisResult.targetAudience,
-        uniqueSellingPoints: analysisResult.uniqueSellingPoints
-      } : undefined;
+      const additionalInfo = {
+        ...(analysisResult ? {
+          companyName: analysisResult.companyName,
+          brandTone: analysisResult.brandTone,
+          targetAudience: analysisResult.targetAudience,
+          uniqueSellingPoints: analysisResult.uniqueSellingPoints
+        } : {}),
+        imageFormat
+      };
       
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       console.log("Generated image URL:", imageUrl);
@@ -98,8 +101,7 @@ export const useImageGenerationActions = (
           };
         });
         
-        toast({
-          title: "Image Generated",
+        toast.success("Image Generated", {
           description: `Ad image was successfully created using ${creditCosts.imageGeneration} credits`,
           duration: 3000,
         });
@@ -109,10 +111,8 @@ export const useImageGenerationActions = (
     } catch (error) {
       console.error("Error generating image:", error);
       setImageGenerationError(error instanceof Error ? error.message : "Unknown error");
-      toast({
-        title: "Image Generation Failed",
+      toast.error("Image Generation Failed", {
         description: "Failed to generate image. Please try again.",
-        variant: "destructive",
         duration: 5000,
       });
       

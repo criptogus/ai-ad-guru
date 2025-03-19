@@ -15,7 +15,7 @@ export const consumeCredits = async (
     // First check if the user has enough credits
     const { hasEnoughCredits, currentCredits } = await checkCreditsForAction(userId, action, amount);
     
-    if (!hasEnoughCredits) {
+    if (!hasEnoughCredits && amount > 0) {
       toast.error(`Insufficient credits. You need ${amount} credits but only have ${currentCredits}.`);
       return false;
     }
@@ -44,11 +44,22 @@ export const consumeCredits = async (
     
     localStorage.setItem(creditUsageKey, JSON.stringify([newUsage, ...existingUsage]));
     
-    toast.success(`${amount} credits have been used for ${description}.`);
+    if (amount > 0) {
+      toast.success(`${amount} credits have been used for ${description}.`, {
+        duration: 3000,
+      });
+    } else if (amount < 0) {
+      toast.success(`${Math.abs(amount)} credits have been refunded for ${description}.`, {
+        duration: 3000,
+      });
+    }
+    
     return true;
   } catch (error) {
     console.error("Error consuming credits:", error);
-    toast.error("Failed to process credits. Please try again.");
+    toast.error("Failed to process credits. Please try again.", {
+      duration: 5000,
+    });
     return false;
   }
 };
@@ -112,11 +123,15 @@ export const addCredits = async (userId: string, amount: number, reason: string)
     
     localStorage.setItem(creditUsageKey, JSON.stringify([newUsage, ...existingUsage]));
     
-    toast.success(`${amount} credits have been added to your account.`);
+    toast.success(`${amount} credits have been added to your account.`, {
+      duration: 3000,
+    });
     return true;
   } catch (error) {
     console.error("Error adding credits:", error);
-    toast.error("Failed to add credits. Please try again.");
+    toast.error("Failed to add credits. Please try again.", {
+      duration: 5000,
+    });
     return false;
   }
 };
