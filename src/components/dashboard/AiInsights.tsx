@@ -1,10 +1,13 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Lightbulb, TrendingUp, Zap } from "lucide-react";
+import { Lightbulb, TrendingUp, Zap, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const AiInsights: React.FC = () => {
+  const navigate = useNavigate();
+  
   // Mock AI insights
   const insights = [
     {
@@ -29,8 +32,17 @@ const AiInsights: React.FC = () => {
 
   return (
     <Card>
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex justify-between items-center">
         <h3 className="font-medium">AI Recommendations</h3>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="gap-1"
+          onClick={() => navigate("/insights")}
+        >
+          View All
+          <ChevronRight size={16} />
+        </Button>
       </div>
       <CardContent className="p-0">
         <div className="divide-y">
@@ -50,11 +62,6 @@ const AiInsights: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-        <div className="p-3 text-center border-t">
-          <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-            View All Recommendations
-          </Button>
         </div>
       </CardContent>
     </Card>

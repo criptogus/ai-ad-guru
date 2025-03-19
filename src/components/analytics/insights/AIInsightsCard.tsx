@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Lightbulb, TrendingUp, Zap } from "lucide-react";
 
 interface AIInsightsCardProps {
   insights: {
@@ -14,6 +14,15 @@ interface AIInsightsCardProps {
 }
 
 const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ insights }) => {
+  // Map category to icon
+  const getCategoryIcon = (category: string) => {
+    switch(category) {
+      case 'creative': return <Lightbulb className="h-4 w-4" />;
+      case 'audience': return <TrendingUp className="h-4 w-4" />;
+      default: return <Zap className="h-4 w-4" />;
+    }
+  };
+  
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -22,28 +31,28 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ insights }) => {
           AI-powered recommendations to improve performance
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-4">
+      <CardContent className="p-0">
+        <div className="divide-y">
           {insights.map((insight, index) => (
-            <div key={index} className={`p-3 ${insight.colorClass} rounded-md`}>
-              <h4 className={`font-medium ${insight.category === 'creative' ? 'text-blue-800 dark:text-blue-400' : 
-                              insight.category === 'audience' ? 'text-green-800 dark:text-green-400' : 
-                              'text-amber-800 dark:text-amber-400'} mb-1`}>
-                {insight.title}
-              </h4>
-              <p className={`text-sm ${insight.category === 'creative' ? 'text-blue-600 dark:text-blue-300' : 
-                             insight.category === 'audience' ? 'text-green-600 dark:text-green-300' : 
-                             'text-amber-600 dark:text-amber-300'}`}>
-                {insight.description}
-              </p>
+            <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
+              <div className="flex gap-3">
+                <div className="mt-0.5">
+                  {getCategoryIcon(insight.category)}
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium">{insight.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">{insight.description}</p>
+                  <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                    Apply
+                  </Button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-        
-        <div className="pt-2">
-          <Button variant="outline" className="w-full justify-between">
-            View Detailed AI Analysis
-            <ChevronRight className="h-4 w-4" />
+        <div className="p-3 text-center border-t">
+          <Button variant="ghost" size="sm" className="text-xs text-blue-600">
+            View All Insights
           </Button>
         </div>
       </CardContent>
