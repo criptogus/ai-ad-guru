@@ -17,7 +17,7 @@ const defaultAnalysisResult = {
   brandTone: "Professional",
   targetAudience: "Developers and testers",
   uniqueSellingPoints: ["Easy debugging", "Fast testing", "Reliable results"],
-  callToAction: ["Test Now"],  // Changed to array
+  callToAction: ["Test Now"],  // Using array format for callToAction
   keywords: ["test", "debug", "development"]
 };
 
