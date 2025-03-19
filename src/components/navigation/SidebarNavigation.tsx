@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -126,7 +125,6 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   const location = useLocation();
   const currentPath = location.pathname;
   
-  // Check if the current path starts with a certain route
   const isPathActive = (path: string) => currentPath.startsWith(path);
   
   return (
@@ -157,13 +155,13 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       <SubMenu
         icon={<BarChart3 size={20} />}
         label="Analytics"
-        active={isPathActive("/analytics") || isPathActive("/insights")}
+        active={isPathActive("/analytics") || isPathActive("/insights") || isPathActive("/ai-insights")}
         collapsed={collapsed}
       >
         <NavItem
           icon={<ChevronRight size={16} />}
           label="AI Insights"
-          active={activePage === "insights"}
+          active={activePage === "ai-insights" || activePage === "insights"}
           href="/insights"
           collapsed={collapsed}
         />

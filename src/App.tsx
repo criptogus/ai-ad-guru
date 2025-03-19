@@ -15,6 +15,7 @@ import CampaignsPage from './pages/CampaignsPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
 import BillingPage from './pages/BillingPage';
 import ConfigPage from './pages/ConfigPage';
+import AIInsightsPage from './pages/AIInsightsPage';
 import NotFound from './pages/NotFound';
 
 import './App.css';
@@ -59,6 +60,18 @@ function App() {
             <Route path="/config" element={
               <ProtectedRoute>
                 <ConfigPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/insights" element={
+              <ProtectedRoute>
+                <AIInsightsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/ai-insights" element={
+              <ProtectedRoute>
+                <AIInsightsPage />
               </ProtectedRoute>
             } />
             
