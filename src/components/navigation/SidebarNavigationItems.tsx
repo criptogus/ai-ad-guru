@@ -15,13 +15,7 @@ const navigationItems = [
     activePattern: /^\/campaigns(\/.*)?$/,
   },
   {
-    title: 'Analytics',
-    icon: LineChart,
-    href: '/analytics',
-    activePattern: /^\/analytics$/,
-  },
-  {
-    title: 'AI Insights',
+    title: 'AI Insights & Analytics',
     icon: Lightbulb,
     href: '/insights',
     activePattern: /^\/insights$/,

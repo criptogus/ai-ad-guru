@@ -42,11 +42,12 @@ function App() {
           
           <Route path="/campaigns/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
           
-          <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          {/* Redirect /analytics to /insights */}
+          <Route path="/analytics" element={<Navigate to="/insights" replace />} />
           
           <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
           
-          <Route path="/ai-insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+          <Route path="/ai-insights" element={<Navigate to="/insights" replace />} />
           
           <Route path="/settings/roles" element={<ProtectedRoute><UserRolesPage /></ProtectedRoute>} />
           
