@@ -11,7 +11,7 @@ interface AdDetailsSectionProps {
   editedAd: MetaAd;
   onInputChange: (field: keyof MetaAd, value: string) => void;
   onGenerateImage: () => Promise<void>;
-  loadingImageIndex: number | null;
+  loadingImageIndex: boolean;
 }
 
 const AdDetailsSection: React.FC<AdDetailsSectionProps> = ({
@@ -78,7 +78,7 @@ const AdDetailsSection: React.FC<AdDetailsSectionProps> = ({
               variant="outline" 
               size="sm" 
               onClick={onGenerateImage}
-              disabled={loadingImageIndex !== null}
+              disabled={loadingImageIndex}
             >
               {displayAd.imageUrl ? "Regenerate Image" : "Generate Image"}
             </Button>
