@@ -82,9 +82,8 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   return (
     <div className="border rounded-md p-4 bg-white shadow-sm mb-4">
       <MicrosoftAdCardHeader 
-        index={index}
+        adIndex={index}
         isEditing={isEditing}
-        onCopy={handleCopy}
         onEdit={handleEdit}
         onSave={handleSave}
         onCancel={handleCancel}

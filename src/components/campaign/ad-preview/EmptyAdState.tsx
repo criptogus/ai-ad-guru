@@ -1,10 +1,10 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Search, Instagram, PenTool } from "lucide-react";
+import { Search, Instagram, PenTool, Linkedin } from "lucide-react";
 
 interface EmptyAdStateProps {
-  platform: "google" | "meta" | "microsoft";
+  platform: "google" | "meta" | "microsoft" | "linkedin";
   onGenerate: () => Promise<void>;
   isGenerating: boolean;
 }
@@ -33,6 +33,12 @@ const EmptyAdState: React.FC<EmptyAdStateProps> = ({
       description: "Create optimized text ads for Microsoft Advertising and Bing search results.",
       icon: <PenTool className="h-10 w-10 text-gray-400" />,
       buttonText: "Generate Microsoft Ads"
+    },
+    linkedin: {
+      title: "No LinkedIn Ads Generated Yet",
+      description: "Create professional ad content optimized for LinkedIn's business audience.",
+      icon: <Linkedin className="h-10 w-10 text-gray-400" />,
+      buttonText: "Generate LinkedIn Ads"
     }
   };
 
