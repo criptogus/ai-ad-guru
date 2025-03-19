@@ -17,7 +17,7 @@ interface InstagramPreviewProps {
   loadingImageIndex?: number | null;
   index?: number;
   onGenerateImage?: () => Promise<void>;
-  onUpdateAd?: (updatedAd: MetaAd) => void; // Add callback to update parent
+  onUpdateAd?: (updatedAd: MetaAd) => void; 
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
@@ -109,7 +109,10 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucketName)
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) throw error;
 
@@ -120,7 +123,6 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
       console.log("Image uploaded successfully, URL:", imageUrl);
 
-      // Update the ad with the new image URL - removed reference to ad.id
       toast.success("Image uploaded successfully", {
         description: "Your image has been added to the ad.",
         duration: 3000,
@@ -149,7 +151,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image", {
-        description: "Please try again.",
+        description: "Please try again later.",
         duration: 5000,
       });
     } finally {

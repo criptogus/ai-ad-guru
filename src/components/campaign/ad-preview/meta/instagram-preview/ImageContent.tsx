@@ -55,6 +55,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
       
       preloadImage.onerror = (e) => {
         console.error("Error preloading image:", e);
+        // Don't set an error, just log it
       };
     } else {
       setImageSrc(null);
