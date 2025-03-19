@@ -1,8 +1,9 @@
 
 import React from "react";
-import { useCampaign, CampaignContext } from "@/contexts/CampaignContext";
+import { useCampaign } from "@/contexts/CampaignContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
+import { MetaAd } from "@/hooks/adGeneration/types";
 
 const CampaignContent: React.FC = () => {
   const { toast } = useToast();
@@ -36,13 +37,22 @@ const CampaignContent: React.FC = () => {
     }
   };
 
+  // Convert LinkedInAds to MetaAds format for compatibility
+  const convertedMetaAds: MetaAd[] = linkedInAds.map(ad => ({
+    primaryText: ad.primaryText,
+    headline: ad.headline,
+    description: ad.description,
+    imagePrompt: ad.imagePrompt || '',
+    imageUrl: ad.imageUrl
+  }));
+
   // Mock data for rendering steps
   const mockStepRendererProps = {
     currentStep,
     analysisResult,
     campaignData,
     googleAds,
-    metaAds: linkedInAds, // Use linkedInAds as metaAds for compatibility
+    metaAds: convertedMetaAds, // Use the properly converted MetaAds
     isAnalyzing: false,
     isGenerating: false,
     loadingImageIndex: null,

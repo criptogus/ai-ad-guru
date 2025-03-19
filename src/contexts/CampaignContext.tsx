@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd } from "@/hooks/adGeneration";
@@ -6,7 +7,7 @@ import { GoogleAd } from "@/hooks/adGeneration";
 export interface LinkedInAd {
   headline: string;
   description: string;
-  primaryText?: string; // Added to make compatible with MetaAd
+  primaryText: string; // Changed from optional to required
   imagePrompt?: string;
   imageUrl?: string;
 }

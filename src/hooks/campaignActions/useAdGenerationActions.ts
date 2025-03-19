@@ -12,7 +12,7 @@ import {
 // Helper to convert LinkedInAd to MetaAd format for compatibility
 const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
   return linkedInAds.map(ad => ({
-    primaryText: ad.primaryText || ad.description,
+    primaryText: ad.primaryText,
     headline: ad.headline,
     description: ad.description,
     imagePrompt: ad.imagePrompt || '',
@@ -62,7 +62,7 @@ export const useAdGenerationActions = (
     clearImageGenerationError 
   } = useImageGenerationActions(
     analysisResult,
-    metaAds,  // Pass the converted metaAds
+    metaAds,
     generateAdImage,
     setCampaignData
   );

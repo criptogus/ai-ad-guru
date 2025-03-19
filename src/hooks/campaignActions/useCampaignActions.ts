@@ -1,10 +1,21 @@
 
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { useAdGenerationActions } from "./useAdGenerationActions";
 import { useCampaignCreation } from "./useCampaignCreation";
 import { useWebsiteAnalysisActions } from "./useWebsiteAnalysisActions";
+
+// Helper to convert LinkedInAd to MetaAd
+const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
+  return linkedInAds.map(ad => ({
+    primaryText: ad.primaryText,
+    headline: ad.headline,
+    description: ad.description,
+    imagePrompt: ad.imagePrompt || '',
+    imageUrl: ad.imageUrl
+  }));
+};
 
 export const useCampaignActions = (
   user: any,
@@ -23,6 +34,9 @@ export const useCampaignActions = (
   const { 
     handleAnalyzeWebsite 
   } = useWebsiteAnalysisActions();
+
+  // Convert LinkedInAds to MetaAds for compatibility
+  const metaAds = convertToMetaAds(linkedInAds);
 
   // Ad generation actions
   const {
