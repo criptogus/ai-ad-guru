@@ -61,20 +61,30 @@ Unique Selling Points: ${uniqueSellingPoints ? uniqueSellingPoints.join(', ') : 
     
     console.log("Enhanced DALL-E 3 prompt:", enhancedPrompt);
     
-    // Generate image with DALL-E
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: enhancedPrompt,
-      n: 1,
-      size: "1024x1024",
-      response_format: "url",
+    // Make direct fetch to OpenAI API to ensure proper parameters
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${openaiApiKey}`
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: enhancedPrompt,
+        n: 1,
+        size: "1024x1024",
+        response_format: "url"
+      })
     });
-
-    if (!response.data || response.data.length === 0) {
+    
+    const data = await response.json();
+    
+    if (!data.data || data.data.length === 0) {
+      console.error("OpenAI API response:", data);
       throw new Error("No image was generated");
     }
 
-    const imageUrl = response.data[0].url;
+    const imageUrl = data.data[0].url;
     
     if (!imageUrl) {
       throw new Error("Generated image URL is empty");

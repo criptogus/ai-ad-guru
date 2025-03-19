@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/components/roles/InviteUserModal";
 import { toast } from "sonner";
@@ -173,7 +174,7 @@ export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage
       action: item.action,
       description: item.description,
       createdAt: item.createdAt
-    })) || [];
+    })) as CreditUsage[];
   } catch (error) {
     console.error("Error fetching credit usage history:", error);
     return [];

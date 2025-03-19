@@ -103,4 +103,26 @@
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
   }
+  
+  /* Add explicit dark mode styles for campaign components */
+  .dark .campaign-card {
+    @apply bg-gray-800 border-gray-700;
+  }
+  
+  .dark .campaign-form {
+    @apply bg-gray-800 border-gray-700;
+  }
+  
+  .dark .campaign-preview {
+    @apply bg-gray-800 border-gray-700;
+  }
+  
+  /* Fix white backgrounds in dark mode */
+  .dark .bg-white {
+    @apply bg-gray-800;
+  }
+  
+  .dark .border-white {
+    @apply border-gray-700;
+  }
 }

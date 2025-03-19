@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,8 @@ import {
   DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { Info, Plus, AlertTriangle } from "lucide-react";
-import { getCreditCosts } from "@/services/userRoles";
+import { Info, Plus, AlertTriangle, History } from "lucide-react";
+import { getCreditCosts, getCreditUsageHistory, CreditUsage } from "@/services/userRoles";
 
 interface User {
   name: string;
@@ -33,14 +33,14 @@ const CreditCostInfo = () => {
   
   return (
     <div className="space-y-3 my-2">
-      <div className="border rounded-md p-3">
+      <div className="border rounded-md p-3 dark:border-gray-700">
         <p className="font-medium mb-1">Campaign Creation</p>
         <p className="text-sm text-muted-foreground">
           {creditCosts.campaignCreation} credits per campaign
         </p>
       </div>
       
-      <div className="border rounded-md p-3">
+      <div className="border rounded-md p-3 dark:border-gray-700">
         <p className="font-medium mb-1">AI Optimization</p>
         <div className="space-y-1 text-sm text-muted-foreground">
           <p>Daily: {creditCosts.aiOptimization.daily} credits per cycle</p>
@@ -49,7 +49,7 @@ const CreditCostInfo = () => {
         </div>
       </div>
       
-      <div className="border rounded-md p-3">
+      <div className="border rounded-md p-3 dark:border-gray-700">
         <p className="font-medium mb-1">Image Generation</p>
         <p className="text-sm text-muted-foreground">
           {creditCosts.imageGeneration} credits per image
@@ -59,17 +59,90 @@ const CreditCostInfo = () => {
   );
 };
 
+const CreditHistoryDialog = ({ userId }: { userId: string }) => {
+  const [creditHistory, setCreditHistory] = useState<CreditUsage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      setIsLoading(true);
+      const history = await getCreditUsageHistory(userId);
+      setCreditHistory(history);
+      setIsLoading(false);
+    };
+
+    if (userId) {
+      loadHistory();
+    }
+  }, [userId]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="w-full">
+          <History className="mr-2 h-4 w-4" /> View Credit History
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Credit Usage History</DialogTitle>
+          <DialogDescription>
+            Your recent credit transactions and usage
+          </DialogDescription>
+        </DialogHeader>
+        
+        {isLoading ? (
+          <div className="py-4 text-center">Loading history...</div>
+        ) : creditHistory.length === 0 ? (
+          <div className="py-4 text-center">No credit history available</div>
+        ) : (
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full">
+              <thead className="border-b dark:border-gray-700">
+                <tr>
+                  <th className="text-left py-2">Date</th>
+                  <th className="text-left py-2">Action</th>
+                  <th className="text-left py-2">Description</th>
+                  <th className="text-right py-2">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {creditHistory.map((item) => (
+                  <tr key={item.id} className="border-b dark:border-gray-700">
+                    <td className="py-2">{formatDate(item.createdAt)}</td>
+                    <td className="py-2">{item.action.replace('_', ' ')}</td>
+                    <td className="py-2">{item.description}</td>
+                    <td className={`py-2 text-right ${item.amount < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {item.amount < 0 ? '+' : '-'}{Math.abs(item.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
   const navigate = useNavigate();
   const [showCreditsInfo, setShowCreditsInfo] = useState(false);
 
   // Calculate percentage of credits used
   const totalCredits = 400; // Maximum credits for the plan
-  const usedPercentage = user ? (user.credits / totalCredits) * 100 : 0;
-  const isLowCredits = user && user.credits < 50;
+  const currentCredits = user?.credits || 0;
+  const usedPercentage = currentCredits > 0 ? (currentCredits / totalCredits) * 100 : 0;
+  const isLowCredits = currentCredits < 50;
   
   return (
-    <Card>
+    <Card className="dark:bg-gray-800">
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-medium">Credits Available</h3>
@@ -80,7 +153,7 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
                 <span className="sr-only">Credit Information</span>
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="dark:bg-gray-800">
               <DialogHeader>
                 <DialogTitle>Credit System</DialogTitle>
                 <DialogDescription>
@@ -94,13 +167,13 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
 
         <div className="mb-6">
           <div className="flex justify-between items-baseline mb-2">
-            <div className="text-3xl font-medium">{user?.credits || 0}</div>
+            <div className="text-3xl font-medium">{currentCredits}</div>
             <div className="text-sm text-muted-foreground">of {totalCredits}</div>
           </div>
           <Progress 
             value={usedPercentage} 
-            className="h-2" 
-            indicatorClassName={isLowCredits ? "bg-amber-500" : undefined}
+            className="h-2 dark:bg-gray-700" 
+            indicatorClassName={isLowCredits ? "bg-amber-500" : "bg-blue-600 dark:bg-blue-500"}
           />
         </div>
 
@@ -140,6 +213,10 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
           >
             <Plus className="mr-1 h-4 w-4" /> Buy More Credits
           </Button>
+          
+          {user?.id && (
+            <CreditHistoryDialog userId={user.id} />
+          )}
         </div>
       </CardContent>
     </Card>
