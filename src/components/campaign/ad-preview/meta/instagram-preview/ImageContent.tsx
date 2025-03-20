@@ -4,6 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import ImagePlaceholder from "./ImagePlaceholder";
 import ImageLoader from "./ImageLoader";
 import DebugInfo from "./DebugInfo";
+import { AlertCircle } from "lucide-react";
 
 interface ImageContentProps {
   ad: MetaAd;
@@ -79,7 +80,15 @@ const ImageContent: React.FC<ImageContentProps> = ({
   };
 
   return (
-    <div className="bg-gray-100 aspect-square relative overflow-hidden">
+    <div className="bg-gray-100 dark:bg-gray-800 aspect-square relative overflow-hidden rounded-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+      {imageError && !isLoading && !isUploading && (
+        <div className="absolute top-2 right-2 z-10">
+          <div className="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 p-1.5 rounded-full">
+            <AlertCircle size={16} />
+          </div>
+        </div>
+      )}
+      
       {imageSrc && !imageError ? (
         <ImageLoader 
           imageSrc={imageSrc}
