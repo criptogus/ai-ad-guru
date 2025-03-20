@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
@@ -21,6 +22,16 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
               <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+              <li>
+                <a 
+                  href="https://blog.zeroagency.ai/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-white flex items-center"
+                >
+                  Blog <ExternalLink className="ml-1 h-3 w-3" />
+                </a>
+              </li>
             </ul>
           </div>
           <div>
