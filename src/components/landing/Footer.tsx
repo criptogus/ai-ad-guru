@@ -6,7 +6,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white">
       <div className="container mx-auto max-w-5xl">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="text-lg font-bold mb-4">Product</h3>
             <ul className="space-y-2">
@@ -21,17 +21,6 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
               <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
-              <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
-              <li><Link to="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li><Link to="/documentation" className="text-gray-400 hover:text-white">Documentation</Link></li>
-              <li><Link to="/help" className="text-gray-400 hover:text-white">Help Center</Link></li>
-              <li><Link to="/api" className="text-gray-400 hover:text-white">API</Link></li>
-              <li><Link to="/status" className="text-gray-400 hover:text-white">Status</Link></li>
             </ul>
           </div>
           <div>
