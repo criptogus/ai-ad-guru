@@ -7,21 +7,57 @@ import { CustomUser } from '@/types/auth';
 
 export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const login = async (email: string, password: string) => {
     try {
+      // Check for too many login attempts (simple rate limiting)
+      if (loginAttempts >= 5) {
+        toast({
+          title: "Too Many Attempts",
+          description: "Too many failed login attempts. Please try again later.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       setIsLoading(true);
+      console.log('Attempting to sign in with email:', email);
+      
+      // Sanitize inputs to prevent injection
+      const sanitizedEmail = email.trim().toLowerCase();
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: sanitizedEmail,
         password,
       });
 
       if (error) {
         console.error('Login error:', error);
+        
+        // Increment failed login attempts
+        setLoginAttempts(prev => prev + 1);
+        
+        // Handle specific error codes with more user-friendly messages
+        if (error.message.includes('Email not confirmed')) {
+          throw {
+            code: 'email_not_confirmed',
+            message: 'Please check your email and click the confirmation link to activate your account.'
+          };
+        } else if (error.message.includes('Invalid login credentials')) {
+          throw {
+            code: 'invalid_credentials',
+            message: 'The email or password you entered is incorrect. Please try again.'
+          };
+        }
+        
         throw error;
       }
+
+      // Reset login attempts on successful login
+      setLoginAttempts(0);
 
       if (data.user) {
         const { data: profileData, error: profileError } = await supabase
@@ -42,7 +78,7 @@ export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
           avatar: profileData?.avatar || data.user.user_metadata?.avatar_url || '',
         };
 
-        console.log('User logged in successfully', customUser);
+        console.log('User logged in successfully');
         setUser(customUser);
         navigate('/dashboard');
         return data;

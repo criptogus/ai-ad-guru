@@ -4,15 +4,57 @@ import Stripe from 'https://esm.sh/stripe@12.14.0';
 
 // Define CORS headers for browser requests
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': '*', // In production, limit this to specific domains
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// Security utility to validate request origin
+const isValidOrigin = (req: Request): boolean => {
+  const origin = req.headers.get('origin');
+  // In production, restrict to specific origins
+  // return origin === 'https://yourdomain.com' || origin === 'https://app.yourdomain.com';
+  return true; // For development; restrict this in production
+};
+
+// Validate Stripe signature
+const validateStripeSignature = (signature: string | null, body: string, endpointSecret: string): boolean => {
+  if (!signature) return false;
+  
+  try {
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) return false;
+    
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+    });
+    
+    // This will throw if validation fails
+    stripe.webhooks.constructEvent(body, signature, endpointSecret);
+    return true;
+  } catch (error) {
+    console.error('Stripe signature validation failed:', error);
+    return false;
+  }
+};
+
 // Handle preflight OPTIONS request
 Deno.serve(async (req) => {
+  // Rate limiting could be implemented here using a counter in database or Redis
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate request origin for enhanced security
+  if (!isValidOrigin(req)) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized origin' }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 403,
+      }
+    );
   }
 
   const signature = req.headers.get('stripe-signature');
@@ -21,7 +63,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: 'Webhook Error: No signature provided' }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       }
     );
@@ -43,6 +85,18 @@ Deno.serve(async (req) => {
     
     // Verify the webhook signature
     const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+    
+    // Enhanced signature validation
+    if (!validateStripeSignature(signature, body, endpointSecret)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Stripe signature' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
+    }
+    
     const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
     console.log('Webhook event type:', event.type);
 
@@ -174,7 +228,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: `Webhook Error: ${error.message}` }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       }
     );

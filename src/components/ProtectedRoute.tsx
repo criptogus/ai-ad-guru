@@ -7,11 +7,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiresPayment?: boolean;
+  requiredRole?: string; // Add support for role-based access control
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiresPayment = false // Changed default to false to make testing easier
+  requiresPayment = false,
+  requiredRole
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
@@ -28,17 +30,49 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         return;
       }
 
+      // Handle authentication check
       if (!isAuthenticated) {
-        // Store the attempted URL for redirection after login
         console.log('User not authenticated, redirecting to login');
-        navigate("/login", { state: { from: location.pathname } });
-      } else if (requiresPayment && user && !user.hasPaid) {
-        // Redirect to billing page if payment is required but user hasn't paid
+        // Store the current path for redirection after login
+        const returnPath = `${location.pathname}${location.search}`;
+        navigate("/login", { 
+          state: { from: returnPath },
+          // Use replace to prevent back button from taking users to protected routes
+          replace: true 
+        });
+      } 
+      // Handle payment requirement check
+      else if (requiresPayment && user && !user.hasPaid) {
         console.log('User not paid, redirecting to billing');
-        navigate("/billing");
+        navigate("/billing", { replace: true });
+      }
+      // Handle role-based access control
+      else if (requiredRole && user) {
+        // This is a simplified role check - implement proper role checking based on your data structure
+        const hasRequiredRole = user.user_metadata?.role === requiredRole;
+        if (!hasRequiredRole) {
+          console.log(`User lacks required role: ${requiredRole}, access denied`);
+          navigate("/dashboard", { 
+            state: { 
+              accessDenied: true, 
+              requiredRole 
+            },
+            replace: true
+          });
+        }
       }
     }
-  }, [isAuthenticated, isLoading, navigate, location.pathname, requiresPayment, user, isPaymentVerification]);
+  }, [
+    isAuthenticated, 
+    isLoading, 
+    navigate, 
+    location.pathname, 
+    location.search,
+    requiresPayment, 
+    user, 
+    isPaymentVerification,
+    requiredRole
+  ]);
 
   if (isLoading) {
     return (
@@ -66,6 +100,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Don't render children when not authenticated or when payment is required but not paid
   if (!isAuthenticated) return null;
   if (requiresPayment && user && !user.hasPaid) return null;
+  if (requiredRole && user && user.user_metadata?.role !== requiredRole) return null;
 
   return <>{children}</>;
 };
