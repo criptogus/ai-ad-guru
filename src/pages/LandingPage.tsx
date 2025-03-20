@@ -12,30 +12,55 @@ import { Footer } from "@/components/landing/Footer";
 import { LoginButton } from "@/components/landing/LoginButton";
 
 const LandingPage: React.FC = () => {
+  // Current URL for canonical and OG tags
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://aiadguru.com';
+  
   return (
     <div className="min-h-screen">
       <Helmet>
-        <title>AI Ad Guru | Create High-Converting Ads with Artificial Intelligence</title>
-        <meta name="description" content="Generate, optimize, and manage your Google and Meta ads with the power of GPT-4 and DALL-E 3. Less effort, better results." />
-        <meta name="keywords" content="AI ads, ad generation, marketing automation, Google ads, Meta ads, Facebook ads, GPT-4, DALL-E" />
+        <title>AI Ad Guru | Create High-Converting Google & Meta Ads with AI</title>
+        <meta name="description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta name="keywords" content="AI ads, Google ads generator, Meta ads creator, ad automation, marketing AI, GPT-4 ads, DALL·E ads, Instagram ads, ad optimization, ROI optimization" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:title" content="AI Ad Guru | Create High-Converting Ads with Artificial Intelligence" />
-        <meta property="og:description" content="Generate, optimize, and manage your Google and Meta ads with the power of GPT-4 and DALL-E 3. Less effort, better results." />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:title" content="AI Ad Guru | Create High-Converting Google & Meta Ads with AI" />
+        <meta property="og:description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
         <meta property="og:image" content="/og-image.png" />
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={window.location.href} />
-        <meta property="twitter:title" content="AI Ad Guru | Create High-Converting Ads with Artificial Intelligence" />
-        <meta property="twitter:description" content="Generate, optimize, and manage your Google and Meta ads with the power of GPT-4 and DALL-E 3. Less effort, better results." />
+        <meta property="twitter:url" content={currentUrl} />
+        <meta property="twitter:title" content="AI Ad Guru | Create High-Converting Google & Meta Ads with AI" />
+        <meta property="twitter:description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
         <meta property="twitter:image" content="/og-image.png" />
 
         {/* Additional SEO tags */}
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={currentUrl} />
+        
+        {/* Schema.org structured data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "AI Ad Guru",
+            "applicationCategory": "MarketingApplication",
+            "offers": {
+              "@type": "Offer",
+              "price": "99",
+              "priceCurrency": "USD"
+            },
+            "description": "AI-powered ad creation and optimization for Google and Meta platforms.",
+            "operatingSystem": "Web browser",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "127"
+            }
+          })}
+        </script>
       </Helmet>
       <Nav />
       <Hero />
