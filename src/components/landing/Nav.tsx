@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { ExternalLink } from "lucide-react";
 
 export const Nav: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,16 @@ export const Nav: React.FC = () => {
               ZD
             </div>
             <span className="ml-2 text-xl font-bold">Zero Digital Agency</span>
+          </div>
+          <div className="hidden md:flex items-center space-x-4 mr-4">
+            <a 
+              href="https://blog.zeroagency.ai/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-600 hover:text-brand-600 flex items-center"
+            >
+              Blog <ExternalLink className="ml-1 h-3 w-3" />
+            </a>
           </div>
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
