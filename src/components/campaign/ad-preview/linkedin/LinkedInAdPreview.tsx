@@ -20,6 +20,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   imageFormat = "square"
 }) => {
   const companyName = analysisResult?.companyName || "Company Name";
+  const callToAction = ad.description || "Learn More";
 
   return (
     <div className="border rounded-lg overflow-hidden bg-white shadow-sm max-w-md mx-auto">
@@ -47,7 +48,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
         <h3 className="font-semibold mb-1">{ad.headline || "Ad Headline"}</h3>
         <p className="text-sm text-gray-700 mb-2 line-clamp-3">{ad.primaryText || "Ad primary text goes here"}</p>
         <div className="flex items-center text-blue-600 text-sm">
-          <span>{ad.description || "Call to action"}</span>
+          <span>{callToAction}</span>
         </div>
       </div>
 

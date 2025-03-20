@@ -65,6 +65,13 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
     }));
   };
 
+  const handleImagePromptChange = (value: string) => {
+    setEditedAd(prev => ({
+      ...prev,
+      imagePrompt: value
+    }));
+  };
+
   return (
     <Card>
       <LinkedInAdCardHeader 
@@ -96,6 +103,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
               onHeadlineChange={handleHeadlineChange}
               onDescriptionChange={handleDescriptionChange}
               onPrimaryTextChange={handlePrimaryTextChange}
+              onImagePromptChange={handleImagePromptChange}
             />
           </div>
         </div>
