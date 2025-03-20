@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
                   href="https://blog.zeroagency.ai/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-gray-400 hover:text-white flex items-center"
+                  className="text-brand-400 font-medium hover:text-brand-300 transition-colors flex items-center bg-brand-900/40 px-2 py-1 rounded-md"
                 >
                   Blog <ExternalLink className="ml-1 h-3 w-3" />
                 </a>
