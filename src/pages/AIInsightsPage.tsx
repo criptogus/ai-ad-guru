@@ -1,25 +1,36 @@
 
-import React from "react";
+import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AIOptimizationCard, AIInsightsCard } from "@/components/analytics/insights";
-import { optimizationData, insightsData } from "@/components/analytics/data/mockData";
-import { ChevronRight } from "lucide-react";
+import { optimizationData } from "@/components/analytics/data/mockData";
+import { ChevronRight, RefreshCw } from "lucide-react";
 import { generateMockCampaigns } from "@/models/CampaignTypes";
 import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AIInsightsPage: React.FC = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   // For demonstration purposes showing last optimization: 24 hours ago
   const lastOptimizationTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString();
   
   // For demonstration purposes, using mock campaigns
   const campaigns = generateMockCampaigns(10);
   
+  // Handle refresh of AI insights
+  const handleRefreshInsights = () => {
+    setIsRefreshing(true);
+    // Simulate refresh delay
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 2000);
+  };
+  
   return (
     <AppLayout activePage="ai-insights">
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-medium text-foreground">AI Insights & Analytics</h1>
@@ -28,9 +39,15 @@ const AIInsightsPage: React.FC = () => {
             </p>
           </div>
           
-          <Button variant="outline" size="sm" className="gap-1">
-            View All Insights
-            <ChevronRight size={16} />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={handleRefreshInsights}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh Insights
           </Button>
         </div>
         
@@ -49,7 +66,10 @@ const AIInsightsPage: React.FC = () => {
                 budgetReallocations={optimizationData.budgetReallocation}
               />
               
-              <AIInsightsCard insights={insightsData} />
+              <AIInsightsCard 
+                isLoading={isRefreshing}
+                onRefresh={handleRefreshInsights}
+              />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
