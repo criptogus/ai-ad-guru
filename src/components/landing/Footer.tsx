@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 
 export const Footer: React.FC = () => {
   return (
@@ -9,37 +10,37 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Product</h3>
             <ul className="space-y-2">
-              <li><button className="text-gray-400 hover:text-white">Features</button></li>
-              <li><button className="text-gray-400 hover:text-white">Pricing</button></li>
-              <li><button className="text-gray-400 hover:text-white">Testimonials</button></li>
-              <li><button className="text-gray-400 hover:text-white">FAQ</button></li>
+              <li><Link to="/#features" className="text-gray-400 hover:text-white">Features</Link></li>
+              <li><Link to="/#pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
+              <li><Link to="/#testimonials" className="text-gray-400 hover:text-white">Testimonials</Link></li>
+              <li><Link to="/#faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-bold mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><button className="text-gray-400 hover:text-white">About</button></li>
-              <li><button className="text-gray-400 hover:text-white">Blog</button></li>
-              <li><button className="text-gray-400 hover:text-white">Careers</button></li>
-              <li><button className="text-gray-400 hover:text-white">Contact</button></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
+              <li><Link to="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-bold mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><button className="text-gray-400 hover:text-white">Documentation</button></li>
-              <li><button className="text-gray-400 hover:text-white">Help Center</button></li>
-              <li><button className="text-gray-400 hover:text-white">API</button></li>
-              <li><button className="text-gray-400 hover:text-white">Status</button></li>
+              <li><Link to="/documentation" className="text-gray-400 hover:text-white">Documentation</Link></li>
+              <li><Link to="/help" className="text-gray-400 hover:text-white">Help Center</Link></li>
+              <li><Link to="/api" className="text-gray-400 hover:text-white">API</Link></li>
+              <li><Link to="/status" className="text-gray-400 hover:text-white">Status</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-bold mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><button className="text-gray-400 hover:text-white">Privacy</button></li>
-              <li><button className="text-gray-400 hover:text-white">Terms</button></li>
-              <li><button className="text-gray-400 hover:text-white">Security</button></li>
-              <li><button className="text-gray-400 hover:text-white">Cookies</button></li>
+              <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
+              <li><Link to="/security-policy" className="text-gray-400 hover:text-white">Security Policy</Link></li>
+              <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>

@@ -22,6 +22,10 @@ import AIInsightsPage from "@/pages/AIInsightsPage";
 import UserRolesPage from "@/pages/UserRolesPage";
 import TestAdsPage from "@/pages/TestAdsPage";
 import NotFound from "@/pages/NotFound";
+import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
+import TermsOfServicePage from "@/pages/TermsOfServicePage";
+import SecurityPolicyPage from "@/pages/SecurityPolicyPage";
+import CookiePolicyPage from "@/pages/CookiePolicyPage";
 
 import "./App.css";
 
@@ -49,6 +53,12 @@ function App() {
               <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
               <Route path="/users" element={<ProtectedRoute><UserRolesPage /></ProtectedRoute>} />
               <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
+              
+              {/* Legal and Policy Pages */}
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+              <Route path="/security-policy" element={<SecurityPolicyPage />} />
+              <Route path="/cookie-policy" element={<CookiePolicyPage />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
