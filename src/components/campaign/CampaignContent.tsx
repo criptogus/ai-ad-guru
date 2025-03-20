@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
@@ -14,6 +14,7 @@ const CampaignContent: React.FC = () => {
   const { toast } = useToast();
   const auth = useAuth();
   const user = auth?.user;
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   
   const {
     currentStep,
@@ -57,7 +58,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
     handleGenerateMicrosoftAds,
-    handleGenerateImage,
+    handleGenerateImage: origHandleGenerateImage,
     imageGenerationError,
     clearImageGenerationError,
     createCampaign,
@@ -75,6 +76,16 @@ const CampaignContent: React.FC = () => {
     generateAdImage,
     setCampaignData
   );
+
+  // Wrap the handleGenerateImage to track the loading state
+  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+    setLoadingImageIndex(index);
+    try {
+      await origHandleGenerateImage(ad, index);
+    } finally {
+      setLoadingImageIndex(null);
+    }
+  };
 
   // Campaign flow (navigation and validation)
   const { handleBack, handleNextWrapper } = useCampaignFlow(
@@ -139,7 +150,7 @@ const CampaignContent: React.FC = () => {
     microsoftAds,
     isAnalyzing: isAnalyzing || isAnalyzingState,
     isGenerating,
-    loadingImageIndex: null,
+    loadingImageIndex,
     isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,

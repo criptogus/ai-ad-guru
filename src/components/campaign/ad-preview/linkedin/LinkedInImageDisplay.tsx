@@ -1,94 +1,67 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Image as ImageIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Image } from "lucide-react";
 
 interface LinkedInImageDisplayProps {
-  imageUrl: string | undefined;
-  isGeneratingImage: boolean;
+  imageUrl?: string;
+  isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
   imageFormat?: string;
 }
 
 const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
   imageUrl,
-  isGeneratingImage,
+  isGeneratingImage = false,
   onGenerateImage,
   imageFormat = "square"
 }) => {
-  const [imageError, setImageError] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  // Set dimensions based on format (square or landscape)
+  const imageClass = imageFormat === "square" 
+    ? "aspect-square w-full object-cover" 
+    : "aspect-[1200/627] w-full object-cover";
 
-  const handleImageLoad = () => {
-    setIsImageLoaded(true);
-    setImageError(false);
-  };
+  if (isGeneratingImage) {
+    return (
+      <div className={`bg-gray-100 flex items-center justify-center ${imageClass}`}>
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">Generating image...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleImageError = () => {
-    console.error("LinkedIn ad image failed to load:", imageUrl);
-    setImageError(true);
-    setIsImageLoaded(false);
-  };
-
-  const handleGenerateClick = async () => {
-    if (onGenerateImage) {
-      await onGenerateImage();
-    }
-  };
-
-  // Determine aspect ratio class based on format
-  const aspectRatioClass = imageFormat === "landscape" 
-    ? "aspect-[1200/627]" 
-    : "aspect-square";
+  if (!imageUrl && onGenerateImage) {
+    return (
+      <div className={`bg-gray-100 flex items-center justify-center ${imageClass}`}>
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <Image className="h-8 w-8 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">No image generated yet</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-4"
+            onClick={onGenerateImage}
+          >
+            Generate Image
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={cn("relative overflow-hidden bg-gray-100 rounded-md", aspectRatioClass)}>
-      {imageUrl && !imageError ? (
-        <>
-          {!isImageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          )}
-          <img
-            src={imageUrl}
-            alt="LinkedIn Ad"
-            className={cn(
-              "w-full h-full object-cover transition-opacity duration-300",
-              isImageLoaded ? "opacity-100" : "opacity-0"
-            )}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-          />
-        </>
+    <div className="overflow-hidden">
+      {imageUrl ? (
+        <img 
+          src={imageUrl} 
+          alt="LinkedIn Ad" 
+          className={imageClass} 
+        />
       ) : (
-        <div className="h-full w-full flex flex-col items-center justify-center p-4">
-          {isGeneratingImage ? (
-            <>
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-              <p className="text-sm text-gray-500 mt-2">Generating professional LinkedIn image...</p>
-            </>
-          ) : (
-            <>
-              <div className="bg-gray-200 rounded-full p-3">
-                <ImageIcon className="h-8 w-8 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                {imageError ? "Image failed to load" : "No image generated yet"}
-              </p>
-              {onGenerateImage && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGenerateClick}
-                  className="mt-3"
-                >
-                  {imageError ? "Retry" : "Generate Image"}
-                </Button>
-              )}
-            </>
-          )}
+        <div className={`bg-gray-100 flex items-center justify-center ${imageClass}`}>
+          <Image className="h-10 w-10 text-gray-400" />
         </div>
       )}
     </div>

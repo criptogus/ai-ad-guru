@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { LinkedInAd } from "@/contexts/CampaignContext";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
