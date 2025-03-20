@@ -15,6 +15,13 @@ export const Footer: React.FC = () => {
               <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
               <li><Link to="/testimonials" className="text-gray-400 hover:text-white">Testimonials</Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4">Company</h3>
+            <ul className="space-y-2">
+              <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
               <li>
                 <a 
                   href="https://blog.zeroagency.ai/" 
@@ -25,13 +32,6 @@ export const Footer: React.FC = () => {
                   Blog <ExternalLink className="ml-1 h-3 w-3" />
                 </a>
               </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
             </ul>
           </div>
           <div>
