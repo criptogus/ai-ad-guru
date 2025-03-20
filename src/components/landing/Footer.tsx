@@ -10,8 +10,8 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Product</h3>
             <ul className="space-y-2">
-              <li><Link to="/#features" className="text-gray-400 hover:text-white">Features</Link></li>
-              <li><Link to="/#pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
+              <li><Link to="/features" className="text-gray-400 hover:text-white">Features</Link></li>
+              <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
               <li><Link to="/#testimonials" className="text-gray-400 hover:text-white">Testimonials</Link></li>
               <li><Link to="/#faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
             </ul>
