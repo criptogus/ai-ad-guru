@@ -6,7 +6,8 @@ import {
   useGoogleAdActions, 
   useLinkedInAdActions,
   useMicrosoftAdActions,
-  useImageGenerationActions 
+  useImageGenerationActions,
+  useMetaAdActions
 } from "./adGeneration";
 
 // Helper to convert LinkedInAd to MetaAd format for compatibility
@@ -56,6 +57,13 @@ export const useAdGenerationActions = (
   // Convert LinkedInAds to MetaAds for compatibility
   const metaAds = convertToMetaAds(linkedInAds);
   
+  const { handleGenerateMetaAds } = useMetaAdActions(
+    analysisResult,
+    metaAds,
+    generateLinkedInAds, // Reuse LinkedIn ad generator for Meta/Instagram
+    setCampaignData
+  );
+  
   const { 
     handleGenerateImage,
     imageGenerationError,
@@ -70,6 +78,7 @@ export const useAdGenerationActions = (
   return {
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
+    handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateImage,
     imageGenerationError,

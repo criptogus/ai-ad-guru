@@ -9,6 +9,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
+import MetaAdsTab from "./ad-preview/MetaAdsTab";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
@@ -62,8 +63,9 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="google">Google Ads</TabsTrigger>
+            <TabsTrigger value="instagram">Instagram Ads</TabsTrigger>
             <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
             <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
           </TabsList>
@@ -79,7 +81,20 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             />
           </TabsContent>
           
-          {/* LinkedIn Ads Content - replacing Meta */}
+          {/* Instagram Ads Content */}
+          <TabsContent value="instagram">
+            <MetaAdsTab 
+              metaAds={metaAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateMetaAds={onGenerateMetaAds}
+              onGenerateImage={onGenerateImage}
+              onUpdateAd={onUpdateMetaAd}
+            />
+          </TabsContent>
+          
+          {/* LinkedIn Ads Content */}
           <TabsContent value="linkedin">
             <LinkedInAdsTab 
               linkedInAds={metaAds}
@@ -114,6 +129,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             onClick={onNext}
             disabled={
               (activeTab === "google" && googleAds.length === 0) || 
+              (activeTab === "instagram" && metaAds.length === 0) ||
               (activeTab === "linkedin" && metaAds.length === 0) ||
               (activeTab === "microsoft" && microsoftAds.length === 0)
             }

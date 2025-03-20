@@ -33,15 +33,15 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     <div className="pt-4 space-y-4">
       {!hasAds ? (
         <EmptyAdState 
-          platform="meta"
+          platform="instagram"
           onGenerate={onGenerateMetaAds}
           isGenerating={isGenerating}
         />
       ) : (
         <>
           <TabHeader 
-            title="Meta/Instagram Ads" 
-            description="Preview and customize your Meta and Instagram ads below."
+            title="Instagram Ads" 
+            description="Preview and customize your Instagram ads below. Each image generation costs 5 credits."
           />
           <AdsList 
             metaAds={metaAds}

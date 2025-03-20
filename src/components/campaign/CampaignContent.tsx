@@ -57,6 +57,7 @@ const CampaignContent: React.FC = () => {
     isAnalyzing,
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
+    handleGenerateMetaAds, // Added MetaAds handler
     handleGenerateMicrosoftAds,
     handleGenerateImage: origHandleGenerateImage,
     imageGenerationError,
@@ -71,7 +72,7 @@ const CampaignContent: React.FC = () => {
     linkedInAds,
     microsoftAds,
     generateGoogleAds,
-    generateMetaAds, // Use generateMetaAds for LinkedIn ads
+    generateMetaAds, // Use generateMetaAds for LinkedIn and Meta/Instagram ads
     generateGoogleAds, // Reuse for Microsoft ads
     generateAdImage,
     setCampaignData
@@ -125,6 +126,13 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds(newAds);
   };
 
+  const handleUpdateMetaAd = (index: number, updatedAd: any) => {
+    // Since we're reusing LinkedIn ads for Meta/Instagram ads, we're also reusing the update handler
+    const newAds = [...linkedInAds]; 
+    newAds[index] = updatedAd;
+    setLinkedInAds(newAds);
+  };
+
   const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
     const newAds = [...microsoftAds];
     newAds[index] = updatedAd;
@@ -132,6 +140,10 @@ const CampaignContent: React.FC = () => {
   };
 
   // Wrap handlers to return void to match expected type
+  const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
+    await handleGenerateMetaAds();
+  };
+
   const handleGenerateLinkedInAdsWrapper = async (): Promise<void> => {
     await handleGenerateLinkedInAds();
   };
@@ -154,11 +166,11 @@ const CampaignContent: React.FC = () => {
     isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
-    handleGenerateMetaAds: handleGenerateLinkedInAdsWrapper,
+    handleGenerateMetaAds: handleGenerateMetaAdsWrapper,
     handleGenerateMicrosoftAds: handleGenerateMicrosoftAdsWrapper,
     handleGenerateImage,
     handleUpdateGoogleAd,
-    handleUpdateMetaAd: handleUpdateLinkedInAd,
+    handleUpdateMetaAd: handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
     setCampaignData,
     handleBack,
