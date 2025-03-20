@@ -30,6 +30,8 @@ import FeaturesPage from "@/pages/FeaturesPage";
 import PricingPage from "@/pages/PricingPage";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
+import FAQPage from "@/pages/FAQPage";
+import TestimonialsPage from "@/pages/TestimonialsPage";
 
 import "./App.css";
 
@@ -52,6 +54,8 @@ function App() {
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
               
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />

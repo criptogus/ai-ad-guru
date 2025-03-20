@@ -12,8 +12,8 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/features" className="text-gray-400 hover:text-white">Features</Link></li>
               <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
-              <li><Link to="/#testimonials" className="text-gray-400 hover:text-white">Testimonials</Link></li>
-              <li><Link to="/#faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
+              <li><Link to="/testimonials" className="text-gray-400 hover:text-white">Testimonials</Link></li>
+              <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
             </ul>
           </div>
           <div>
@@ -58,4 +58,4 @@ export const Footer: React.FC = () => {
       </div>
     </footer>
   );
-};
+}
