@@ -106,20 +106,22 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
       case 4:
         return (
           <CampaignSummary
-            name={campaignData.name}
+            campaignName={campaignData.name}
             platform={campaignData.platform}
             budget={campaignData.budget}
+            budgetType={campaignData.budgetType || "daily"}
             startDate={campaignData.startDate}
             endDate={campaignData.endDate}
             objective={campaignData.objective}
             targetAudience={campaignData.targetAudience}
-            analysisResult={analysisResult}
+            websiteUrl={analysisResult?.websiteUrl || ""}
+            analysisResult={analysisResult!}
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
-            isCreating={isCreating}
-            onCreateCampaign={createCampaign}
-            onBack={handleBack}
+            onApprove={createCampaign}
+            onEdit={handleBack}
+            isLoading={isCreating}
           />
         );
       default:
