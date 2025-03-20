@@ -107,42 +107,90 @@ Deno.serve(async (req) => {
       };
     });
     
-    // 3. Generate insights using OpenAI
+    // 3. Generate insights using OpenAI with enhanced prompt
     const prompt = `
-      You are an AI marketing analyst specialized in digital advertising. Given the following campaign performance data, rank the campaigns from best to worst and provide actionable insights on how to improve lower-performing campaigns.
+      You are an advanced AI marketing analyst specialized in digital advertising. 
+      Analyze the following campaign performance data, and provide detailed insights 
+      and actionable recommendations to improve performance.
 
       📌 **Campaign Data:**
       ${JSON.stringify(campaignData, null, 2)}
 
-      🎯 **Expected Output:**
-      - Rank all campaigns from **highest to lowest performance**.
-      - Provide **key insights** on why the top campaigns are successful.
-      - Identify **issues in low-performing campaigns** and suggest **fixes**.
-      - Suggest **budget adjustments** and **A/B testing strategies**.
+      🎯 **Your Analysis Should Include:**
+      1. Rank all campaigns from **highest to lowest performance** based on ROI, CTR, and efficiency.
+      2. Identify **key performance trends** (improvements or declines).
+      3. Detect **anomalies** in the campaign data that need attention.
+      4. Provide **specific recommendations** for each underperforming campaign.
+      5. Suggest **budget reallocations** to maximize returns.
 
       Return a JSON response in this format:
       {
         "ranked_campaigns": [
-          { "campaign_id": "123", "name": "Campaign Name", "ranking": 1, "reason": "Best CTR and conversion rate", "category": "performance" },
-          { "campaign_id": "456", "name": "Campaign Name", "ranking": 2, "reason": "High impressions, but low CTR", "category": "creative" },
-          { "campaign_id": "789", "name": "Campaign Name", "ranking": 3, "reason": "Poor conversion rate, needs ad creative update", "category": "audience" }
+          { 
+            "campaign_id": "123", 
+            "name": "Campaign Name",
+            "ranking": 1, 
+            "reason": "Best CTR and conversion rate", 
+            "category": "performance" 
+          }
         ],
         "insights": [
-          { "campaign_id": "456", "title": "Improve Ad Creative", "description": "Your ad copy needs more compelling call-to-action elements.", "category": "creative" },
-          { "campaign_id": "789", "title": "Budget Reallocation Needed", "description": "Increase budget for top performers, pause low ROI ads", "category": "budget" }
+          { 
+            "campaign_id": "456", 
+            "title": "Improve Ad Creative", 
+            "description": "Your ad copy needs more compelling call-to-action elements.", 
+            "category": "creative" 
+          },
+          { 
+            "campaign_id": "789", 
+            "title": "Budget Reallocation Needed", 
+            "description": "Increase budget for top performers, pause low ROI ads", 
+            "category": "budget" 
+          },
+          { 
+            "campaign_id": "all", 
+            "title": "Overall Performance Trend", 
+            "description": "CTR has improved by 15% across all campaigns in the last week", 
+            "category": "performance" 
+          }
+        ],
+        "recommendations": [
+          {
+            "campaign_id": "456",
+            "action": "Pause Campaign",
+            "reason": "High CPC with low conversions",
+            "priority": "high",
+            "expected_impact": "Save $X in ad spend"
+          },
+          {
+            "campaign_id": "123",
+            "action": "Increase Budget",
+            "reason": "Strong ROI, room for scaling",
+            "priority": "medium",
+            "expected_impact": "Potential 20% increase in conversions"
+          },
+          {
+            "campaign_id": "789",
+            "action": "A/B Test Headlines",
+            "reason": "CTR below benchmark",
+            "priority": "medium",
+            "expected_impact": "Potential 15% increase in CTR"
+          }
         ]
       }
 
-      Category should be one of: "performance", "budget", "creative", "audience", or "technical".
-      Keep insights action-oriented and specific. No more than 5 insights total.
+      Categories should be one of: "performance", "budget", "creative", "audience", or "technical".
+      For any insights related to all campaigns, use "all" as the campaign_id.
+      Priority should be "high", "medium", or "low".
+      Make all insights action-oriented, specific, and data-driven.
     `;
     
-    console.log('Sending prompt to OpenAI...');
+    console.log('Sending enhanced prompt to OpenAI...');
     
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // Using the more capable model
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 1200,
+      max_tokens: 1500,
       temperature: 0.7,
     });
     
@@ -162,11 +210,12 @@ Deno.serve(async (req) => {
       throw new Error('Failed to parse AI response');
     }
     
-    // 5. Return the insights
+    // 5. Return the enhanced insights and recommendations
     return new Response(
       JSON.stringify({
         ranked_campaigns: aiResponse.ranked_campaigns || [],
-        insights: aiResponse.insights || []
+        insights: aiResponse.insights || [],
+        recommendations: aiResponse.recommendations || []
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

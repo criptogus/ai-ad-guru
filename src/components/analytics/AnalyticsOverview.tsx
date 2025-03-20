@@ -10,7 +10,14 @@ import {
   optimizationData
 } from "./data/mockData";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { 
+  RefreshCw, 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  CheckCircle,
+  BarChart
+} from "lucide-react";
 
 interface AnalyticsOverviewProps {
   campaigns: Campaign[];
@@ -32,6 +39,14 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
   
   const totalSpend = campaigns.reduce((total, campaign) => 
     total + (campaign.performance?.spend || 0), 0);
+
+  // Calculate weekly change (mock data for demonstration)
+  const weeklyChange = {
+    impressions: 12.5,
+    clicks: 8.3,
+    ctr: -2.1,
+    spend: 5.7
+  };
 
   // For demonstration purposes showing last optimization: 24 hours ago
   const lastOptimizationTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString();
@@ -64,6 +79,34 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
         </Button>
       </div>
       
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard 
+          title="Impressions" 
+          value={totalImpressions.toLocaleString()} 
+          change={weeklyChange.impressions} 
+          icon={<BarChart className="h-4 w-4" />}
+        />
+        <MetricCard 
+          title="Clicks" 
+          value={totalClicks.toLocaleString()} 
+          change={weeklyChange.clicks} 
+          icon={<BarChart className="h-4 w-4" />}
+        />
+        <MetricCard 
+          title="CTR" 
+          value={`${avgCTR.toFixed(2)}%`} 
+          change={weeklyChange.ctr} 
+          icon={<BarChart className="h-4 w-4" />}
+        />
+        <MetricCard 
+          title="Ad Spend" 
+          value={`$${totalSpend.toFixed(2)}`} 
+          change={weeklyChange.spend} 
+          icon={<BarChart className="h-4 w-4" />}
+        />
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-6">
@@ -88,6 +131,30 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
               <PlatformComparisonChart data={platformComparisonData} />
             </CardContent>
           </Card>
+          
+          {/* Campaign Health Card */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Campaign Health</CardTitle>
+              <CardDescription>AI-detected issues and anomalies</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <HealthItem 
+                  status="success" 
+                  message="Overall campaign performance is strong with 12.5% higher CTR than industry average" 
+                />
+                <HealthItem 
+                  status="warning" 
+                  message="Meta campaign 'Summer Sale' shows declining CTR over the past 3 days" 
+                />
+                <HealthItem 
+                  status="error" 
+                  message="Google campaign 'Product Launch' has high CPC with low conversion rate" 
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column */}
@@ -107,6 +174,72 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
           />
         </div>
       </div>
+    </div>
+  );
+};
+
+// Metric Card Component
+interface MetricCardProps {
+  title: string;
+  value: string;
+  change: number;
+  icon: React.ReactNode;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon }) => {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+            <div className="text-2xl font-medium mb-1">{value}</div>
+          </div>
+          <div className="p-2 rounded-full bg-muted">{icon}</div>
+        </div>
+        <div className="flex items-center mt-2">
+          {change >= 0 ? (
+            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+          ) : (
+            <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+          )}
+          <span className={`text-xs ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {change >= 0 ? '+' : ''}{change}% from last week
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Health Item Component
+interface HealthItemProps {
+  status: 'success' | 'warning' | 'error';
+  message: string;
+}
+
+const HealthItem: React.FC<HealthItemProps> = ({ status, message }) => {
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case 'error':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
+    }
+  };
+  
+  return (
+    <div className={`flex p-3 rounded-md ${
+      status === 'success' ? 'bg-green-50 border-green-200' : 
+      status === 'warning' ? 'bg-amber-50 border-amber-200' : 
+      'bg-red-50 border-red-200'
+    } border`}>
+      <div className="mt-0.5 mr-3">{getStatusIcon()}</div>
+      <p className="text-sm">{message}</p>
     </div>
   );
 };
