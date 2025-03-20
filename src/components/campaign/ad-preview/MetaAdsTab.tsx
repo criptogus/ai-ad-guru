@@ -33,7 +33,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     <div className="pt-4 space-y-4">
       {!hasAds ? (
         <EmptyAdState 
-          platform="instagram"
+          platform="meta"
           onGenerate={onGenerateMetaAds}
           isGenerating={isGenerating}
         />

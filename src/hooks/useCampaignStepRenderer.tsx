@@ -66,14 +66,6 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             analysisResult={analysisResult}
             isAnalyzing={isAnalyzing}
             onAnalyzeWebsite={handleWebsiteAnalysis}
-            onUpdateAnalysisResult={(updatedResult) => {
-              setCampaignData({
-                ...campaignData,
-                targetAudience: updatedResult.targetAudience,
-                description: updatedResult.businessDescription,
-                businessInfo: updatedResult
-              });
-            }}
             onNext={() => handleNextWrapper({ 
               websiteUrl: analysisResult?.websiteUrl || "",
               targetAudience: analysisResult?.targetAudience || "",
@@ -84,6 +76,7 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
       case 2:
         return (
           <CampaignSetupStep
+            analysisResult={analysisResult!}
             campaignData={campaignData}
             onUpdateCampaignData={setCampaignData}
             onNext={handleNextWrapper}
@@ -113,7 +106,13 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
       case 4:
         return (
           <CampaignSummary
-            campaignData={campaignData}
+            name={campaignData.name}
+            platform={campaignData.platform}
+            budget={campaignData.budget}
+            startDate={campaignData.startDate}
+            endDate={campaignData.endDate}
+            objective={campaignData.objective}
+            targetAudience={campaignData.targetAudience}
             analysisResult={analysisResult}
             googleAds={googleAds}
             metaAds={metaAds}

@@ -44,6 +44,7 @@ export const useCampaignActions = (
   const {
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
+    handleGenerateMetaAds, // Make sure this is included
     handleGenerateMicrosoftAds,
     handleGenerateImage,
     imageGenerationError,
@@ -76,6 +77,7 @@ export const useCampaignActions = (
     isAnalyzing,
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
+    handleGenerateMetaAds, // Make sure to return this
     handleGenerateMicrosoftAds,
     handleGenerateImage,
     imageGenerationError,
