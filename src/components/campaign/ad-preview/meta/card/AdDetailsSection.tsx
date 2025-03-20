@@ -4,7 +4,6 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import AdMetaData from "./AdMetaData";
 
 interface AdDetailsSectionProps {
   ad: MetaAd;
@@ -116,7 +115,10 @@ const AdDetailsSection: React.FC<AdDetailsSectionProps> = ({
         )}
       </div>
       
-      <AdMetaData />
+      <div className="mt-2 text-xs text-gray-500">
+        <p>Ad ID: {ad.headline?.substring(0, 8)}</p>
+        <p>Last modified: {new Date().toLocaleDateString()}</p>
+      </div>
     </div>
   );
 };
