@@ -24,13 +24,16 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   onGenerateImage,
   onUpdateAd
 }) => {
+  const hasAds = linkedInAds && linkedInAds.length > 0;
+  
   return (
     <div className="pt-4 space-y-4">
-      {(!linkedInAds || linkedInAds.length === 0) ? (
+      {!hasAds ? (
         <EmptyAdState 
           platform="linkedin"
           onGenerate={onGenerateLinkedInAds}
           isGenerating={isGenerating}
+          buttonText="Generate LinkedIn Ads"
         />
       ) : (
         <div className="space-y-6">

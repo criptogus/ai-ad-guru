@@ -26,6 +26,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [localAd, setLocalAd] = useState<MetaAd>(ad);
+  const isLoading = loadingImageIndex === index;
   
   useEffect(() => {
     setLocalAd(ad);
@@ -64,10 +65,10 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   useEffect(() => {
     console.log(`MetaAdCard ${index} rendering with:`, {
       adImageUrl: localAd.imageUrl,
-      isLoading: loadingImageIndex === index,
+      isLoading,
       isEditing,
     });
-  }, [localAd, loadingImageIndex, index, isEditing]);
+  }, [localAd, isLoading, index, isEditing]);
 
   return (
     <Card className="overflow-hidden">
@@ -97,6 +98,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
             <AdDetailsSection 
               ad={localAd} 
               onUpdate={handleUpdateAd}
+              isEditing={isEditing}
             />
           </div>
         </div>

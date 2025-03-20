@@ -36,6 +36,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
           platform="meta"
           onGenerate={onGenerateMetaAds}
           isGenerating={isGenerating}
+          buttonText="Generate Instagram Ads"
         />
       ) : (
         <>

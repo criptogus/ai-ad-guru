@@ -1,5 +1,5 @@
 
-import { WebsiteAnalysisResult, GoogleAd, LinkedInAd, MicrosoftAd } from "./types.ts";
+import { WebsiteAnalysisResult, GoogleAd, LinkedInAd, MicrosoftAd, MetaAd } from "./types.ts";
 import { generateFallbackGoogleAds as googleFallbacks } from "./fallbacks/googleAdsFallbacks.ts";
 
 // Parse raw JSON response from OpenAI into structured ad objects
@@ -10,6 +10,8 @@ export const parseAdResponse = (responseText: string | null, platform: string, c
       ? generateFallbackGoogleAds(campaignData)
       : platform === 'linkedin'
       ? generateFallbackLinkedInAds(campaignData)
+      : platform === 'meta'
+      ? generateFallbackMetaAds(campaignData)
       : generateFallbackMicrosoftAds(campaignData);
   }
   
@@ -23,6 +25,8 @@ export const parseAdResponse = (responseText: string | null, platform: string, c
         ? generateFallbackGoogleAds(campaignData)
         : platform === 'linkedin'
         ? generateFallbackLinkedInAds(campaignData)
+        : platform === 'meta'
+        ? generateFallbackMetaAds(campaignData)
         : generateFallbackMicrosoftAds(campaignData);
     }
     
@@ -35,12 +39,14 @@ export const parseAdResponse = (responseText: string | null, platform: string, c
         ? generateFallbackGoogleAds(campaignData)
         : platform === 'linkedin'
         ? generateFallbackLinkedInAds(campaignData)
+        : platform === 'meta'
+        ? generateFallbackMetaAds(campaignData)
         : generateFallbackMicrosoftAds(campaignData);
     }
 
-    // For LinkedIn ads, validate and clean
-    if (platform === 'linkedin') {
-      return validateAndCleanLinkedInAds(parsedData, campaignData);
+    // For LinkedIn and Meta ads, validate and clean
+    if (platform === 'linkedin' || platform === 'meta') {
+      return validateAndCleanSocialAds(parsedData, campaignData);
     }
     
     // For Google and Microsoft ads, validate headlines and descriptions
@@ -62,6 +68,8 @@ export const parseAdResponse = (responseText: string | null, platform: string, c
       ? generateFallbackGoogleAds(campaignData)
       : platform === 'linkedin'
       ? generateFallbackLinkedInAds(campaignData)
+      : platform === 'meta'
+      ? generateFallbackMetaAds(campaignData)
       : generateFallbackMicrosoftAds(campaignData);
   }
 };
@@ -71,8 +79,8 @@ export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult): 
   return googleFallbacks(campaignData);
 };
 
-// Validate and clean LinkedIn ads
-const validateAndCleanLinkedInAds = (parsedData: any[], campaignData: WebsiteAnalysisResult): LinkedInAd[] => {
+// Validate and clean LinkedIn and Meta ads
+const validateAndCleanSocialAds = (parsedData: any[], campaignData: WebsiteAnalysisResult): LinkedInAd[] | MetaAd[] => {
   return parsedData.map((ad: any) => {
     return {
       headline: ad.headline?.substring(0, 150) || `${campaignData.companyName} - Professional Solutions`,
@@ -107,6 +115,34 @@ export const generateFallbackLinkedInAds = (campaignData: WebsiteAnalysisResult)
       primaryText: `What separates industry leaders from the competition? The right tools, strategies, and partners. ${companyName} helps businesses reach their full potential.`,
       description: `With years of experience serving ${targetAudience}, we understand your unique challenges. Our team of experts is ready to provide customized solutions that drive real results. Schedule a consultation today to discover how we can support your business goals.`,
       imagePrompt: `Professional team of diverse business experts representing ${companyName} in a corporate setting`
+    }
+  ];
+};
+
+// Generate fallback Meta ads (Instagram)
+export const generateFallbackMetaAds = (campaignData: WebsiteAnalysisResult): MetaAd[] => {
+  const { companyName, businessDescription = "", targetAudience = "customers" } = campaignData;
+  
+  const shortDesc = businessDescription.substring(0, 100);
+  
+  return [
+    {
+      headline: `Discover ${companyName}`,
+      primaryText: `Ready to transform your experience? ${companyName} offers innovative solutions designed specifically for ${targetAudience}. Swipe up to learn more about our services that are changing the industry.`,
+      description: `Learn More Today`,
+      imagePrompt: `Vibrant lifestyle image showing happy customers using ${companyName} products or services in a modern setting with natural lighting`
+    },
+    {
+      headline: `${companyName} - Elevate Your Experience`,
+      primaryText: `Don't settle for ordinary when you can have extraordinary. ${shortDesc} Our customers love the results they're getting - and you will too!`,
+      description: `See the Difference`,
+      imagePrompt: `Instagram-style aspirational image related to ${companyName}'s industry with eye-catching colors and professional composition`
+    },
+    {
+      headline: `The ${companyName} Advantage`,
+      primaryText: `What makes us different? It's our commitment to quality, innovation, and customer satisfaction. Join thousands of satisfied customers who have made the smart choice.`,
+      description: `Join Us Today`,
+      imagePrompt: `Polished, professional product shot or service visualization for ${companyName} with minimal background and perfect lighting`
     }
   ];
 };

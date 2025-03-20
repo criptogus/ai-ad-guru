@@ -20,13 +20,16 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   onGenerateGoogleAds,
   onUpdateAd
 }) => {
+  const hasAds = googleAds && googleAds.length > 0;
+  
   return (
     <div className="pt-4 space-y-4">
-      {(!googleAds || googleAds.length === 0) ? (
+      {!hasAds ? (
         <EmptyAdState 
           platform="google"
           onGenerate={onGenerateGoogleAds}
           isGenerating={isGenerating}
+          buttonText="Generate Google Ads"
         />
       ) : (
         <div className="space-y-6">

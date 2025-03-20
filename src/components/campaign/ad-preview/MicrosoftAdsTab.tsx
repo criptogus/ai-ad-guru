@@ -20,13 +20,16 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   onGenerateMicrosoftAds,
   onUpdateAd
 }) => {
+  const hasAds = microsoftAds && microsoftAds.length > 0;
+  
   return (
     <div className="pt-4 space-y-4">
-      {(!microsoftAds || microsoftAds.length === 0) ? (
+      {!hasAds ? (
         <EmptyAdState 
           platform="microsoft"
           onGenerate={onGenerateMicrosoftAds}
           isGenerating={isGenerating}
+          buttonText="Generate Microsoft Ads"
         />
       ) : (
         <div className="space-y-6">
