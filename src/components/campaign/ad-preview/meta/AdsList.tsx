@@ -2,7 +2,7 @@
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAdCard } from "./card";
+import AdsList from "./ads-list/AdsList";
 
 interface AdsListProps {
   metaAds: MetaAd[];
@@ -12,28 +12,9 @@ interface AdsListProps {
   onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
 }
 
-const AdsList: React.FC<AdsListProps> = ({
-  metaAds,
-  analysisResult,
-  loadingImageIndex,
-  onGenerateImage,
-  onUpdateAd
-}) => {
-  return (
-    <div className="space-y-6">
-      {metaAds.map((ad, index) => (
-        <MetaAdCard 
-          key={index} 
-          ad={ad} 
-          index={index} 
-          analysisResult={analysisResult}
-          loadingImageIndex={loadingImageIndex}
-          onGenerateImage={() => onGenerateImage(ad, index)}
-          onUpdate={onUpdateAd ? (updatedAd) => onUpdateAd(index, updatedAd) : undefined}
-        />
-      ))}
-    </div>
-  );
+// This is now just a wrapper for the refactored component
+const AdsListWrapper: React.FC<AdsListProps> = (props) => {
+  return <AdsList {...props} />;
 };
 
-export default AdsList;
+export default AdsListWrapper;
