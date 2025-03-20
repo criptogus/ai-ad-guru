@@ -4,86 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { securityMonitor } from '@/middleware/securityMiddleware';
-
-interface LoginAttemptTracker {
-  attempts: Record<string, { count: number; lastAttempt: number }>;
-  maxAttempts: number;
-  lockoutPeriod: number; // in milliseconds
-  increment: (email: string) => void;
-  isLocked: (email: string) => boolean;
-  reset: (email: string) => void;
-  cleanupOldEntries: () => void; // Added missing property
-}
+import { loginAttemptTracker } from '@/utils/auth/loginAttemptTracker';
+import { loginWithEmail } from '@/services/auth/loginService';
 
 export const useLoginActions = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Initialize the login attempt tracker
-  const loginAttemptTracker: LoginAttemptTracker = {
-    attempts: {},
-    maxAttempts: 5,
-    lockoutPeriod: 15 * 60 * 1000, // 15 minutes
-    
-    increment(email: string) {
-      const now = Date.now();
-      
-      if (!this.attempts[email]) {
-        this.attempts[email] = { count: 0, lastAttempt: now };
-      }
-      
-      this.attempts[email].count += 1;
-      this.attempts[email].lastAttempt = now;
-      
-      // Log the attempts for security monitoring
-      securityMonitor.trackAuthEvent(email, 'failed_login', { 
-        attemptCount: this.attempts[email].count 
-      });
-    },
-    
-    isLocked(email: string) {
-      if (!this.attempts[email]) return false;
-      
-      const { count, lastAttempt } = this.attempts[email];
-      const now = Date.now();
-      
-      // If the lockout period has passed, reset the counter
-      if (count >= this.maxAttempts && now - lastAttempt > this.lockoutPeriod) {
-        this.reset(email);
-        return false;
-      }
-      
-      return count >= this.maxAttempts;
-    },
-    
-    reset(email: string) {
-      if (this.attempts[email]) {
-        delete this.attempts[email];
-      }
-    },
-    
-    cleanupOldEntries() {
-      const now = Date.now();
-      const staleTime = 24 * 60 * 60 * 1000; // 24 hours
-      
-      Object.keys(this.attempts).forEach(email => {
-        if (now - this.attempts[email].lastAttempt > staleTime) {
-          delete this.attempts[email];
-        }
-      });
-    }
-  };
-  
-  // Cleanup old entries periodically to prevent memory leaks
-  setInterval(() => {
-    loginAttemptTracker.cleanupOldEntries();
-  }, 60 * 60 * 1000); // Every hour
-  
   const handleLogin = async (email: string, password: string) => {
-    // Trim and validate inputs
-    email = email.trim().toLowerCase();
-    
+    // Validate inputs
     if (!email || !password) {
       toast({
         title: 'Missing information',
@@ -93,11 +23,17 @@ export const useLoginActions = () => {
       return;
     }
     
+    // Trim and normalize email
+    email = email.trim().toLowerCase();
+    
     // Check if the account is locked due to too many failed attempts
     if (loginAttemptTracker.isLocked(email)) {
+      const timeRemaining = loginAttemptTracker.getTimeRemaining(email);
+      const minutesRemaining = timeRemaining ? Math.ceil(timeRemaining / 60000) : 15;
+      
       toast({
         title: 'Account Temporarily Locked',
-        description: 'Too many failed login attempts. Please try again later or reset your password.',
+        description: `Too many failed login attempts. Please try again in ${minutesRemaining} ${minutesRemaining === 1 ? 'minute' : 'minutes'} or reset your password.`,
         variant: 'destructive',
       });
       
@@ -111,7 +47,7 @@ export const useLoginActions = () => {
     setIsSubmitting(true);
     
     try {
-      // Login with Supabase
+      // Try to login with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -121,11 +57,19 @@ export const useLoginActions = () => {
         // Increment failed login attempts
         loginAttemptTracker.increment(email);
         
-        // Display appropriate error message
+        const remainingAttempts = loginAttemptTracker.getRemainingAttempts(email);
+        
+        // Display appropriate error message based on remaining attempts
         if (loginAttemptTracker.isLocked(email)) {
           toast({
             title: 'Account Temporarily Locked',
             description: 'Too many failed login attempts. Please try again later or reset your password.',
+            variant: 'destructive',
+          });
+        } else if (remainingAttempts <= 2) {
+          toast({
+            title: 'Login Failed',
+            description: `Invalid email or password. ${remainingAttempts} attempt${remainingAttempts === 1 ? '' : 's'} remaining before your account is temporarily locked.`,
             variant: 'destructive',
           });
         } else {
@@ -160,9 +104,10 @@ export const useLoginActions = () => {
       });
       
       navigate('/dashboard');
-    } catch (generalError) {
+    } catch (generalError: any) {
       console.error('Unexpected error during login:', generalError);
       
+      // Handle unexpected errors gracefully
       toast({
         title: 'An unexpected error occurred',
         description: 'Please try again later. If the problem persists, contact support.',
