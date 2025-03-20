@@ -1,231 +1,184 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CustomUser } from '@/types/auth';
-import { sanitizeInput } from '@/utils/security';
-import { securityConfig } from '@/config/security';
+import { useNavigate } from 'react-router-dom';
+import { securityMonitor } from '@/middleware/securityMiddleware';
 
-// Create a module-level tracking for login attempts that persists between renders
-// In a real app, this should be stored in local storage or a backend service with expiration
-type LoginAttemptTracker = {
-  attempts: Record<string, { count: number, lastAttempt: number }>;
+interface LoginAttemptTracker {
+  attempts: Record<string, { count: number; lastAttempt: number }>;
+  maxAttempts: number;
+  lockoutPeriod: number; // in milliseconds
+  increment: (email: string) => void;
   isLocked: (email: string) => boolean;
-  recordAttempt: (email: string) => void;
-  resetAttempts: (email: string) => void;
-  cleanupOldEntries: () => void; // Added this property to the type definition
-};
+  reset: (email: string) => void;
+  cleanupOldEntries: () => void; // Added missing property
+}
 
-const loginAttemptTracker: LoginAttemptTracker = {
-  attempts: {},
-  
-  isLocked(email: string): boolean {
-    const entry = this.attempts[email];
-    if (!entry) return false;
-    
-    const { count, lastAttempt } = entry;
-    const now = Date.now();
-    
-    // Check if lockout period has expired
-    if (count >= securityConfig.auth.maxLoginAttempts) {
-      const lockoutExpiry = lastAttempt + securityConfig.auth.lockoutDuration;
-      if (now < lockoutExpiry) {
-        // Still locked
-        return true;
-      } else {
-        // Lockout expired, reset attempts
-        this.resetAttempts(email);
-        return false;
-      }
-    }
-    
-    return false;
-  },
-  
-  recordAttempt(email: string): void {
-    const now = Date.now();
-    if (!this.attempts[email]) {
-      this.attempts[email] = { count: 1, lastAttempt: now };
-    } else {
-      this.attempts[email].count += 1;
-      this.attempts[email].lastAttempt = now;
-    }
-    
-    // Clean up old entries to prevent memory leaks
-    this.cleanupOldEntries();
-  },
-  
-  resetAttempts(email: string): void {
-    delete this.attempts[email];
-  },
-  
-  cleanupOldEntries(): void {
-    const now = Date.now();
-    const expiryTime = 24 * 60 * 60 * 1000; // 24 hours
-    
-    Object.keys(this.attempts).forEach(email => {
-      const lastAttempt = this.attempts[email].lastAttempt;
-      if (now - lastAttempt > expiryTime) {
-        delete this.attempts[email];
-      }
-    });
-  }
-};
-
-export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
-  const [isLoading, setIsLoading] = useState(false);
+export const useLoginActions = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Cleanup old login attempt records periodically
-  useEffect(() => {
-    const cleanup = () => {
-      loginAttemptTracker.cleanupOldEntries();
-    };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Initialize the login attempt tracker
+  const loginAttemptTracker: LoginAttemptTracker = {
+    attempts: {},
+    maxAttempts: 5,
+    lockoutPeriod: 15 * 60 * 1000, // 15 minutes
     
-    // Run cleanup every 10 minutes
-    const intervalId = setInterval(cleanup, 10 * 60 * 1000);
-    
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      // Sanitize and normalize email input
-      const sanitizedEmail = sanitizeInput(email).trim().toLowerCase();
+    increment(email: string) {
+      const now = Date.now();
       
-      // Check if this account is locked due to too many failed attempts
-      if (loginAttemptTracker.isLocked(sanitizedEmail)) {
-        const remainingLockTime = Math.ceil(
-          (loginAttemptTracker.attempts[sanitizedEmail].lastAttempt + 
-           securityConfig.auth.lockoutDuration - Date.now()) / 60000
-        );
-        
-        toast({
-          title: "Account Temporarily Locked",
-          description: `Too many failed login attempts. Please try again in ${remainingLockTime} minutes.`,
-          variant: "destructive",
-        });
-        return null;
+      if (!this.attempts[email]) {
+        this.attempts[email] = { count: 0, lastAttempt: now };
       }
-
-      setIsLoading(true);
-      console.log('Attempting to sign in with email:', sanitizedEmail);
       
+      this.attempts[email].count += 1;
+      this.attempts[email].lastAttempt = now;
+      
+      // Log the attempts for security monitoring
+      securityMonitor.trackAuthEvent(email, 'failed_login', { 
+        attemptCount: this.attempts[email].count 
+      });
+    },
+    
+    isLocked(email: string) {
+      if (!this.attempts[email]) return false;
+      
+      const { count, lastAttempt } = this.attempts[email];
+      const now = Date.now();
+      
+      // If the lockout period has passed, reset the counter
+      if (count >= this.maxAttempts && now - lastAttempt > this.lockoutPeriod) {
+        this.reset(email);
+        return false;
+      }
+      
+      return count >= this.maxAttempts;
+    },
+    
+    reset(email: string) {
+      if (this.attempts[email]) {
+        delete this.attempts[email];
+      }
+    },
+    
+    cleanupOldEntries() {
+      const now = Date.now();
+      const staleTime = 24 * 60 * 60 * 1000; // 24 hours
+      
+      Object.keys(this.attempts).forEach(email => {
+        if (now - this.attempts[email].lastAttempt > staleTime) {
+          delete this.attempts[email];
+        }
+      });
+    }
+  };
+  
+  // Cleanup old entries periodically to prevent memory leaks
+  setInterval(() => {
+    loginAttemptTracker.cleanupOldEntries();
+  }, 60 * 60 * 1000); // Every hour
+  
+  const handleLogin = async (email: string, password: string) => {
+    // Trim and validate inputs
+    email = email.trim().toLowerCase();
+    
+    if (!email || !password) {
+      toast({
+        title: 'Missing information',
+        description: 'Please provide both email and password.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Check if the account is locked due to too many failed attempts
+    if (loginAttemptTracker.isLocked(email)) {
+      toast({
+        title: 'Account Temporarily Locked',
+        description: 'Too many failed login attempts. Please try again later or reset your password.',
+        variant: 'destructive',
+      });
+      
+      securityMonitor.trackSuspiciousActivity('unknown', 'login_attempt_during_lockout', { 
+        email 
+      });
+      
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Login with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
+        email,
         password,
       });
-
+      
       if (error) {
-        console.error('Login error:', error);
+        // Increment failed login attempts
+        loginAttemptTracker.increment(email);
         
-        // Record failed login attempt
-        loginAttemptTracker.recordAttempt(sanitizedEmail);
-        
-        // Check if we've reached the maximum attempts
-        if (loginAttemptTracker.attempts[sanitizedEmail]?.count >= securityConfig.auth.maxLoginAttempts) {
+        // Display appropriate error message
+        if (loginAttemptTracker.isLocked(email)) {
           toast({
-            title: "Account Temporarily Locked",
-            description: `Too many failed login attempts. Please try again in ${securityConfig.auth.lockoutDuration / 60000} minutes.`,
-            variant: "destructive",
+            title: 'Account Temporarily Locked',
+            description: 'Too many failed login attempts. Please try again later or reset your password.',
+            variant: 'destructive',
           });
-          return null;
+        } else {
+          toast({
+            title: 'Login Failed',
+            description: error.message || 'Invalid email or password',
+            variant: 'destructive',
+          });
         }
         
-        // Handle specific error codes with more user-friendly messages
-        if (error.message.includes('Email not confirmed')) {
-          throw {
-            code: 'email_not_confirmed',
-            message: 'Please check your email and click the confirmation link to activate your account.'
-          };
-        } else if (error.message.includes('Invalid login credentials')) {
-          throw {
-            code: 'invalid_credentials',
-            message: 'The email or password you entered is incorrect. Please try again.'
-          };
-        }
+        securityMonitor.trackAuthEvent(email, 'failed_login', {
+          reason: error.message
+        });
         
-        throw error;
+        return;
       }
-
-      // Reset login attempts on successful login
-      loginAttemptTracker.resetAttempts(sanitizedEmail);
-
+      
+      // On successful login, reset any failed attempts
+      loginAttemptTracker.reset(email);
+      
+      // Log successful login
       if (data.user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError);
-        }
-
-        const customUser: CustomUser = {
-          ...data.user,
-          name: profileData?.name || data.user.user_metadata?.name || '',
-          credits: profileData?.credits || data.user.user_metadata?.credits || 0,
-          hasPaid: profileData?.has_paid || data.user.user_metadata?.has_paid || false,
-          avatar: profileData?.avatar || data.user.user_metadata?.avatar_url || '',
-        };
-
-        console.log('User logged in successfully');
-        setUser(customUser);
-        navigate('/dashboard');
-        return data;
+        securityMonitor.trackAuthEvent(data.user.id, 'login', {
+          method: 'password'
+        });
       }
-    } catch (error: any) {
+      
+      // Navigate to dashboard on success
       toast({
-        title: "Login Failed",
-        description: error.message || "There was a problem signing in",
-        variant: "destructive",
+        title: 'Welcome back!',
+        description: 'You have successfully logged in.',
       });
-      throw error;
+      
+      navigate('/dashboard');
+    } catch (generalError) {
+      console.error('Unexpected error during login:', generalError);
+      
+      toast({
+        title: 'An unexpected error occurred',
+        description: 'Please try again later. If the problem persists, contact support.',
+        variant: 'destructive',
+      });
+      
+      securityMonitor.log('unexpected_auth_error', {
+        context: 'login',
+        error: generalError
+      }, 'error');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
-  const loginWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        console.error('Google login error:', error);
-        throw error;
-      }
-
-      return data;
-    } catch (error: any) {
-      toast({
-        title: "Google Login Failed",
-        description: error.message || "There was a problem signing in with Google",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    login,
-    loginWithGoogle,
-    isLoading,
-  };
+  
+  return { handleLogin, isSubmitting };
 };
+
+export default useLoginActions;
