@@ -28,6 +28,8 @@ import SecurityPolicyPage from "@/pages/SecurityPolicyPage";
 import CookiePolicyPage from "@/pages/CookiePolicyPage";
 import FeaturesPage from "@/pages/FeaturesPage";
 import PricingPage from "@/pages/PricingPage";
+import AboutPage from "@/pages/AboutPage";
+import ContactPage from "@/pages/ContactPage";
 
 import "./App.css";
 
@@ -45,9 +47,11 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               
-              {/* New dedicated pages */}
+              {/* Marketing pages */}
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />

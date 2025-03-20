@@ -20,9 +20,9 @@ export const Footer: React.FC = () => {
             <h3 className="text-lg font-bold mb-4">Company</h3>
             <ul className="space-y-2">
               <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
               <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
               <li><Link to="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
             </ul>
           </div>
           <div>
@@ -47,12 +47,12 @@ export const Footer: React.FC = () => {
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <div className="h-8 w-8 rounded bg-brand-600 text-white flex items-center justify-center font-bold">
-              AG
+              ZD
             </div>
-            <span className="ml-2 text-lg font-bold">AI Ad Guru</span>
+            <span className="ml-2 text-lg font-bold">Zero Digital Agency</span>
           </div>
           <div className="text-gray-400">
-            © {new Date().getFullYear()} AI Ad Guru. All rights reserved.
+            © {new Date().getFullYear()} Zero Digital Agency. All rights reserved.
           </div>
         </div>
       </div>
