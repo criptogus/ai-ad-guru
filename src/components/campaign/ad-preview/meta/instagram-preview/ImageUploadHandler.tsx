@@ -100,7 +100,7 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
         duration: 5000,
       });
     } finally {
-      setIsLoading(false);
+      setIsUploading(false); // Changed from setIsLoading to setIsUploading
       
       // Clear the file input to allow uploading the same file again
       if (fileInputRef.current) {

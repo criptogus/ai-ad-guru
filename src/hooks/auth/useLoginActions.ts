@@ -14,6 +14,7 @@ type LoginAttemptTracker = {
   isLocked: (email: string) => boolean;
   recordAttempt: (email: string) => void;
   resetAttempts: (email: string) => void;
+  cleanupOldEntries: () => void; // Added this property to the type
 };
 
 const loginAttemptTracker: LoginAttemptTracker = {
