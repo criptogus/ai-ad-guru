@@ -31,6 +31,12 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
     setIsImageLoaded(false);
   };
 
+  const handleGenerateClick = async () => {
+    if (onGenerateImage) {
+      await onGenerateImage();
+    }
+  };
+
   // Determine aspect ratio class based on format
   const aspectRatioClass = imageFormat === "landscape" 
     ? "aspect-[1200/627]" 
@@ -75,7 +81,7 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onGenerateImage}
+                  onClick={handleGenerateClick}
                   className="mt-3"
                 >
                   {imageError ? "Retry" : "Generate Image"}

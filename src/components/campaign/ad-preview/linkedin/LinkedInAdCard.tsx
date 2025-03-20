@@ -1,8 +1,6 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Edit2, Save, X } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCardHeader from "./LinkedInAdCardHeader";
@@ -15,7 +13,7 @@ interface LinkedInAdCardProps {
   index: number;
   isGeneratingImage?: boolean;
   analysisResult: WebsiteAnalysisResult;
-  onGenerateImage?: () => void;
+  onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
 }
 
