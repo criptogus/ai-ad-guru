@@ -1,15 +1,9 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import LandingPage from "./LandingPage";
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    navigate("/");
-  }, [navigate]);
-
-  return null;
+  return <LandingPage />;
 };
 
 export default Index;
