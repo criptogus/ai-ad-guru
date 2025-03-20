@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Beaker, ArrowLeft, History } from "lucide-react";
+import { Beaker, ArrowLeft, History, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BillingSubscriptionCard from "./BillingSubscriptionCard";
 import CreditsPurchaseCard from "./CreditsPurchaseCard";
@@ -32,6 +32,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const location = useLocation();
   const { user, updateUserPaymentStatus } = useAuth();
   const [showCreditHistory, setShowCreditHistory] = useState(false);
+  const [hasPendingPurchase, setHasPendingPurchase] = useState(false);
   
   // Handle the credits verification
   const { processing } = useCreditsVerification();
@@ -40,6 +41,17 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const state = location.state as { from?: string; requiredCredits?: number } | null;
   const fromCampaign = state?.from === 'campaign';
   const requiredCredits = state?.requiredCredits || 0;
+  
+  // Check for pending purchases on component mount
+  useEffect(() => {
+    const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
+    setHasPendingPurchase(!!storedPurchaseIntent);
+  }, []);
+  
+  // Force a refresh of the component to trigger useCreditsVerification
+  const handleVerifyPurchase = () => {
+    window.location.reload();
+  };
 
   return (
     <div className="p-8">
@@ -93,6 +105,26 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       {/* Developer tools section */}
       {showDevTools && (
         <DevToolsSection updateUserPaymentStatus={updateUserPaymentStatus} />
+      )}
+      
+      {/* Show info if there's a pending purchase */}
+      {hasPendingPurchase && !processing && (
+        <Card className="p-4 mb-6 bg-blue-50 border-blue-200">
+          <div className="flex items-center justify-between">
+            <p className="text-blue-800">
+              You have a pending credit purchase. Click the button to verify and add credits to your account.
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-4 bg-white" 
+              onClick={handleVerifyPurchase}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Verify Purchase
+            </Button>
+          </div>
+        </Card>
       )}
       
       {/* Show warning if coming from campaign with insufficient credits */}

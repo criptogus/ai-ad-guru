@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +22,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Credit options with actual Stripe links
+  // Credit options with Stripe links provided by the user
   const creditOptions: CreditOption[] = [
     { 
       amount: 100, 
@@ -55,6 +54,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       userId,
       amount: option.amount,
       price: option.price,
+      stripeLink: option.stripeLink,
       timestamp: new Date().toISOString()
     }));
     
@@ -154,7 +154,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
             )}
           </Button>
           <p className="text-sm text-gray-500 mt-2 text-center">
-            You'll be redirected to Stripe's secure checkout page.
+            After completing your purchase on Stripe, return here to confirm your credits.
           </p>
         </div>
       </CardFooter>

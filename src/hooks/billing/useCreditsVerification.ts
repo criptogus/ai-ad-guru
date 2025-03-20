@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { addCredits } from "@/services/credits";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCreditsVerification = () => {
   const { toast } = useToast();
@@ -19,15 +20,22 @@ export const useCreditsVerification = () => {
         // Parse the stored purchase intent
         const purchaseIntent = JSON.parse(storedPurchaseIntent);
         
-        // Verify the purchase (in a real app, this should be done on the server)
-        // For now, we'll simulate a successful purchase
-        const purchaseTime = new Date(purchaseIntent.timestamp);
-        const currentTime = new Date();
-        const timeDifferenceMinutes = (currentTime.getTime() - purchaseTime.getTime()) / 1000 / 60;
+        // Call Supabase edge function to verify the payment
+        const { data, error } = await supabase.functions.invoke("verify-credit-purchase", {
+          body: { 
+            userId: purchaseIntent.userId,
+            timestamp: purchaseIntent.timestamp,
+            amount: purchaseIntent.amount,
+            price: purchaseIntent.price,
+            stripeLink: purchaseIntent.stripeLink
+          }
+        });
         
-        // Only process the purchase if it was made within the last 10 minutes
-        // This is to prevent double processing if the user refreshes the page
-        if (timeDifferenceMinutes <= 10) {
+        if (error) {
+          throw new Error(`Payment verification failed: ${error.message}`);
+        }
+        
+        if (data?.verified) {
           // Add the credits to the user's account
           const success = await addCredits(
             purchaseIntent.userId, 
@@ -41,6 +49,9 @@ export const useCreditsVerification = () => {
               description: `${purchaseIntent.amount} credits have been added to your account.`,
             });
           }
+        } else {
+          console.log("Payment not verified:", data);
+          // Don't show an error message here - the payment might still be processing
         }
         
         // Clear the stored purchase intent regardless of outcome to prevent multiple processing
