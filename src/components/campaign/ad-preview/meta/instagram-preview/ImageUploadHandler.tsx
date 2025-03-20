@@ -3,6 +3,8 @@ import React, { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CustomUser } from "@/types/auth";
+import { validateFileUpload, generateSecureToken } from "@/utils/security";
+import { securityConfig } from "@/config/security";
 
 interface ImageUploadHandlerProps {
   onImageUploaded: (imageUrl: string) => void;
@@ -22,17 +24,15 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check if file is an image
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file (JPEG, PNG, etc.)", {
-        duration: 5000,
-      });
-      return;
-    }
+    // Enhanced security validation using our utility function
+    const validation = validateFileUpload(
+      file, 
+      securityConfig.uploads.allowedImageTypes,
+      securityConfig.uploads.maxSizeInMB
+    );
 
-    // Check file size (limit to 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Please upload an image smaller than 5MB", {
+    if (!validation.valid) {
+      toast.error(validation.message, {
         duration: 5000,
       });
       return;
@@ -49,20 +49,22 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
     setIsUploading(true);
 
     try {
-      // Create a unique file name using timestamp and original name
+      // Create a unique file name with a secure random token
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${user.id.substring(0, 8)}.${fileExt}`;
+      const secureToken = generateSecureToken(8);
+      const fileName = `${Date.now()}-${secureToken}-${user.id.substring(0, 8)}.${fileExt}`;
       const filePath = `instagram-ads/${fileName}`;
       const bucketName = 'ai-images';
 
       console.log(`Uploading file to ${bucketName}/${filePath}`, { userId: user.id });
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with content type verification
       const { data, error } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type // Explicitly set content type for security
         });
 
       if (error) {
@@ -98,7 +100,7 @@ const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
         duration: 5000,
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
       
       // Clear the file input to allow uploading the same file again
       if (fileInputRef.current) {

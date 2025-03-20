@@ -3,15 +3,21 @@
  * Security utility functions for the application
  */
 
-// Sanitize user input to prevent XSS attacks
+// Sanitize user input to prevent XSS attacks with enhanced protection
 export const sanitizeInput = (input: string): string => {
   if (!input) return '';
   
-  // Basic sanitization - remove script tags and other potentially harmful HTML
+  // Enhanced sanitization - more comprehensive protection against XSS
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/on\w+="[^"]*"/g, '') // Remove inline event handlers
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/<(script|iframe|object|embed|form|style|link|meta|base)[^>]*>[\s\S]*?<\/\1>/gi, '') // Block dangerous tags completely
+    .replace(/<[^>]*\son\w+\s*=\s*(['"]).*?\1[^>]*>/gi, match => 
+      match.replace(/\son\w+\s*=\s*(['"]).*?\1/gi, '')) // Remove all event handlers
+    .replace(/javascript:|data:|vbscript:|file:|about:|ms-/gi, match => 
+      `blocked-${match}`) // Block dangerous protocols
+    .replace(/&lt;script[\s\S]*?&gt;[\s\S]*?&lt;\/script&gt;/gi, '') // Encoded script tags
+    .replace(/expression\s*\([\s\S]*?\)/gi, '') // Block CSS expressions
+    .replace(/(document|window|eval|setTimeout|setInterval|Function|constructor)\s*\(/gi, 
+      match => `blocked_${match}`) // Block dangerous JS functions
     .trim();
 };
 
@@ -46,7 +52,7 @@ export const isStrongPassword = (password: string): { valid: boolean; message: s
   return { valid: true, message: 'Password meets strength requirements' };
 };
 
-// Create a Content Security Policy header
+// Create a Content Security Policy header with improved security directives
 export const getCSPHeader = (): string => {
   return `
     default-src 'self';
@@ -63,4 +69,49 @@ export const getCSPHeader = (): string => {
     block-all-mixed-content;
     upgrade-insecure-requests;
   `.replace(/\s+/g, ' ').trim();
+};
+
+// Generate a random nonce for CSP
+export const generateNonce = (): string => {
+  const array = new Uint8Array(16);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+// Validate file uploads for security
+export const validateFileUpload = (
+  file: File, 
+  allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  maxSizeInMB: number = 5
+): { valid: boolean; message: string } => {
+  // Check if file exists
+  if (!file) {
+    return { valid: false, message: 'No file provided' };
+  }
+  
+  // Check file type
+  if (!allowedTypes.includes(file.type)) {
+    return { 
+      valid: false, 
+      message: `Invalid file type. Allowed types: ${allowedTypes.map(t => t.replace('image/', '')).join(', ')}` 
+    };
+  }
+  
+  // Check file size
+  const fileSizeInMB = file.size / (1024 * 1024);
+  if (fileSizeInMB > maxSizeInMB) {
+    return { 
+      valid: false, 
+      message: `File is too large. Maximum size is ${maxSizeInMB}MB` 
+    };
+  }
+  
+  return { valid: true, message: 'File validation passed' };
+};
+
+// Generate a secure random token
+export const generateSecureToken = (length: number = 32): string => {
+  const array = new Uint8Array(length);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 };

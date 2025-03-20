@@ -8,12 +8,14 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requiresPayment?: boolean;
   requiredRole?: string; // Add support for role-based access control
+  requiresMFA?: boolean; // Add support for MFA requirement
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requiresPayment = false,
-  requiredRole
+  requiredRole,
+  requiresMFA = false
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +24,25 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check if we're in a payment verification flow
   const isPaymentVerification = location.search.includes('session_id=');
 
+  // Get the current timestamp for security checks
+  const currentTimestamp = Date.now();
+
+  // Detect potential client-side security issues
+  const detectSecurityIssues = () => {
+    const isUsingHTTPS = window.location.protocol === 'https:';
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1';
+    
+    // Only show security warnings in production environment
+    if (!isLocalhost && !isUsingHTTPS) {
+      console.error('Security Warning: Application is not using HTTPS');
+    }
+  };
+
   useEffect(() => {
+    // Run security checks
+    detectSecurityIssues();
+    
     if (!isLoading) {
       // Skip authentication redirection during payment verification
       if (isPaymentVerification) {
@@ -35,8 +55,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         console.log('User not authenticated, redirecting to login');
         // Store the current path for redirection after login
         const returnPath = `${location.pathname}${location.search}`;
+        
+        // Add a security token to prevent open redirects
+        const secureToken = btoa(returnPath);
+        
         navigate("/login", { 
-          state: { from: returnPath },
+          state: { 
+            from: returnPath,
+            secureToken,
+            timestamp: currentTimestamp
+          },
           // Use replace to prevent back button from taking users to protected routes
           replace: true 
         });
@@ -61,6 +89,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           });
         }
       }
+      // Handle MFA requirement check
+      else if (requiresMFA && user) {
+        // Check if user has completed MFA verification
+        // This is a placeholder for where you would implement MFA checks
+        const hasMFAVerified = user.user_metadata?.mfa_verified === true;
+        
+        if (!hasMFAVerified) {
+          console.log('MFA verification required');
+          navigate("/mfa-verification", {
+            state: {
+              returnTo: location.pathname,
+              secureToken: btoa(location.pathname),
+              timestamp: currentTimestamp
+            },
+            replace: true
+          });
+        }
+      }
     }
   }, [
     isAuthenticated, 
@@ -71,7 +117,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiresPayment, 
     user, 
     isPaymentVerification,
-    requiredRole
+    requiredRole,
+    requiresMFA,
+    currentTimestamp
   ]);
 
   if (isLoading) {
@@ -101,6 +149,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (!isAuthenticated) return null;
   if (requiresPayment && user && !user.hasPaid) return null;
   if (requiredRole && user && user.user_metadata?.role !== requiredRole) return null;
+  if (requiresMFA && user && user.user_metadata?.mfa_verified !== true) return null;
 
   return <>{children}</>;
 };

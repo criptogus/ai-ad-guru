@@ -1,33 +1,118 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
+import { sanitizeInput } from '@/utils/security';
+import { securityConfig } from '@/config/security';
+
+// Create a module-level tracking for login attempts that persists between renders
+// In a real app, this should be stored in local storage or a backend service with expiration
+type LoginAttemptTracker = {
+  attempts: Record<string, { count: number, lastAttempt: number }>;
+  isLocked: (email: string) => boolean;
+  recordAttempt: (email: string) => void;
+  resetAttempts: (email: string) => void;
+};
+
+const loginAttemptTracker: LoginAttemptTracker = {
+  attempts: {},
+  
+  isLocked(email: string): boolean {
+    const entry = this.attempts[email];
+    if (!entry) return false;
+    
+    const { count, lastAttempt } = entry;
+    const now = Date.now();
+    
+    // Check if lockout period has expired
+    if (count >= securityConfig.auth.maxLoginAttempts) {
+      const lockoutExpiry = lastAttempt + securityConfig.auth.lockoutDuration;
+      if (now < lockoutExpiry) {
+        // Still locked
+        return true;
+      } else {
+        // Lockout expired, reset attempts
+        this.resetAttempts(email);
+        return false;
+      }
+    }
+    
+    return false;
+  },
+  
+  recordAttempt(email: string): void {
+    const now = Date.now();
+    if (!this.attempts[email]) {
+      this.attempts[email] = { count: 1, lastAttempt: now };
+    } else {
+      this.attempts[email].count += 1;
+      this.attempts[email].lastAttempt = now;
+    }
+    
+    // Clean up old entries to prevent memory leaks
+    this.cleanupOldEntries();
+  },
+  
+  resetAttempts(email: string): void {
+    delete this.attempts[email];
+  },
+  
+  cleanupOldEntries(): void {
+    const now = Date.now();
+    const expiryTime = 24 * 60 * 60 * 1000; // 24 hours
+    
+    Object.keys(this.attempts).forEach(email => {
+      const lastAttempt = this.attempts[email].lastAttempt;
+      if (now - lastAttempt > expiryTime) {
+        delete this.attempts[email];
+      }
+    });
+  }
+};
 
 export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Cleanup old login attempt records periodically
+  useEffect(() => {
+    const cleanup = () => {
+      loginAttemptTracker.cleanupOldEntries();
+    };
+    
+    // Run cleanup every 10 minutes
+    const intervalId = setInterval(cleanup, 10 * 60 * 1000);
+    
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
   const login = async (email: string, password: string) => {
     try {
-      // Check for too many login attempts (simple rate limiting)
-      if (loginAttempts >= 5) {
+      // Sanitize and normalize email input
+      const sanitizedEmail = sanitizeInput(email).trim().toLowerCase();
+      
+      // Check if this account is locked due to too many failed attempts
+      if (loginAttemptTracker.isLocked(sanitizedEmail)) {
+        const remainingLockTime = Math.ceil(
+          (loginAttemptTracker.attempts[sanitizedEmail].lastAttempt + 
+           securityConfig.auth.lockoutDuration - Date.now()) / 60000
+        );
+        
         toast({
-          title: "Too Many Attempts",
-          description: "Too many failed login attempts. Please try again later.",
+          title: "Account Temporarily Locked",
+          description: `Too many failed login attempts. Please try again in ${remainingLockTime} minutes.`,
           variant: "destructive",
         });
         return null;
       }
 
       setIsLoading(true);
-      console.log('Attempting to sign in with email:', email);
-      
-      // Sanitize inputs to prevent injection
-      const sanitizedEmail = email.trim().toLowerCase();
+      console.log('Attempting to sign in with email:', sanitizedEmail);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
@@ -37,8 +122,18 @@ export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
       if (error) {
         console.error('Login error:', error);
         
-        // Increment failed login attempts
-        setLoginAttempts(prev => prev + 1);
+        // Record failed login attempt
+        loginAttemptTracker.recordAttempt(sanitizedEmail);
+        
+        // Check if we've reached the maximum attempts
+        if (loginAttemptTracker.attempts[sanitizedEmail]?.count >= securityConfig.auth.maxLoginAttempts) {
+          toast({
+            title: "Account Temporarily Locked",
+            description: `Too many failed login attempts. Please try again in ${securityConfig.auth.lockoutDuration / 60000} minutes.`,
+            variant: "destructive",
+          });
+          return null;
+        }
         
         // Handle specific error codes with more user-friendly messages
         if (error.message.includes('Email not confirmed')) {
@@ -57,7 +152,7 @@ export const useLoginActions = (setUser: (user: CustomUser | null) => void) => {
       }
 
       // Reset login attempts on successful login
-      setLoginAttempts(0);
+      loginAttemptTracker.resetAttempts(sanitizedEmail);
 
       if (data.user) {
         const { data: profileData, error: profileError } = await supabase
