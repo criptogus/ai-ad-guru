@@ -9,7 +9,7 @@ import { sanitizeInput } from '@/utils/security';
 
 // Default request options with security enhancement
 const defaultOptions = {
-  credentials: 'same-origin',
+  credentials: 'same-origin' as RequestCredentials,
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest', // Helps prevent CSRF
