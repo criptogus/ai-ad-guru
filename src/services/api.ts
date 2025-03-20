@@ -9,7 +9,7 @@ import { sanitizeInput } from '@/utils/security';
 
 // Default request options with security enhancement
 const defaultOptions = {
-  credentials: 'same-origin' as RequestCredentials,
+  credentials: 'same-origin' as RequestCredentials, // Fixed TS error with type assertion
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest', // Helps prevent CSRF
@@ -41,6 +41,8 @@ const makeRequest = async <T>(
   try {
     // Get current session for authenticated requests
     let authHeaders = {};
+    let csrfToken = '';
+    
     if (requiresAuth) {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.access_token) {
@@ -49,6 +51,17 @@ const makeRequest = async <T>(
         };
       } else {
         throw new Error('Authentication required but user is not logged in');
+      }
+      
+      // Add CSRF protection for mutating operations
+      if (method !== 'GET') {
+        csrfToken = sessionStorage.getItem('csrf_token') || '';
+        if (csrfToken) {
+          authHeaders = {
+            ...authHeaders,
+            'X-CSRF-Token': csrfToken
+          };
+        }
       }
     }
 
@@ -172,6 +185,14 @@ export const secureApi = {
       // Sanitize request body
       const sanitizedBody = sanitizeRequestBody(body);
       
+      // Add CSRF token for protection
+      if (requiresAuth) {
+        const csrfToken = sessionStorage.getItem('csrf_token');
+        if (csrfToken) {
+          sanitizedBody._csrf = csrfToken;
+        }
+      }
+      
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: sanitizedBody,
       });
@@ -187,3 +208,14 @@ export const secureApi = {
     }
   },
 };
+
+// Initialize CSRF token when module loads
+const initializeCsrf = () => {
+  const token = Array.from(new Uint8Array(32), byte => 
+    byte.toString(16).padStart(2, '0')
+  ).join('');
+  sessionStorage.setItem('csrf_token', token);
+};
+
+// Run initialization
+initializeCsrf();

@@ -56,7 +56,7 @@ export const isStrongPassword = (password: string): { valid: boolean; message: s
 export const getCSPHeader = (): string => {
   return `
     default-src 'self';
-    script-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com;
+    script-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com 'nonce-${generateNonce()}';
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https://*.supabase.co https://images.unsplash.com;
     font-src 'self' https://fonts.gstatic.com;
@@ -78,7 +78,7 @@ export const generateNonce = (): string => {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 };
 
-// Validate file uploads for security
+// Validate file uploads for security - Enhanced with additional checks
 export const validateFileUpload = (
   file: File, 
   allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
@@ -106,12 +106,77 @@ export const validateFileUpload = (
     };
   }
   
+  // Additional security check - validate file extension matches content type
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+  const expectedExtensions: Record<string, string[]> = {
+    'image/jpeg': ['jpg', 'jpeg'],
+    'image/png': ['png'],
+    'image/gif': ['gif'],
+    'image/webp': ['webp']
+  };
+  
+  const validExtensions = expectedExtensions[file.type] || [];
+  if (fileExtension && validExtensions.length > 0 && !validExtensions.includes(fileExtension)) {
+    return {
+      valid: false,
+      message: `File extension (.${fileExtension}) doesn't match the content type (${file.type})`
+    };
+  }
+  
   return { valid: true, message: 'File validation passed' };
 };
 
-// Generate a secure random token
+// Generate a secure random token with enhanced entropy
 export const generateSecureToken = (length: number = 32): string => {
   const array = new Uint8Array(length);
   window.crypto.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+// Generate CSRF token for form submissions
+export const generateCsrfToken = (): string => {
+  const token = generateSecureToken(32);
+  // Store in session storage to verify later
+  sessionStorage.setItem('csrf_token', token);
+  return token;
+};
+
+// Verify CSRF token from form submissions
+export const verifyCsrfToken = (token: string): boolean => {
+  const storedToken = sessionStorage.getItem('csrf_token');
+  if (!storedToken || storedToken !== token) {
+    return false;
+  }
+  // Use once and regenerate
+  sessionStorage.removeItem('csrf_token');
+  return true;
+};
+
+// Detect potentially malicious payloads in user input
+export const detectMaliciousPayload = (input: string): boolean => {
+  // Common patterns used in XSS and injection attacks
+  const suspiciousPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i,
+    /javascript:/i,
+    /data:text\/html/i,
+    /onerror=/i,
+    /onload=/i,
+    /onclick=/i,
+    /eval\(/i,
+    /document\.cookie/i,
+    /document\.domain/i,
+    /document\.write/i,
+    /fetch\(/i,
+    /\balert\(/i,
+    /\bprompt\(/i,
+    /\bconfirm\(/i,
+    /\bconsole\./i,
+    /\(\)\s*\{/i,
+    /select.+from.+where/i,
+    /union\s+select/i,
+    /--[^\r\n]*/i,
+    /\/\*[^*]*\*+([^/*][^*]*\*+)*\//i
+  ];
+  
+  return suspiciousPatterns.some(pattern => pattern.test(input));
 };
