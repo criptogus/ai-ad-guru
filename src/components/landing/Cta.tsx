@@ -18,7 +18,7 @@ export const Cta: React.FC = () => {
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">Ready to Transform Your Ad Performance?</h2>
             <p className="text-xl mb-8">
-              Join businesses using AI Ad Guru to create high-converting ads and reduce their cost per acquisition by an average of 37%.
+              Join businesses using AI Ad Guru to create high-converting ads across Google, Meta, LinkedIn, and Microsoft platforms, reducing their cost per acquisition by an average of 37%.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button

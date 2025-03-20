@@ -24,7 +24,7 @@ export const Features: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">GPT-4 Powered Copy</h3>
             <p className="text-gray-600">
-              Generate 5 high-converting ad variations with copy that speaks directly to your audience's pain points.
+              Generate 5 high-converting ad variations for Google, Meta, LinkedIn, and Microsoft with copy that speaks directly to your audience's pain points.
             </p>
           </div>
 
@@ -34,7 +34,7 @@ export const Features: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">DALL·E 3 Images</h3>
             <p className="text-gray-600">
-              Create scroll-stopping Instagram ad visuals that drive engagement and conversions (5 credits per image).
+              Create scroll-stopping social media ad visuals for Meta and LinkedIn that drive engagement and conversions (5 credits per image).
             </p>
           </div>
 
@@ -54,7 +54,7 @@ export const Features: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Smart Audience Targeting</h3>
             <p className="text-gray-600">
-              AI identifies your ideal customer segments for laser-focused targeting across Google and Meta platforms.
+              AI identifies your ideal customer segments for laser-focused targeting across Google, Meta, LinkedIn, and Microsoft platforms.
             </p>
           </div>
           
@@ -64,7 +64,7 @@ export const Features: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">One-Click Integration</h3>
             <p className="text-gray-600">
-              Seamlessly connect your Google Ads and Meta Ad accounts with OAuth for instant campaign publishing.
+              Seamlessly connect your Google, Meta, LinkedIn, and Microsoft ad accounts with OAuth for instant campaign publishing.
             </p>
           </div>
           

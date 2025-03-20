@@ -18,22 +18,22 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       <Helmet>
-        <title>AI Ad Guru | Create High-Converting Google & Meta Ads with AI</title>
-        <meta name="description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
-        <meta name="keywords" content="AI ads, Google ads generator, Meta ads creator, ad automation, marketing AI, GPT-4 ads, DALL·E ads, Instagram ads, ad optimization, ROI optimization" />
+        <title>AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft</title>
+        <meta name="description" content="Generate, optimize and manage Google, Meta, LinkedIn & Microsoft ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta name="keywords" content="AI ads, Google ads generator, Meta ads creator, LinkedIn ads, Microsoft ads, ad automation, marketing AI, GPT-4 ads, DALL·E ads, Instagram ads, ad optimization, ROI optimization" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={currentUrl} />
-        <meta property="og:title" content="AI Ad Guru | Create High-Converting Google & Meta Ads with AI" />
-        <meta property="og:description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta property="og:title" content="AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft" />
+        <meta property="og:description" content="Generate, optimize and manage ads across major platforms that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
         <meta property="og:image" content="/og-image.png" />
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={currentUrl} />
-        <meta property="twitter:title" content="AI Ad Guru | Create High-Converting Google & Meta Ads with AI" />
-        <meta property="twitter:description" content="Generate, optimize and manage Google & Meta ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta property="twitter:title" content="AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft" />
+        <meta property="twitter:description" content="Generate, optimize and manage ads across major platforms that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
         <meta property="twitter:image" content="/og-image.png" />
 
         {/* Additional SEO tags */}
@@ -52,7 +52,7 @@ const LandingPage: React.FC = () => {
               "price": "99",
               "priceCurrency": "USD"
             },
-            "description": "AI-powered ad creation and optimization for Google and Meta platforms.",
+            "description": "AI-powered ad creation and optimization for Google, Meta, LinkedIn, and Microsoft platforms.",
             "operatingSystem": "Web browser",
             "aggregateRating": {
               "@type": "AggregateRating",

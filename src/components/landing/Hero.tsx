@@ -22,8 +22,8 @@ export const Hero: React.FC = () => {
         </h1>
         
         <p className="text-xl md:text-2xl mb-8 md:max-w-3xl mx-auto">
-          Get 5X better ROAS with AI-generated Google & Meta ads. No copywriting 
-          skills needed. Just connect your accounts and let our AI handle the rest.
+          Get 5X better ROAS with AI-generated ads across Google, Meta, LinkedIn & Microsoft. 
+          No copywriting skills needed. Just connect your accounts and let our AI handle the rest.
         </p>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-3xl mx-auto mb-10 text-left">
