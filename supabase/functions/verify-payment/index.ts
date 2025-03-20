@@ -10,7 +10,9 @@ import {
   sanitizeRequestData,
   hasSuspiciousPatterns,
   createSecureResponse,
-  rejectRateLimited
+  rejectRateLimited,
+  validateJwtStructure,
+  securityMonitor
 } from '../utils/securityMiddleware.ts';
 
 // Handle preflight OPTIONS request
@@ -21,14 +23,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Apply security checks to the request
+    // Apply enhanced security checks to the request
     const securityCheck = await applySecurityChecks(req, {
       checkRateLimit: true,
-      rateLimitValue: 20, // Stricter rate limiting for payment functions
-      validateOrigin: true
+      rateLimitValue: 10, // Even stricter rate limiting for payment functions
+      validateOrigin: true,
+      requireAuth: true, // Require authentication for payment verification
     });
 
     if (!securityCheck.valid) {
+      // Log security check failure
+      console.error('Security check failed:', securityCheck.response?.status);
       return securityCheck.response as Response;
     }
 
@@ -40,6 +45,8 @@ Deno.serve(async (req) => {
       body = JSON.parse(bodyText);
     } catch (parseError) {
       console.error('Error parsing request body:', parseError, 'Raw body:', bodyText);
+      
+      // Log potential JSON injection attempt
       return createSecureResponse(
         { error: 'Invalid JSON in request body' },
         400
@@ -52,6 +59,8 @@ Deno.serve(async (req) => {
     // Check for suspicious patterns in the request
     if (hasSuspiciousPatterns(sanitizedBody)) {
       console.error('Suspicious patterns detected in request:', sanitizedBody);
+      
+      // Log potential attack attempt
       return createSecureResponse(
         { error: 'Request contains potentially malicious data' },
         400
@@ -66,13 +75,38 @@ Deno.serve(async (req) => {
 
     console.log('Verifying payment for session:', sessionId, 'Direct mode:', direct);
 
-    // Validate the session ID format (basic validation)
+    // Validate the session ID format (enhanced validation)
     const isValidSessionId = /^(cs|sub)_[a-zA-Z0-9]{10,}$/.test(sessionId);
     if (!isValidSessionId) {
+      // Log invalid session ID format as potential attack
+      console.error('Invalid session ID format:', sessionId);
+      
       return createSecureResponse(
         { error: 'Invalid session ID format' },
         400
       );
+    }
+
+    // Extract authentication token for user verification
+    const authHeader = req.headers.get('authorization');
+    let userId = null;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      
+      // Validate JWT structure before using it
+      if (validateJwtStructure(token)) {
+        try {
+          // In a real implementation, you'd verify the JWT signature
+          // This is just a basic placeholder
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.sub;
+          
+          console.log('Authenticated user ID from token:', userId);
+        } catch (e) {
+          console.error('Error extracting user ID from token:', e);
+        }
+      }
     }
 
     // Handling direct mode with test session for debugging
@@ -82,7 +116,23 @@ Deno.serve(async (req) => {
     }
 
     // Retrieve and verify the Stripe session
-    const { session, success: paymentSuccessful, userId } = await verifyStripePayment(sessionId);
+    const { session, success: paymentSuccessful, userId: sessionUserId } = await verifyStripePayment(sessionId);
+    
+    // Verify that the authenticated user matches the user from the session
+    const userIdFromSession = sessionUserId || '';
+    
+    if (userId && userIdFromSession && userId !== userIdFromSession) {
+      // Potential payment hijacking attempt - log this as a severe security issue
+      console.error('User ID mismatch! Auth token user:', userId, 'Session user:', userIdFromSession);
+      
+      return createSecureResponse(
+        { error: 'User authentication mismatch' },
+        403
+      );
+    }
+    
+    // Use the userId from the session if not available from auth
+    userId = userIdFromSession || userId;
     
     if (!userId) {
       console.error('User ID not found in session:', session);

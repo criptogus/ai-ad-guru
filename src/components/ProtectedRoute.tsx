@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { generateSecureToken } from '@/utils/security';
+import { securityMonitor } from '@/middleware/securityMiddleware';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -37,12 +38,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Only show security warnings in production environment
     if (!isLocalhost && !isUsingHTTPS) {
       console.error('Security Warning: Application is not using HTTPS');
+      securityMonitor.log('security_no_https', {
+        url: window.location.href
+      }, 'error');
     }
     
     // Check for XSS protection via Content-Security-Policy
     const metaCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
     if (!metaCSP && !isLocalhost) {
       console.warn('Security Warning: No Content-Security-Policy meta tag detected');
+      securityMonitor.log('security_no_csp', {
+        url: window.location.href
+      }, 'warn');
     }
     
     // Check for localStorage tampering
@@ -53,6 +60,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         // If last check is in the future, localStorage might have been tampered with
         if (lastCheck > Date.now()) {
           console.error('Security Warning: Potential localStorage tampering detected');
+          securityMonitor.log('security_storage_tampering', {
+            lastCheck,
+            now: Date.now()
+          }, 'error');
           localStorage.clear(); // Clear potentially compromised data
           window.location.href = '/login?reason=security';
           return;
@@ -63,6 +74,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     } catch (e) {
       // Browser might have localStorage disabled
       console.warn('Unable to access localStorage');
+    }
+    
+    // Check for Clickjacking protection
+    const xFrameOptionsHeader = document.querySelector('meta[http-equiv="X-Frame-Options"]');
+    if (!xFrameOptionsHeader && !isLocalhost) {
+      console.warn('Security Warning: No X-Frame-Options header detected');
+      securityMonitor.log('security_no_xframe_options', {
+        url: window.location.href
+      }, 'warn');
     }
   };
 
@@ -85,6 +105,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       // Handle authentication check
       if (!isAuthenticated) {
         console.log('User not authenticated, redirecting to login');
+        
+        // Log security event - unauthenticated access attempt
+        securityMonitor.log('security_unauthenticated_access', {
+          path: location.pathname,
+          requiresPayment,
+          requiredRole,
+          requiresMFA
+        }, 'warn');
+        
         // Store the current path for redirection after login
         const returnPath = `${location.pathname}${location.search}`;
         
@@ -104,6 +133,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       // Handle payment requirement check
       else if (requiresPayment && user && !user.hasPaid) {
         console.log('User not paid, redirecting to billing');
+        
+        // Log security event - unpaid access attempt
+        securityMonitor.log('security_unpaid_access', {
+          userId: user.id,
+          path: location.pathname
+        }, 'info');
+        
         navigate("/billing", { replace: true });
       }
       // Handle role-based access control
@@ -112,6 +148,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         const hasRequiredRole = user.user_metadata?.role === requiredRole;
         if (!hasRequiredRole) {
           console.log(`User lacks required role: ${requiredRole}, access denied`);
+          
+          // Log security event - insufficient role
+          securityMonitor.log('security_insufficient_role', {
+            userId: user.id,
+            path: location.pathname,
+            userRole: user.user_metadata?.role,
+            requiredRole
+          }, 'warn');
+          
           navigate("/dashboard", { 
             state: { 
               accessDenied: true, 
@@ -129,6 +174,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         
         if (!hasMFAVerified) {
           console.log('MFA verification required');
+          
+          // Log security event - MFA required
+          securityMonitor.log('security_mfa_required', {
+            userId: user.id,
+            path: location.pathname
+          }, 'info');
+          
           navigate("/mfa-verification", {
             state: {
               returnTo: location.pathname,
@@ -138,6 +190,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             replace: true
           });
         }
+      } else if (user) {
+        // Successfully authenticated and authorized access
+        securityMonitor.log('security_authorized_access', {
+          userId: user.id,
+          path: location.pathname
+        }, 'info');
       }
     }
     
