@@ -54,4 +54,8 @@ export const en = {
   'footer.company': 'Company',
   'footer.legal': 'Legal',
   'footer.copyright': 'All rights reserved.',
+  
+  // Roadmap
+  'roadmap.title': 'Product Roadmap',
+  'roadmap.subtitle': 'Our vision for the future of AI-powered advertising',
 };

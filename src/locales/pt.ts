@@ -54,4 +54,8 @@ export const pt = {
   'footer.company': 'Empresa',
   'footer.legal': 'Legal',
   'footer.copyright': 'Todos os direitos reservados.',
+  
+  // Roadmap
+  'roadmap.title': 'Roadmap do Produto',
+  'roadmap.subtitle': 'Nossa visão para o futuro da publicidade impulsionada por IA',
 };
