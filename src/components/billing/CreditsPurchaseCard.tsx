@@ -1,13 +1,14 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, Loader2, Plus, CreditCard } from "lucide-react";
-import { CheckCircle } from "lucide-react";
-import { addCredits } from "@/services";
+import { ExternalLink, Loader2, CreditCard, CheckCircle } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface CreditOption {
   amount: number;
   price: number;
+  stripeLink: string;
   bestValue?: boolean;
 }
 
@@ -17,28 +18,54 @@ interface CreditsPurchaseCardProps {
 }
 
 const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, currentCredits = 0 }) => {
-  const [purchasing, setPurchasing] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  // Credit options with actual Stripe links
   const creditOptions: CreditOption[] = [
-    { amount: 100, price: 29 },
-    { amount: 250, price: 59, bestValue: true },
-    { amount: 500, price: 99 }
+    { 
+      amount: 100, 
+      price: 29, 
+      stripeLink: "https://buy.stripe.com/00geYd1Qd6rZ1XO3ci" 
+    },
+    { 
+      amount: 250, 
+      price: 59, 
+      bestValue: true, 
+      stripeLink: "https://buy.stripe.com/4gw8zPcuR8A731S7sx" 
+    },
+    { 
+      amount: 500, 
+      price: 99, 
+      stripeLink: "https://buy.stripe.com/cN2g2h8eB8A7eKA6os" 
+    }
   ];
 
-  const simulatePurchase = async (amount: number) => {
-    if (!userId) return;
-    
-    setPurchasing(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await addCredits(userId, amount, `Purchased ${amount} credits`);
-      setSelectedOption(null);
-    } catch (error) {
-      console.error("Error simulating purchase:", error);
-    } finally {
-      setPurchasing(false);
+  const handlePurchase = (option: CreditOption) => {
+    if (!userId) {
+      return;
     }
+    
+    setRedirecting(true);
+    
+    // Store information about the purchase in localStorage for verification later
+    localStorage.setItem('credit_purchase_intent', JSON.stringify({
+      userId,
+      amount: option.amount,
+      price: option.price,
+      timestamp: new Date().toISOString()
+    }));
+    
+    // Open the Stripe checkout page in a new tab
+    window.open(option.stripeLink, "_blank");
+    
+    // Reset the redirecting state after a short delay
+    setTimeout(() => {
+      setRedirecting(false);
+      setSelectedOption(null);
+    }, 1000);
   };
 
   return (
@@ -97,13 +124,18 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
         <div className="w-full">
           <Button 
             className="w-full" 
-            disabled={selectedOption === null || purchasing}
-            onClick={() => selectedOption && simulatePurchase(selectedOption)}
+            disabled={selectedOption === null || redirecting}
+            onClick={() => {
+              const selectedCreditOption = creditOptions.find(o => o.amount === selectedOption);
+              if (selectedCreditOption) {
+                handlePurchase(selectedCreditOption);
+              }
+            }}
           >
-            {purchasing ? (
+            {redirecting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                Processing...
+                Redirecting to Stripe...
               </>
             ) : (
               <>
@@ -115,7 +147,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                 ) : (
                   <>
                     Select a Credit Package
-                    <Plus className="ml-2 h-4 w-4" />
+                    <ExternalLink className="ml-2 h-4 w-4" />
                   </>
                 )}
               </>

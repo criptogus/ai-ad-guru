@@ -17,6 +17,7 @@ import {
   DialogTrigger 
 } from "@/components/ui/dialog";
 import CreditUsageHistory from "./CreditUsageHistory";
+import { useCreditsVerification } from "@/hooks/billing/useCreditsVerification";
 
 interface BillingPageContentProps {
   showDevTools: boolean;
@@ -31,6 +32,9 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const location = useLocation();
   const { user, updateUserPaymentStatus } = useAuth();
   const [showCreditHistory, setShowCreditHistory] = useState(false);
+  
+  // Handle the credits verification
+  const { processing } = useCreditsVerification();
 
   // Check if we're coming from campaign creation with required credits
   const state = location.state as { from?: string; requiredCredits?: number } | null;
@@ -97,6 +101,15 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
           <p className="text-amber-800">
             You need <strong>{requiredCredits} more credits</strong> to create this campaign. 
             Please purchase more credits below.
+          </p>
+        </Card>
+      )}
+      
+      {/* Show info if credits are being processed */}
+      {processing && (
+        <Card className="p-4 mb-6 bg-blue-50 border-blue-200">
+          <p className="text-blue-800">
+            Processing your recent credit purchase. This will be reflected in your account shortly.
           </p>
         </Card>
       )}
