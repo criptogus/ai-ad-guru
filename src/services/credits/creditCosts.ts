@@ -9,6 +9,8 @@ export const getCreditCosts = () => {
       weekly: 2
     },
     imageGeneration: 5,
-    metaAdGeneration: 5  // Adding Meta/Instagram ad generation cost
+    metaAdGeneration: 5,  // Meta/Instagram ad generation cost
+    adOptimization: 3,    // New cost for single ad optimization
+    smartBanner: 8        // Cost for Smart Banner generation
   };
 };

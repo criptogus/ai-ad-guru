@@ -15,7 +15,8 @@ export type CreditAction =
   | 'image_generation' 
   | 'credit_purchase' 
   | 'credit_refund'
-  | 'meta_ad_generation';  // Added meta_ad_generation as a valid credit action
+  | 'meta_ad_generation'
+  | 'ad_optimization'; // Added ad_optimization as a valid credit action
 
 export interface CreditUsage {
   id: string;

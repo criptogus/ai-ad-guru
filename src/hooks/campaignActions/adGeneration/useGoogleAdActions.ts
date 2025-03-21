@@ -1,9 +1,10 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { getCreditCosts } from "@/services";
+import { GoogleAd } from "@/hooks/adGeneration";
+import { useToast } from "@/hooks/use-toast";
+import { getCreditCosts } from "@/services/credits/creditCosts";
+import { checkUserCredits, deductUserCredits } from "@/services/credits/creditChecks";
+import { OptimizedGoogleAd } from "@/services/api/optimizerApi";
 
 export const useGoogleAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -12,68 +13,90 @@ export const useGoogleAdActions = (
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
   const creditCosts = getCreditCosts();
 
-  // Generate Google Ads
   const handleGenerateGoogleAds = async (): Promise<void> => {
     if (!analysisResult) {
       toast({
         title: "Website Analysis Required",
-        description: "Please analyze a website first",
+        description: "Please complete website analysis before generating ads.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsGenerating(true);
-    try {
-      // Show credit usage preview
+    // Check if user has enough credits
+    const hasCredits = await checkUserCredits(creditCosts.campaignCreation);
+    
+    if (!hasCredits) {
       toast({
-        title: "Credit Usage Preview",
-        description: `This will use ${creditCosts.campaignCreation} credits to generate 5 Google ad variations`,
-        duration: 5000,
+        title: "Not Enough Credits",
+        description: `You need ${creditCosts.campaignCreation} credits to generate ads. Please purchase more credits.`,
+        variant: "destructive",
       });
+      return;
+    }
 
-      const generatedAds = await generateGoogleAds({
-        websiteUrl: analysisResult.websiteUrl,
-        companyName: analysisResult.companyName,
-        usps: analysisResult.uniqueSellingPoints,
-        targetAudience: analysisResult.targetAudience,
-        callToAction: analysisResult.callToAction,
-        brandTone: analysisResult.brandTone,
-        keywords: analysisResult.keywords,
-      });
-
-      if (generatedAds) {
-        setCampaignData(prev => ({ ...prev, googleAds: generatedAds }));
-        toast({
-          title: "Google Ads Generated",
-          description: `${generatedAds.length} ads were created successfully`,
-        });
+    try {
+      const newGoogleAds = await generateGoogleAds(analysisResult);
+      
+      if (newGoogleAds) {
+        // Deduct credits only on successful generation
+        await deductUserCredits(
+          creditCosts.campaignCreation,
+          'campaign_creation',
+          `Generated ${newGoogleAds.length} Google text ads`
+        );
+        
+        console.log(`Generated ${newGoogleAds.length} Google ads`);
+        
+        // Update the campaign data with the generated ads
+        setCampaignData((prev: any) => ({
+          ...prev,
+          googleAds: newGoogleAds
+        }));
       }
     } catch (error) {
       console.error("Error generating Google ads:", error);
       toast({
-        title: "Failed to Generate Google Ads",
-        description: "There was an error generating your ads",
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    } finally {
-      setIsGenerating(false);
     }
   };
 
-  // Update a specific Google Ad
-  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd): void => {
+  const handleApplyOptimization = (adIndex: number, optimizedAd: OptimizedGoogleAd): void => {
+    if (adIndex < 0 || adIndex >= googleAds.length) {
+      console.error("Invalid ad index for optimization:", adIndex);
+      return;
+    }
+
+    // Create a new ad object with the optimized values
+    const updatedAd: GoogleAd = {
+      ...googleAds[adIndex],
+      headlines: optimizedAd.headlines,
+      descriptions: optimizedAd.descriptions
+    };
+
+    // Update the ad at the specified index
     const updatedAds = [...googleAds];
-    updatedAds[index] = updatedAd;
-    setCampaignData(prev => ({ ...prev, googleAds: updatedAds }));
+    updatedAds[adIndex] = updatedAd;
+
+    // Update the campaign data with the optimized ad
+    setCampaignData((prev: any) => ({
+      ...prev,
+      googleAds: updatedAds
+    }));
+
+    toast({
+      title: "Optimization Applied",
+      description: "The ad has been updated with the optimized content."
+    });
   };
 
   return {
     handleGenerateGoogleAds,
-    handleUpdateGoogleAd,
-    isGenerating
+    handleApplyOptimization
   };
 };
