@@ -1,33 +1,16 @@
 
 import { useState, useEffect } from "react";
-import { BannerTemplate, BannerFormat, BannerPlatform } from "@/components/smart-banner/SmartBannerBuilder";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCreditCosts, consumeCredits } from "@/services";
+import { BannerTemplate, BannerFormat, BannerPlatform } from "@/components/smart-banner/SmartBannerBuilder";
+import { TextElement, BannerElement } from "./types";
+import { getDefaultHeadline, getDefaultSubheadline, getDefaultCTA } from "./utils/defaultTextHelper";
+import { useUserImageBank } from "./useUserImageBank";
+import { useAIImageGeneration } from "./useAIImageGeneration";
+import { useTextElements } from "./useTextElements";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
-export interface TextElement {
-  id: string;
-  type: "headline" | "subheadline" | "cta";
-  content: string;
-}
-
-export interface BannerElement {
-  id: string;
-  type: "text" | "logo" | "shape";
-  content: string;
-  x: number;
-  y: number;
-  zIndex?: number;
-  color?: string;
-  fontSize?: number;
-  fontWeight?: string;
-  textAlign?: string;
-  scale?: number;
-  width?: string;
-  rotation?: number;
-}
+export type { TextElement, BannerElement };
 
 export const useBannerEditor = (
   selectedTemplate: BannerTemplate | null,
@@ -36,15 +19,37 @@ export const useBannerEditor = (
 ) => {
   const { user } = useAuth();
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [textElements, setTextElements] = useState<TextElement[]>([]);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [bannerElements, setBannerElements] = useState<BannerElement[]>([]);
-  const [brandTone, setBrandTone] = useState("professional");
-  const [userImages, setUserImages] = useState<string[]>([]);
   
-  const creditCosts = getCreditCosts();
+  // Use the refactored hooks
+  const { 
+    textElements, 
+    setTextElements, 
+    updateTextElement, 
+    generateAIText, 
+    isGeneratingText 
+  } = useTextElements();
+  
+  const {
+    userImages,
+    isUploading,
+    uploadImage,
+    saveImageToUserBank
+  } = useUserImageBank(user?.id);
+  
+  const {
+    isGeneratingImage,
+    generateAIImage,
+    regenerateImage,
+    brandTone,
+    setBrandTone
+  } = useAIImageGeneration(
+    selectedTemplate, 
+    selectedFormat, 
+    selectedPlatform, 
+    user?.id,
+    saveImageToUserBank
+  );
 
   // Initialize default text elements
   useEffect(() => {
@@ -114,104 +119,55 @@ export const useBannerEditor = (
       
       setBannerElements(defaultBannerElements);
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, setTextElements]);
 
-  // Load user images from storage
+  // Update banner elements when text elements change
   useEffect(() => {
-    const fetchUserImages = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .storage
-          .from('banner-images')
-          .list(user.id);
-        
-        if (error) {
-          console.error('Error fetching user images:', error);
-          return;
-        }
-        
-        if (data) {
-          const imageUrls = await Promise.all(
-            data.map(async (file) => {
-              const { data: urlData } = await supabase
-                .storage
-                .from('banner-images')
-                .getPublicUrl(`${user.id}/${file.name}`);
-              
-              return urlData.publicUrl;
-            })
-          );
-          
-          setUserImages(imageUrls);
-        }
-      } catch (error) {
-        console.error('Error processing user images:', error);
-      }
-    };
-    
-    fetchUserImages();
-  }, [user]);
+    if (textElements.length > 0 && bannerElements.length > 0) {
+      setBannerElements(prev => 
+        prev.map(el => {
+          if (el.type === "text") {
+            const contentType = el.content.includes(getDefaultHeadline("product")) ? "headline" :
+                               el.content.includes(getDefaultSubheadline("product")) ? "subheadline" :
+                               el.content.includes(getDefaultCTA("product")) ? "cta" : null;
+            
+            if (contentType) {
+              const matchingTextEl = textElements.find(t => t.type === contentType);
+              if (matchingTextEl) {
+                return { ...el, content: matchingTextEl.content };
+              }
+            }
+          }
+          return el;
+        })
+      );
+    }
+  }, [textElements, bannerElements.length]);
 
-  // Generate default text based on template type
-  const getDefaultHeadline = (templateType: string): string => {
-    switch (templateType) {
-      case "product":
-        return "Discover Our Premium Product";
-      case "seasonal":
-        return "Summer Special Offer";
-      case "event":
-        return "Join Our Exclusive Event";
-      case "brand":
-        return "Trust the Industry Leader";
-      case "discount":
-        return "30% Off Limited Time";
-      default:
-        return "Your Compelling Headline";
+  // Wrapper functions to maintain the original API
+  const handleGenerateAIImage = async (prompt: string): Promise<void> => {
+    const imageUrl = await generateAIImage(prompt);
+    if (imageUrl) {
+      setBackgroundImage(imageUrl);
     }
   };
 
-  const getDefaultSubheadline = (templateType: string): string => {
-    switch (templateType) {
-      case "product":
-        return "Quality and performance you can rely on";
-      case "seasonal":
-        return "Celebrate the season with our exclusive deals";
-      case "event":
-        return "Network with industry experts and pioneers";
-      case "brand":
-        return "Trusted by thousands of satisfied customers";
-      case "discount":
-        return "Use code SAVE30 at checkout today";
-      default:
-        return "Supporting information to convince your audience";
+  const handleUploadImage = async (file: File): Promise<void> => {
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      setBackgroundImage(imageUrl);
     }
   };
 
-  const getDefaultCTA = (templateType: string): string => {
-    switch (templateType) {
-      case "product":
-        return "Shop Now";
-      case "seasonal":
-        return "Get the Offer";
-      case "event":
-        return "Register Today";
-      case "brand":
-        return "Learn More";
-      case "discount":
-        return "Claim Discount";
-      default:
-        return "Click Here";
-    }
+  const selectUserImage = (imageUrl: string): void => {
+    setBackgroundImage(imageUrl);
+    toast.success("Image selected from your bank");
   };
 
-  // Update a text element
-  const updateTextElement = (id: string, updates: Partial<TextElement>) => {
+  // Additional functionality to maintain the complete API
+  const handleUpdateTextElement = (id: string, updates: Partial<TextElement>) => {
     // Update the text elements array
-    setTextElements(prev => 
-      prev.map(el => el.id === id ? { ...el, ...updates } : el)
-    );
+    updateTextElement(id, updates);
     
     // Also update the corresponding banner element
     setBannerElements(prev => 
@@ -227,270 +183,17 @@ export const useBannerEditor = (
     );
   };
 
-  // Generate an AI image for the banner background
-  const generateAIImage = async (prompt: string): Promise<void> => {
-    if (!user) {
-      toast.error("Please log in to generate images");
-      return;
-    }
-    
-    if (!selectedTemplate) {
-      toast.error("Please select a template first");
-      return;
-    }
-    
-    setIsGeneratingImage(true);
-    
-    try {
-      // Preview credit usage
-      toast.info("Credit Usage Preview", {
-        description: `This will use ${creditCosts.smartBanner} credits to generate this banner image`,
-        duration: 3000,
-      });
-      
-      // Consume credits
-      const creditSuccess = await consumeCredits(
-        user.id,
-        creditCosts.smartBanner,
-        'smart_banner_creation',
-        `AI Banner for ${selectedPlatform} (${selectedFormat})`
-      );
-      
-      if (!creditSuccess) {
-        toast.error("Insufficient Credits", {
-          description: "You don't have enough credits to generate this image",
-          duration: 5000,
-        });
-        return;
-      }
-      
-      // Determine image dimensions based on format
-      let imageFormat = "square";
-      if (selectedFormat === "horizontal") {
-        imageFormat = "landscape";
-      } else if (selectedFormat === "story") {
-        imageFormat = "portrait";
-      }
-      
-      // Call the Supabase function to generate the image with DALL-E
-      const { data, error } = await supabase.functions.invoke('generate-banner-image', {
-        body: { 
-          prompt,
-          platform: selectedPlatform,
-          format: selectedFormat,
-          templateType: selectedTemplate.type,
-          templateName: selectedTemplate.name,
-          templateId: selectedTemplate.id,
-          brandTone
-        },
-      });
-      
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      if (!data || !data.imageUrl) {
-        throw new Error("No image was generated");
-      }
-      
-      // Set the background image
-      setBackgroundImage(data.imageUrl);
-      
-      // Save to user's image bank
-      if (data.imageUrl) {
-        await saveImageToUserBank(data.imageUrl);
-      }
-      
-      toast.success("Banner image generated successfully");
-    } catch (error) {
-      console.error("Error generating AI image:", error);
-      toast.error("Failed to generate image", {
-        description: error instanceof Error ? error.message : "Unknown error occurred"
-      });
-      
-      // Refund credits on failure
-      if (user) {
-        await consumeCredits(
-          user.id,
-          -creditCosts.smartBanner,
-          'credit_refund',
-          'Refund for failed banner image generation'
-        );
-      }
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
-
-  // Save an image to the user's image bank
-  const saveImageToUserBank = async (imageUrl: string): Promise<void> => {
-    if (!user) return;
-    
-    try {
-      // Fetch the image as a blob
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      
-      // Generate a unique filename
-      const filename = `banner-${Date.now()}.png`;
-      
-      // Upload to Supabase Storage
-      const { error } = await supabase
-        .storage
-        .from('banner-images')
-        .upload(`${user.id}/${filename}`, blob, {
-          contentType: 'image/png',
-          upsert: false
-        });
-      
-      if (error) {
-        console.error('Error saving to image bank:', error);
-        return;
-      }
-      
-      // Get the public URL for the uploaded image
-      const { data } = await supabase
-        .storage
-        .from('banner-images')
-        .getPublicUrl(`${user.id}/${filename}`);
-      
-      // Add to user images array
-      setUserImages(prev => [...prev, data.publicUrl]);
-      
-      toast.success("Image saved to your bank", {
-        description: "You can access it in your image library"
-      });
-    } catch (error) {
-      console.error('Error saving image to bank:', error);
-    }
-  };
-
-  // Regenerate the AI image with the same prompt
-  const regenerateImage = async (): Promise<void> => {
-    // This would typically use the same prompt as before
-    // For simplicity, we're mocking this functionality
-    setIsGeneratingImage(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In a real implementation, you would call the AI service again
-      toast.success("Banner image regenerated");
-    } catch (error) {
-      console.error("Error regenerating image:", error);
-      toast.error("Failed to regenerate image");
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
-
-  // Generate AI text for headlines, subheadlines, or CTAs
-  const generateAIText = async (elementId: string, type: "headline" | "subheadline" | "cta"): Promise<void> => {
-    setIsGeneratingText(true);
-    
-    try {
-      // In a real implementation, you would call an AI service
-      // For now, we'll use placeholder text
-      
-      let generatedText = "";
-      
-      switch (type) {
-        case "headline":
-          generatedText = "Introducing Our Revolutionary Product";
-          break;
-        case "subheadline":
-          generatedText = "Experience the difference our solution makes for your business";
-          break;
-        case "cta":
-          generatedText = "Get Started Today";
-          break;
-      }
-      
-      // Update the text element
-      updateTextElement(elementId, { content: generatedText });
-      
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} generated`);
-    } catch (error) {
-      console.error("Error generating AI text:", error);
-      toast.error("Failed to generate text");
-    } finally {
-      setIsGeneratingText(false);
-    }
-  };
-
-  // Upload a custom image
-  const uploadImage = async (file: File): Promise<void> => {
-    if (!user) {
-      toast.error("Please log in to upload images");
-      return;
-    }
-    
-    setIsUploading(true);
-    
-    try {
-      // First display the image locally
-      const fileReader = new FileReader();
-      
-      const result = await new Promise<string>((resolve, reject) => {
-        fileReader.onload = () => resolve(fileReader.result as string);
-        fileReader.onerror = reject;
-        fileReader.readAsDataURL(file);
-      });
-      
-      // Set as current background image
-      setBackgroundImage(result);
-      
-      // Then save to storage
-      const filename = `upload-${Date.now()}-${file.name}`;
-      
-      const { error } = await supabase
-        .storage
-        .from('banner-images')
-        .upload(`${user.id}/${filename}`, file, {
-          contentType: file.type,
-          upsert: false
-        });
-      
-      if (error) {
-        console.error('Error uploading image:', error);
-        toast.error("Error saving image to your bank");
-        return;
-      }
-      
-      // Get the public URL
-      const { data } = await supabase
-        .storage
-        .from('banner-images')
-        .getPublicUrl(`${user.id}/${filename}`);
-      
-      // Add to user images
-      setUserImages(prev => [...prev, data.publicUrl]);
-      
-      toast.success("Image uploaded successfully and saved to your bank");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-  
-  // Select an image from the user's image bank
-  const selectUserImage = (imageUrl: string): void => {
-    setBackgroundImage(imageUrl);
-    toast.success("Image selected from your bank");
-  };
-
   return {
     backgroundImage,
     setBackgroundImage,
     textElements,
-    updateTextElement,
-    generateAIImage,
+    updateTextElement: handleUpdateTextElement,
+    generateAIImage: handleGenerateAIImage,
     isGeneratingImage,
     regenerateImage,
     generateAIText,
     isGeneratingText,
-    uploadImage,
+    uploadImage: handleUploadImage,
     isUploading,
     bannerElements,
     setBannerElements,
