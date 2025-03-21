@@ -102,7 +102,9 @@ const AIInsightsPage: React.FC = () => {
           <TabsContent value="insights" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AIOptimizationCard />
-              <AIInsightsCard />
+              <div className="w-full overflow-hidden">
+                <AIInsightsCard />
+              </div>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

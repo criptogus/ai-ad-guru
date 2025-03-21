@@ -65,7 +65,7 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
   };
 
   return (
-    <Card className="border-blue-100 shadow-sm">
+    <Card className="border-blue-100 shadow-sm h-full overflow-auto">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl font-semibold flex items-center">
@@ -80,9 +80,9 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
           Preview your ads in different formats and get AI-powered optimization suggestions
         </CardDescription>
       </CardHeader>
-      <CardContent className="pb-2">
-        <div className="flex justify-between items-center mb-4">
-          <div className="space-y-1 w-1/2 pr-2">
+      <CardContent className="pb-2 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div className="space-y-1 w-full md:w-1/2">
             <p className="text-sm font-medium">Optimization Goal</p>
             <Select
               value={selectedGoal}
@@ -114,7 +114,7 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
             </Select>
           </div>
           
-          <div className="space-y-1 w-1/2 pl-2">
+          <div className="space-y-1 w-full md:w-1/2">
             <p className="text-sm font-medium">Preview Mode</p>
             <Select
               value={previewMode}
@@ -141,8 +141,8 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
           </TabsList>
 
           <TabsContent value="google" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="border rounded-md p-4 bg-white">
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="border rounded-md p-2 bg-white">
                 <GoogleAdPreview ad={exampleGoogleAd} domain="yourdomain.com" />
               </div>
               <div className="space-y-4">
@@ -177,8 +177,8 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
           </TabsContent>
 
           <TabsContent value="meta" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="border rounded-md p-4 bg-white">
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="border rounded-md p-2 bg-white">
                 <InstagramPreview ad={exampleMetaAd} companyName="Your Company" />
               </div>
               <div className="space-y-4">
@@ -213,8 +213,8 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaign }) => {
           </TabsContent>
 
           <TabsContent value="microsoft" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="border rounded-md p-4 bg-white">
+            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="border rounded-md p-2 bg-white">
                 <MicrosoftAdPreview ad={exampleGoogleAd} domain="yourdomain.com" />
               </div>
               <div className="space-y-4">

@@ -124,7 +124,7 @@ const AnalyticsPage: React.FC = () => {
   return (
     <SafeAppLayout activePage="analytics">
       <div className="p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Analytics & Insights</h1>
+        <h1 className="text-2xl font-medium text-foreground">Analytics & Insights</h1>
         
         <Tabs defaultValue="analytics" className="w-full">
           <TabsList className="mb-4">
@@ -139,12 +139,14 @@ const AnalyticsPage: React.FC = () => {
           <TabsContent value="insights">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <AIOptimizationCard />
-              <AIInsightsCard />
+              <div className="w-full overflow-hidden">
+                <AIInsightsCard />
+              </div>
             </div>
             
             <Card>
               <CardHeader>
-                <CardTitle>Performance Analysis</CardTitle>
+                <CardTitle className="text-lg font-medium">Performance Analysis</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] flex items-center justify-center bg-muted/30 rounded-md">
