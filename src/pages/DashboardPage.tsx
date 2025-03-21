@@ -45,13 +45,17 @@ const DashboardPage: React.FC = () => {
       <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
         
-        {/* Horizontal row for Credits Status and Notifications at the top */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CreditsStatus user={dashboardUser} />
+        {/* Full width Notifications */}
+        <div className="grid grid-cols-1 gap-6">
           <SmartNotifications />
         </div>
         
-        {/* Leaderboard (Top Performing and Needs Attention) now horizontal */}
+        {/* Credits Status in its own row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CreditsStatus user={dashboardUser} />
+        </div>
+        
+        {/* Leaderboard (Top Performing and Needs Attention) */}
         <LeaderboardSection campaigns={campaigns} />
         
         {/* Business Overview */}

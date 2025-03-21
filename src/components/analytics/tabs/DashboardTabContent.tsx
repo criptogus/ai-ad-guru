@@ -14,9 +14,13 @@ interface DashboardTabContentProps {
 const DashboardTabContent: React.FC<DashboardTabContentProps> = ({ campaigns }) => {
   return (
     <div className="space-y-6">
-      {/* Horizontal row for Notifications and AI Optimization at the top */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Full width for Notifications */}
+      <div className="grid grid-cols-1 gap-6">
         <SmartNotifications />
+      </div>
+      
+      {/* AI Optimization in its own row */}
+      <div className="grid grid-cols-1 gap-6">
         <AIOptimizationCard />
       </div>
       

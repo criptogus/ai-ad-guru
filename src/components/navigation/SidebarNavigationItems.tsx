@@ -12,7 +12,6 @@ import {
   Settings,
   CreditCard,
   Megaphone,
-  Lightbulb,
   Users,
   LayoutTemplate,
   SlidersHorizontal,
@@ -100,12 +99,6 @@ export const SidebarNavigationItems: React.FC = () => {
         active={isActiveRoute("/billing")}
         icon={<CreditCard className="h-4 w-4" />}
         label="Billing"
-      />
-      <NavigationItem
-        to="/ai-insights"
-        active={isActiveRoute("/ai-insights")}
-        icon={<Lightbulb className="h-4 w-4" />}
-        label="AI Insights"
       />
       {user?.role === "admin" && (
         <NavigationItem
