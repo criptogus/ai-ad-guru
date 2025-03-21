@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CreditAction } from "../types";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Function to check if user has enough credits for an action
 export const checkCreditsForAction = async (
@@ -27,5 +28,44 @@ export const checkCreditsForAction = async (
     console.error("Error checking credits:", error);
     toast.error("Failed to check credit balance. Please try again.");
     return { hasEnoughCredits: false, currentCredits: 0 };
+  }
+};
+
+// Helper function to check if the current user has enough credits
+export const checkUserCredits = async (requiredCredits: number): Promise<boolean> => {
+  try {
+    const user = useAuth()?.user;
+    if (!user) {
+      console.error("No authenticated user found");
+      return false;
+    }
+    
+    const { hasEnoughCredits } = await checkCreditsForAction(user.id, 'credit_purchase', requiredCredits);
+    return hasEnoughCredits;
+  } catch (error) {
+    console.error("Error checking user credits:", error);
+    return false;
+  }
+};
+
+// Helper function to deduct credits from the current user
+export const deductUserCredits = async (
+  amount: number,
+  action: CreditAction,
+  description: string
+): Promise<boolean> => {
+  try {
+    const user = useAuth()?.user;
+    if (!user) {
+      console.error("No authenticated user found");
+      return false;
+    }
+    
+    // Import dynamically to avoid circular dependencies
+    const { consumeCredits } = await import('./creditUsage');
+    return await consumeCredits(user.id, amount, action, description);
+  } catch (error) {
+    console.error("Error deducting user credits:", error);
+    return false;
   }
 };

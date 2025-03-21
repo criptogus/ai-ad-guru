@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Loader2, Plus, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,8 +40,9 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
       onApplyOptimization(originalIndex, optimizedAd);
     } else if (onUpdateAd) {
       // Fallback to standard update if optimization-specific handler isn't available
+      const originalAd = googleAds[originalIndex];
       onUpdateAd(originalIndex, {
-        ...googleAds[originalIndex],
+        ...originalAd,
         headlines: optimizedAd.headlines,
         descriptions: optimizedAd.descriptions
       });

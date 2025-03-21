@@ -5,7 +5,9 @@ import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 import { getCreditCosts } from '@/services/credits/creditCosts';
 import { checkUserCredits, deductUserCredits } from '@/services/credits/creditChecks';
 import { useToast } from './use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+export { OptimizationGoal };  // Re-export the OptimizationGoal type
 
 export interface UseAdOptimizerReturn {
   optimizeGoogleAds: (ads: GoogleAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedGoogleAd[] | null>;
@@ -17,6 +19,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const { toast } = useToast();
   const creditCosts = getCreditCosts();
+  const { user } = useAuth();
 
   const optimizeGoogleAds = async (
     ads: GoogleAd[],
@@ -33,6 +36,15 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     }
 
     // Check if user has enough credits
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to optimize ads",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     const hasCredits = await checkUserCredits(creditCosts.aiOptimization.daily);
     
     if (!hasCredits) {
@@ -101,6 +113,15 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     }
 
     // Check if user has enough credits
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to optimize ads",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     const hasCredits = await checkUserCredits(creditCosts.aiOptimization.daily);
     
     if (!hasCredits) {
