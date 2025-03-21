@@ -27,26 +27,26 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   metrics = ["impressions", "clicks", "conversions"],
   height = 300
 }) => {
+  // Correct the config structure to match ChartConfig type
   const config = {
     impressions: {
       label: "Impressions",
-      color: "#8884d8",
       theme: { light: "#8884d8", dark: "#9c94ff" }
     },
     clicks: {
       label: "Clicks",
-      color: "#82ca9d",
       theme: { light: "#82ca9d", dark: "#6EE7B7" }
     },
     conversions: {
       label: "Conversions",
-      color: "#ffc658",
       theme: { light: "#ffc658", dark: "#FFB86C" }
     }
   };
 
   const getMetricColor = (metric: string) => {
-    return config[metric as keyof typeof config]?.color || "#8884d8";
+    const metricConfig = config[metric as keyof typeof config];
+    // Use appropriate theme color based on current theme
+    return metricConfig?.theme?.light || "#8884d8";
   };
 
   return (

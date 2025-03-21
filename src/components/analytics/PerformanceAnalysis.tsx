@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PerformanceChart from "./charts/PerformanceChart";
-import { DateRangeSelector } from "./filters/DateRangeSelector";
-import { MetricFilter } from "./filters/MetricFilter";
+import DateRangeSelector from "./filters/DateRangeSelector";
+import MetricFilter from "./filters/MetricFilter";
 import { generatePerformanceData } from "./data/mockData";
 import { Filter } from "lucide-react";
 
