@@ -15,6 +15,7 @@ import { Campaign as CampaignType, AdPlatform, CampaignStatus, BudgetType, Campa
 // Create an interface that extends AnalyticsCampaign with missing properties
 interface ExtendedAnalyticsCampaign extends AnalyticsCampaign {
   performance?: CampaignPerformance;
+  budgetType?: BudgetType;
 }
 
 const AnalyticsPage: React.FC = () => {
@@ -33,7 +34,7 @@ const AnalyticsPage: React.FC = () => {
         ctr: 4.4,
         startDate: "2023-08-15",
         endDate: "2023-09-15",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 28400,
           clicks: 1250,
@@ -58,7 +59,7 @@ const AnalyticsPage: React.FC = () => {
         ctr: 4.47,
         startDate: "2023-08-01",
         endDate: "2023-09-01",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 76500,
           clicks: 3420,
@@ -83,7 +84,7 @@ const AnalyticsPage: React.FC = () => {
         ctr: 3.41,
         startDate: "2023-07-20",
         endDate: "2023-08-20",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 24600,
           clicks: 840,
@@ -107,7 +108,7 @@ const AnalyticsPage: React.FC = () => {
         conversions: 36,
         ctr: 5.15,
         startDate: "2023-08-10",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 42300,
           clicks: 2180,
@@ -131,7 +132,7 @@ const AnalyticsPage: React.FC = () => {
         conversions: 136,
         ctr: 4.46,
         startDate: "2023-07-01",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 92400,
           clicks: 4120,
@@ -156,7 +157,7 @@ const AnalyticsPage: React.FC = () => {
         ctr: 4.64,
         startDate: "2023-08-05",
         endDate: "2023-09-05",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 28900,
           clicks: 1340,
@@ -180,7 +181,7 @@ const AnalyticsPage: React.FC = () => {
         conversions: 92,
         ctr: 5.24,
         startDate: "2023-07-15",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 54200,
           clicks: 2840,
@@ -204,7 +205,7 @@ const AnalyticsPage: React.FC = () => {
         conversions: 45,
         ctr: 4.81,
         startDate: "2023-08-20",
-        budgetType: "monthly",
+        budgetType: "monthly" as BudgetType,
         performance: {
           impressions: 38700,
           clicks: 1860,
@@ -265,22 +266,25 @@ const AnalyticsPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="dashboard" className="space-y-6">
+            {/* Horizontal row for Credits and Notifications */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <SmartNotifications />
+              <AIOptimizationCard />
+            </div>
+            
             <BusinessOverview campaigns={campaigns} />
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <CampaignSummaryCards campaigns={campaigns.slice(0, 6)} />
+              {/* Main content column - campaigns vertical layout */}
+              <div className="lg:col-span-2 space-y-6">
+                <CampaignSummaryCards campaigns={campaigns} />
               </div>
-              <div>
-                <SmartNotifications />
+              
+              {/* Sidebar column */}
+              <div className="space-y-6">
+                <LeaderboardSection campaigns={campaigns} />
+                <AIInsightsCard />
               </div>
-            </div>
-            
-            <LeaderboardSection campaigns={campaigns} />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AIOptimizationCard />
-              <AIInsightsCard />
             </div>
           </TabsContent>
           
@@ -292,8 +296,10 @@ const AnalyticsPage: React.FC = () => {
           
           <TabsContent value="insights">
             <div className="space-y-6 mb-6">
-              <AIOptimizationCard />
-              <AIInsightsCard />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <AIOptimizationCard />
+                <AIInsightsCard />
+              </div>
             </div>
             
             <Card>

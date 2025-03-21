@@ -61,21 +61,27 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
           </Dialog>
         </div>
 
-        <CreditProgressBar 
-          currentCredits={currentCredits}
-          totalCredits={totalCredits}
-          isLowCredits={isLowCredits}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <CreditProgressBar 
+              currentCredits={currentCredits}
+              totalCredits={totalCredits}
+              isLowCredits={isLowCredits}
+            />
 
-        <AccountStatusAlert 
-          isLowCredits={isLowCredits}
-          hasPaid={user?.hasPaid}
-        />
-        
-        <ActionButtons 
-          hasPaid={user?.hasPaid}
-          userId={user?.id}
-        />
+            <AccountStatusAlert 
+              isLowCredits={isLowCredits}
+              hasPaid={user?.hasPaid}
+            />
+          </div>
+          
+          <div className="flex items-center">
+            <ActionButtons 
+              hasPaid={user?.hasPaid}
+              userId={user?.id}
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

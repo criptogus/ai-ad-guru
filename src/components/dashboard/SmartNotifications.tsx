@@ -144,14 +144,14 @@ const SmartNotifications: React.FC = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-0 max-h-[360px] overflow-y-auto">
+      <CardContent className="p-0 max-h-[180px] overflow-y-auto">
         {filteredNotifications.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No notifications to display
           </div>
         ) : (
           <div className="divide-y">
-            {filteredNotifications.map((notification) => (
+            {filteredNotifications.slice(0, 3).map((notification) => (
               <div key={notification.id} className={`p-4 hover:bg-muted/50 transition-colors ${!notification.isRead ? 'bg-muted/20' : ''}`}>
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
@@ -184,23 +184,8 @@ const SmartNotifications: React.FC = () => {
                           Take action
                         </Button>
                       )}
-                      
-                      {notification.type === "warning" && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 px-2">
-                          View details
-                        </Button>
-                      )}
                     </div>
                   </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="p-0 h-7 w-7"
-                    onClick={() => markAsRead(notification.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             ))}

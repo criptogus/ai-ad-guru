@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Campaign } from "@/models/CampaignTypes";
@@ -80,7 +81,8 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-4">
+      <h2 className="text-xl font-medium mb-4">Campaign Performance</h2>
       {campaigns.map((campaign) => {
         const extendedCampaign = campaign as ExtendedCampaign;
         const trend = getPerformanceTrend(campaign);
@@ -93,19 +95,19 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
         return (
           <Card 
             key={campaign.id} 
-            className="overflow-hidden hover:ring-1 hover:ring-primary/20 transition-all cursor-pointer"
+            className="overflow-hidden hover:ring-1 hover:ring-primary/20 transition-all cursor-pointer mb-4"
             onClick={() => navigate(`/campaigns/${campaign.id}`)}
           >
             <CardContent className="p-0">
-              {/* Header */}
-              <div className="p-4 flex items-center justify-between border-b">
+              {/* Header - More prominence */}
+              <div className="p-4 flex items-center justify-between border-b bg-muted/10">
                 <div className="flex items-center gap-3">
-                  <div className="bg-muted rounded-full p-1.5">
+                  <div className="bg-muted rounded-full p-2">
                     {getPlatformIcon(campaign.platform)}
                   </div>
                   <div>
-                    <h3 className="font-medium text-sm line-clamp-1">{campaign.name}</h3>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <h3 className="font-medium text-base line-clamp-1">{campaign.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
                       <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusStyle(campaign.status)}`}>
                         {campaign.status}
                       </div>
@@ -118,9 +120,9 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                 </div>
               </div>
               
-              {/* Metrics */}
-              <div className="p-4">
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              {/* Metrics - Now in a grid layout for better space utilization */}
+              <div className="p-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-5">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                       <Activity className="h-3 w-3" />
@@ -153,9 +155,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                       <span className="font-medium">{impressions.toLocaleString()}</span>
                     </div>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                  
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                       <DollarSign className="h-3 w-3" />
@@ -178,7 +178,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                 </div>
                 
                 {/* Budget progress */}
-                <div className="mt-2">
+                <div className="mt-4">
                   <div className="flex justify-between mb-1 text-xs">
                     <span>Budget usage</span>
                     <span className="font-medium">${spent} / ${campaign.budget}</span>

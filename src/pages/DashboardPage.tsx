@@ -45,22 +45,26 @@ const DashboardPage: React.FC = () => {
       <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
         
+        {/* Horizontal row for Credits Status and Notifications */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CreditsStatus user={dashboardUser} />
+          <SmartNotifications />
+        </div>
+        
+        {/* Business Overview */}
         <BusinessOverview campaigns={campaigns} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Vertical column for campaigns taking up more space */}
           <div className="lg:col-span-2 space-y-6">
-            <CampaignSummaryCards campaigns={campaigns.slice(0, 3)} />
-            <LeaderboardSection campaigns={campaigns} />
+            <CampaignSummaryCards campaigns={campaigns} />
+            <ActiveCampaigns campaigns={campaigns} />
           </div>
+          
           <div className="space-y-6">
-            <CreditsStatus user={dashboardUser} />
-            <SmartNotifications />
+            <LeaderboardSection campaigns={campaigns} />
+            <AiInsights />
           </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ActiveCampaigns campaigns={campaigns} />
-          <AiInsights />
         </div>
       </div>
     </AppLayout>
