@@ -8,6 +8,7 @@ export const getCreditCosts = () => {
       every3Days: 5,
       weekly: 2
     },
-    imageGeneration: 5
+    imageGeneration: 5,
+    metaAdGeneration: 5  // Adding Meta/Instagram ad generation cost
   };
 };

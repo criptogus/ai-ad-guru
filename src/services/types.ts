@@ -9,7 +9,13 @@ export interface TeamMember {
   lastActive: string;
 }
 
-export type CreditAction = 'campaign_creation' | 'ai_optimization' | 'image_generation' | 'credit_purchase' | 'credit_refund';
+export type CreditAction = 
+  | 'campaign_creation' 
+  | 'ai_optimization' 
+  | 'image_generation' 
+  | 'credit_purchase' 
+  | 'credit_refund'
+  | 'meta_ad_generation';  // Added meta_ad_generation as a valid credit action
 
 export interface CreditUsage {
   id: string;

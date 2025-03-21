@@ -1,9 +1,23 @@
+
 import React, { createContext, useState, useContext } from 'react';
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
 export type LinkedInAd = MetaAd;
 export type MicrosoftAd = GoogleAd;
+
+export interface CampaignData {
+  name?: string;
+  description?: string;
+  platform?: string;
+  websiteUrl?: string;
+  targetAudience?: string;
+  googleAds?: GoogleAd[];
+  metaAds?: MetaAd[];
+  linkedInAds?: LinkedInAd[];
+  microsoftAds?: MicrosoftAd[];
+  [key: string]: any;
+}
 
 export interface CampaignContextType {
   currentStep: number;

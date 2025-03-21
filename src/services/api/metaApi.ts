@@ -15,20 +15,15 @@ export const generateMetaAds = async (
   try {
     console.log('Generating Meta ads with analysis data:', analysisResult);
     
-    const response = await secureApi({
-      url: '/generate-ads',
-      method: 'POST',
-      body: {
-        platform: 'meta',
-        campaignData: analysisResult
-      },
-      requiresAuth: true,
-    });
+    const response = await secureApi.post('/generate-ads', {
+      platform: 'meta',
+      campaignData: analysisResult
+    }, { requiresAuth: true });
 
     console.log('Meta ads API response:', response);
     
-    if (!response.success || !response.data) {
-      console.error('Failed to generate Meta ads:', response.error || 'Unknown error');
+    if (!response || !response.success || !response.data) {
+      console.error('Failed to generate Meta ads:', response?.error || 'Unknown error');
       return null;
     }
 
