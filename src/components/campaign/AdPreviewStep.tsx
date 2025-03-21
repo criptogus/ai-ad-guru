@@ -130,7 +130,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateMetaAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
-                onUpdateMetaAd={onUpdateMetaAd}
+                onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
                 analysisResult={analysisResult}
               />
             </TabsContent>
@@ -144,7 +144,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateLinkedInAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
-                onUpdateLinkedInAd={onUpdateMetaAd}
+                onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
                 analysisResult={analysisResult}
               />
             </TabsContent>
@@ -156,7 +156,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 microsoftAds={microsoftAds}
                 isGenerating={isGenerating}
                 onGenerateMicrosoftAds={onGenerateMicrosoftAds}
-                onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+                onUpdateAd={(index, updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
                 analysisResult={analysisResult}
               />
             </TabsContent>
