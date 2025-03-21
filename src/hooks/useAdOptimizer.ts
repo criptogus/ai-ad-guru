@@ -1,13 +1,14 @@
 
 import { useState } from 'react';
-import { optimizeAds, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd, OptimizationGoal } from '@/services/api/optimizerApi';
+import { optimizeAds, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
+import type { OptimizationGoal } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 import { getCreditCosts } from '@/services/credits/creditCosts';
 import { checkUserCredits, deductUserCredits } from '@/services/credits/creditChecks';
 import { useToast } from './use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-export { OptimizationGoal };  // Re-export the OptimizationGoal type
+export type { OptimizationGoal };  // Re-export the OptimizationGoal type
 
 export interface UseAdOptimizerReturn {
   optimizeGoogleAds: (ads: GoogleAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedGoogleAd[] | null>;
@@ -45,7 +46,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(creditCosts.aiOptimization.daily);
+    const hasCredits = await checkUserCredits(user.id, creditCosts.aiOptimization.daily);
     
     if (!hasCredits) {
       toast({
@@ -59,7 +60,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     setIsOptimizing(true);
     
     try {
-      const request: OptimizationRequest = {
+      const request = {
         ads,
         platform: 'google',
         performance,
@@ -71,6 +72,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         // Deduct credits only on successful optimization
         await deductUserCredits(
+          user.id,
           creditCosts.aiOptimization.daily,
           'ai_optimization',
           `Optimized ${optimizedAds.length} Google ads`
@@ -122,7 +124,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(creditCosts.aiOptimization.daily);
+    const hasCredits = await checkUserCredits(user.id, creditCosts.aiOptimization.daily);
     
     if (!hasCredits) {
       toast({
@@ -136,7 +138,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     setIsOptimizing(true);
     
     try {
-      const request: OptimizationRequest = {
+      const request = {
         ads,
         platform: 'meta',
         performance,
@@ -148,6 +150,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         // Deduct credits only on successful optimization
         await deductUserCredits(
+          user.id,
           creditCosts.aiOptimization.daily,
           'ai_optimization',
           `Optimized ${optimizedAds.length} Meta/Instagram ads`

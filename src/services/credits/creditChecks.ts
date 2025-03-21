@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CreditAction } from "../types";
-import { useAuth } from "@/contexts/AuthContext";
 
 // Function to check if user has enough credits for an action
 export const checkCreditsForAction = async (
@@ -32,15 +31,14 @@ export const checkCreditsForAction = async (
 };
 
 // Helper function to check if the current user has enough credits
-export const checkUserCredits = async (requiredCredits: number): Promise<boolean> => {
+export const checkUserCredits = async (userId: string, requiredCredits: number): Promise<boolean> => {
   try {
-    const user = useAuth()?.user;
-    if (!user) {
-      console.error("No authenticated user found");
+    if (!userId) {
+      console.error("No user ID provided");
       return false;
     }
     
-    const { hasEnoughCredits } = await checkCreditsForAction(user.id, 'credit_purchase', requiredCredits);
+    const { hasEnoughCredits } = await checkCreditsForAction(userId, 'credit_purchase', requiredCredits);
     return hasEnoughCredits;
   } catch (error) {
     console.error("Error checking user credits:", error);
@@ -50,20 +48,20 @@ export const checkUserCredits = async (requiredCredits: number): Promise<boolean
 
 // Helper function to deduct credits from the current user
 export const deductUserCredits = async (
+  userId: string,
   amount: number,
   action: CreditAction,
   description: string
 ): Promise<boolean> => {
   try {
-    const user = useAuth()?.user;
-    if (!user) {
-      console.error("No authenticated user found");
+    if (!userId) {
+      console.error("No user ID provided");
       return false;
     }
     
     // Import dynamically to avoid circular dependencies
     const { consumeCredits } = await import('./creditUsage');
-    return await consumeCredits(user.id, amount, action, description);
+    return await consumeCredits(userId, amount, action, description);
   } catch (error) {
     console.error("Error deducting user credits:", error);
     return false;

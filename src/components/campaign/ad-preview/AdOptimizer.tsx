@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Wand2, Sparkles, Rocket } from "lucide-react";
 import { useAdOptimizer } from "@/hooks/useAdOptimizer";
-import { OptimizationGoal } from "@/services/api/optimizerApi";
+import type { OptimizationGoal } from "@/services/api/optimizerApi";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
