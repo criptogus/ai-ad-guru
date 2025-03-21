@@ -28,7 +28,9 @@ const CampaignContent: React.FC = () => {
     linkedInAds,
     setLinkedInAds,
     microsoftAds,
-    setMicrosoftAds
+    setMicrosoftAds,
+    metaAds,
+    setMetaAds
   } = useCampaign();
 
   // Initialize the ad generation hook
@@ -42,22 +44,13 @@ const CampaignContent: React.FC = () => {
   // Initialize the website analysis hook for error state tracking
   const { isAnalyzing: isAnalyzingState } = useWebsiteAnalysis();
 
-  // Convert LinkedInAds to MetaAds format for compatibility
-  const convertedMetaAds: MetaAd[] = linkedInAds.map(ad => ({
-    primaryText: ad.primaryText,
-    headline: ad.headline,
-    description: ad.description,
-    imagePrompt: ad.imagePrompt || '', // Ensure imagePrompt is never undefined
-    imageUrl: ad.imageUrl
-  }));
-
   // Campaign actions (website analysis, ad generation, campaign creation)
   const {
     handleAnalyzeWebsite,
     isAnalyzing,
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds,
-    handleGenerateMetaAds, // Added MetaAds handler
+    handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateImage: origHandleGenerateImage,
     imageGenerationError,
@@ -72,7 +65,7 @@ const CampaignContent: React.FC = () => {
     linkedInAds,
     microsoftAds,
     generateGoogleAds,
-    generateMetaAds, // Use generateMetaAds for LinkedIn and Meta/Instagram ads
+    generateMetaAds,
     generateGoogleAds, // Reuse for Microsoft ads
     generateAdImage,
     setCampaignData
@@ -120,17 +113,10 @@ const CampaignContent: React.FC = () => {
     setGoogleAds(newAds);
   };
 
-  const handleUpdateLinkedInAd = (index: number, updatedAd: any) => {
-    const newAds = [...linkedInAds];
-    newAds[index] = updatedAd;
-    setLinkedInAds(newAds);
-  };
-
   const handleUpdateMetaAd = (index: number, updatedAd: any) => {
-    // Since we're reusing LinkedIn ads for Meta/Instagram ads, we're also reusing the update handler
-    const newAds = [...linkedInAds]; 
+    const newAds = [...metaAds];
     newAds[index] = updatedAd;
-    setLinkedInAds(newAds);
+    setMetaAds(newAds);
   };
 
   const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
@@ -140,12 +126,12 @@ const CampaignContent: React.FC = () => {
   };
 
   // Wrap handlers to return void to match expected type
-  const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
-    await handleGenerateMetaAds();
+  const handleGenerateGoogleAdsWrapper = async (): Promise<void> => {
+    await handleGenerateGoogleAds();
   };
 
-  const handleGenerateLinkedInAdsWrapper = async (): Promise<void> => {
-    await handleGenerateLinkedInAds();
+  const handleGenerateMetaAdsWrapper = async (): Promise<void> => {
+    await handleGenerateMetaAds();
   };
 
   const handleGenerateMicrosoftAdsWrapper = async (): Promise<void> => {
@@ -158,19 +144,19 @@ const CampaignContent: React.FC = () => {
     analysisResult,
     campaignData,
     googleAds,
-    metaAds: convertedMetaAds,
+    metaAds,
     microsoftAds,
     isAnalyzing: isAnalyzing || isAnalyzingState,
     isGenerating,
     loadingImageIndex,
     isCreating,
     handleWebsiteAnalysis,
-    handleGenerateGoogleAds,
+    handleGenerateGoogleAds: handleGenerateGoogleAdsWrapper,
     handleGenerateMetaAds: handleGenerateMetaAdsWrapper,
     handleGenerateMicrosoftAds: handleGenerateMicrosoftAdsWrapper,
     handleGenerateImage,
     handleUpdateGoogleAd,
-    handleUpdateMetaAd: handleUpdateMetaAd,
+    handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
     setCampaignData,
     handleBack,

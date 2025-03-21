@@ -46,9 +46,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onBack,
 }) => {
   const [activeTab, setActiveTab] = useState<string>("google");
-  const [campaigns, setCampaigns] = useState<{ [key: string]: any }>({});
-
-  // Get the selected platforms from localStorage or use default
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
   useEffect(() => {
@@ -61,17 +58,32 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           setSelectedPlatforms(campaignData.platforms);
           // Set active tab to the first selected platform
           setActiveTab(campaignData.platforms[0]);
+        } else {
+          // Default to 'google' if no platforms are selected
+          setSelectedPlatforms(['google']);
         }
       } catch (error) {
         console.error('Error parsing campaign data from localStorage:', error);
+        setSelectedPlatforms(['google']);
       }
+    } else {
+      // Default to 'google' if no campaign data exists
+      setSelectedPlatforms(['google']);
     }
   }, []);
 
   // Only show tabs for selected platforms
   const renderTabs = () => {
+    if (selectedPlatforms.length === 0) {
+      return (
+        <TabsList className="grid w-full grid-cols-1">
+          <TabsTrigger value="google">Google Ads</TabsTrigger>
+        </TabsList>
+      );
+    }
+
     return (
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className={`grid w-full grid-cols-${Math.min(selectedPlatforms.length, 4)}`}>
         {selectedPlatforms.includes('google') && (
           <TabsTrigger value="google">Google Ads</TabsTrigger>
         )}
@@ -107,60 +119,52 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {renderTabs()}
 
-          {selectedPlatforms.includes('google') && (
-            <TabsContent value="google" className="space-y-4">
-              <GoogleAdsTab
-                googleAds={googleAds}
-                isGenerating={isGenerating}
-                onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={handleUpdateGoogleAds}
-                analysisResult={analysisResult}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="google" className="space-y-4">
+            <GoogleAdsTab
+              googleAds={googleAds}
+              isGenerating={isGenerating}
+              onGenerateAds={onGenerateGoogleAds}
+              onUpdateGoogleAd={handleUpdateGoogleAds}
+              analysisResult={analysisResult}
+            />
+          </TabsContent>
 
-          {selectedPlatforms.includes('meta') && (
-            <TabsContent value="meta" className="space-y-4">
-              <MetaAdsTab
-                metaAds={metaAds}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateMetaAds={onGenerateMetaAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
-                analysisResult={analysisResult}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="meta" className="space-y-4">
+            <MetaAdsTab
+              metaAds={metaAds}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateMetaAds={onGenerateMetaAds}
+              onGenerateImage={onGenerateImage}
+              onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
+              analysisResult={analysisResult}
+            />
+          </TabsContent>
 
-          {selectedPlatforms.includes('linkedin') && (
-            <TabsContent value="linkedin" className="space-y-4">
-              <LinkedInAdsTab
-                linkedInAds={metaAds}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateLinkedInAds={onGenerateMetaAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
-                analysisResult={analysisResult}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="linkedin" className="space-y-4">
+            <LinkedInAdsTab
+              linkedInAds={metaAds}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateLinkedInAds={onGenerateMetaAds}
+              onGenerateImage={onGenerateImage}
+              onUpdateAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
+              analysisResult={analysisResult}
+            />
+          </TabsContent>
 
-          {selectedPlatforms.includes('microsoft') && (
-            <TabsContent value="microsoft" className="space-y-4">
-              <MicrosoftAdsTab
-                microsoftAds={microsoftAds}
-                isGenerating={isGenerating}
-                onGenerateMicrosoftAds={onGenerateMicrosoftAds}
-                onUpdateAd={(index, updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
-                analysisResult={analysisResult}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="microsoft" className="space-y-4">
+            <MicrosoftAdsTab
+              microsoftAds={microsoftAds}
+              isGenerating={isGenerating}
+              onGenerateMicrosoftAds={onGenerateMicrosoftAds}
+              onUpdateAd={(index, updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
+              analysisResult={analysisResult}
+            />
+          </TabsContent>
         </Tabs>
 
         <div className="mt-6 pt-4 border-t flex justify-between">
