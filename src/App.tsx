@@ -1,6 +1,6 @@
 
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -46,125 +46,123 @@ function App() {
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <AuthProvider>
             <LanguageProvider>
-              <Router>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/pricing" element={<PricingPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/features" element={<FeaturesPage />} />
-                  <Route path="/roadmap" element={<RoadmapPage />} />
-                  <Route path="/faq" element={<FAQPage />} />
-                  <Route path="/testimonials" element={<TestimonialsPage />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                  <Route path="/cookie-policy" element={<CookiePolicyPage />} />
-                  <Route path="/security-policy" element={<SecurityPolicyPage />} />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/features" element={<FeaturesPage />} />
+                <Route path="/roadmap" element={<RoadmapPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/testimonials" element={<TestimonialsPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+                <Route path="/security-policy" element={<SecurityPolicyPage />} />
 
-                  {/* Protected routes - require authentication */}
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <DashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/campaigns"
-                    element={
-                      <ProtectedRoute>
-                        <CampaignsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/create-campaign"
-                    element={
-                      <ProtectedRoute>
-                        <CreateCampaignPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/smart-banner"
-                    element={
-                      <ProtectedRoute>
-                        <SmartBannerBuilderPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/analytics"
-                    element={
-                      <ProtectedRoute>
-                        <AnalyticsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/config"
-                    element={
-                      <ProtectedRoute>
-                        <ConfigPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/billing"
-                    element={
-                      <ProtectedRoute>
-                        <BillingPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/ai-insights"
-                    element={
-                      <ProtectedRoute>
-                        <AIInsightsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/user-roles"
-                    element={
-                      <ProtectedRoute>
-                        <UserRolesPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/openai-test"
-                    element={
-                      <ProtectedRoute>
-                        <OpenAITestPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/test-ads"
-                    element={
-                      <ProtectedRoute>
-                        <TestAdsPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                {/* Protected routes - require authentication */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/campaigns"
+                  element={
+                    <ProtectedRoute>
+                      <CampaignsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/create-campaign"
+                  element={
+                    <ProtectedRoute>
+                      <CreateCampaignPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/smart-banner"
+                  element={
+                    <ProtectedRoute>
+                      <SmartBannerBuilderPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <AnalyticsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/config"
+                  element={
+                    <ProtectedRoute>
+                      <ConfigPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/billing"
+                  element={
+                    <ProtectedRoute>
+                      <BillingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ai-insights"
+                  element={
+                    <ProtectedRoute>
+                      <AIInsightsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-roles"
+                  element={
+                    <ProtectedRoute>
+                      <UserRolesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/openai-test"
+                  element={
+                    <ProtectedRoute>
+                      <OpenAITestPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/test-ads"
+                  element={
+                    <ProtectedRoute>
+                      <TestAdsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-                  {/* 404 route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Router>
+                {/* 404 route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
               <Toaster />
               <SonnerToaster position="bottom-right" />
             </LanguageProvider>
