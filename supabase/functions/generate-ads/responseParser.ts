@@ -1,211 +1,186 @@
 
-import { WebsiteAnalysisResult, GoogleAd, LinkedInAd, MicrosoftAd, MetaAd } from "./types.ts";
-import { generateFallbackGoogleAds as googleFallbacks } from "./fallbacks/googleAdsFallbacks.ts";
+import { WebsiteAnalysisResult } from "./types.ts";
 
-// Parse raw JSON response from OpenAI into structured ad objects
-export const parseAdResponse = (responseText: string | null, platform: string, campaignData: WebsiteAnalysisResult) => {
-  if (!responseText) {
-    console.error("Empty response from OpenAI");
-    return platform === 'google' 
-      ? generateFallbackGoogleAds(campaignData)
-      : platform === 'linkedin'
-      ? generateFallbackLinkedInAds(campaignData)
-      : platform === 'meta'
-      ? generateFallbackMetaAds(campaignData)
-      : generateFallbackMicrosoftAds(campaignData);
-  }
+// Parse ad response based on platform
+export function parseAdResponse(responseText: string, platform: string, campaignData: WebsiteAnalysisResult) {
+  console.log(`Parsing ${platform} ad response from OpenAI`);
   
   try {
-    // Extract JSON array from response text, in case OpenAI adds extra text
-    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    
-    if (!jsonMatch) {
-      console.error("No JSON array found in response:", responseText);
-      return platform === 'google' 
-        ? generateFallbackGoogleAds(campaignData)
-        : platform === 'linkedin'
-        ? generateFallbackLinkedInAds(campaignData)
-        : platform === 'meta'
-        ? generateFallbackMetaAds(campaignData)
-        : generateFallbackMicrosoftAds(campaignData);
+    // Try to parse the response as JSON
+    let data;
+    try {
+      // Extract JSON if it's wrapped in code blocks or has extra text
+      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
+                         responseText.match(/```([\s\S]*?)```/) ||
+                         responseText.match(/\[([\s\S]*?)\]/);
+      
+      const jsonText = jsonMatch ? jsonMatch[1] : responseText;
+      data = JSON.parse(jsonText.includes('[') ? jsonText : `[${jsonText}]`);
+    } catch (jsonError) {
+      // If direct parsing fails, try to find and extract the JSON part
+      console.log("Initial JSON parsing failed, trying to extract JSON part:", jsonError);
+      
+      // Look for patterns that might indicate JSON content
+      const startIdx = responseText.indexOf('[');
+      const endIdx = responseText.lastIndexOf(']') + 1;
+      
+      if (startIdx >= 0 && endIdx > startIdx) {
+        const jsonPart = responseText.substring(startIdx, endIdx);
+        data = JSON.parse(jsonPart);
+      } else {
+        throw new Error("Could not extract JSON content from response");
+      }
     }
     
-    const jsonString = jsonMatch[0];
-    const parsedData = JSON.parse(jsonString);
-    
-    if (!Array.isArray(parsedData) || parsedData.length === 0) {
-      console.error("No valid ad data found in parsed response:", parsedData);
-      return platform === 'google' 
-        ? generateFallbackGoogleAds(campaignData)
-        : platform === 'linkedin'
-        ? generateFallbackLinkedInAds(campaignData)
-        : platform === 'meta'
-        ? generateFallbackMetaAds(campaignData)
-        : generateFallbackMicrosoftAds(campaignData);
-    }
-
-    // For LinkedIn and Meta ads, validate and clean
-    if (platform === 'linkedin' || platform === 'meta') {
-      return validateAndCleanSocialAds(parsedData, campaignData);
-    }
-    
-    // For Google and Microsoft ads, validate headlines and descriptions
-    return parsedData.map((ad: any, index: number) => {
-      // Ensure all required fields exist
-      return {
-        headlines: Array.isArray(ad.headlines) ? 
-          ad.headlines.slice(0, 3).map((h: string) => h.substring(0, 30)) : 
-          [`${campaignData.companyName}`, "Quality Services", "Learn More"].map(h => h.substring(0, 30)),
-        descriptions: Array.isArray(ad.descriptions) ? 
-          ad.descriptions.slice(0, 2).map((d: string) => d.substring(0, 90)) : 
-          ["We provide top-quality services for your business needs.", "Contact us today to learn more!"].map(d => d.substring(0, 90))
-      };
-    });
-    
+    console.log(`Successfully parsed ${platform} ad data:`, data);
+    return data;
   } catch (error) {
-    console.error("Error parsing OpenAI response:", error, "Raw response:", responseText);
-    return platform === 'google' 
-      ? generateFallbackGoogleAds(campaignData)
-      : platform === 'linkedin'
-      ? generateFallbackLinkedInAds(campaignData)
-      : platform === 'meta'
-      ? generateFallbackMetaAds(campaignData)
-      : generateFallbackMicrosoftAds(campaignData);
+    console.error(`Error parsing ${platform} ad response:`, error);
+    console.log("Response text:", responseText);
+    
+    // Return fallback data based on platform
+    if (platform === 'google') {
+      return generateFallbackGoogleAds(campaignData);
+    } else if (platform === 'linkedin') {
+      return generateFallbackLinkedInAds(campaignData);
+    } else if (platform === 'microsoft') {
+      return generateFallbackMicrosoftAds(campaignData);
+    } else if (platform === 'meta') {
+      return generateFallbackMetaAds(campaignData);
+    } else {
+      return [];
+    }
   }
-};
+}
 
-// Generate fallback Google ads
-export const generateFallbackGoogleAds = (campaignData: WebsiteAnalysisResult): GoogleAd[] => {
-  return googleFallbacks(campaignData);
-};
-
-// Validate and clean LinkedIn and Meta ads
-const validateAndCleanSocialAds = (parsedData: any[], campaignData: WebsiteAnalysisResult): LinkedInAd[] | MetaAd[] => {
-  return parsedData.map((ad: any) => {
-    return {
-      headline: ad.headline?.substring(0, 150) || `${campaignData.companyName} - Professional Solutions`,
-      primaryText: ad.primaryText?.substring(0, 600) || `Looking for innovative business solutions? ${campaignData.companyName} offers cutting-edge services tailored for professionals like you.`,
-      description: ad.description?.substring(0, 600) || `${campaignData.companyName} provides professional solutions for businesses. Our services are designed to meet your specific needs and help your business grow.`,
-      imagePrompt: ad.imagePrompt || `Professional image of business people in a modern office setting for ${campaignData.companyName}`
-    };
-  });
-};
-
-// Generate fallback LinkedIn ads
-export const generateFallbackLinkedInAds = (campaignData: WebsiteAnalysisResult): LinkedInAd[] => {
-  const { companyName, businessDescription = "", targetAudience = "business professionals" } = campaignData;
-  
-  const shortDesc = businessDescription.substring(0, 100);
-  
-  return [
-    {
-      headline: `${companyName} - Professional Solutions for Your Business`,
-      primaryText: `Are you looking to optimize your business operations and drive growth? At ${companyName}, we understand the challenges that modern businesses face in today's competitive landscape.`,
-      description: `${shortDesc} We provide top-quality services tailored to meet the needs of ${targetAudience}. Contact us today to learn how we can help your business grow and succeed in today's competitive market.`,
-      imagePrompt: `Professional image of business people in a modern office setting for ${companyName}`
-    },
-    {
-      headline: `Transform Your Business with ${companyName}`,
-      primaryText: `In today's fast-paced business environment, staying ahead requires innovative solutions and strategic partnerships. ${companyName} delivers results that matter.`,
-      description: `Looking for innovative solutions? ${companyName} offers cutting-edge services designed to boost your productivity and ROI. Join hundreds of satisfied clients who have already elevated their business performance with our expert solutions.`,
-      imagePrompt: `Clean, professional image showing business growth chart or success metrics for ${companyName}`
-    },
-    {
-      headline: `${companyName}: Industry Leaders in Professional Solutions`,
-      primaryText: `What separates industry leaders from the competition? The right tools, strategies, and partners. ${companyName} helps businesses reach their full potential.`,
-      description: `With years of experience serving ${targetAudience}, we understand your unique challenges. Our team of experts is ready to provide customized solutions that drive real results. Schedule a consultation today to discover how we can support your business goals.`,
-      imagePrompt: `Professional team of diverse business experts representing ${companyName} in a corporate setting`
-    }
-  ];
-};
-
-// Generate fallback Meta ads (Instagram)
-export const generateFallbackMetaAds = (campaignData: WebsiteAnalysisResult): MetaAd[] => {
-  const { companyName, businessDescription = "", targetAudience = "customers" } = campaignData;
-  
-  const shortDesc = businessDescription.substring(0, 100);
-  
-  return [
-    {
-      headline: `Discover ${companyName}`,
-      primaryText: `Ready to transform your experience? ${companyName} offers innovative solutions designed specifically for ${targetAudience}. Swipe up to learn more about our services that are changing the industry.`,
-      description: `Learn More Today`,
-      imagePrompt: `Vibrant lifestyle image showing happy customers using ${companyName} products or services in a modern setting with natural lighting`
-    },
-    {
-      headline: `${companyName} - Elevate Your Experience`,
-      primaryText: `Don't settle for ordinary when you can have extraordinary. ${shortDesc} Our customers love the results they're getting - and you will too!`,
-      description: `See the Difference`,
-      imagePrompt: `Instagram-style aspirational image related to ${companyName}'s industry with eye-catching colors and professional composition`
-    },
-    {
-      headline: `The ${companyName} Advantage`,
-      primaryText: `What makes us different? It's our commitment to quality, innovation, and customer satisfaction. Join thousands of satisfied customers who have made the smart choice.`,
-      description: `Join Us Today`,
-      imagePrompt: `Polished, professional product shot or service visualization for ${companyName} with minimal background and perfect lighting`
-    }
-  ];
-};
-
-// Generate fallback Microsoft ads
-export const generateFallbackMicrosoftAds = (campaignData: WebsiteAnalysisResult): MicrosoftAd[] => {
-  const { companyName } = campaignData;
+// Generate fallback Google ads if API fails
+export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Our Company';
+  const description = campaignData.businessDescription?.substring(0, 60) || 'Quality products and services';
   
   return [
     {
       headlines: [
         `${companyName}`,
-        "Professional Services",
-        "Contact Us Today"
+        `Top Rated ${companyName}`,
+        `Visit ${companyName} Today`
       ],
       descriptions: [
-        "We provide top-quality business solutions designed for Microsoft ecosystem users.",
-        "Search on Bing to find more about our exclusive offers and services."
+        `${description}. Contact us today!`,
+        `Learn more about our services and solutions.`
       ]
     },
     {
       headlines: [
-        `${companyName} Solutions`,
-        "Premium Business Tools",
-        "Learn More Now"
+        `${companyName} - Official Site`,
+        `Best in Class Solutions`,
+        `Get Started Today`
       ],
       descriptions: [
-        "Tailored services for businesses using Microsoft technologies and platforms.",
-        "Discover how we can enhance your business operations and productivity."
-      ]
-    },
-    {
-      headlines: [
-        `Discover ${companyName}`,
-        "Enterprise-Grade Services",
-        "Schedule Demo Today"
-      ],
-      descriptions: [
-        "Professional solutions designed for Microsoft users and business professionals.",
-        "Optimize your workflow with our specialized services and expert support."
-      ]
-    },
-    {
-      headlines: [
-        `${companyName} Experts`,
-        "Microsoft-Compatible",
-        "Free Consultation"
-      ],
-      descriptions: [
-        "Our services integrate seamlessly with Microsoft Office, Azure, and the entire ecosystem.",
-        "Trusted by businesses who rely on Microsoft technologies for their operations."
-      ]
-    },
-    {
-      headlines: [
-        `Business Solutions`,
-        `${companyName} Services`,
-        "Book a Meeting"
-      ],
-      descriptions: [
-        "Professional services tailored for Bing users and Microsoft professionals.",
-        "Enhance your business performance with our specialized solutions."
+        `${description}. Professional service guaranteed.`,
+        `Call us or visit our website for more information.`
       ]
     }
   ];
-};
+}
+
+// Generate fallback LinkedIn ads if API fails
+export function generateFallbackLinkedInAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Our Company';
+  const description = campaignData.businessDescription?.substring(0, 100) || 'Quality professional services';
+  const industry = getIndustryFromDescription(campaignData.businessDescription || '');
+  
+  return [
+    {
+      headline: `${companyName} - Industry Leaders`,
+      primaryText: `${description} Our team of experts is ready to help you succeed in today's competitive market.`,
+      description: `Learn More About Our Services`,
+      imagePrompt: `Professional business image of a modern office with people working, suitable for ${industry} industry, high quality, corporate style`
+    },
+    {
+      headline: `Grow Your Business with ${companyName}`,
+      primaryText: `${description} We provide cutting-edge solutions that drive results and deliver value.`,
+      description: `Connect With Us Today`,
+      imagePrompt: `Professional image showing business growth concept with upward trending graph, suitable for ${industry} industry, corporate style`
+    }
+  ];
+}
+
+// Generate fallback Microsoft ads if API fails
+export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Our Company';
+  const description = campaignData.businessDescription?.substring(0, 60) || 'Quality products and services';
+  
+  return [
+    {
+      headlines: [
+        `${companyName} Official`,
+        `Industry Leaders`,
+        `Contact Us Today`
+      ],
+      descriptions: [
+        `${description}. Professional service guaranteed.`,
+        `Visit our website for more information.`
+      ]
+    },
+    {
+      headlines: [
+        `${companyName} Services`,
+        `Top Rated Solutions`,
+        `Learn More Now`
+      ],
+      descriptions: [
+        `${description}. Expert team ready to assist.`,
+        `Free consultation available. Call now.`
+      ]
+    }
+  ];
+}
+
+// Generate fallback Meta ads if API fails
+export function generateFallbackMetaAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Our Company';
+  const description = campaignData.businessDescription?.substring(0, 100) || 'Quality products and services';
+  const industry = getIndustryFromDescription(campaignData.businessDescription || '');
+  
+  return [
+    {
+      headline: `Discover ${companyName}`,
+      primaryText: `${description.substring(0, 150)} We're dedicated to providing exceptional service and value.`,
+      description: `Learn More`,
+      imagePrompt: `Lifestyle photo of people using a product or service in the ${industry} industry, bright, engaging, Instagram-style photo with good lighting`
+    },
+    {
+      headline: `${companyName} - New Collection`,
+      primaryText: `Explore our latest offerings designed to meet your needs. ${description.substring(0, 100)}`,
+      description: `Shop Now`,
+      imagePrompt: `Styled product photography with aesthetic lighting showing a product or service from ${industry} industry, with Instagram-friendly colors and composition`
+    },
+    {
+      headline: `Join the ${companyName} Community`,
+      primaryText: `Thousands of satisfied customers have chosen us. Here's why you should too. ${description.substring(0, 80)}`,
+      description: `Sign Up Today`,
+      imagePrompt: `Community of diverse people engaged with a product or service in the ${industry} industry, warm tones, lifestyle photography, Instagram-style`
+    }
+  ];
+}
+
+// Helper function to extract industry from description
+function getIndustryFromDescription(description: string): string {
+  const industries = [
+    'technology', 'finance', 'healthcare', 'education', 
+    'retail', 'manufacturing', 'marketing', 'real estate',
+    'consulting', 'entertainment', 'hospitality', 'automotive'
+  ];
+  
+  const lowerDesc = description.toLowerCase();
+  
+  for (const industry of industries) {
+    if (lowerDesc.includes(industry)) {
+      return industry;
+    }
+  }
+  
+  // Default industry if none detected
+  return 'business';
+}

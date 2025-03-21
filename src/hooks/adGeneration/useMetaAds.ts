@@ -1,74 +1,53 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { WebsiteAnalysisResult } from '../useWebsiteAnalysis';
 import { MetaAd } from './types';
+import { generateMetaAds as apiGenerateMetaAds } from '@/services/api/metaApi';
+import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
+import { useToast } from '@/hooks/use-toast';
 
 export const useMetaAds = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const { toast } = useToast();
 
-  const generateMetaAds = async (campaignData: WebsiteAnalysisResult) => {
-    setIsGenerating(true);
-    
+  const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
     try {
-      console.log('Generating Meta ads for:', campaignData.companyName);
+      console.log("useMetaAds - Generating Meta ads with data:", campaignData);
       
-      const { data, error } = await supabase.functions.invoke('generate-ads', {
-        body: { 
-          platform: 'meta',
-          campaignData 
-        },
-      });
-
-      if (error) {
-        console.error('Error generating Meta ads:', error);
+      // Call the API to generate Meta ads
+      const generatedAds = await apiGenerateMetaAds(campaignData);
+      
+      if (!generatedAds || generatedAds.length === 0) {
         toast({
-          title: "Generation Failed",
-          description: error.message || "Failed to generate Meta ads",
+          title: "Unable to generate Instagram ads",
+          description: "There was a problem generating ad suggestions. Please try again.",
           variant: "destructive",
         });
         return null;
       }
-
-      if (!data.success) {
-        console.error('Meta ads generation failed:', data.error);
-        toast({
-          title: "Generation Failed",
-          description: data.error || "Failed to generate Meta ads",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      console.log('Meta ads generated successfully:', data.data);
-      const ads = data.data as MetaAd[];
-      setMetaAds(ads);
+      
+      // Update the state with the generated ads
+      setMetaAds(generatedAds);
+      console.log("useMetaAds - Generated Meta ads:", generatedAds);
       
       toast({
-        title: "Ads Generated",
-        description: `Successfully generated ${ads.length} Meta/Instagram ad variations`,
+        title: "Instagram ads generated",
+        description: `${generatedAds.length} ad variations created.`,
       });
       
-      return ads;
+      return generatedAds;
     } catch (error) {
-      console.error('Error generating Meta ads:', error);
+      console.error("Error in useMetaAds.generateMetaAds:", error);
       toast({
-        title: "Generation Failed",
-        description: "An unexpected error occurred",
+        title: "Generation failed",
+        description: "There was a problem connecting to the AI service.",
         variant: "destructive",
       });
       return null;
-    } finally {
-      setIsGenerating(false);
     }
   };
 
   return {
     generateMetaAds,
-    isGenerating,
     metaAds,
   };
 };

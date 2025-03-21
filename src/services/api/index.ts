@@ -1,4 +1,5 @@
 
 import { secureApi } from './secureApi';
+import { generateMetaAds } from './metaApi';
 
-export { secureApi };
+export { secureApi, generateMetaAds };
