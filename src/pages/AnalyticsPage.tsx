@@ -266,25 +266,25 @@ const AnalyticsPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="dashboard" className="space-y-6">
-            {/* Horizontal row for Credits and Notifications */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Horizontal row for Notifications and AI Optimization at the top */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <SmartNotifications />
               <AIOptimizationCard />
             </div>
             
+            {/* Top Performing and Needs Attention in a horizontal row */}
+            <LeaderboardSection campaigns={campaigns} />
+            
             <BusinessOverview campaigns={campaigns} />
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main content column - campaigns vertical layout */}
-              <div className="lg:col-span-2 space-y-6">
-                <CampaignSummaryCards campaigns={campaigns} />
-              </div>
-              
-              {/* Sidebar column */}
-              <div className="space-y-6">
-                <LeaderboardSection campaigns={campaigns} />
-                <AIInsightsCard />
-              </div>
+            {/* Main content - Full width for campaigns */}
+            <div className="grid grid-cols-1 gap-6">
+              <CampaignSummaryCards campaigns={campaigns} />
+            </div>
+            
+            {/* AI Insights in a full width row */}
+            <div className="grid grid-cols-1 gap-6">
+              <AIInsightsCard />
             </div>
           </TabsContent>
           
@@ -296,8 +296,14 @@ const AnalyticsPage: React.FC = () => {
           
           <TabsContent value="insights">
             <div className="space-y-6 mb-6">
+              {/* Notifications and AI Optimization in a horizontal row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SmartNotifications />
                 <AIOptimizationCard />
+              </div>
+              
+              {/* AI Insights in a full width row */}
+              <div className="grid grid-cols-1 gap-6">
                 <AIInsightsCard />
               </div>
             </div>
