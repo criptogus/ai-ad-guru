@@ -63,9 +63,9 @@ const SmartBannerBuilder: React.FC = () => {
     setCurrentStep("editor");
   };
 
-  // Fix for the return type mismatch error
-  const handleGenerateAIImage = async (prompt: string): Promise<void> => {
-    await generateAIImage(prompt);
+  // Fix for the return type mismatch error - ensure regenerateImage returns void
+  const handleRegenerateImage = async (): Promise<void> => {
+    await regenerateImage();
   };
 
   return (
@@ -97,8 +97,8 @@ const SmartBannerBuilder: React.FC = () => {
         onTemplateSelect={handleTemplateSelect}
         onGoToExport={handleGoToExport}
         onUpdateTextElement={updateTextElement}
-        onGenerateAIImage={handleGenerateAIImage}
-        onRegenerateImage={regenerateImage}
+        onGenerateAIImage={generateAIImage}
+        onRegenerateImage={handleRegenerateImage}
         onGenerateAIText={generateAIText}
         onUploadImage={uploadImage}
         onSelectUserImage={selectUserImage}

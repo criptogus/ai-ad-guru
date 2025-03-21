@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { BannerTemplate } from "@/components/smart-banner/SmartBannerBuilder";
+import { BannerTemplate } from "./types";
 
 export const useBannerTemplate = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<BannerTemplate | null>(null);

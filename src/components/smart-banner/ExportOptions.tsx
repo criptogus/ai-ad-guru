@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BannerFormat, BannerPlatform } from "./SmartBannerBuilder";
-import { TextElement, BannerElement } from "@/hooks/smart-banner/useBannerEditor";
+import { BannerFormat, BannerPlatform } from "./types";
+import { TextElement, BannerElement } from "@/hooks/smart-banner/types";
 import { Download, Share2, Save, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCreditCosts, consumeCredits } from "@/services";

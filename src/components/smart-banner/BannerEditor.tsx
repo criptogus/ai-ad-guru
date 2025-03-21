@@ -17,9 +17,9 @@ import {
   MoveRight,
   GridIcon
 } from "lucide-react";
-import { BannerFormat, BannerPlatform, BannerTemplate } from "./SmartBannerBuilder";
+import { BannerFormat, BannerPlatform, BannerTemplate } from "./types";
 import { Slider } from "@/components/ui/slider";
-import { BannerElement, TextElement } from "@/hooks/smart-banner/useBannerEditor";
+import { BannerElement, TextElement } from "@/hooks/smart-banner/types";
 import ImagePromptForm from "./ImagePromptForm";
 import TextPromptForm from "./TextPromptForm";
 import ElementList from "./ElementList";

@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BannerFormat, BannerPlatform } from "./SmartBannerBuilder";
-import { TextElement, BannerElement } from "@/hooks/smart-banner/useBannerEditor";
+import { BannerFormat, BannerPlatform } from "./types";
+import { TextElement, BannerElement } from "@/hooks/smart-banner/types";
 
 interface BannerPreviewProps {
   format: BannerFormat;

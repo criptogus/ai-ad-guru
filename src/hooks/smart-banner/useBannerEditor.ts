@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/contexts/AuthContext";
-import { BannerTemplate, BannerFormat, BannerPlatform } from "@/components/smart-banner/SmartBannerBuilder";
-import { TextElement, BannerElement } from "./types";
+import { BannerTemplate, BannerFormat, BannerPlatform, TextElement, BannerElement } from "./types";
 import { getDefaultHeadline, getDefaultSubheadline, getDefaultCTA } from "./utils/defaultTextHelper";
 import { useUserImageBank } from "./useUserImageBank";
 import { useAIImageGeneration } from "./useAIImageGeneration";
@@ -21,7 +19,6 @@ export const useBannerEditor = (
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [bannerElements, setBannerElements] = useState<BannerElement[]>([]);
   
-  // Use the refactored hooks
   const { 
     textElements, 
     setTextElements, 
@@ -51,7 +48,6 @@ export const useBannerEditor = (
     saveImageToUserBank
   );
 
-  // Initialize default text elements
   useEffect(() => {
     if (selectedTemplate) {
       const defaultTextElements: TextElement[] = [
@@ -74,12 +70,11 @@ export const useBannerEditor = (
       
       setTextElements(defaultTextElements);
       
-      // Initialize banner elements for positioning
       const defaultBannerElements: BannerElement[] = [
         {
           id: uuidv4(),
           type: "text",
-          content: defaultTextElements[0].content, // Headline
+          content: defaultTextElements[0].content,
           x: 50,
           y: 30,
           zIndex: 2,
@@ -92,7 +87,7 @@ export const useBannerEditor = (
         {
           id: uuidv4(),
           type: "text",
-          content: defaultTextElements[1].content, // Subheadline
+          content: defaultTextElements[1].content,
           x: 50,
           y: 50,
           zIndex: 2,
@@ -105,7 +100,7 @@ export const useBannerEditor = (
         {
           id: uuidv4(),
           type: "text",
-          content: defaultTextElements[2].content, // CTA
+          content: defaultTextElements[2].content,
           x: 50,
           y: 75,
           zIndex: 2,
@@ -121,7 +116,6 @@ export const useBannerEditor = (
     }
   }, [selectedTemplate, setTextElements]);
 
-  // Update banner elements when text elements change
   useEffect(() => {
     if (textElements.length > 0 && bannerElements.length > 0) {
       setBannerElements(prev => 
@@ -144,7 +138,6 @@ export const useBannerEditor = (
     }
   }, [textElements, bannerElements.length]);
 
-  // Wrapper functions to maintain the original API
   const handleGenerateAIImage = async (prompt: string): Promise<void> => {
     const imageUrl = await generateAIImage(prompt);
     if (imageUrl) {
@@ -164,12 +157,9 @@ export const useBannerEditor = (
     toast.success("Image selected from your bank");
   };
 
-  // Additional functionality to maintain the complete API
   const handleUpdateTextElement = (id: string, updates: Partial<TextElement>) => {
-    // Update the text elements array
     updateTextElement(id, updates);
     
-    // Also update the corresponding banner element
     setBannerElements(prev => 
       prev.map(el => {
         if (el.type === "text") {

@@ -1,5 +1,6 @@
 
-import { BannerTemplate, BannerFormat, BannerPlatform } from "@/components/smart-banner/SmartBannerBuilder";
+// Import types from the components/smart-banner/types.ts file instead of SmartBannerBuilder
+import { BannerFormat, BannerPlatform, BannerTemplate } from "@/components/smart-banner/types";
 
 export interface TextElement {
   id: string;
@@ -22,3 +23,6 @@ export interface BannerElement {
   width?: string;
   rotation?: number;
 }
+
+// Re-export the types for better organization
+export type { BannerFormat, BannerPlatform, BannerTemplate };

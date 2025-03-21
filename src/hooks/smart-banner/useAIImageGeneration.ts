@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { BannerTemplate, BannerFormat, BannerPlatform } from "@/components/smart-banner/SmartBannerBuilder";
+import { BannerTemplate, BannerFormat, BannerPlatform } from "./types";
 import { getCreditCosts, consumeCredits } from "@/services";
 
 export const useAIImageGeneration = (

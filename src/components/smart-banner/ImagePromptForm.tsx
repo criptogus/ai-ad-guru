@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Image as ImageIcon, RefreshCw } from "lucide-react";
-import { BannerTemplate, BannerFormat, BannerPlatform } from "./SmartBannerBuilder";
+import { BannerTemplate, BannerFormat, BannerPlatform } from "./types";
 
 interface ImagePromptFormProps {
   template: BannerTemplate;
@@ -25,11 +24,9 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
   const [prompt, setPrompt] = useState("");
   const [brandTone, setBrandTone] = useState("professional");
 
-  // Generate a default prompt based on the template and platform
   useEffect(() => {
     let defaultPrompt = "";
     
-    // Handle special template IDs first (these take precedence)
     if (template.id === "webinar-event") {
       defaultPrompt = "A professional webinar announcement with virtual conference imagery, featuring a laptop or screen with audience participants, modern technology elements, and a professional speaker or host. Include visual cues that suggest learning, interaction, and online engagement.";
     } else if (template.id === "holiday-special") {
@@ -37,7 +34,6 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
     } else if (template.id === "flash-sale") {
       defaultPrompt = "A high-energy flash sale promotional image with bold colors, dynamic elements that create urgency, price reduction visuals, limited-time offer indicators, and excitement-generating design elements.";
     } else {
-      // Fall back to type-based prompts if no specific template ID match
       switch (template.type) {
         case "product":
           defaultPrompt = "A professional product image with clean background, showing the product from an optimal angle with commercial-grade lighting.";
@@ -59,7 +55,6 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
       }
     }
     
-    // Add platform-specific details
     if (platform === "instagram") {
       defaultPrompt += " Optimized for Instagram with vibrant details and social-friendly composition.";
     } else if (platform === "linkedin") {
@@ -68,7 +63,6 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
       defaultPrompt += " Designed for Google display ads with clear focal points and balanced visual hierarchy.";
     }
     
-    // Add format-specific guidance
     if (format === "square") {
       defaultPrompt += " Composed for square format with balanced central elements.";
     } else if (format === "horizontal") {
@@ -77,7 +71,6 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
       defaultPrompt += " Created for vertical/story format with stacked visual hierarchy.";
     }
     
-    // Add specific template name context if significant
     if (template.name.toLowerCase().includes("minimalist")) {
       defaultPrompt += " Using a minimalist design approach with clean lines and ample white space.";
     } else if (template.name.toLowerCase().includes("flash")) {
@@ -87,7 +80,6 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
     setPrompt(defaultPrompt);
   }, [template, platform, format]);
 
-  // Helper to get current season
   const getSeason = () => {
     const month = new Date().getMonth();
     if (month >= 2 && month <= 4) return "spring";
