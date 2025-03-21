@@ -14,7 +14,8 @@ import {
   RefreshCw, 
   Palette, 
   Layers, 
-  MoveRight 
+  MoveRight,
+  GridIcon
 } from "lucide-react";
 import { BannerFormat, BannerPlatform, BannerTemplate } from "./SmartBannerBuilder";
 import { Slider } from "@/components/ui/slider";
@@ -23,6 +24,7 @@ import ImagePromptForm from "./ImagePromptForm";
 import TextPromptForm from "./TextPromptForm";
 import ElementList from "./ElementList";
 import ColorPicker from "./ColorPicker";
+import UserImageBank from "./UserImageBank";
 
 interface BannerEditorProps {
   template: BannerTemplate;
@@ -31,11 +33,13 @@ interface BannerEditorProps {
   backgroundImage: string | null;
   textElements: TextElement[];
   bannerElements: BannerElement[];
+  userImages: string[];
   onUpdateTextElement: (id: string, updates: Partial<TextElement>) => void;
   onGenerateAIImage: (prompt: string) => Promise<void>;
   onRegenerateImage: () => Promise<void>;
   onGenerateAIText: (elementId: string, type: "headline" | "subheadline" | "cta") => Promise<void>;
   onUploadImage: (file: File) => Promise<void>;
+  onSelectUserImage: (imageUrl: string) => void;
   isGeneratingImage: boolean;
   isUploading: boolean;
   onGoToExport: () => void;
@@ -49,11 +53,13 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
   backgroundImage,
   textElements,
   bannerElements,
+  userImages,
   onUpdateTextElement,
   onGenerateAIImage,
   onRegenerateImage,
   onGenerateAIText,
   onUploadImage,
+  onSelectUserImage,
   isGeneratingImage,
   isUploading,
   onGoToExport,
@@ -61,6 +67,7 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("image");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [imageSubTab, setImageSubTab] = useState<"generate" | "upload" | "bank">("generate");
 
   const selectedElement = selectedElementId 
     ? bannerElements.find(el => el.id === selectedElementId) 
@@ -118,23 +125,63 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
             <TabsContent value="image" className="space-y-4">
               {!backgroundImage ? (
                 <div className="space-y-4">
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                    <div>
-                      <ImagePromptForm 
-                        template={template} 
-                        platform={platform}
-                        format={format}
-                        onSubmit={onGenerateAIImage}
-                        isGenerating={isGeneratingImage}
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="border rounded-md p-4">
+                  <Tabs value={imageSubTab} onValueChange={(v) => setImageSubTab(v as any)} className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
+                      <TabsTrigger value="generate" className="flex items-center gap-1">
+                        <Sparkles size={14} /> Generate
+                      </TabsTrigger>
+                      <TabsTrigger value="upload" className="flex items-center gap-1">
+                        <Upload size={14} /> Upload
+                      </TabsTrigger>
+                      <TabsTrigger value="bank" className="flex items-center gap-1">
+                        <GridIcon size={14} /> Image Bank
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="generate">
+                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                        <div>
+                          <ImagePromptForm 
+                            template={template} 
+                            platform={platform}
+                            format={format}
+                            onSubmit={onGenerateAIImage}
+                            isGenerating={isGeneratingImage}
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <div className="border rounded-md p-4 bg-accent/30">
+                            <h3 className="font-medium mb-2">Template Information</h3>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Template:</span>
+                                <span className="font-medium">{template.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Type:</span>
+                                <span className="font-medium capitalize">{template.type}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Format:</span>
+                                <span className="font-medium capitalize">{format}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Platform:</span>
+                                <span className="font-medium capitalize">{platform}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="upload">
+                      <div className="border rounded-md p-6">
                         <h3 className="font-medium mb-2 flex items-center gap-2">
                           <Upload size={16} /> Upload Your Own Image
                         </h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Upload your own image to use as the banner background
+                          Upload your own image to use as the banner background. It will be saved to your image bank.
                         </p>
                         <Input
                           ref={fileInputRef}
@@ -145,44 +192,34 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
                         />
                         <Button
                           variant="outline"
-                          className="w-full"
+                          className="w-full h-32 border-dashed"
                           onClick={handleTriggerFileInput}
                           disabled={isUploading}
                         >
                           {isUploading ? (
-                            <>
-                              <RefreshCw size={16} className="mr-2 animate-spin" />
-                              Uploading...
-                            </>
+                            <div className="flex flex-col items-center gap-2">
+                              <RefreshCw size={24} className="animate-spin" />
+                              <span>Uploading...</span>
+                            </div>
                           ) : (
-                            <>Choose Image</>
+                            <div className="flex flex-col items-center gap-2">
+                              <Upload size={24} />
+                              <span>Click to browse files</span>
+                              <span className="text-xs text-muted-foreground">Supports JPG, PNG, GIF</span>
+                            </div>
                           )}
                         </Button>
                       </div>
-                      
-                      <div className="border rounded-md p-4 bg-accent/30">
-                        <h3 className="font-medium mb-2">Template Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Template:</span>
-                            <span className="font-medium">{template.name}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Type:</span>
-                            <span className="font-medium capitalize">{template.type}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Format:</span>
-                            <span className="font-medium capitalize">{format}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Platform:</span>
-                            <span className="font-medium capitalize">{platform}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="bank">
+                      <UserImageBank 
+                        images={userImages}
+                        onSelectImage={onSelectUserImage}
+                        isLoading={false}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -193,7 +230,7 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       onClick={onRegenerateImage}
@@ -211,17 +248,28 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
                       variant="outline"
                       onClick={handleTriggerFileInput}
                       disabled={isUploading}
+                      className="flex items-center gap-2"
                     >
-                      {isUploading ? (
-                        <>
-                          <RefreshCw size={16} className="mr-2 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>Upload New Image</>
-                      )}
+                      <Upload size={16} />
+                      Upload New Image
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setImageSubTab("bank")}
+                      className="flex items-center gap-2"
+                    >
+                      <GridIcon size={16} />
+                      Choose from Image Bank
                     </Button>
                   </div>
+                  
+                  {imageSubTab === "bank" && (
+                    <UserImageBank 
+                      images={userImages}
+                      onSelectImage={onSelectUserImage}
+                      isLoading={false}
+                    />
+                  )}
                 </div>
               )}
             </TabsContent>

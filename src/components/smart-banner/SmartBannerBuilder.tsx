@@ -48,7 +48,9 @@ const SmartBannerBuilder: React.FC = () => {
     updateTextElement,
     generateAIText,
     uploadImage,
-    isUploading
+    isUploading,
+    userImages,
+    selectUserImage
   } = useBannerEditor(selectedTemplate, selectedFormat, selectedPlatform);
 
   const handleTemplateSelect = (template: BannerTemplate) => {
@@ -165,6 +167,8 @@ const SmartBannerBuilder: React.FC = () => {
               onGoToExport={handleGoToExport}
               bannerElements={bannerElements}
               onUpdateBannerElements={setBannerElements}
+              userImages={userImages}
+              onSelectUserImage={selectUserImage}
             />
           </div>
           <div className="lg:col-span-1">

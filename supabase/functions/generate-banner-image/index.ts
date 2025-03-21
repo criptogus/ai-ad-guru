@@ -131,6 +131,69 @@ serve(async (req) => {
 `;
     }
     
+    // Platform-specific guidance
+    let platformGuidance = "";
+    
+    switch(platform) {
+      case "instagram":
+        platformGuidance = `
+- Vibrant colors and visually striking composition
+- High contrast to stand out in a busy feed
+- Clear visual hierarchy that works on mobile screens
+- Lifestyle-oriented imagery that feels authentic and engaging
+- Composition allows for text overlays in key areas
+`;
+        break;
+      case "linkedin":
+        platformGuidance = `
+- Professional and business-appropriate imagery
+- Clean, corporate aesthetic with subtle color palette
+- Visual elements that convey trust and expertise
+- Sophisticated composition that appeals to professionals
+- Clear areas for text that convey business messaging
+`;
+        break;
+      case "google":
+        platformGuidance = `
+- Simple, clean design that stands out but doesn't feel cluttered
+- Strong visual hook that can be understood quickly
+- Clear areas for text overlay that maintain legibility
+- Balanced color contrast for various display contexts
+- Composition works across different display formats
+`;
+        break;
+    }
+    
+    // Format-specific guidance
+    let formatGuidance = "";
+    
+    switch(format) {
+      case "square":
+        formatGuidance = `
+- Central focal point with balanced composition
+- Visual elements arranged to work within 1:1 aspect ratio
+- Equal weight distribution across the image
+- Content properly framed within square boundaries
+`;
+        break;
+      case "horizontal":
+        formatGuidance = `
+- Elements arranged to support left-to-right reading
+- Visual weight balanced across horizontal layout
+- Key elements positioned to avoid being cropped
+- Composition utilizes the wider format effectively
+`;
+        break;
+      case "story":
+        formatGuidance = `
+- Vertical composition with stacked visual hierarchy
+- Key elements positioned in central field of view
+- Content arranged to be viewed on vertical mobile screens
+- Composition draws the eye from top to bottom
+`;
+        break;
+    }
+    
     // Tailor to brand tone
     let brandToneGuidance = "";
     switch (brandTone.toLowerCase()) {
@@ -167,6 +230,12 @@ ${prompt}
 
 TEMPLATE STYLE GUIDANCE:
 ${templateStyleGuidance}
+
+PLATFORM-SPECIFIC GUIDANCE:
+${platformGuidance}
+
+FORMAT-SPECIFIC GUIDANCE:
+${formatGuidance}
 
 VISUAL STYLE:
 - Professional, high-end commercial advertisement aesthetic

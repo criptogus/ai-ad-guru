@@ -25,37 +25,38 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
   const [prompt, setPrompt] = useState("");
   const [brandTone, setBrandTone] = useState("professional");
 
-  // Generate a default prompt based on the template
+  // Generate a default prompt based on the template and platform
   useEffect(() => {
     let defaultPrompt = "";
     
-    switch (template.type) {
-      case "product":
-        defaultPrompt = "A professional product image with clean background, showing the product from an optimal angle with commercial-grade lighting.";
-        break;
-      case "seasonal":
-        defaultPrompt = `A ${getSeason()} themed promotional image that evokes the feeling of the season with appropriate colors and elements.`;
-        break;
-      case "event":
-        defaultPrompt = "A professional event announcement image with dynamic composition that creates excitement and anticipation.";
-        break;
-      case "brand":
-        defaultPrompt = "A sophisticated brand awareness image with clean visuals that communicate trust, quality and professionalism.";
-        break;
-      case "discount":
-        defaultPrompt = "An eye-catching sales promotion image with high contrast elements that create a sense of urgency and value.";
-        break;
-      default:
-        defaultPrompt = "A professional advertising image for a marketing campaign with balanced composition and commercial appeal.";
-    }
-    
-    // Add template-specific details
+    // Handle special template IDs first (these take precedence)
     if (template.id === "webinar-event") {
       defaultPrompt = "A professional webinar announcement with virtual conference imagery, featuring a laptop or screen with audience participants, modern technology elements, and a professional speaker or host. Include visual cues that suggest learning, interaction, and online engagement.";
     } else if (template.id === "holiday-special") {
       defaultPrompt = "A festive holiday-themed promotional image with seasonal decorations, warm lighting, gift elements, and celebratory atmosphere appropriate for end-of-year promotions or holiday sales.";
     } else if (template.id === "flash-sale") {
       defaultPrompt = "A high-energy flash sale promotional image with bold colors, dynamic elements that create urgency, price reduction visuals, limited-time offer indicators, and excitement-generating design elements.";
+    } else {
+      // Fall back to type-based prompts if no specific template ID match
+      switch (template.type) {
+        case "product":
+          defaultPrompt = "A professional product image with clean background, showing the product from an optimal angle with commercial-grade lighting.";
+          break;
+        case "seasonal":
+          defaultPrompt = `A ${getSeason()} themed promotional image that evokes the feeling of the season with appropriate colors and elements.`;
+          break;
+        case "event":
+          defaultPrompt = "A professional event announcement image with dynamic composition that creates excitement and anticipation.";
+          break;
+        case "brand":
+          defaultPrompt = "A sophisticated brand awareness image with clean visuals that communicate trust, quality and professionalism.";
+          break;
+        case "discount":
+          defaultPrompt = "An eye-catching sales promotion image with high contrast elements that create a sense of urgency and value.";
+          break;
+        default:
+          defaultPrompt = "A professional advertising image for a marketing campaign with balanced composition and commercial appeal.";
+      }
     }
     
     // Add platform-specific details
@@ -65,6 +66,15 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
       defaultPrompt += " Tailored for LinkedIn with professional aesthetics and business-appropriate imagery.";
     } else if (platform === "google") {
       defaultPrompt += " Designed for Google display ads with clear focal points and balanced visual hierarchy.";
+    }
+    
+    // Add format-specific guidance
+    if (format === "square") {
+      defaultPrompt += " Composed for square format with balanced central elements.";
+    } else if (format === "horizontal") {
+      defaultPrompt += " Designed for horizontal/landscape format with extended visual elements.";
+    } else if (format === "story") {
+      defaultPrompt += " Created for vertical/story format with stacked visual hierarchy.";
     }
     
     // Add specific template name context if significant

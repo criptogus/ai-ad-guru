@@ -42,6 +42,7 @@ export const useBannerEditor = (
   const [isUploading, setIsUploading] = useState(false);
   const [bannerElements, setBannerElements] = useState<BannerElement[]>([]);
   const [brandTone, setBrandTone] = useState("professional");
+  const [userImages, setUserImages] = useState<string[]>([]);
   
   const creditCosts = getCreditCosts();
 
@@ -114,6 +115,44 @@ export const useBannerEditor = (
       setBannerElements(defaultBannerElements);
     }
   }, [selectedTemplate]);
+
+  // Load user images from storage
+  useEffect(() => {
+    const fetchUserImages = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .storage
+          .from('banner-images')
+          .list(user.id);
+        
+        if (error) {
+          console.error('Error fetching user images:', error);
+          return;
+        }
+        
+        if (data) {
+          const imageUrls = await Promise.all(
+            data.map(async (file) => {
+              const { data: urlData } = await supabase
+                .storage
+                .from('banner-images')
+                .getPublicUrl(`${user.id}/${file.name}`);
+              
+              return urlData.publicUrl;
+            })
+          );
+          
+          setUserImages(imageUrls);
+        }
+      } catch (error) {
+        console.error('Error processing user images:', error);
+      }
+    };
+    
+    fetchUserImages();
+  }, [user]);
 
   // Generate default text based on template type
   const getDefaultHeadline = (templateType: string): string => {
@@ -238,9 +277,10 @@ export const useBannerEditor = (
         body: { 
           prompt,
           platform: selectedPlatform,
-          imageFormat,
+          format: selectedFormat,
           templateType: selectedTemplate.type,
           templateName: selectedTemplate.name,
+          templateId: selectedTemplate.id,
           brandTone
         },
       });
@@ -255,6 +295,11 @@ export const useBannerEditor = (
       
       // Set the background image
       setBackgroundImage(data.imageUrl);
+      
+      // Save to user's image bank
+      if (data.imageUrl) {
+        await saveImageToUserBank(data.imageUrl);
+      }
       
       toast.success("Banner image generated successfully");
     } catch (error) {
@@ -274,6 +319,49 @@ export const useBannerEditor = (
       }
     } finally {
       setIsGeneratingImage(false);
+    }
+  };
+
+  // Save an image to the user's image bank
+  const saveImageToUserBank = async (imageUrl: string): Promise<void> => {
+    if (!user) return;
+    
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Generate a unique filename
+      const filename = `banner-${Date.now()}.png`;
+      
+      // Upload to Supabase Storage
+      const { error } = await supabase
+        .storage
+        .from('banner-images')
+        .upload(`${user.id}/${filename}`, blob, {
+          contentType: 'image/png',
+          upsert: false
+        });
+      
+      if (error) {
+        console.error('Error saving to image bank:', error);
+        return;
+      }
+      
+      // Get the public URL for the uploaded image
+      const { data } = await supabase
+        .storage
+        .from('banner-images')
+        .getPublicUrl(`${user.id}/${filename}`);
+      
+      // Add to user images array
+      setUserImages(prev => [...prev, data.publicUrl]);
+      
+      toast.success("Image saved to your bank", {
+        description: "You can access it in your image library"
+      });
+    } catch (error) {
+      console.error('Error saving image to bank:', error);
     }
   };
 
@@ -331,9 +419,15 @@ export const useBannerEditor = (
 
   // Upload a custom image
   const uploadImage = async (file: File): Promise<void> => {
+    if (!user) {
+      toast.error("Please log in to upload images");
+      return;
+    }
+    
     setIsUploading(true);
     
     try {
+      // First display the image locally
       const fileReader = new FileReader();
       
       const result = await new Promise<string>((resolve, reject) => {
@@ -342,14 +436,48 @@ export const useBannerEditor = (
         fileReader.readAsDataURL(file);
       });
       
+      // Set as current background image
       setBackgroundImage(result);
-      toast.success("Image uploaded successfully");
+      
+      // Then save to storage
+      const filename = `upload-${Date.now()}-${file.name}`;
+      
+      const { error } = await supabase
+        .storage
+        .from('banner-images')
+        .upload(`${user.id}/${filename}`, file, {
+          contentType: file.type,
+          upsert: false
+        });
+      
+      if (error) {
+        console.error('Error uploading image:', error);
+        toast.error("Error saving image to your bank");
+        return;
+      }
+      
+      // Get the public URL
+      const { data } = await supabase
+        .storage
+        .from('banner-images')
+        .getPublicUrl(`${user.id}/${filename}`);
+      
+      // Add to user images
+      setUserImages(prev => [...prev, data.publicUrl]);
+      
+      toast.success("Image uploaded successfully and saved to your bank");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image");
     } finally {
       setIsUploading(false);
     }
+  };
+  
+  // Select an image from the user's image bank
+  const selectUserImage = (imageUrl: string): void => {
+    setBackgroundImage(imageUrl);
+    toast.success("Image selected from your bank");
   };
 
   return {
@@ -367,6 +495,9 @@ export const useBannerEditor = (
     bannerElements,
     setBannerElements,
     brandTone,
-    setBrandTone
+    setBrandTone,
+    userImages,
+    selectUserImage,
+    saveImageToUserBank
   };
 };
