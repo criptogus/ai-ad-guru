@@ -9,6 +9,9 @@ import CampaignsPage from "./pages/CampaignsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 import SmartBannerBuilderPage from "./pages/SmartBannerBuilderPage";
+import ConfigPage from "./pages/ConfigPage";
+import BillingPage from "./pages/BillingPage";
+import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -25,7 +28,11 @@ function App() {
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/create-campaign" element={<CreateCampaignPage />} />
+          <Route path="/smart-banner" element={<SmartBannerBuilderPage />} />
           <Route path="/smart-banner-builder" element={<SmartBannerBuilderPage />} />
+          <Route path="/config" element={<ConfigPage />} />
+          <Route path="/billing" element={<BillingPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
         <Toaster />
