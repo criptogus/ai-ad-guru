@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
 import PlatformComparisonChart from "./charts/PlatformComparisonChart";
 
-interface Campaign {
+// Define the Campaign interface specific to AnalyticsOverview
+export interface Campaign {
   id: string;
   name: string;
   platform: string;

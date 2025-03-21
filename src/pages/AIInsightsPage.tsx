@@ -4,10 +4,8 @@ import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AIOptimizationCard, AIInsightsCard } from "@/components/analytics/insights";
-import { optimizationData } from "@/components/analytics/data/mockData";
 import { ChevronRight, RefreshCw } from "lucide-react";
-import { generateMockCampaigns } from "@/models/CampaignTypes";
-import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
+import AnalyticsOverview, { Campaign } from "@/components/analytics/AnalyticsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AIInsightsPage: React.FC = () => {
@@ -16,8 +14,52 @@ const AIInsightsPage: React.FC = () => {
   // For demonstration purposes showing last optimization: 24 hours ago
   const lastOptimizationTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString();
   
-  // For demonstration purposes, using mock campaigns
-  const campaigns = generateMockCampaigns(10);
+  // For demonstration purposes, using mock campaigns with the correct shape
+  const campaigns: Campaign[] = [
+    {
+      id: "campaign-1",
+      name: "Google Search Campaign",
+      platform: "google",
+      status: "active",
+      budget: 500,
+      spent: 320.45,
+      clicks: 1250,
+      impressions: 28400,
+      conversions: 42,
+      ctr: 4.4,
+      startDate: "2023-08-15",
+      endDate: "2023-09-15",
+    },
+    {
+      id: "campaign-2",
+      name: "Meta Awareness Campaign",
+      platform: "meta",
+      status: "active",
+      budget: 750,
+      spent: 523.78,
+      clicks: 3420,
+      impressions: 76500,
+      conversions: 104,
+      ctr: 4.47,
+      startDate: "2023-08-01",
+      endDate: "2023-09-01",
+    },
+    {
+      id: "campaign-3",
+      name: "Google Display Campaign",
+      platform: "google",
+      status: "paused",
+      budget: 300,
+      spent: 142.25,
+      clicks: 840,
+      impressions: 24600,
+      conversions: 12,
+      ctr: 3.41,
+      startDate: "2023-07-20",
+      endDate: "2023-08-20",
+    },
+    // More campaign data...
+  ];
   
   // Handle refresh of AI insights
   const handleRefreshInsights = () => {
@@ -59,17 +101,8 @@ const AIInsightsPage: React.FC = () => {
           
           <TabsContent value="insights" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AIOptimizationCard 
-                lastOptimizationTime={lastOptimizationTime}
-                topPerformers={optimizationData.topPerformers}
-                lowPerformers={optimizationData.lowPerformers}
-                budgetReallocations={optimizationData.budgetReallocation}
-              />
-              
-              <AIInsightsCard 
-                isLoading={isRefreshing}
-                onRefresh={handleRefreshInsights}
-              />
+              <AIOptimizationCard />
+              <AIInsightsCard />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
