@@ -1,104 +1,97 @@
 
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
+import { NavigationItem } from "../ui/sidebar";
 import {
-  BarChart,
-  Cog,
+  Home,
+  LineChart,
+  Settings,
   CreditCard,
-  LayoutDashboard,
   Megaphone,
+  Lightbulb,
   Users,
-  Sparkles,
-  BugPlay
+  LayoutTemplate,
+  SlidersHorizontal,
+  FileText,
+  Wand2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function SidebarNavigationItems() {
-  const location = useLocation();
-  const pathname = location.pathname;
+export const SidebarNavigationItems: React.FC = () => {
+  const { pathname } = useLocation();
+  const { user } = useAuth();
 
-  const isActive = (path: string) => {
-    if (path === "/dashboard" && pathname === "/dashboard") {
-      return true;
-    }
-    
-    if (path !== "/dashboard" && pathname.startsWith(path)) {
-      return true;
-    }
-    
-    return false;
-  };
-
-  const linkClasses = "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted";
-  const activeLinkClasses = "bg-muted font-medium";
+  const isActiveRoute = (route: string) => pathname === route;
 
   return (
-    <div className="space-y-1">
-      <Link 
-        to="/dashboard" 
-        className={cn(linkClasses, isActive("/dashboard") && activeLinkClasses)}
-      >
-        <LayoutDashboard className="h-5 w-5" />
-        <span>Dashboard</span>
-      </Link>
-      
-      <Link 
-        to="/campaigns" 
-        className={cn(linkClasses, isActive("/campaigns") && activeLinkClasses)}
-      >
-        <Megaphone className="h-5 w-5" />
-        <span>Campaigns</span>
-      </Link>
-      
-      <Link 
-        to="/analytics" 
-        className={cn(linkClasses, isActive("/analytics") && activeLinkClasses)}
-      >
-        <BarChart className="h-5 w-5" />
-        <span>Analytics</span>
-      </Link>
-      
-      <Link 
-        to="/insights" 
-        className={cn(linkClasses, isActive("/insights") && activeLinkClasses)}
-      >
-        <Sparkles className="h-5 w-5" />
-        <span>AI Insights</span>
-      </Link>
-      
-      <Link 
-        to="/config" 
-        className={cn(linkClasses, isActive("/config") && activeLinkClasses)}
-      >
-        <Cog className="h-5 w-5" />
-        <span>Connections</span>
-      </Link>
-      
-      <Link 
-        to="/billing" 
-        className={cn(linkClasses, isActive("/billing") && activeLinkClasses)}
-      >
-        <CreditCard className="h-5 w-5" />
-        <span>Billing</span>
-      </Link>
-      
-      <Link 
-        to="/users" 
-        className={cn(linkClasses, isActive("/users") && activeLinkClasses)}
-      >
-        <Users className="h-5 w-5" />
-        <span>Users & Roles</span>
-      </Link>
-      
-      {process.env.NODE_ENV !== 'production' && (
-        <Link 
-          to="/test-ads" 
-          className={cn(linkClasses, isActive("/test-ads") && activeLinkClasses)}
-        >
-          <BugPlay className="h-5 w-5" />
-          <span>Test Ads</span>
-        </Link>
+    <div className="space-y-1 py-2">
+      <NavigationItem
+        to="/dashboard"
+        active={isActiveRoute("/dashboard")}
+        icon={<Home className="h-4 w-4" />}
+        label="Dashboard"
+      />
+      <NavigationItem
+        to="/campaigns"
+        active={isActiveRoute("/campaigns")}
+        icon={<Megaphone className="h-4 w-4" />}
+        label="Campaigns"
+      />
+      <NavigationItem
+        to="/smart-banner"
+        active={isActiveRoute("/smart-banner")}
+        icon={<Wand2 className="h-4 w-4" />}
+        label="Smart Banner Builder"
+        badge="Beta"
+      />
+      <NavigationItem
+        to="/analytics"
+        active={isActiveRoute("/analytics")}
+        icon={<LineChart className="h-4 w-4" />}
+        label="Analytics"
+      />
+      <NavigationItem
+        to="/config"
+        active={isActiveRoute("/config")}
+        icon={<Settings className="h-4 w-4" />}
+        label="Account Setup"
+      />
+      <NavigationItem
+        to="/billing"
+        active={isActiveRoute("/billing")}
+        icon={<CreditCard className="h-4 w-4" />}
+        label="Billing"
+      />
+      <NavigationItem
+        to="/ai-insights"
+        active={isActiveRoute("/ai-insights")}
+        icon={<Lightbulb className="h-4 w-4" />}
+        label="AI Insights"
+      />
+      {user?.role === "admin" && (
+        <NavigationItem
+          to="/user-roles"
+          active={isActiveRoute("/user-roles")}
+          icon={<Users className="h-4 w-4" />}
+          label="User Roles"
+        />
+      )}
+      {user?.role === "admin" && (
+        <NavigationItem
+          to="/test-ads"
+          active={isActiveRoute("/test-ads")}
+          icon={<LayoutTemplate className="h-4 w-4" />}
+          label="Test Ads"
+        />
+      )}
+      {user?.role === "admin" && (
+        <NavigationItem
+          to="/openai-test"
+          active={isActiveRoute("/openai-test")}
+          icon={<SlidersHorizontal className="h-4 w-4" />}
+          label="OpenAI Test"
+        />
       )}
     </div>
   );
-}
+};

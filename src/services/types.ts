@@ -16,7 +16,8 @@ export type CreditAction =
   | 'credit_purchase' 
   | 'credit_refund'
   | 'meta_ad_generation'
-  | 'google_ad_generation' // Added this as a valid credit action
+  | 'google_ad_generation'
+  | 'smart_banner_creation'
   | 'ad_optimization';
 
 export interface CreditUsage {
