@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SidebarNavigationItems } from './SidebarNavigationItems';
+import { SidebarMenu } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 interface SidebarNavigationProps {
@@ -12,7 +13,9 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
   return (
     <div className="flex-1 py-6">
       <nav className="space-y-1">
-        <SidebarNavigationItems />
+        <SidebarMenu>
+          <SidebarNavigationItems />
+        </SidebarMenu>
       </nav>
     </div>
   );

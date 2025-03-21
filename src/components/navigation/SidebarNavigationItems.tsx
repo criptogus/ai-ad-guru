@@ -1,7 +1,11 @@
 
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
-import { NavigationItem } from "../ui/sidebar";
+import {
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuBadge
+} from "../ui/sidebar";
 import {
   Home,
   LineChart,
@@ -12,10 +16,45 @@ import {
   Users,
   LayoutTemplate,
   SlidersHorizontal,
-  FileText,
   Wand2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+interface NavigationItemProps {
+  to: string;
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  badge?: string;
+}
+
+const NavigationItem: React.FC<NavigationItemProps> = ({
+  to,
+  active,
+  icon,
+  label,
+  badge
+}) => {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={label}
+      >
+        <Link to={to} className="flex items-center">
+          {icon}
+          <span className="ml-3">{label}</span>
+        </Link>
+      </SidebarMenuButton>
+      {badge && (
+        <SidebarMenuBadge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+          {badge}
+        </SidebarMenuBadge>
+      )}
+    </SidebarMenuItem>
+  );
+};
 
 export const SidebarNavigationItems: React.FC = () => {
   const { pathname } = useLocation();
