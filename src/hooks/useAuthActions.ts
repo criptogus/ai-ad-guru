@@ -13,9 +13,9 @@ export const useAuthActions = (
   setUser?: (user: User | null) => void
 ) => {
   const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions();
-  const { logout, isLoading: isLogoutLoading } = useLogoutAction();
-  const { register, isLoading: isRegisterLoading } = useRegisterAction();
-  const { createTestAccount, isLoading: isTestAccountLoading } = useTestAccountAction();
+  const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser);
+  const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser);
+  const { createTestAccount, isLoading: isTestAccountLoading } = useTestAccountAction(setUser);
   const { 
     updateUserPaymentStatus, 
     simulateSuccessfulPayment,
