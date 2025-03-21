@@ -12,6 +12,30 @@ export const performanceData = [
   { day: 'Sun', impressions: 4300, clicks: 1100, conversions: 95 },
 ];
 
+// Generate data for a 30-day period
+export const generatePerformanceData = (days = 30) => {
+  const data = [];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    
+    const dayName = date.toLocaleString('en-US', { weekday: 'short' });
+    const dayMonth = `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })}`;
+    
+    data.push({
+      day: dayMonth,
+      impressions: Math.floor(Math.random() * 10000) + 1000,
+      clicks: Math.floor(Math.random() * 2000) + 200,
+      conversions: Math.floor(Math.random() * 200) + 20,
+    });
+  }
+  
+  return data;
+};
+
 // Platform comparison data
 export const platformComparisonData = [
   { metric: 'CTR', google: 3.2, meta: 2.7 },

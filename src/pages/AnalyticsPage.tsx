@@ -5,6 +5,7 @@ import AnalyticsOverview, { Campaign } from "@/components/analytics/AnalyticsOve
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
+import PerformanceAnalysis from "@/components/analytics/PerformanceAnalysis";
 
 const AnalyticsPage: React.FC = () => {
   // Generate mock campaigns with the correct shape
@@ -130,6 +131,7 @@ const AnalyticsPage: React.FC = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="analytics">Campaign Analytics</TabsTrigger>
             <TabsTrigger value="insights">AI Insights</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
           
           <TabsContent value="analytics">
@@ -154,6 +156,10 @@ const AnalyticsPage: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="performance">
+            <PerformanceAnalysis />
           </TabsContent>
         </Tabs>
       </div>

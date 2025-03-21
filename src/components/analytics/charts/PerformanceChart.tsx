@@ -1,20 +1,60 @@
 
 import React from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { 
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent 
+} from "@/components/ui/chart";
 
-interface PerformanceChartProps {
-  data: {
-    day: string;
-    impressions: number;
-    clicks: number;
-    conversions: number;
-  }[];
+interface PerformanceData {
+  day: string;
+  impressions: number;
+  clicks: number;
+  conversions: number;
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
+interface PerformanceChartProps {
+  data: PerformanceData[];
+  metrics?: Array<"impressions" | "clicks" | "conversions">;
+  height?: number;
+}
+
+const PerformanceChart: React.FC<PerformanceChartProps> = ({ 
+  data, 
+  metrics = ["impressions", "clicks", "conversions"],
+  height = 300
+}) => {
+  const config = {
+    impressions: {
+      label: "Impressions",
+      color: "#8884d8",
+      theme: { light: "#8884d8", dark: "#9c94ff" }
+    },
+    clicks: {
+      label: "Clicks",
+      color: "#82ca9d",
+      theme: { light: "#82ca9d", dark: "#6EE7B7" }
+    },
+    conversions: {
+      label: "Conversions",
+      color: "#ffc658",
+      theme: { light: "#ffc658", dark: "#FFB86C" }
+    }
+  };
+
+  const getMetricColor = (metric: string) => {
+    return config[metric as keyof typeof config]?.color || "#8884d8";
+  };
+
   return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-[300px]" style={{ height: `${height}px` }}>
+      <ChartContainer
+        config={config}
+        className="h-full w-full"
+      >
         <AreaChart
           data={data}
           margin={{
@@ -24,44 +64,65 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
             bottom: 0,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-          <XAxis dataKey="day" />
-          <YAxis />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: "white", 
-              borderRadius: "8px", 
-              borderColor: "#e2e8f0",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-            }} 
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis 
+            dataKey="day" 
+            stroke="var(--muted-foreground)" 
+            fontSize={12} 
+            tickLine={false}
+            axisLine={{ stroke: "var(--border)" }}
           />
-          <Legend />
-          <Area 
-            type="monotone" 
-            dataKey="impressions" 
-            stackId="1" 
-            stroke="#8884d8" 
-            fill="rgba(136, 132, 216, 0.6)" 
-            name="Impressions"
+          <YAxis 
+            stroke="var(--muted-foreground)" 
+            fontSize={12}
+            tickLine={false}
+            axisLine={{ stroke: "var(--border)" }}
           />
-          <Area 
-            type="monotone" 
-            dataKey="clicks" 
-            stackId="1" 
-            stroke="#82ca9d" 
-            fill="rgba(130, 202, 157, 0.6)" 
-            name="Clicks"
+          <ChartTooltip
+            content={({ active, payload }) => (
+              <ChartTooltipContent
+                active={active}
+                payload={payload}
+              />
+            )}
           />
-          <Area 
-            type="monotone" 
-            dataKey="conversions" 
-            stackId="1" 
-            stroke="#ffc658" 
-            fill="rgba(255, 198, 88, 0.6)" 
-            name="Conversions"
+          <ChartLegend
+            content={({ payload }) => (
+              <ChartLegendContent payload={payload} />
+            )}
           />
+          
+          {metrics.includes("impressions") && (
+            <Area 
+              type="monotone" 
+              dataKey="impressions" 
+              stroke={getMetricColor("impressions")} 
+              fill={`${getMetricColor("impressions")}80`} 
+              name="impressions"
+            />
+          )}
+          
+          {metrics.includes("clicks") && (
+            <Area 
+              type="monotone" 
+              dataKey="clicks" 
+              stroke={getMetricColor("clicks")} 
+              fill={`${getMetricColor("clicks")}80`} 
+              name="clicks"
+            />
+          )}
+          
+          {metrics.includes("conversions") && (
+            <Area 
+              type="monotone" 
+              dataKey="conversions" 
+              stroke={getMetricColor("conversions")} 
+              fill={`${getMetricColor("conversions")}80`} 
+              name="conversions"
+            />
+          )}
         </AreaChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 };
