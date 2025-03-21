@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -9,156 +9,109 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, Brain, ArrowRight, LineChart, BarChart3, PieChart } from "lucide-react";
-import { useAdOptimizer } from "@/hooks/useAdOptimizer";
-import { type OptimizationGoal } from "@/hooks/useAdOptimizer";
+import { Sparkles, ChevronRight, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AIOptimizationCardProps {
-  campaignId?: string;
-  platformType?: "google" | "meta" | "linkedin" | "microsoft";
+  campaign?: any;
 }
 
-const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({
-  campaignId = "demo-campaign",
-  platformType = "google"
-}) => {
-  const [frequency, setFrequency] = useState<string>("daily");
-  const [optimizationGoal, setOptimizationGoal] = useState<OptimizationGoal>("increase_ctr");
-  const [isScheduled, setIsScheduled] = useState(false);
+const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({ campaign }) => {
+  const navigate = useNavigate();
   
-  const handleScheduleOptimization = () => {
-    setIsScheduled(true);
-  };
-  
-  const getFrequencyCredits = () => {
-    switch (frequency) {
-      case "daily": return 10;
-      case "3day": return 5;
-      case "weekly": return 2;
-      default: return 10;
+  // Sample optimization opportunities (in production would come from API)
+  const optimizations = [
+    {
+      id: 1,
+      platform: "Google",
+      description: "Your Google search ad for 'Business Solutions' has a 4.2% CTR, which is 18% below average for your industry. We suggest updating headlines to be more specific.",
+      impact: "high",
+      type: "ad_copy",
+      credits: 10
+    },
+    {
+      id: 2,
+      platform: "Meta",
+      description: "Your Meta ad for 'Summer Collection' dropped 21% in CTR over the last 3 days. Try updating the image with a more vibrant summer scene.",
+      impact: "critical",
+      type: "image",
+      credits: 5
+    },
+    {
+      id: 3,
+      platform: "Google",
+      description: "Budget allocation analysis suggests shifting 15% from 'Brand Awareness' to 'Product Catalog' campaign to maximize ROI.",
+      impact: "medium",
+      type: "budget",
+      credits: 2
+    }
+  ];
+
+  const getImpactColor = (impact: string) => {
+    switch(impact) {
+      case "critical": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      case "high": return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      case "medium": return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
     }
   };
-  
-  const getGoalText = () => {
-    switch (optimizationGoal) {
-      case "increase_ctr": return "Increasing Click-Through Rate";
-      case "increase_conversions": return "Maximizing Conversions";
-      case "reduce_cpa": return "Lowering Cost Per Acquisition";
-      case "increase_engagement": return "Boosting Engagement";
-      default: return "Optimizing Performance";
-    }
-  };
-  
-  const getGoalIcon = () => {
-    switch (optimizationGoal) {
-      case "increase_ctr": return <LineChart className="h-4 w-4 mr-2" />;
-      case "increase_conversions": return <BarChart3 className="h-4 w-4 mr-2" />;
-      case "reduce_cpa": return <PieChart className="h-4 w-4 mr-2" />;
-      case "increase_engagement": return <BarChart3 className="h-4 w-4 mr-2" />;
-      default: return <LineChart className="h-4 w-4 mr-2" />;
+
+  const getPlatformColor = (platform: string) => {
+    switch(platform) {
+      case "Google": return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      case "Meta": return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+      case "Microsoft": return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
     }
   };
 
   return (
-    <Card className="border-purple-100 shadow-sm">
-      <CardHeader className="pb-3">
+    <Card className="border-amber-100 shadow-sm h-full overflow-hidden">
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-semibold flex items-center">
-            <Brain className="mr-2 h-5 w-5 text-purple-500" />
-            Smart AI Optimization
+          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-amber-500" />
+            <span>AI Optimization</span>
           </CardTitle>
-          <Badge variant="outline" className="bg-purple-50 text-purple-700">
-            {getFrequencyCredits()} credits
-          </Badge>
+          <span className="text-xs text-muted-foreground">Updated 2h ago</span>
         </div>
         <CardDescription>
-          Schedule AI to automatically optimize your ads for better performance
+          AI-powered suggestions to improve your campaign performance
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Optimization Frequency</label>
-            <Select value={frequency} onValueChange={setFrequency}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily (10 credits)</SelectItem>
-                <SelectItem value="3day">Every 3 days (5 credits)</SelectItem>
-                <SelectItem value="weekly">Weekly (2 credits)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Optimization Goal</label>
-            <Select 
-              value={optimizationGoal} 
-              onValueChange={(value) => setOptimizationGoal(value as OptimizationGoal)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select goal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="increase_ctr">Increase CTR</SelectItem>
-                <SelectItem value="increase_conversions">Maximize Conversions</SelectItem>
-                <SelectItem value="reduce_cpa">Lower CPA</SelectItem>
-                <SelectItem value="increase_engagement">Boost Engagement</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {isScheduled ? (
-          <div className="bg-green-50 border border-green-100 rounded-md p-4 text-sm">
-            <h4 className="font-medium text-green-800 flex items-center">
-              {getGoalIcon()}
-              <span>{getGoalText()}</span>
-            </h4>
-            <p className="mt-1 text-green-700">
-              AI will analyze and optimize your ads {frequency === "daily" ? "every day" : 
-              frequency === "3day" ? "every 3 days" : "once a week"}.
-            </p>
-            <div className="mt-3">
-              <p className="text-xs text-green-600">Next optimization scheduled for tomorrow at 2:00 AM</p>
+      <CardContent className="p-0">
+        <div className="divide-y">
+          {optimizations.map((opt) => (
+            <div key={opt.id} className="p-4 hover:bg-muted/50 transition-colors">
+              <div className="flex gap-3">
+                <div className="mt-1 flex flex-col gap-2 items-center">
+                  <div className={`text-xs px-2.5 py-1 rounded-full font-medium ${getPlatformColor(opt.platform)}`}>
+                    {opt.platform}
+                  </div>
+                  <div className={`text-xs px-2.5 py-1 rounded-full font-medium ${getImpactColor(opt.impact)}`}>
+                    {opt.impact}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-foreground mb-2">{opt.description}</p>
+                  <div className="flex items-center justify-between">
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                      Apply ({opt.credits} credits)
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-xs h-7 px-2">
+                      Details <ChevronRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="bg-purple-50 border border-purple-100 rounded-md p-4 text-sm">
-            <h4 className="font-medium text-purple-800 flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              <span>How AI Optimization Works</span>
-            </h4>
-            <ul className="mt-2 space-y-2 text-purple-700">
-              <li className="flex items-start">
-                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">1</span>
-                <span>AI analyzes ad performance across all campaigns</span>
-              </li>
-              <li className="flex items-start">
-                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">2</span>
-                <span>Pauses low-performing ads, boosts winners</span>
-              </li>
-              <li className="flex items-start">
-                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">3</span>
-                <span>Generates new ad variations based on top performers</span>
-              </li>
-            </ul>
-          </div>
-        )}
+          ))}
+        </div>
       </CardContent>
-      <CardFooter>
-        {isScheduled ? (
-          <Button variant="outline" className="w-full" onClick={() => setIsScheduled(false)}>
-            Modify Optimization Schedule
-          </Button>
-        ) : (
-          <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-600" onClick={handleScheduleOptimization}>
-            Schedule AI Optimization <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
+      <CardFooter className="border-t p-4">
+        <Button variant="ghost" className="w-full" onClick={() => navigate("/insights")}>
+          View All Optimizations <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
       </CardFooter>
     </Card>
   );

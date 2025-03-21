@@ -4,11 +4,13 @@ import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateMockCampaigns, Campaign } from "@/models/CampaignTypes";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import StatsOverview from "@/components/dashboard/StatsOverview";
+import BusinessOverview from "@/components/dashboard/BusinessOverview";
 import ActiveCampaigns from "@/components/dashboard/ActiveCampaigns";
 import CreditsStatus from "@/components/dashboard/CreditsStatus";
-import RecentActivity from "@/components/dashboard/RecentActivity";
 import AiInsights from "@/components/dashboard/AiInsights";
+import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
+import SmartNotifications from "@/components/dashboard/SmartNotifications";
+import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
 
 // Create an interface that matches what the dashboard components expect
 interface DashboardUser {
@@ -43,17 +45,22 @@ const DashboardPage: React.FC = () => {
       <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
         
-        <StatsOverview campaigns={campaigns} />
+        <BusinessOverview campaigns={campaigns} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <ActiveCampaigns campaigns={campaigns} />
-            <AiInsights />
+            <CampaignSummaryCards campaigns={campaigns.slice(0, 3)} />
+            <LeaderboardSection campaigns={campaigns} />
           </div>
           <div className="space-y-6">
             <CreditsStatus user={dashboardUser} />
-            <RecentActivity campaigns={campaigns} />
+            <SmartNotifications />
           </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ActiveCampaigns campaigns={campaigns} />
+          <AiInsights />
         </div>
       </div>
     </AppLayout>
