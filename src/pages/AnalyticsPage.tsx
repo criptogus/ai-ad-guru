@@ -2,6 +2,9 @@
 import React from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
 import AnalyticsOverview, { Campaign } from "@/components/analytics/AnalyticsOverview";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
 
 const AnalyticsPage: React.FC = () => {
   // Generate mock campaigns with the correct shape
@@ -120,7 +123,38 @@ const AnalyticsPage: React.FC = () => {
   
   return (
     <SafeAppLayout activePage="analytics">
-      <AnalyticsOverview campaigns={campaigns} />
+      <div className="p-6 space-y-6">
+        <h1 className="text-3xl font-bold">Analytics & Insights</h1>
+        
+        <Tabs defaultValue="analytics" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="analytics">Campaign Analytics</TabsTrigger>
+            <TabsTrigger value="insights">AI Insights</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="analytics">
+            <AnalyticsOverview campaigns={campaigns} />
+          </TabsContent>
+          
+          <TabsContent value="insights">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <AIOptimizationCard />
+              <AIInsightsCard />
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] flex items-center justify-center bg-muted/30 rounded-md">
+                  <p className="text-sm text-muted-foreground">Performance chart will appear here</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </SafeAppLayout>
   );
 };

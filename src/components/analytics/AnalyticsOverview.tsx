@@ -2,7 +2,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
 import PlatformComparisonChart from "./charts/PlatformComparisonChart";
 
 // Define the Campaign interface specific to AnalyticsOverview
@@ -59,8 +58,6 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Analytics & Insights</h1>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Spent"
@@ -85,7 +82,7 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <Tabs defaultValue="overview">
             <TabsList className="mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -136,11 +133,6 @@ const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-        
-        <div className="space-y-6">
-          <AIInsightsCard />
-          <AIOptimizationCard />
         </div>
       </div>
     </div>

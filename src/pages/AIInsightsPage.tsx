@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import AppLayout from "@/components/AppLayout";
+import SafeAppLayout from "@/components/SafeAppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AIOptimizationCard, AIInsightsCard } from "@/components/analytics/insights";
@@ -71,7 +71,7 @@ const AIInsightsPage: React.FC = () => {
   };
   
   return (
-    <AppLayout activePage="ai-insights">
+    <SafeAppLayout activePage="ai-insights">
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -147,7 +147,7 @@ const AIInsightsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </SafeAppLayout>
   );
 };
 
