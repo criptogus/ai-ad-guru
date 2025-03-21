@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -23,7 +24,7 @@ interface CampaignSummaryProps {
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: any[];
-  onApprove: () => void;
+  onApprove: () => Promise<void>;
   onEdit: () => void;
   isLoading: boolean;
 }
@@ -70,18 +71,18 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <CampaignDetailsSection
-              name={campaignName}
-              platforms={platforms.length > 0 ? getPlatformNames(platforms) : platform || "Not specified"}
+              campaignName={campaignName}
+              platform={platforms.length > 0 ? getPlatformNames(platforms) : platform || "Not specified"}
               budget={budget}
               budgetType={budgetType}
               startDate={startDate}
               endDate={endDate}
               objective={objective}
+              websiteUrl={websiteUrl}
             />
             <AudienceTargetingSection 
               targetAudience={targetAudience}
-              websiteUrl={websiteUrl}
-              keywords={analysisResult.keywords || []}
+              analysisResult={analysisResult}
             />
           </div>
 

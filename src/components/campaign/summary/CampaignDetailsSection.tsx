@@ -2,7 +2,7 @@
 import React from "react";
 
 interface CampaignDetailsSectionProps {
-  campaignName: string;
+  campaignName: string; // Changed from name to campaignName
   platform: string;
   budget: number;
   budgetType: string;
@@ -41,10 +41,7 @@ const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Platform:</span>
-          <span className="font-medium">
-            {platform === 'google' ? 'Google Ads' : 
-             platform === 'meta' ? 'Instagram Ads' : 'Microsoft Ads'}
-          </span>
+          <span className="font-medium">{platform}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Budget:</span>

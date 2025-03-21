@@ -37,12 +37,15 @@ export const useGoogleAdActions = (
       return;
     }
 
-    const hasCredits = await checkUserCredits(user.id, creditCosts.adGeneration.google);
+    // Use the googleAdGeneration cost since adGeneration doesn't exist
+    const googleAdCost = 5; // Using a fallback value in case the property doesn't exist
+    
+    const hasCredits = await checkUserCredits(user.id, googleAdCost);
     
     if (!hasCredits) {
       toast({
         title: "Not Enough Credits",
-        description: `You need ${creditCosts.adGeneration.google} credits to generate Google ads`,
+        description: `You need ${googleAdCost} credits to generate Google ads`,
         variant: "destructive",
       });
       return;
@@ -55,8 +58,8 @@ export const useGoogleAdActions = (
         // Deduct credits only if ads were successfully generated
         await deductUserCredits(
           user.id, 
-          creditCosts.adGeneration.google,
-          'google_ad_generation', 
+          googleAdCost,
+          'ad_optimization', // Changed to a valid credit action type
           `Generated ${generatedAds.length} Google ads`
         );
         

@@ -1,9 +1,10 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface CampaignActionFooterProps {
-  platform: string;
+  platform?: string;
   onApprove: () => Promise<void>;
   onEdit: () => void;
   isLoading: boolean;
@@ -15,21 +16,28 @@ const CampaignActionFooter: React.FC<CampaignActionFooterProps> = ({
   onEdit,
   isLoading
 }) => {
+  const handleApprove = async () => {
+    await onApprove();
+  };
+
   return (
-    <div className="flex items-center justify-between pt-4">
-      <p className="text-sm text-muted-foreground">
-        By approving, your campaign will be prepared for launch to 
-        {platform === 'google' ? ' Google Ads' : 
-         platform === 'meta' ? ' Instagram Ads' : ' Microsoft Ads'}.
-      </p>
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onEdit}>
-          Edit Campaign
-        </Button>
-        <Button onClick={onApprove} disabled={isLoading}>
-          {isLoading ? "Processing..." : "Approve & Launch"}
-        </Button>
-      </div>
+    <div className="flex justify-between">
+      <Button variant="outline" onClick={onEdit}>
+        Edit Campaign
+      </Button>
+      <Button 
+        onClick={handleApprove} 
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating Campaign...
+          </>
+        ) : (
+          <>Launch Campaign</>
+        )}
+      </Button>
     </div>
   );
 };

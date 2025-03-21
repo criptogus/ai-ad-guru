@@ -88,6 +88,16 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     );
   };
 
+  // Adapter function to convert single ad update to array update for GoogleAdsTab
+  const handleUpdateGoogleAds = (updatedAds: GoogleAd[]) => {
+    // In this case, we're receiving the whole updated array from GoogleAdsTab
+    updatedAds.forEach((ad, index) => {
+      if (index < googleAds.length) {
+        onUpdateGoogleAd(index, ad);
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -106,7 +116,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 googleAds={googleAds}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={onUpdateGoogleAd}
+                onUpdateGoogleAd={handleUpdateGoogleAds}
                 analysisResult={analysisResult}
               />
             </TabsContent>
@@ -118,7 +128,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 metaAds={metaAds}
                 isGenerating={isGenerating}
                 loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateMetaAds}
+                onGenerateMetaAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
                 onUpdateMetaAd={onUpdateMetaAd}
                 analysisResult={analysisResult}
@@ -132,7 +142,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 linkedInAds={metaAds}
                 isGenerating={isGenerating}
                 loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateMetaAds}
+                onGenerateLinkedInAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
                 onUpdateLinkedInAd={onUpdateMetaAd}
                 analysisResult={analysisResult}
@@ -145,7 +155,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               <MicrosoftAdsTab
                 microsoftAds={microsoftAds}
                 isGenerating={isGenerating}
-                onGenerateAds={onGenerateMicrosoftAds}
+                onGenerateMicrosoftAds={onGenerateMicrosoftAds}
                 onUpdateMicrosoftAd={onUpdateMicrosoftAd}
                 analysisResult={analysisResult}
               />
