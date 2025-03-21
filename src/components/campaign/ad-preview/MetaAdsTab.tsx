@@ -7,6 +7,7 @@ import { Loader2, WandSparkles } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import MetaAdCard from "./meta/card/MetaAdCard";
 import EmptyAdsState from "./EmptyAdsState";
+import { PreviewLayout, DevicePreview, AdFormat } from "./GoogleAdsTab";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -16,6 +17,9 @@ interface MetaAdsTabProps {
   onGenerateMetaAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
+  previewLayout?: PreviewLayout;
+  devicePreview?: DevicePreview;
+  adFormat?: AdFormat;
 }
 
 const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
@@ -25,7 +29,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   loadingImageIndex,
   onGenerateMetaAds,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
+  previewLayout = "split-horizontal",
+  devicePreview = "desktop",
+  adFormat = "feed"
 }) => {
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
     if (onUpdateAd) {

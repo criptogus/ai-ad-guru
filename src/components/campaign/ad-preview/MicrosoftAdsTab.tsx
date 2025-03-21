@@ -4,6 +4,7 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MicrosoftAdCard from "./MicrosoftAdCard";
 import EmptyAdState from "./EmptyAdState";
+import { PreviewLayout, DevicePreview, AdFormat } from "./GoogleAdsTab";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -11,6 +12,9 @@ interface MicrosoftAdsTabProps {
   isGenerating: boolean;
   onGenerateMicrosoftAds: () => Promise<void>;
   onUpdateAd?: (index: number, updatedAd: GoogleAd) => void;
+  previewLayout?: PreviewLayout;
+  devicePreview?: DevicePreview;
+  adFormat?: AdFormat;
 }
 
 const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({ 
@@ -18,7 +22,10 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   analysisResult, 
   isGenerating, 
   onGenerateMicrosoftAds,
-  onUpdateAd
+  onUpdateAd,
+  previewLayout = "split-horizontal",
+  devicePreview = "desktop",
+  adFormat = "search"
 }) => {
   const hasAds = microsoftAds && microsoftAds.length > 0;
   

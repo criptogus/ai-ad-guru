@@ -4,6 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./linkedin/LinkedInAdCard";
 import EmptyAdState from "./EmptyAdState";
+import { PreviewLayout, DevicePreview, AdFormat } from "./GoogleAdsTab";
 
 interface LinkedInAdsTabProps {
   linkedInAds: MetaAd[];
@@ -13,6 +14,9 @@ interface LinkedInAdsTabProps {
   onGenerateLinkedInAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
+  previewLayout?: PreviewLayout;
+  devicePreview?: DevicePreview;
+  adFormat?: AdFormat;
 }
 
 const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({ 
@@ -22,7 +26,10 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   loadingImageIndex,
   onGenerateLinkedInAds,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
+  previewLayout = "split-horizontal",
+  devicePreview = "desktop",
+  adFormat = "square"
 }) => {
   const hasAds = linkedInAds && linkedInAds.length > 0;
   

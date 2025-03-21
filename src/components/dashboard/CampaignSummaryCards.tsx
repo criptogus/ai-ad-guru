@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Campaign } from "@/models/CampaignTypes";
@@ -9,6 +8,14 @@ import { useNavigate } from "react-router-dom";
 
 interface CampaignSummaryCardsProps {
   campaigns: Campaign[];
+}
+
+interface ExtendedCampaign extends Campaign {
+  spent?: number;
+  impressions?: number;
+  clicks?: number;
+  conversions?: number;
+  ctr?: number;
 }
 
 const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }) => {
@@ -59,9 +66,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
   
   // Helper function to determine performance trend
   const getPerformanceTrend = (campaign: Campaign) => {
-    // In a real app, compare to previous period
-    // For this example, we'll mock it:
-    
     if (!campaign.performance || campaign.id.includes("3") || campaign.id.includes("6")) {
       return {
         direction: "down",
@@ -78,8 +82,13 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {campaigns.map((campaign) => {
+        const extendedCampaign = campaign as ExtendedCampaign;
         const trend = getPerformanceTrend(campaign);
-        const budgetPercentage = ((campaign.performance?.spend || 0) / campaign.budget) * 100;
+        const ctr = extendedCampaign.performance?.ctr || 0;
+        const impressions = extendedCampaign.performance?.impressions || 0;
+        const spent = extendedCampaign.performance?.spend || 0;
+        const conversions = extendedCampaign.performance?.conversions || 0;
+        const budgetPercentage = (spent / campaign.budget) * 100;
         
         return (
           <Card 
@@ -118,7 +127,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                       <span>CTR</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium">{campaign.ctr?.toFixed(2)}%</span>
+                      <span className="font-medium">{ctr.toFixed(2)}%</span>
                       <div className="ml-2 flex items-center text-xs">
                         {trend.direction === "up" ? (
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900 flex items-center gap-0.5 font-normal">
@@ -141,7 +150,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                       <span>Impressions</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium">{campaign.impressions?.toLocaleString()}</span>
+                      <span className="font-medium">{impressions.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -153,7 +162,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                       <span>Spend</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium">${campaign.spent?.toFixed(2)}</span>
+                      <span className="font-medium">${spent.toFixed(2)}</span>
                     </div>
                   </div>
                   
@@ -163,7 +172,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                       <span>Conversions</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-medium">{campaign.conversions}</span>
+                      <span className="font-medium">{conversions}</span>
                     </div>
                   </div>
                 </div>
@@ -172,7 +181,7 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                 <div className="mt-2">
                   <div className="flex justify-between mb-1 text-xs">
                     <span>Budget usage</span>
-                    <span className="font-medium">${campaign.spent} / ${campaign.budget}</span>
+                    <span className="font-medium">${spent} / ${campaign.budget}</span>
                   </div>
                   <Progress 
                     value={budgetPercentage} 

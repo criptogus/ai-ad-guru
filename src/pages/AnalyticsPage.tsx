@@ -1,4 +1,3 @@
-
 import React, { useMemo } from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +8,19 @@ import BusinessOverview from "@/components/dashboard/BusinessOverview";
 import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
 import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
 import SmartNotifications from "@/components/dashboard/SmartNotifications";
-import { Campaign } from "@/components/analytics/AnalyticsOverview";
+import { Campaign as AnalyticsCampaign } from "@/components/analytics/AnalyticsOverview";
+import { Campaign as CampaignType } from "@/models/CampaignTypes";
+
+interface ExtendedCampaign extends CampaignType {
+  spent?: number;
+  clicks?: number;
+  impressions?: number;
+  conversions?: number;
+  ctr?: number;
+}
 
 const AnalyticsPage: React.FC = () => {
-  // Generate mock campaigns with the correct shape
-  const campaigns = useMemo((): Campaign[] => {
+  const mockCampaigns = useMemo((): AnalyticsCampaign[] => {
     return [
       {
         id: "campaign-1",
@@ -190,6 +197,37 @@ const AnalyticsPage: React.FC = () => {
     ];
   }, []);
   
+  const campaigns = useMemo(() => {
+    return mockCampaigns.map(campaign => {
+      const extendedCampaign: ExtendedCampaign = {
+        id: campaign.id,
+        name: campaign.name,
+        platform: campaign.platform,
+        status: campaign.status as any,
+        budget: campaign.budget,
+        startDate: campaign.startDate,
+        endDate: campaign.endDate,
+        performance: campaign.performance,
+        adVariations: [],
+        userId: '1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        budgetType: campaign.budgetType as any,
+        businessInfo: {
+          name: 'Acme Corporation',
+          description: 'Leading provider of innovative solutions',
+          industry: 'Technology',
+          targetAudience: 'Small to medium businesses',
+          suggestedKeywords: ['innovative solutions', 'business software', 'productivity'],
+          adTone: 'Professional',
+          websiteUrl: 'https://example.com',
+        },
+        adType: 'search'
+      };
+      return extendedCampaign;
+    });
+  }, [mockCampaigns]);
+  
   return (
     <SafeAppLayout activePage="analytics">
       <div className="p-6 space-y-6">
@@ -203,7 +241,6 @@ const AnalyticsPage: React.FC = () => {
             <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
           
-          {/* New Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
             <BusinessOverview campaigns={campaigns} />
             
@@ -224,7 +261,6 @@ const AnalyticsPage: React.FC = () => {
             </div>
           </TabsContent>
           
-          {/* Original Tabs */}
           <TabsContent value="campaigns">
             <div className="space-y-6">
               <CampaignSummaryCards campaigns={campaigns} />
