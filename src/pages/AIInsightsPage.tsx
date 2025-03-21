@@ -100,9 +100,10 @@ const AIInsightsPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="insights" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Changed from grid to space-y-6 for vertical stacking */}
+            <div className="space-y-6">
               <AIOptimizationCard />
-              <div className="w-full overflow-hidden">
+              <div className="w-full">
                 <AIInsightsCard />
               </div>
             </div>

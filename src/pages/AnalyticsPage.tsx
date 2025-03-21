@@ -1,4 +1,3 @@
-
 import React from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
 import AnalyticsOverview, { Campaign } from "@/components/analytics/AnalyticsOverview";
@@ -139,11 +138,9 @@ const AnalyticsPage: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="insights">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="space-y-6 mb-6">
               <AIOptimizationCard />
-              <div className="w-full overflow-hidden">
-                <AIInsightsCard />
-              </div>
+              <AIInsightsCard />
             </div>
             
             <Card>
