@@ -43,7 +43,7 @@ const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ campaigns }) =>
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-medium flex items-center">
