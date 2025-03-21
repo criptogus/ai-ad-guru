@@ -30,12 +30,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return 'en'; // Default to English
   };
 
-  const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
-    // Try to load from localStorage first
-    const savedLang = localStorage.getItem('preferredLanguage') as Language;
-    return savedLang || detectBrowserLanguage();
-  });
-
+  // Initialize with localStorage or browser language
+  const storedLang = localStorage.getItem('preferredLanguage') as Language | null;
+  const initialLanguage = storedLang || detectBrowserLanguage();
+  
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(initialLanguage);
   const [translations, setTranslations] = useState<TranslationDictionary>(
     currentLanguage === 'es' ? es :
     currentLanguage === 'pt' ? pt : en
