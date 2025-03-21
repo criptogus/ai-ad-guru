@@ -1,6 +1,6 @@
 
 import React from "react";
-import AppLayout from "@/components/AppLayout";
+import SafeAppLayout from "@/components/SafeAppLayout";
 import { generateMockCampaigns } from "@/models/CampaignTypes";
 import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
 
@@ -10,9 +10,9 @@ const AnalyticsPage: React.FC = () => {
   }, []);
   
   return (
-    <AppLayout activePage="analytics">
+    <SafeAppLayout activePage="analytics">
       <AnalyticsOverview campaigns={campaigns} />
-    </AppLayout>
+    </SafeAppLayout>
   );
 };
 
