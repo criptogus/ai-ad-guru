@@ -59,7 +59,10 @@ export const SidebarNavigationItems: React.FC = () => {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
-  const isActiveRoute = (route: string) => pathname === route;
+  const isActiveRoute = (route: string) => {
+    // Check if the route is exactly matched or is a sub-route
+    return pathname === route || pathname.startsWith(`${route}/`);
+  };
 
   return (
     <div className="space-y-1 py-2">
