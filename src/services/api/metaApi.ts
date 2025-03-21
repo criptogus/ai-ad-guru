@@ -3,6 +3,13 @@ import { secureApi } from './secureApi';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { MetaAd } from '@/hooks/adGeneration';
 
+// Define an interface for the API response
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
 /**
  * Generates Meta/Instagram Ads based on the provided campaign data and analysis
  * 
@@ -15,7 +22,7 @@ export const generateMetaAds = async (
   try {
     console.log('Generating Meta ads with analysis data:', analysisResult);
     
-    const response = await secureApi.post('/generate-ads', {
+    const response = await secureApi.post<ApiResponse>('/generate-ads', {
       platform: 'meta',
       campaignData: analysisResult
     }, { requiresAuth: true });
