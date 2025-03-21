@@ -31,7 +31,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user }) => {
           Here's what's happening with your campaigns
         </p>
       </div>
-      <Button onClick={() => navigate("/campaigns/create")} className="gap-2 whitespace-nowrap min-w-[160px]">
+      <Button onClick={() => navigate("/create-campaign")} className="gap-2 whitespace-nowrap min-w-[160px]">
         <PlusCircle size={18} />
         <span>Create Campaign</span>
       </Button>

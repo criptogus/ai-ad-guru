@@ -105,7 +105,7 @@ const CampaignsPage = () => {
             <h1 className="text-3xl font-bold">Campaigns</h1>
             <p className="text-muted-foreground">Manage your advertising campaigns</p>
           </div>
-          <Button onClick={() => navigate("/campaigns/create")} className="gap-2">
+          <Button onClick={() => navigate("/create-campaign")} className="gap-2">
             <PlusCircle size={16} />
             Create Campaign
           </Button>
@@ -183,7 +183,7 @@ const CampaignsPage = () => {
                 <p className="text-muted-foreground mb-4">
                   Let AI help you create effective ad campaigns for your business.
                 </p>
-                <Button onClick={() => navigate("/campaigns/create")}>
+                <Button onClick={() => navigate("/create-campaign")}>
                   Create Your First Campaign
                 </Button>
               </div>

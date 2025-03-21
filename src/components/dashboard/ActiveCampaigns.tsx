@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,7 +40,7 @@ const ActiveCampaigns: React.FC<ActiveCampaignsProps> = ({ campaigns }) => {
               <p className="text-muted-foreground mb-4 max-w-md mx-auto">
                 Get started by creating your first campaign to reach your audience.
               </p>
-              <Button onClick={() => navigate("/campaigns/create")} className="gap-2">
+              <Button onClick={() => navigate("/create-campaign")} className="gap-2">
                 <PlusCircle size={18} />
                 Create Campaign
               </Button>
