@@ -1,174 +1,165 @@
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { TrendingUp, TrendingDown, Award, AlertCircle, ChevronRight, Zap } from "lucide-react";
-
-interface OptimizationPerformer {
-  id: string;
-  name: string;
-  platform: string;
-  ctr: number;
-  conversionRate: number;
-}
-
-interface BudgetReallocation {
-  id: string;
-  name: string;
-  platform: string;
-  currentBudget: number;
-  recommendedBudget: number;
-}
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertCircle, Brain, ArrowRight, LineChart, BarChart3, PieChart } from "lucide-react";
+import { useAdOptimizer } from "@/hooks/useAdOptimizer";
+import { type OptimizationGoal } from "@/hooks/useAdOptimizer";
 
 interface AIOptimizationCardProps {
-  lastOptimizationTime: string;
-  topPerformers: OptimizationPerformer[];
-  lowPerformers: OptimizationPerformer[];
-  budgetReallocations: BudgetReallocation[];
+  campaignId?: string;
+  platformType?: "google" | "meta" | "linkedin" | "microsoft";
 }
 
 const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({
-  lastOptimizationTime,
-  topPerformers,
-  lowPerformers,
-  budgetReallocations
+  campaignId = "demo-campaign",
+  platformType = "google"
 }) => {
+  const [frequency, setFrequency] = useState<string>("daily");
+  const [optimizationGoal, setOptimizationGoal] = useState<OptimizationGoal>("increase_ctr");
+  const [isScheduled, setIsScheduled] = useState(false);
+  
+  const handleScheduleOptimization = () => {
+    setIsScheduled(true);
+  };
+  
+  const getFrequencyCredits = () => {
+    switch (frequency) {
+      case "daily": return 10;
+      case "3day": return 5;
+      case "weekly": return 2;
+      default: return 10;
+    }
+  };
+  
+  const getGoalText = () => {
+    switch (optimizationGoal) {
+      case "increase_ctr": return "Increasing Click-Through Rate";
+      case "increase_conversions": return "Maximizing Conversions";
+      case "reduce_cpa": return "Lowering Cost Per Acquisition";
+      case "increase_engagement": return "Boosting Engagement";
+      default: return "Optimizing Performance";
+    }
+  };
+  
+  const getGoalIcon = () => {
+    switch (optimizationGoal) {
+      case "increase_ctr": return <LineChart className="h-4 w-4 mr-2" />;
+      case "increase_conversions": return <BarChart3 className="h-4 w-4 mr-2" />;
+      case "reduce_cpa": return <PieChart className="h-4 w-4 mr-2" />;
+      case "increase_engagement": return <BarChart3 className="h-4 w-4 mr-2" />;
+      default: return <LineChart className="h-4 w-4 mr-2" />;
+    }
+  };
+
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium flex items-center">
-            <Zap className="h-5 w-5 mr-2 text-yellow-500" /> 
-            AI Optimization
+    <Card className="border-purple-100 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-xl font-semibold flex items-center">
+            <Brain className="mr-2 h-5 w-5 text-purple-500" />
+            Smart AI Optimization
           </CardTitle>
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-            Updated {lastOptimizationTime}
+          <Badge variant="outline" className="bg-purple-50 text-purple-700">
+            {getFrequencyCredits()} credits
           </Badge>
         </div>
-        <CardDescription>AI-powered campaign performance insights</CardDescription>
+        <CardDescription>
+          Schedule AI to automatically optimize your ads for better performance
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Top Performers */}
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-          <h4 className="text-sm font-medium flex items-center mb-3">
-            <TrendingUp className="h-4 w-4 mr-2 text-green-600" /> 
-            Top Performing Campaigns
-          </h4>
-          <div className="space-y-3">
-            {topPerformers.map(campaign => (
-              <div key={campaign.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                  <div>
-                    <span className="font-medium text-sm">{campaign.name}</span>
-                    <Badge variant="outline" className="ml-2 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      {campaign.platform === "google" ? "Google" : "Meta"}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                  CTR: {campaign.ctr}% • CR: {campaign.conversionRate}%
-                </div>
-              </div>
-            ))}
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Optimization Frequency</label>
+            <Select value={frequency} onValueChange={setFrequency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily (10 credits)</SelectItem>
+                <SelectItem value="3day">Every 3 days (5 credits)</SelectItem>
+                <SelectItem value="weekly">Weekly (2 credits)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-
-        {/* Low Performers */}
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-          <h4 className="text-sm font-medium flex items-center mb-3">
-            <TrendingDown className="h-4 w-4 mr-2 text-red-600" /> 
-            Paused Campaigns
-          </h4>
-          <div className="space-y-3">
-            {lowPerformers.map(campaign => (
-              <div key={campaign.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                  <div>
-                    <span className="font-medium text-sm">{campaign.name}</span>
-                    <Badge variant="outline" className="ml-2 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      {campaign.platform === "google" ? "Google" : "Meta"}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full">
-                  CTR: {campaign.ctr}% • CR: {campaign.conversionRate}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Budget Recommendations */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-          <h4 className="text-sm font-medium flex items-center mb-3">
-            <svg
-              className="h-4 w-4 mr-2 text-blue-600"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Optimization Goal</label>
+            <Select 
+              value={optimizationGoal} 
+              onValueChange={(value) => setOptimizationGoal(value as OptimizationGoal)}
             >
-              <circle cx="12" cy="12" r="8" />
-              <path d="M9.5 9.5c.5-1 2-1.5 3-1a2 2 0 0 1 1 2.5c-.5 1-2 1.5-3 1a2 2 0 0 1-1-2.5" />
-              <path d="M10 14c.5-1 2-1.5 3-1a2 2 0 0 1 1 2.5c-.5 1-2 1.5-3 1a2 2 0 0 1-1-2.5" />
-            </svg>
-            Budget Reallocation
-          </h4>
-          <div className="space-y-4">
-            {budgetReallocations.map(campaign => (
-              <div key={campaign.id} className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
-                <div className="flex justify-between items-center text-sm mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{campaign.name}</span>
-                    <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      {campaign.platform === "google" ? "Google" : "Meta"}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="text-xs font-medium min-w-16">
-                    ${campaign.currentBudget}
-                  </div>
-                  <div className="flex-1">
-                    <Progress 
-                      value={campaign.recommendedBudget / (campaign.currentBudget > campaign.recommendedBudget ? campaign.currentBudget : campaign.recommendedBudget) * 100}
-                      className={`h-2 ${campaign.recommendedBudget > campaign.currentBudget ? "bg-green-600" : "bg-red-600"}`}
-                    />
-                  </div>
-                  <div className="text-xs font-medium min-w-16 text-right">
-                    ${campaign.recommendedBudget}
-                  </div>
-                </div>
-                <div className="mt-1 text-xs text-right">
-                  <span className={campaign.recommendedBudget > campaign.currentBudget ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-                    {campaign.recommendedBudget > campaign.currentBudget 
-                      ? `+$${campaign.recommendedBudget - campaign.currentBudget}` 
-                      : `-$${campaign.currentBudget - campaign.recommendedBudget}`
-                    }
-                  </span>
-                </div>
-              </div>
-            ))}
+              <SelectTrigger>
+                <SelectValue placeholder="Select goal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="increase_ctr">Increase CTR</SelectItem>
+                <SelectItem value="increase_conversions">Maximize Conversions</SelectItem>
+                <SelectItem value="reduce_cpa">Lower CPA</SelectItem>
+                <SelectItem value="increase_engagement">Boost Engagement</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
-        <div className="pt-2">
-          <Button className="w-full justify-between bg-blue-600 hover:bg-blue-700">
-            Apply AI Recommendations
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {isScheduled ? (
+          <div className="bg-green-50 border border-green-100 rounded-md p-4 text-sm">
+            <h4 className="font-medium text-green-800 flex items-center">
+              {getGoalIcon()}
+              <span>{getGoalText()}</span>
+            </h4>
+            <p className="mt-1 text-green-700">
+              AI will analyze and optimize your ads {frequency === "daily" ? "every day" : 
+              frequency === "3day" ? "every 3 days" : "once a week"}.
+            </p>
+            <div className="mt-3">
+              <p className="text-xs text-green-600">Next optimization scheduled for tomorrow at 2:00 AM</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-purple-50 border border-purple-100 rounded-md p-4 text-sm">
+            <h4 className="font-medium text-purple-800 flex items-center">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <span>How AI Optimization Works</span>
+            </h4>
+            <ul className="mt-2 space-y-2 text-purple-700">
+              <li className="flex items-start">
+                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">1</span>
+                <span>AI analyzes ad performance across all campaigns</span>
+              </li>
+              <li className="flex items-start">
+                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">2</span>
+                <span>Pauses low-performing ads, boosts winners</span>
+              </li>
+              <li className="flex items-start">
+                <span className="bg-purple-100 text-purple-800 rounded-full h-5 w-5 flex items-center justify-center text-xs mr-2 mt-0.5">3</span>
+                <span>Generates new ad variations based on top performers</span>
+              </li>
+            </ul>
+          </div>
+        )}
       </CardContent>
+      <CardFooter>
+        {isScheduled ? (
+          <Button variant="outline" className="w-full" onClick={() => setIsScheduled(false)}>
+            Modify Optimization Schedule
+          </Button>
+        ) : (
+          <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-600" onClick={handleScheduleOptimization}>
+            Schedule AI Optimization <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

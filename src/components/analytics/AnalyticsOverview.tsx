@@ -1,246 +1,166 @@
 
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Campaign } from "@/models/CampaignTypes";
-import { PerformanceChart, PlatformComparisonChart } from "./charts";
-import { AIOptimizationCard, AIInsightsCard } from "./insights";
-import { 
-  performanceData, 
-  platformComparisonData, 
-  optimizationData
-} from "./data/mockData";
-import { Button } from "@/components/ui/button";
-import { 
-  RefreshCw, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle,
-  BarChart
-} from "lucide-react";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AIInsightsCard, AIOptimizationCard } from "@/components/analytics/insights";
+import PlatformComparisonChart from "./charts/PlatformComparisonChart";
+
+interface Campaign {
+  id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  spent: number;
+  clicks: number;
+  impressions: number;
+  conversions: number;
+  ctr: number;
+  startDate: string;
+  endDate?: string;
+}
 
 interface AnalyticsOverviewProps {
   campaigns: Campaign[];
 }
 
 const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ campaigns }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  // Calculate totals
+  const totalSpent = campaigns.reduce((sum, campaign) => sum + campaign.spent, 0);
+  const totalClicks = campaigns.reduce((sum, campaign) => sum + campaign.clicks, 0);
+  const totalImpressions = campaigns.reduce((sum, campaign) => sum + campaign.impressions, 0);
+  const totalConversions = campaigns.reduce((sum, campaign) => sum + campaign.conversions, 0);
+  const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
   
-  // Calculate overall metrics from campaigns
-  const totalImpressions = campaigns.reduce((total, campaign) => 
-    total + (campaign.performance?.impressions || 0), 0);
-  
-  const totalClicks = campaigns.reduce((total, campaign) => 
-    total + (campaign.performance?.clicks || 0), 0);
-  
-  const avgCTR = totalImpressions > 0 
-    ? (totalClicks / totalImpressions) * 100 
-    : 0;
-  
-  const totalSpend = campaigns.reduce((total, campaign) => 
-    total + (campaign.performance?.spend || 0), 0);
-
-  // Calculate weekly change (mock data for demonstration)
-  const weeklyChange = {
-    impressions: 12.5,
-    clicks: 8.3,
-    ctr: -2.1,
-    spend: 5.7
-  };
-
-  // For demonstration purposes showing last optimization: 24 hours ago
-  const lastOptimizationTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString();
-  
-  // Handle refresh of AI insights
-  const handleRefreshInsights = () => {
-    setIsRefreshing(true);
-    // Simulate refresh delay
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 2000);
-  };
+  // Prepare data for platform comparison chart
+  const platformComparisonData = [
+    {
+      metric: "Clicks",
+      google: campaigns.filter(c => c.platform === "google").reduce((sum, c) => sum + c.clicks, 0),
+      meta: campaigns.filter(c => c.platform === "meta").reduce((sum, c) => sum + c.clicks, 0),
+    },
+    {
+      metric: "Impressions",
+      google: campaigns.filter(c => c.platform === "google").reduce((sum, c) => sum + c.impressions, 0) / 1000,
+      meta: campaigns.filter(c => c.platform === "meta").reduce((sum, c) => sum + c.impressions, 0) / 1000,
+    },
+    {
+      metric: "Conversions",
+      google: campaigns.filter(c => c.platform === "google").reduce((sum, c) => sum + c.conversions, 0),
+      meta: campaigns.filter(c => c.platform === "meta").reduce((sum, c) => sum + c.conversions, 0),
+    },
+    {
+      metric: "Spent ($)",
+      google: campaigns.filter(c => c.platform === "google").reduce((sum, c) => sum + c.spent, 0),
+      meta: campaigns.filter(c => c.platform === "meta").reduce((sum, c) => sum + c.spent, 0),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-medium">Campaign Overview</h2>
-          <p className="text-sm text-muted-foreground">Performance metrics across all campaigns</p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="gap-1"
-          onClick={handleRefreshInsights}
-          disabled={isRefreshing}
-        >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh Insights
-        </Button>
-      </div>
+      <h1 className="text-3xl font-bold">Analytics & Insights</h1>
       
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Impressions" 
-          value={totalImpressions.toLocaleString()} 
-          change={weeklyChange.impressions} 
-          icon={<BarChart className="h-4 w-4" />}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          title="Total Spent"
+          value={`$${totalSpent.toFixed(2)}`}
+          description="All campaigns"
         />
-        <MetricCard 
-          title="Clicks" 
-          value={totalClicks.toLocaleString()} 
-          change={weeklyChange.clicks} 
-          icon={<BarChart className="h-4 w-4" />}
+        <MetricCard
+          title="Total Clicks"
+          value={totalClicks.toLocaleString()}
+          description={`CTR: ${avgCTR.toFixed(2)}%`}
         />
-        <MetricCard 
-          title="CTR" 
-          value={`${avgCTR.toFixed(2)}%`} 
-          change={weeklyChange.ctr} 
-          icon={<BarChart className="h-4 w-4" />}
+        <MetricCard
+          title="Impressions"
+          value={totalImpressions.toLocaleString()}
+          description="All campaigns"
         />
-        <MetricCard 
-          title="Ad Spend" 
-          value={`$${totalSpend.toFixed(2)}`} 
-          change={weeklyChange.spend} 
-          icon={<BarChart className="h-4 w-4" />}
+        <MetricCard
+          title="Conversions"
+          value={totalConversions.toLocaleString()}
+          description={`CPA: $${totalConversions > 0 ? (totalSpent / totalConversions).toFixed(2) : 0}`}
         />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Performance Overview */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Performance Overview</CardTitle>
-              <CardDescription>Last 7 days of campaign data</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PerformanceChart data={performanceData} />
-            </CardContent>
-          </Card>
-
-          {/* Platform Comparison */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Platform Comparison</CardTitle>
-              <CardDescription>Google Ads vs Meta Ads performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PlatformComparisonChart data={platformComparisonData} />
-            </CardContent>
-          </Card>
-          
-          {/* Campaign Health Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Campaign Health</CardTitle>
-              <CardDescription>AI-detected issues and anomalies</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <HealthItem 
-                  status="success" 
-                  message="Overall campaign performance is strong with 12.5% higher CTR than industry average" 
-                />
-                <HealthItem 
-                  status="warning" 
-                  message="Meta campaign 'Summer Sale' shows declining CTR over the past 3 days" 
-                />
-                <HealthItem 
-                  status="error" 
-                  message="Google campaign 'Product Launch' has high CPC with low conversion rate" 
-                />
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="overview">
+            <TabsList className="mb-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="platforms">Platform Comparison</TabsTrigger>
+              <TabsTrigger value="campaigns">Campaign Performance</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    {/* Placeholder for overview chart */}
+                    <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-md border">
+                      <p className="text-gray-500">Performance chart will appear here</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="platforms">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Comparison</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PlatformComparisonChart data={platformComparisonData} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="campaigns">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Campaign Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    {/* Placeholder for campaign performance chart */}
+                    <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-md border">
+                      <p className="text-gray-500">Campaign performance chart will appear here</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* Right Column */}
+        
         <div className="space-y-6">
-          {/* AI Optimization Summary */}
-          <AIOptimizationCard 
-            lastOptimizationTime={lastOptimizationTime}
-            topPerformers={optimizationData.topPerformers}
-            lowPerformers={optimizationData.lowPerformers}
-            budgetReallocations={optimizationData.budgetReallocation}
-          />
-
-          {/* AI Insights - Now using the OpenAI-powered version */}
-          <AIInsightsCard 
-            isLoading={isRefreshing}
-            onRefresh={handleRefreshInsights}
-          />
+          <AIInsightsCard />
+          <AIOptimizationCard />
         </div>
       </div>
     </div>
   );
 };
 
-// Metric Card Component
 interface MetricCardProps {
   title: string;
   value: string;
-  change: number;
-  icon: React.ReactNode;
+  description: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon }) => {
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, description }) => {
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-            <div className="text-2xl font-medium mb-1">{value}</div>
-          </div>
-          <div className="p-2 rounded-full bg-muted">{icon}</div>
-        </div>
-        <div className="flex items-center mt-2">
-          {change >= 0 ? (
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-          ) : (
-            <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
-          )}
-          <span className={`text-xs ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            {change >= 0 ? '+' : ''}{change}% from last week
-          </span>
-        </div>
+      <CardContent className="pt-6">
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-sm font-medium mt-1">{title}</p>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </CardContent>
     </Card>
-  );
-};
-
-// Health Item Component
-interface HealthItemProps {
-  status: 'success' | 'warning' | 'error';
-  message: string;
-}
-
-const HealthItem: React.FC<HealthItemProps> = ({ status, message }) => {
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'error':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-  
-  return (
-    <div className={`flex p-3 rounded-md ${
-      status === 'success' ? 'bg-green-50 border-green-200' : 
-      status === 'warning' ? 'bg-amber-50 border-amber-200' : 
-      'bg-red-50 border-red-200'
-    } border`}>
-      <div className="mt-0.5 mr-3">{getStatusIcon()}</div>
-      <p className="text-sm">{message}</p>
-    </div>
   );
 };
 

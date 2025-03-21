@@ -1,16 +1,16 @@
 
 import React from "react";
-import AppLayout from "@/components/AppLayout";
+import SafeAppLayout from "@/components/SafeAppLayout";
 import { CampaignProvider } from "@/contexts/CampaignContext";
 import CampaignContent from "@/components/campaign/CampaignContent";
 
 const CreateCampaignPage: React.FC = () => {
   return (
-    <AppLayout activePage="campaigns">
+    <SafeAppLayout activePage="campaigns">
       <CampaignProvider>
         <CampaignContent />
       </CampaignProvider>
-    </AppLayout>
+    </SafeAppLayout>
   );
 };
 
