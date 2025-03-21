@@ -50,8 +50,8 @@ const DashboardPage: React.FC = () => {
           <SmartNotifications />
         </div>
         
-        {/* Credits Status in its own row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Credits Status as a solo horizontal column */}
+        <div className="grid grid-cols-1 gap-6">
           <CreditsStatus user={dashboardUser} />
         </div>
         
