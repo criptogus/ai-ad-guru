@@ -1,71 +1,66 @@
 
 import React from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface PerformanceChartProps {
   data: {
-    date: string;
+    day: string;
     impressions: number;
     clicks: number;
-    ctr: number;
     conversions: number;
   }[];
 }
 
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
   return (
-    <div className="h-72">
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <AreaChart
           data={data}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          margin={{
+            top: 10,
+            right: 30,
+            left: 0,
+            bottom: 0,
+          }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-          <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-          <Tooltip />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+          <XAxis dataKey="day" />
+          <YAxis />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: "white", 
+              borderRadius: "8px", 
+              borderColor: "#e2e8f0",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+            }} 
+          />
           <Legend />
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="clicks"
+          <Area 
+            type="monotone" 
+            dataKey="impressions" 
+            stackId="1" 
+            stroke="#8884d8" 
+            fill="rgba(136, 132, 216, 0.6)" 
+            name="Impressions"
+          />
+          <Area 
+            type="monotone" 
+            dataKey="clicks" 
+            stackId="1" 
+            stroke="#82ca9d" 
+            fill="rgba(130, 202, 157, 0.6)" 
             name="Clicks"
-            stroke="#4285F4"
-            strokeWidth={2}
-            dot={{ r: 2 }}
-            activeDot={{ r: 5 }}
           />
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="conversions"
+          <Area 
+            type="monotone" 
+            dataKey="conversions" 
+            stackId="1" 
+            stroke="#ffc658" 
+            fill="rgba(255, 198, 88, 0.6)" 
             name="Conversions"
-            stroke="#34A853"
-            strokeWidth={2}
-            dot={{ r: 2 }}
-            activeDot={{ r: 5 }}
           />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="ctr"
-            name="CTR (%)"
-            stroke="#FBBC05"
-            strokeWidth={2}
-            dot={{ r: 2 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

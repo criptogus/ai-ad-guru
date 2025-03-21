@@ -1,344 +1,136 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, TrendingUp, Zap, Target, Settings, Loader2, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-
-interface AIInsight {
-  campaign_id: string;
-  title: string;
-  description: string;
-  category: "performance" | "budget" | "creative" | "audience" | "technical";
-}
-
-interface AIRecommendation {
-  campaign_id: string;
-  action: string;
-  reason: string;
-  priority: "high" | "medium" | "low";
-  expected_impact: string;
-}
-
-interface AIRankedCampaign {
-  campaign_id: string;
-  name: string;
-  ranking: number;
-  reason: string;
-  category: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { RefreshCw, Lightbulb, Zap, ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AIInsightsCardProps {
-  insights?: AIInsight[];
   isLoading?: boolean;
   onRefresh?: () => void;
 }
 
-const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ 
-  insights: propInsights, 
-  isLoading: propIsLoading,
-  onRefresh 
+const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
+  isLoading = false,
+  onRefresh
 }) => {
-  const [insights, setInsights] = useState<AIInsight[]>(propInsights || []);
-  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
-  const [rankedCampaigns, setRankedCampaigns] = useState<AIRankedCampaign[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(propIsLoading || false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'insights' | 'recommendations'>('insights');
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  
-  const { toast } = useToast();
-  const { user } = useAuth();
-  
-  // Fetch insights if they weren't provided as props
-  useEffect(() => {
-    if (propInsights) {
-      setInsights(propInsights);
-      return;
+  // In a real app, these would be fetched from an API
+  const insights = [
+    {
+      id: 1,
+      type: "critical",
+      message: "Your 'Summer Collection' campaign CTR has dropped by 20% in the last 3 days. Consider updating your image or headline to improve engagement.",
+      action: "Edit Ad"
+    },
+    {
+      id: 2,
+      type: "opportunity",
+      message: "Users from mobile devices convert 40% better than desktop for your 'Product Launch' campaign. Consider increasing mobile ad spend by 15%.",
+      action: "Adjust Budget"
+    },
+    {
+      id: 3,
+      type: "insight",
+      message: "Your Google ads perform better on weekdays while Instagram ads show higher engagement on weekends. Consider adjusting your scheduling strategy.",
+      action: "View Schedule"
     }
-    
-    if (user) {
-      fetchInsights();
-    }
-  }, [user, propInsights]);
-  
-  // Update state if props change
-  useEffect(() => {
-    if (propInsights) {
-      setInsights(propInsights);
-    }
-    
-    if (propIsLoading !== undefined) {
-      setIsLoading(propIsLoading);
-    }
-  }, [propInsights, propIsLoading]);
-  
-  const fetchInsights = async () => {
-    if (!user) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-campaign-insights', {
-        body: { userId: user.id }
-      });
-      
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      if (data.insights && Array.isArray(data.insights)) {
-        setInsights(data.insights);
-      } else {
-        setInsights([]);
-      }
-      
-      if (data.recommendations && Array.isArray(data.recommendations)) {
-        setRecommendations(data.recommendations);
-      } else {
-        setRecommendations([]);
-      }
-      
-      if (data.ranked_campaigns && Array.isArray(data.ranked_campaigns)) {
-        setRankedCampaigns(data.ranked_campaigns);
-      } else {
-        setRankedCampaigns([]);
-      }
-      
-      toast({
-        title: "Insights updated",
-        description: "AI has analyzed your campaigns and provided fresh insights",
-      });
-    } catch (err) {
-      console.error('Error fetching AI insights:', err);
-      setError('Failed to load insights. Please try again.');
-      toast({
-        title: "Error",
-        description: "Failed to load AI insights. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  ];
+
+  const getInsightStyles = (type: string) => {
+    switch (type) {
+      case "critical":
+        return "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20";
+      case "opportunity":
+        return "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20";
+      case "insight":
+        return "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20";
+      default:
+        return "border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20";
     }
   };
-  
-  // Handle refresh
-  const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      fetchInsights();
+
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case "critical":
+        return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="M12 9v4"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg>;
+      case "opportunity":
+        return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
+      case "insight":
+        return <Lightbulb className="w-4 h-4 text-blue-500" />;
+      default:
+        return <Lightbulb className="w-4 h-4 text-gray-500" />;
     }
   };
-  
-  // Toggle expanding an item
-  const toggleExpand = (id: string) => {
-    const newSet = new Set(expandedItems);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setExpandedItems(newSet);
-  };
-  
-  // Map category to icon
-  const getCategoryIcon = (category: string) => {
-    switch(category) {
-      case 'creative': return <Lightbulb className="h-4 w-4" />;
-      case 'audience': return <Target className="h-4 w-4" />;
-      case 'performance': return <TrendingUp className="h-4 w-4" />;
-      case 'technical': return <Settings className="h-4 w-4" />;
-      default: return <Zap className="h-4 w-4" />;
-    }
-  };
-  
-  // Get color class based on category
-  const getCategoryColorClass = (category: string): string => {
-    switch(category) {
-      case 'creative': return 'text-purple-600';
-      case 'audience': return 'text-blue-600';
-      case 'performance': return 'text-green-600';
-      case 'budget': return 'text-orange-600';
-      case 'technical': return 'text-gray-600';
-      default: return 'text-blue-600';
-    }
-  };
-  
-  // Get priority color class
-  const getPriorityColorClass = (priority: string): string => {
-    switch(priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-amber-100 text-amber-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-  
+
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg font-medium">AI Campaign Insights</CardTitle>
-            <CardDescription>
-              OpenAI-powered recommendations to improve performance
-            </CardDescription>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Analyzing your campaigns with OpenAI...</p>
-          </div>
-        ) : error ? (
-          <div className="p-6 text-center">
-            <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button onClick={handleRefresh} variant="outline" className="mt-4">
-              Try Again
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-medium flex items-center">
+            <Zap className="h-5 w-5 mr-2 text-amber-500" /> 
+            AI Performance Insights
+          </CardTitle>
+          {onRefresh && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="h-8 w-8 p-0"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span className="sr-only">Refresh insights</span>
             </Button>
-          </div>
-        ) : insights.length === 0 && recommendations.length === 0 ? (
-          <div className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              No insights available. Create campaigns to get AI-powered recommendations.
-            </p>
+          )}
+        </div>
+        <CardDescription>
+          AI-powered recommendations to optimize your campaigns
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          // Skeleton loading state
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex gap-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div>
-            <div className="border-b">
-              <div className="flex">
-                <Button 
-                  variant={activeSection === 'insights' ? 'default' : 'ghost'}
-                  className="rounded-none flex-1"
-                  onClick={() => setActiveSection('insights')}
-                >
-                  Insights
-                </Button>
-                <Button 
-                  variant={activeSection === 'recommendations' ? 'default' : 'ghost'}
-                  className="rounded-none flex-1"
-                  onClick={() => setActiveSection('recommendations')}
-                >
-                  Actions
-                </Button>
-              </div>
-            </div>
-            
-            {activeSection === 'insights' ? (
-              <div className="divide-y">
-                {insights.map((insight, index) => (
-                  <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex gap-3">
-                      <div className={`mt-0.5 ${getCategoryColorClass(insight.category)}`}>
-                        {getCategoryIcon(insight.category)}
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <h4 className="text-sm font-medium">{insight.title}</h4>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6" 
-                            onClick={() => toggleExpand(`insight-${index}`)}
-                          >
-                            {expandedItems.has(`insight-${index}`) ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                        </div>
-                        
-                        {expandedItems.has(`insight-${index}`) && (
-                          <p className="text-xs text-muted-foreground mt-1 mb-2">{insight.description}</p>
-                        )}
-                        
-                        <div className="flex gap-2 mt-2">
-                          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
-                            Apply
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-xs h-7 px-2">
-                            Dismiss
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+          // Actual insights
+          <div className="space-y-3">
+            {insights.map((insight) => (
+              <div 
+                key={insight.id} 
+                className={`flex items-start gap-3 p-3 rounded-lg border ${getInsightStyles(insight.type)}`}
+              >
+                <div className="mt-0.5">
+                  {getInsightIcon(insight.type)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm">{insight.message}</p>
+                  <div className="flex justify-end mt-2">
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="h-auto p-0 font-medium text-xs flex items-center gap-1"
+                    >
+                      {insight.action}
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
                   </div>
-                ))}
+                </div>
               </div>
-            ) : (
-              <div className="divide-y">
-                {recommendations.map((rec, index) => (
-                  <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex gap-3">
-                      <div className="mt-0.5">
-                        <span className={`px-2 py-1 rounded-full text-xs ${getPriorityColorClass(rec.priority)}`}>
-                          {rec.priority}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <h4 className="text-sm font-medium">{rec.action}</h4>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6" 
-                            onClick={() => toggleExpand(`rec-${index}`)}
-                          >
-                            {expandedItems.has(`rec-${index}`) ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                        </div>
-                        
-                        {expandedItems.has(`rec-${index}`) && (
-                          <>
-                            <p className="text-xs text-muted-foreground mt-1">{rec.reason}</p>
-                            <p className="text-xs text-blue-600 mt-1 mb-2">
-                              Expected impact: {rec.expected_impact}
-                            </p>
-                          </>
-                        )}
-                        
-                        <div className="flex gap-2 mt-2">
-                          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
-                            Apply Now
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-xs h-7 px-2">
-                            Ignore
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         )}
       </CardContent>
-      {(insights.length > 0 || recommendations.length > 0) && (
-        <CardFooter className="p-3 border-t flex justify-center">
-          <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-            View All Insights
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 };

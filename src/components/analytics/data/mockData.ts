@@ -1,56 +1,46 @@
 
-// Sample performance data
+// Mock data for analytics charts and insights
+
+// Performance chart data (last 7 days)
 export const performanceData = [
-  { date: "Jul 01", impressions: 12000, clicks: 320, ctr: 2.67, conversions: 28 },
-  { date: "Jul 02", impressions: 13500, clicks: 380, ctr: 2.81, conversions: 32 },
-  { date: "Jul 03", impressions: 14200, clicks: 410, ctr: 2.89, conversions: 35 },
-  { date: "Jul 04", impressions: 15800, clicks: 460, ctr: 2.91, conversions: 40 },
-  { date: "Jul 05", impressions: 16500, clicks: 490, ctr: 2.97, conversions: 43 },
-  { date: "Jul 06", impressions: 17200, clicks: 510, ctr: 2.96, conversions: 45 },
-  { date: "Jul 07", impressions: 18100, clicks: 550, ctr: 3.04, conversions: 48 }
+  { day: 'Mon', impressions: 2400, clicks: 400, conversions: 40 },
+  { day: 'Tue', impressions: 1398, clicks: 300, conversions: 25 },
+  { day: 'Wed', impressions: 9800, clicks: 1200, conversions: 120 },
+  { day: 'Thu', impressions: 3908, clicks: 800, conversions: 90 },
+  { day: 'Fri', impressions: 4800, clicks: 980, conversions: 100 },
+  { day: 'Sat', impressions: 3800, clicks: 830, conversions: 75 },
+  { day: 'Sun', impressions: 4300, clicks: 1100, conversions: 95 },
 ];
 
-// Sample platform comparison data
+// Platform comparison data
 export const platformComparisonData = [
-  { platform: "Google", impressions: 85000, clicks: 2500, ctr: 2.94, conversions: 210, cost: 3200 },
-  { platform: "Meta", impressions: 92000, clicks: 2800, ctr: 3.04, conversions: 240, cost: 3500 }
+  { metric: 'CTR', google: 3.2, meta: 2.7 },
+  { metric: 'CPC', google: 1.5, meta: 0.8 },
+  { metric: 'Conv. Rate', google: 2.8, meta: 3.5 },
+  { metric: 'ROAS', google: 3.2, meta: 4.1 },
 ];
 
-// Sample AI optimization data
+// Optimization data for AI insights
 export const optimizationData = {
   topPerformers: [
-    { id: "1", name: "Summer Sale", platform: "google", ctr: 4.2, conversionRate: 2.1 },
-    { id: "2", name: "Brand Awareness", platform: "meta", ctr: 3.8, conversionRate: 1.9 },
-    { id: "3", name: "Product Launch", platform: "google", ctr: 3.5, conversionRate: 1.7 }
+    { id: 'c1', name: 'Summer Collection', platform: 'meta', ctr: 4.8, conversionRate: 2.7 },
+    { id: 'c2', name: 'Product Launch', platform: 'google', ctr: 3.9, conversionRate: 3.1 }
   ],
   lowPerformers: [
-    { id: "4", name: "Holiday Special", platform: "meta", ctr: 0.8, conversionRate: 0.3 },
-    { id: "5", name: "Clearance Sale", platform: "google", ctr: 0.7, conversionRate: 0.4 }
+    { id: 'c3', name: 'Winter Sale', platform: 'meta', ctr: 1.2, conversionRate: 0.5 },
+    { id: 'c4', name: 'Brand Awareness', platform: 'google', ctr: 0.8, conversionRate: 0.3 }
   ],
   budgetReallocation: [
-    { id: "1", name: "Summer Sale", platform: "google", currentBudget: 500, recommendedBudget: 750 },
-    { id: "4", name: "Holiday Special", platform: "meta", currentBudget: 400, recommendedBudget: 200 }
+    { id: 'c1', name: 'Summer Collection', platform: 'meta', currentBudget: 100, recommendedBudget: 150 },
+    { id: 'c3', name: 'Winter Sale', platform: 'meta', currentBudget: 80, recommendedBudget: 40 },
+    { id: 'c2', name: 'Product Launch', platform: 'google', currentBudget: 120, recommendedBudget: 140 }
   ]
 };
 
-// Sample AI insights data
-export const insightsData = [
-  {
-    category: "creative",
-    title: "Ad Creative Insight",
-    description: "Top performing ads mention \"Limited Time\" and show clear product images. Consider updating ad creatives to emphasize urgency and product visibility.",
-    colorClass: "bg-blue-50 dark:bg-blue-900/20"
-  },
-  {
-    category: "audience",
-    title: "Audience Targeting Insight",
-    description: "The 25-34 age demographic has 42% higher conversion rates. Consider reallocating budget to campaigns targeting this audience segment.",
-    colorClass: "bg-green-50 dark:bg-green-900/20"
-  },
-  {
-    category: "budget",
-    title: "Budget Optimization",
-    description: "Weekend campaigns show 28% higher CTR. Recommend shifting 30% of weekday budget to weekend campaigns for improved performance.",
-    colorClass: "bg-amber-50 dark:bg-amber-900/20"
-  }
+// Ad Health Score data
+export const adHealthScores = [
+  { id: 'ad1', name: 'Product Showcase', platform: 'google', score: 87, issues: [] },
+  { id: 'ad2', name: 'Summer Sale Promotion', platform: 'meta', score: 64, issues: ['Low engagement rate', 'Below average CTR'] },
+  { id: 'ad3', name: 'New Service Launch', platform: 'meta', score: 91, issues: [] },
+  { id: 'ad4', name: 'Local Business Ads', platform: 'google', score: 45, issues: ['Poor conversion rate', 'High bounce rate', 'Low quality score'] },
 ];
