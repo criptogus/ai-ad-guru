@@ -27,6 +27,7 @@ serve(async (req) => {
       format = "square",
       templateType = "product",
       templateName = "",
+      templateId = "",
       brandTone = "professional"
     } = requestBody;
     
@@ -93,6 +94,33 @@ serve(async (req) => {
         break;
     }
     
+    // Special handling for specific template IDs
+    if (templateId === "webinar-event") {
+      templateStyleGuidance += `
+- Include visual elements specific to online events (screens, devices, virtual audience)
+- Add technology elements that suggest digital connection
+- Use blue tones that suggest professionalism and technology
+- Include subtle visual elements like microphones, headsets, or presentation graphics
+- Create a composition that suggests knowledge sharing and interaction
+`;
+    } else if (templateId === "holiday-special") {
+      templateStyleGuidance += `
+- Incorporate festive elements appropriate for holiday season (lights, decorations)
+- Use warm, rich color palette with gold, red, or seasonal colors
+- Include subtle gift elements or celebration visuals
+- Create a cheerful, festive atmosphere
+- Balance promotional intent with holiday spirit
+`;
+    } else if (templateId === "flash-sale") {
+      templateStyleGuidance += `
+- Use bold, high-contrast colors that create urgency (reds, oranges, yellows)
+- Include dynamic elements that suggest limited time (clocks, timers)
+- Create strong visual hierarchy that draws attention to the sale aspect
+- Use diagonal or asymmetrical composition for energy
+- Include subtle visual cues of value (price tags, percentage signs)
+`;
+    }
+    
     // Add any template-name specific style if needed
     if (templateName.includes("minimalist")) {
       templateStyleGuidance += `
@@ -129,6 +157,7 @@ Generate a high-quality advertising banner image for ${platform} platform in ${f
 ADVERTISING CONTEXT:
 - Banner Type: ${templateType} advertisement
 - Template Style: ${templateName}
+- Template ID: ${templateId}
 - Platform: ${platform}
 - Format: ${format}
 - Brand Tone: ${brandToneGuidance}

@@ -49,6 +49,15 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
         defaultPrompt = "A professional advertising image for a marketing campaign with balanced composition and commercial appeal.";
     }
     
+    // Add template-specific details
+    if (template.id === "webinar-event") {
+      defaultPrompt = "A professional webinar announcement with virtual conference imagery, featuring a laptop or screen with audience participants, modern technology elements, and a professional speaker or host. Include visual cues that suggest learning, interaction, and online engagement.";
+    } else if (template.id === "holiday-special") {
+      defaultPrompt = "A festive holiday-themed promotional image with seasonal decorations, warm lighting, gift elements, and celebratory atmosphere appropriate for end-of-year promotions or holiday sales.";
+    } else if (template.id === "flash-sale") {
+      defaultPrompt = "A high-energy flash sale promotional image with bold colors, dynamic elements that create urgency, price reduction visuals, limited-time offer indicators, and excitement-generating design elements.";
+    }
+    
     // Add platform-specific details
     if (platform === "instagram") {
       defaultPrompt += " Optimized for Instagram with vibrant details and social-friendly composition.";

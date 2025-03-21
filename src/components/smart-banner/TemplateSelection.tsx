@@ -44,6 +44,18 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({ templates, onSele
     }
   };
 
+  // Get template description based on template id
+  const getTemplateDescription = (template: BannerTemplate): string => {
+    if (template.id === "webinar-event") {
+      return "Professional layout for promoting webinars and online events";
+    } else if (template.id === "holiday-special") {
+      return "Festive design for holiday season promotions and special offers";
+    } else if (template.id === "flash-sale") {
+      return "Attention-grabbing design for time-limited promotions";
+    }
+    return template.description;
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Choose a Template</h2>
@@ -68,7 +80,7 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({ templates, onSele
                 </div>
                 <CardHeader className="pb-2">
                   <CardTitle>{template.name}</CardTitle>
-                  <CardDescription>{template.description}</CardDescription>
+                  <CardDescription>{getTemplateDescription(template)}</CardDescription>
                 </CardHeader>
                 <CardFooter className="pt-0">
                   <Button 
