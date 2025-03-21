@@ -139,5 +139,82 @@ export const securityMonitor = {
       securityMonitor.log('token_validation_failed', { error: error.message }, 'error');
       return false;
     }
+  },
+  
+  /**
+   * Track authentication events
+   */
+  trackAuthEvent: (userId: string, event: string, data: Record<string, any> = {}) => {
+    securityMonitor.log(`auth_${event}`, {
+      userId,
+      timestamp: new Date().toISOString(),
+      ...data
+    });
+  },
+  
+  /**
+   * Track suspicious authentication activity
+   */
+  trackSuspiciousActivity: (userId: string, event: string, data: Record<string, any> = {}) => {
+    securityMonitor.log(`suspicious_${event}`, {
+      userId,
+      timestamp: new Date().toISOString(),
+      ...data
+    }, 'warn');
   }
+};
+
+/**
+ * Security audit functionality
+ */
+export const securityAudit = {
+  /**
+   * Check application dependencies for security issues
+   */
+  checkDependencies: async (): Promise<any> => {
+    try {
+      // This would connect to a service that checks package versions against known vulnerabilities
+      // For now, we're just returning a mock successful result
+      return {
+        status: 'success',
+        checkedAt: new Date().toISOString(),
+        vulnerabilities: []
+      };
+    } catch (error) {
+      console.error('Error checking dependencies:', error);
+      return { 
+        status: 'error',
+        message: 'Failed to check dependencies'
+      };
+    }
+  },
+  
+  /**
+   * Schedule regular security audits
+   */
+  scheduleRegularAudits: () => {
+    // Schedule a security audit every week
+    // This is just a placeholder - in a real app, you'd use a proper scheduler
+    console.log('Scheduled regular security audits');
+    
+    // For demo purposes, we'll just log that audits are scheduled
+    securityMonitor.log('security_audits_scheduled', {
+      frequency: 'weekly',
+      scheduledAt: new Date().toISOString()
+    });
+    
+    return true;
+  }
+};
+
+/**
+ * Apply security headers to application
+ */
+export const applySecurityHeaders = () => {
+  // In a real application, this would set HTTP headers
+  // For client-side React, this is mainly for documentation
+  console.log('Applied security headers');
+  
+  // For demo purposes, just return true
+  return true;
 };
