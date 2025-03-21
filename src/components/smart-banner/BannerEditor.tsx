@@ -159,6 +159,28 @@ const BannerEditor: React.FC<BannerEditorProps> = ({
                           )}
                         </Button>
                       </div>
+                      
+                      <div className="border rounded-md p-4 bg-accent/30">
+                        <h3 className="font-medium mb-2">Template Information</h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Template:</span>
+                            <span className="font-medium">{template.name}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Type:</span>
+                            <span className="font-medium capitalize">{template.type}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Format:</span>
+                            <span className="font-medium capitalize">{format}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Platform:</span>
+                            <span className="font-medium capitalize">{platform}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

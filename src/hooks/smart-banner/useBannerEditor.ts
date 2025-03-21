@@ -41,6 +41,7 @@ export const useBannerEditor = (
   const [isGeneratingText, setIsGeneratingText] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [bannerElements, setBannerElements] = useState<BannerElement[]>([]);
+  const [brandTone, setBrandTone] = useState("professional");
   
   const creditCosts = getCreditCosts();
 
@@ -194,6 +195,11 @@ export const useBannerEditor = (
       return;
     }
     
+    if (!selectedTemplate) {
+      toast.error("Please select a template first");
+      return;
+    }
+    
     setIsGeneratingImage(true);
     
     try {
@@ -228,12 +234,14 @@ export const useBannerEditor = (
       }
       
       // Call the Supabase function to generate the image with DALL-E
-      const { data, error } = await supabase.functions.invoke('generate-image', {
+      const { data, error } = await supabase.functions.invoke('generate-banner-image', {
         body: { 
           prompt,
           platform: selectedPlatform,
           imageFormat,
-          adTheme: selectedTemplate?.type
+          templateType: selectedTemplate.type,
+          templateName: selectedTemplate.name,
+          brandTone
         },
       });
       
@@ -357,6 +365,8 @@ export const useBannerEditor = (
     uploadImage,
     isUploading,
     bannerElements,
-    setBannerElements
+    setBannerElements,
+    brandTone,
+    setBrandTone
   };
 };

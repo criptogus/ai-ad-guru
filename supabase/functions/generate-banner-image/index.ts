@@ -25,7 +25,9 @@ serve(async (req) => {
       prompt, 
       platform = "instagram", 
       format = "square",
-      templateType = "product"
+      templateType = "product",
+      templateName = "",
+      brandTone = "professional"
     } = requestBody;
     
     if (!prompt) {
@@ -41,17 +43,101 @@ serve(async (req) => {
       imageSize = "1792x1024"; // Landscape format
     }
     
+    // Add template-specific style guidance based on the template type and name
+    let templateStyleGuidance = "";
+    
+    switch (templateType) {
+      case "product":
+        templateStyleGuidance = `
+- Focus on the product with clean, uncluttered background
+- Use crisp, high-detail product visualization
+- Apply subtle depth of field to highlight the product
+- Include contextual elements showing the product in use
+- Lighting should highlight product features
+`;
+        break;
+      case "seasonal":
+        templateStyleGuidance = `
+- Incorporate seasonal color palette (summer: bright & vibrant, winter: cool blues & whites, etc.)
+- Include subtle seasonal elements or symbols
+- Create a mood that matches the season
+- Use lighting that evokes the season (warm summer light, cool winter tones)
+`;
+        break;
+      case "event":
+        templateStyleGuidance = `
+- Create a sense of excitement and anticipation
+- Use dynamic composition that creates energy
+- Include subtle event-related visual elements
+- Professional and organized appearance
+- Clear focal point to anchor event information
+`;
+        break;
+      case "brand":
+        templateStyleGuidance = `
+- Sophisticated color palette that matches brand identity
+- Clean, minimalist approach with breathing space
+- Visual elements that convey brand values
+- Consistent visual language throughout
+- Subtle textures or patterns if appropriate
+`;
+        break;
+      case "discount":
+        templateStyleGuidance = `
+- Use high contrast elements to create urgency
+- Incorporate visual elements that suggest value
+- Clear composition with strong focal point
+- Energetic color choices that grab attention
+- Dynamic angles or composition
+`;
+        break;
+    }
+    
+    // Add any template-name specific style if needed
+    if (templateName.includes("minimalist")) {
+      templateStyleGuidance += `
+- Ultra-clean background with minimal elements
+- Significant negative space
+- Monochromatic or limited color palette
+- Simple, geometric composition
+`;
+    }
+    
+    // Tailor to brand tone
+    let brandToneGuidance = "";
+    switch (brandTone.toLowerCase()) {
+      case "professional":
+        brandToneGuidance = "Clean, corporate, trustworthy visual elements with balanced composition";
+        break;
+      case "playful":
+        brandToneGuidance = "Vibrant colors, dynamic composition, and friendly visual elements";
+        break;
+      case "luxury":
+        brandToneGuidance = "Rich textures, elegant composition, sophisticated color palette (golds, deep blues, etc.)";
+        break;
+      case "creative":
+        brandToneGuidance = "Unique perspective, artistic elements, unexpected color combinations or compositions";
+        break;
+      default:
+        brandToneGuidance = "Professional, clean visual elements with balanced composition";
+    }
+    
     // Enhance the prompt for better ad banner generation
     const enhancedPrompt = `
 Generate a high-quality advertising banner image for ${platform} platform in ${format} format.
 
 ADVERTISING CONTEXT:
 - Banner Type: ${templateType} advertisement
+- Template Style: ${templateName}
 - Platform: ${platform}
 - Format: ${format}
+- Brand Tone: ${brandToneGuidance}
 
 SPECIFIC REQUIREMENTS:
 ${prompt}
+
+TEMPLATE STYLE GUIDANCE:
+${templateStyleGuidance}
 
 VISUAL STYLE:
 - Professional, high-end commercial advertisement aesthetic
