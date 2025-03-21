@@ -34,7 +34,20 @@ export const useCampaignSteps = (
       return;
     }
 
+    // Validate platform selection
     if (currentStep === 2) {
+      if (!campaignData.platforms || campaignData.platforms.length === 0) {
+        toast({
+          title: "Platform Selection Required",
+          description: "Please select at least one platform before proceeding",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Validate campaign setup
+    if (currentStep === 3) {
       if (!campaignData.name || !campaignData.description) {
         toast({
           title: "Required fields missing",
@@ -46,30 +59,33 @@ export const useCampaignSteps = (
     }
 
     // Check if we have ads before proceeding to summary
-    if (currentStep === 3) {
-      const platform = campaignData.platform;
-      let platformAds;
+    if (currentStep === 4) {
+      const platforms = campaignData.platforms || [];
       
-      if (platform === 'google') {
-        platformAds = campaignData.googleAds;
-      } else if (platform === 'linkedin') {
-        platformAds = campaignData.linkedInAds;
-      } else if (platform === 'microsoft') {
-        platformAds = campaignData.microsoftAds;
+      let hasAds = false;
+      
+      if (platforms.includes('google') && campaignData.googleAds?.length > 0) {
+        hasAds = true;
+      } else if (platforms.includes('meta') && campaignData.metaAds?.length > 0) {
+        hasAds = true;
+      } else if (platforms.includes('linkedin') && campaignData.linkedInAds?.length > 0) {
+        hasAds = true;
+      } else if (platforms.includes('microsoft') && campaignData.microsoftAds?.length > 0) {
+        hasAds = true;
       }
         
-      if (!platformAds || platformAds.length === 0) {
+      if (!hasAds) {
         toast({
           title: "Ads Required",
-          description: `Please generate ${platform} ads before proceeding`,
+          description: "Please generate ads for at least one selected platform before proceeding",
           variant: "destructive",
         });
         return;
       }
     }
 
-    // Only check credits on the final submit step (now step 4)
-    if (currentStep === 4) {
+    // Only check credits on the final submit step (now step 5)
+    if (currentStep === 5) {
       if (user && user.credits < 5) {
         toast({
           title: "Insufficient credits",

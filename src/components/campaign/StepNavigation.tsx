@@ -10,13 +10,14 @@ interface StepNavigationProps {
 
 const StepNavigation: React.FC<StepNavigationProps> = ({ 
   currentStep = 1,
-  totalSteps = 4
+  totalSteps = 5 // Updated from 4 to 5
 }) => {
   const steps = [
     { number: 1, title: "Website Analysis" },
-    { number: 2, title: "Campaign Setup" },
-    { number: 3, title: "Ad Creation" },
-    { number: 4, title: "Review & Launch" }
+    { number: 2, title: "Choose Platforms" }, // Added new step
+    { number: 3, title: "Campaign Setup" },
+    { number: 4, title: "Ad Creation" },
+    { number: 5, title: "Review & Launch" }
   ];
 
   return (

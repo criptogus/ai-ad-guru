@@ -10,6 +10,7 @@ export interface CampaignData {
   name?: string;
   description?: string;
   platform?: string;
+  platforms?: string[]; // New field for multiple platform selection
   websiteUrl?: string;
   targetAudience?: string;
   googleAds?: GoogleAd[];
@@ -32,17 +33,22 @@ export interface CampaignContextType {
   setLinkedInAds: React.Dispatch<React.SetStateAction<LinkedInAd[]>>;
   microsoftAds: MicrosoftAd[];
   setMicrosoftAds: React.Dispatch<React.SetStateAction<MicrosoftAd[]>>;
+  metaAds: MetaAd[]; // Added for consistency
+  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>; // Added for consistency
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [campaignData, setCampaignData] = useState<any>({});
+  const [campaignData, setCampaignData] = useState<any>({
+    platforms: [] // Initialize with empty platforms array
+  });
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
+  const [metaAds, setMetaAds] = useState<MetaAd[]>([]); // Added for consistency
 
   return (
     <CampaignContext.Provider
@@ -58,7 +64,9 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         linkedInAds,
         setLinkedInAds,
         microsoftAds,
-        setMicrosoftAds
+        setMicrosoftAds,
+        metaAds,
+        setMetaAds
       }}
     >
       {children}

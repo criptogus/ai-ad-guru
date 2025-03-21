@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +10,8 @@ import CampaignActionFooter from "./summary/CampaignActionFooter";
 
 interface CampaignSummaryProps {
   campaignName: string;
-  platform: string;
+  platform?: string;
+  platforms?: string[];
   budget: number;
   budgetType: string;
   startDate: string;
@@ -22,8 +22,8 @@ interface CampaignSummaryProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  microsoftAds: GoogleAd[];
-  onApprove: () => Promise<void>;
+  microsoftAds: any[];
+  onApprove: () => void;
   onEdit: () => void;
   isLoading: boolean;
 }
@@ -31,6 +31,7 @@ interface CampaignSummaryProps {
 const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   campaignName,
   platform,
+  platforms = [],
   budget,
   budgetType,
   startDate,
@@ -46,52 +47,64 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   onEdit,
   isLoading
 }) => {
+  const getPlatformNames = (platformIds: string[]) => {
+    const platformMap: Record<string, string> = {
+      google: "Google Ads",
+      meta: "Instagram (Meta)",
+      linkedin: "LinkedIn",
+      microsoft: "Microsoft Ads"
+    };
+    
+    return platformIds.map(id => platformMap[id] || id).join(", ");
+  };
+
   return (
-    <Card className="w-full">
+    <Card>
       <CardHeader>
         <CardTitle>Campaign Summary</CardTitle>
         <CardDescription>
           Review your campaign details before launching
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CampaignDetailsSection
-            campaignName={campaignName}
+      <CardContent>
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <CampaignDetailsSection
+              name={campaignName}
+              platforms={platforms.length > 0 ? getPlatformNames(platforms) : platform || "Not specified"}
+              budget={budget}
+              budgetType={budgetType}
+              startDate={startDate}
+              endDate={endDate}
+              objective={objective}
+            />
+            <AudienceTargetingSection 
+              targetAudience={targetAudience}
+              websiteUrl={websiteUrl}
+              keywords={analysisResult.keywords || []}
+            />
+          </div>
+
+          <Separator />
+
+          <AdPreviewsSection
             platform={platform}
-            budget={budget}
-            budgetType={budgetType}
-            startDate={startDate}
-            endDate={endDate}
-            objective={objective}
+            googleAds={googleAds}
+            metaAds={metaAds}
+            microsoftAds={microsoftAds}
             websiteUrl={websiteUrl}
-          />
-          
-          <AudienceTargetingSection
-            targetAudience={targetAudience}
             analysisResult={analysisResult}
           />
+
+          <Separator />
+
+          <CampaignActionFooter
+            platform={platform}
+            onApprove={onApprove}
+            onEdit={onEdit}
+            isLoading={isLoading}
+          />
         </div>
-        
-        <Separator />
-        
-        <AdPreviewsSection
-          platform={platform}
-          googleAds={googleAds}
-          metaAds={metaAds}
-          microsoftAds={microsoftAds}
-          websiteUrl={websiteUrl}
-          analysisResult={analysisResult}
-        />
-        
-        <Separator />
-        
-        <CampaignActionFooter
-          platform={platform}
-          onApprove={onApprove}
-          onEdit={onEdit}
-          isLoading={isLoading}
-        />
       </CardContent>
     </Card>
   );

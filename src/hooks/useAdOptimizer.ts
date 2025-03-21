@@ -1,20 +1,19 @@
 
 import { useState } from 'react';
-import { optimizeAds, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
-import type { OptimizationGoal } from '@/services/api/optimizerApi';
+import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 import { getCreditCosts } from '@/services/credits/creditCosts';
 import { checkUserCredits, deductUserCredits } from '@/services/credits/creditChecks';
 import { useToast } from './use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type { OptimizationGoal };  // Re-export the OptimizationGoal type
-
 export interface UseAdOptimizerReturn {
   optimizeGoogleAds: (ads: GoogleAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedGoogleAd[] | null>;
   optimizeMetaAds: (ads: MetaAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedMetaAd[] | null>;
   isOptimizing: boolean;
 }
+
+export { type OptimizationGoal }; // Re-export the OptimizationGoal type
 
 export const useAdOptimizer = (): UseAdOptimizerReturn => {
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -60,7 +59,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     setIsOptimizing(true);
     
     try {
-      const request = {
+      const request: OptimizationRequest = {
         ads,
         platform: 'google',
         performance,
@@ -138,7 +137,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
     setIsOptimizing(true);
     
     try {
-      const request = {
+      const request: OptimizationRequest = {
         ads,
         platform: 'meta',
         performance,
