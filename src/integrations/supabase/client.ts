@@ -20,7 +20,7 @@ declare module '@supabase/supabase-js' {
         user_integrations: any;
         "Zero Digital Agency LLC": any;
         
-        // Our custom tables
+        // Our custom tables with complete type definitions
         media_assets: {
           Row: {
             id: string;
