@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -135,12 +134,12 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
                   key={idx} 
                   variant="outline" 
                   size="sm" 
-                  className="justify-start h-auto py-2 px-3 text-left"
+                  className="justify-start h-auto py-2 px-3 text-left w-full"
                   onClick={() => handlePromptTemplate(template.prompt)}
                 >
-                  <div>
-                    <p className="font-medium">{template.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="w-full">
+                    <p className="font-medium truncate">{template.name}</p>
+                    <p className="text-xs text-muted-foreground break-words line-clamp-2">
                       {template.prompt}
                     </p>
                   </div>
