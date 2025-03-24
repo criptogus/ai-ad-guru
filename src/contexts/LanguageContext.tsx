@@ -31,10 +31,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Initialize with localStorage or browser language
-  const storedLang = localStorage.getItem('preferredLanguage') as Language | null;
-  const initialLanguage = storedLang || detectBrowserLanguage();
+  const getInitialLanguage = (): Language => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem('preferredLanguage') as Language | null;
+      return storedLang || detectBrowserLanguage();
+    }
+    return 'en'; // Default to English for SSR
+  };
   
-  const [currentLanguage, setCurrentLanguage] = useState<Language>(initialLanguage);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(getInitialLanguage());
   const [translations, setTranslations] = useState<TranslationDictionary>(
     currentLanguage === 'es' ? es :
     currentLanguage === 'pt' ? pt : en
@@ -46,10 +51,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       currentLanguage === 'es' ? es :
       currentLanguage === 'pt' ? pt : en
     );
-    // Save to localStorage
-    localStorage.setItem('preferredLanguage', currentLanguage);
-    // Update html lang attribute
-    document.documentElement.lang = currentLanguage;
+    
+    // Only attempt to access localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      // Save to localStorage
+      localStorage.setItem('preferredLanguage', currentLanguage);
+      // Update html lang attribute
+      document.documentElement.lang = currentLanguage;
+    }
   }, [currentLanguage]);
 
   // Change language function
