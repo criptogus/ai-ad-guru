@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
 import { useAuth } from "@/contexts/AuthContext"; // Fixed import
 import { useCampaignActions } from "@/hooks/campaignActions";
 import CampaignHeader from "./CampaignHeader";
@@ -10,7 +10,6 @@ import StepIndicator from "./StepIndicator";
 import StepNavigation from "./StepNavigation";
 import { InstaAdTestLink } from "@/components/testing/meta";
 import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -34,18 +33,13 @@ const CampaignContent: React.FC = () => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { generateGoogleAds, generateAdImage, generateMetaAds } = useAdGeneration();
-
-  // Create stub functions for LinkedIn and Microsoft ads as they're not implemented yet
-  const generateLinkedInAds = async (campaignData: any) => {
-    console.log("LinkedIn Ads generation not implemented yet", campaignData);
-    return [];
-  };
-
-  const generateMicrosoftAds = async (campaignData: any) => {
-    console.log("Microsoft Ads generation not implemented yet", campaignData);
-    return [];
-  };
+  const { 
+    generateGoogleAds, 
+    generateMetaAds, 
+    generateLinkedInAds,
+    generateMicrosoftAds,
+    generateAdImage 
+  } = useAdGeneration();
 
   const {
     handleAnalyzeWebsite,
@@ -73,13 +67,13 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
-  const handleUpdateGoogleAd = (index: number, updatedAd: any) => {
+  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
     const newAds = [...googleAds];
     newAds[index] = updatedAd;
     setGoogleAds(newAds);
   };
 
-  const handleUpdateMetaAd = (index: number, updatedAd: any) => {
+  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
     const newAds = [...metaAds];
     newAds[index] = updatedAd;
     setMetaAds(newAds);
@@ -106,10 +100,7 @@ const CampaignContent: React.FC = () => {
     try {
       setLoadingImageIndex(index);
       setIsGenerating(true);
-      // Fix: Changed the second parameter to index instead of object
       await handleGenerateImage(ad.imagePrompt, index);
-    } catch (error) {
-      console.error("Error generating image:", error);
     } finally {
       setLoadingImageIndex(null);
       setIsGenerating(false);
@@ -135,7 +126,7 @@ const CampaignContent: React.FC = () => {
     handleNext();
   };
 
-  // Use async/void to fix the type issue
+  // Wrap handleGenerateGoogleAds to match the expected Promise<void> return type
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
   };
@@ -185,6 +176,7 @@ const CampaignContent: React.FC = () => {
       
       <StepNavigation
         currentStep={currentStep}
+        totalSteps={5}
         onBack={handleBack}
         onNext={handleNext}
         isNextDisabled={isCreating}

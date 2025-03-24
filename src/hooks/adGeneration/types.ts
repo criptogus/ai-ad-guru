@@ -21,8 +21,8 @@ export interface MetaAd {
 export interface UseAdGenerationReturn {
   generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>;
   generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>;
-  generateLinkedInAds: (campaignData: any) => Promise<any[] | null>; // Added for LinkedIn
-  generateMicrosoftAds: (campaignData: any) => Promise<any[] | null>; // Added for Microsoft
+  generateLinkedInAds: (campaignData: any) => Promise<any[] | null>; 
+  generateMicrosoftAds: (campaignData: any) => Promise<any[] | null>; 
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
   isGenerating: boolean;
   googleAds: GoogleAd[];
