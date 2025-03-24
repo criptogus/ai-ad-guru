@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,10 +37,8 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
     
     setIsExporting(true);
     try {
-      // Create a temporary canvas to render the banner
       const canvas = document.createElement("canvas");
       
-      // Set dimensions based on format
       let width, height;
       if (format === "square") {
         width = 1080;
@@ -63,7 +60,6 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
         return;
       }
       
-      // Load background image
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = backgroundImage;
@@ -73,15 +69,12 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
         img.onerror = reject;
       });
       
-      // Draw background image
       ctx.drawImage(img, 0, 0, width, height);
       
-      // Sort elements by z-index
       const sortedElements = [...bannerElements].sort((a, b) => 
         (a.zIndex || 0) - (b.zIndex || 0)
       );
       
-      // Draw elements
       for (const element of sortedElements) {
         if (element.type === 'text') {
           ctx.save();
@@ -95,10 +88,8 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
           ctx.fillText(element.content, x, y);
           ctx.restore();
         }
-        // Add support for other element types
       }
       
-      // Convert canvas to blob
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, "image/png")
       );
@@ -108,7 +99,6 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
         return;
       }
       
-      // Create a download link
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -132,7 +122,6 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
     
     setIsSaving(true);
     try {
-      // Consume credits for banner creation
       const creditSuccess = await consumeCredits(
         user.id,
         creditCosts.smartBanner,
@@ -147,15 +136,12 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
         return;
       }
       
-      // Mock saving banner to campaign
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Show success message
       toast.success("Banner saved to campaign", {
         description: "Your banner has been added to your campaign assets"
       });
       
-      // Navigate to campaigns page
       setTimeout(() => {
         navigate("/campaigns");
       }, 1500);
@@ -185,7 +171,6 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                   />
                 )}
                 
-                {/* Preview of elements */}
                 {bannerElements.map(element => {
                   if (element.type === 'text') {
                     return (

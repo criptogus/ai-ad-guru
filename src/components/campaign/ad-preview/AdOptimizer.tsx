@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +42,6 @@ const AdOptimizer: React.FC<AdOptimizerProps> = ({
     }
   };
   
-  // Helper function to get goal description
   const getGoalDescription = (goal: OptimizationGoal) => {
     switch (goal) {
       case "increase_ctr":

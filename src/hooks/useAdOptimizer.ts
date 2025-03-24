@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
@@ -69,7 +68,6 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       const optimizedAds = await optimizeAds<OptimizedGoogleAd>(request);
       
       if (optimizedAds) {
-        // Deduct credits only on successful optimization
         await deductUserCredits(
           user.id,
           creditCosts.aiOptimization.daily,
@@ -147,7 +145,6 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       const optimizedAds = await optimizeAds<OptimizedMetaAd>(request);
       
       if (optimizedAds) {
-        // Deduct credits only on successful optimization
         await deductUserCredits(
           user.id,
           creditCosts.aiOptimization.daily,
