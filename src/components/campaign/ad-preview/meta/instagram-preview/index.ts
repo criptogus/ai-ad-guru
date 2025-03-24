@@ -1,4 +1,5 @@
 
+// Export individual components
 export { default as InstagramPreviewHeader } from './InstagramPreviewHeader';
 export { default as InstagramPreviewFooter } from './InstagramPreviewFooter';
 export { default as ImageContent } from './ImageContent';
@@ -8,20 +9,5 @@ export { default as ImageDisplay } from './ImageDisplay';
 export { default as ImageLoader } from './ImageLoader';
 export { default as DebugInfo } from './DebugInfo';
 
-// Create a composite component for default export
-import React from 'react';
-import { ImageContent } from './ImageContent';
-import { InstagramPreviewHeader } from './InstagramPreviewHeader';
-import { InstagramPreviewFooter } from './InstagramPreviewFooter';
-
-const InstagramPreview = () => {
-  return (
-    <div>
-      <InstagramPreviewHeader />
-      <ImageContent />
-      <InstagramPreviewFooter />
-    </div>
-  );
-};
-
-export default InstagramPreview;
+// There's no need for a composite component here since we're using the individual components
+// and we already have InstagramPreview.tsx in another directory

@@ -10,3 +10,6 @@ export { default as TabHeader } from './TabHeader';
 
 // Export Meta Ad Card
 export { default as MetaAdCard } from './card/MetaAdCard';
+
+// Export individual Instagram preview components
+export * from './instagram-preview';
