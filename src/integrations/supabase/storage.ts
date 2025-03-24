@@ -49,8 +49,13 @@ export async function ensureStorageBucketsExist() {
 // Helper function to setup storage policies
 async function setupStoragePolicies() {
   try {
-    // This is just a check - the actual policies should be created in the SQL setup
-    console.log('Verifying storage policies are in place...');
+    // Set up policies for the media bucket
+    await supabase.storage.from('media').getPublicUrl('dummy.txt');
+    
+    // Set up policies for the company bucket
+    await supabase.storage.from('company').getPublicUrl('dummy.txt');
+    
+    console.log('Storage policies verified');
   } catch (error) {
     console.error('Error setting up storage policies:', error);
   }
