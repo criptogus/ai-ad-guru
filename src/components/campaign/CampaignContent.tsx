@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
-import { useAuth } from "@/contexts/AuthContext"; // Fixed import
+import { useAuth } from "@/contexts/AuthContext";
 import { useCampaignActions } from "@/hooks/campaignActions";
 import CampaignHeader from "./CampaignHeader";
 import StepIndicator from "./StepIndicator";
@@ -126,9 +125,9 @@ const CampaignContent: React.FC = () => {
     handleNext();
   };
 
-  // Wrap handleGenerateGoogleAds to match the expected Promise<void> return type
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
+    return;
   };
 
   const { getStepContent } = useCampaignStepRenderer({

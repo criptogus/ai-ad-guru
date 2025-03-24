@@ -1,5 +1,6 @@
+
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -23,27 +24,25 @@ function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-            <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
-            <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-            <Route path="/smart-banner" element={<ProtectedRoute><SmartBannerPage /></ProtectedRoute>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-          <SonnerToaster position="top-right" />
-        </Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Protected routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
+          <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+          <Route path="/smart-banner" element={<ProtectedRoute><SmartBannerPage /></ProtectedRoute>} />
+          
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+        <SonnerToaster position="top-right" />
       </AuthProvider>
     </ThemeProvider>
   );
