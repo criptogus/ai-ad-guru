@@ -11,6 +11,7 @@ export interface MediaAsset {
   updated_at: string;
   campaigns: string[];
   metadata?: Record<string, any>;
+  url?: string; // Used to store the public URL when fetched
 }
 
 export interface CopyAsset {

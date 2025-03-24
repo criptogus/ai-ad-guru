@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Upload, Users, X, Download, Trash2, FileText } from "lucide-react";
+import { Upload, Users, X, Download, Trash2, FileText, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomerData, CustomerImport } from "@/types/supabase";
 import { format } from "date-fns";

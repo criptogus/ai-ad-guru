@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,14 +66,11 @@ const MediaGallery: React.FC = () => {
         throw error;
       }
       
-      // Cast the data to our MediaAsset type
       const mediaAssets = data as unknown as MediaAsset[];
       
-      // Calculate total storage used
       const totalSize = mediaAssets.reduce((acc, asset) => acc + asset.file_size, 0);
       setTotalStorage(totalSize);
       
-      // Get public URLs for each asset
       const assetsWithUrls = mediaAssets.map(asset => {
         const { data } = supabase.storage
           .from("media")
@@ -100,20 +96,17 @@ const MediaGallery: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Validate file type
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
     if (!allowedTypes.includes(file.type)) {
       toast.error("Invalid file type. Please upload JPG, PNG, WEBP, or SVG");
       return;
     }
     
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       toast.error(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
       return;
     }
     
-    // Check storage limit
     if (totalStorage + file.size > STORAGE_LIMIT) {
       toast.error("Storage limit reached. Please delete some images first.");
       return;
@@ -123,33 +116,29 @@ const MediaGallery: React.FC = () => {
       setIsUploading(true);
       setUploadProgress(0);
       
-      // Create a unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.floor(Math.random() * 10000)}.${fileExt}`;
       const filePath = `${user!.id}/${fileName}`;
       
-      // Upload to Supabase Storage
+      const uploadOptions = {
+        cacheControl: '3600',
+        upsert: false
+      };
+      
       const { data, error } = await supabase.storage
         .from("media")
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setUploadProgress(percent);
-          }
-        });
+        .upload(filePath, file, uploadOptions);
       
       if (error) {
         throw error;
       }
       
-      // Get public URL
+      setUploadProgress(100);
+      
       const { data: { publicUrl } } = supabase.storage
         .from("media")
         .getPublicUrl(filePath);
       
-      // Store record in database
       const { error: dbError } = await supabase
         .from("media_assets")
         .insert([
@@ -176,7 +165,6 @@ const MediaGallery: React.FC = () => {
       setIsUploading(false);
       setUploadProgress(0);
       
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -210,7 +198,6 @@ const MediaGallery: React.FC = () => {
     if (!confirm("Are you sure you want to delete this file?")) return;
     
     try {
-      // Delete from storage
       const { error: storageError } = await supabase.storage
         .from("media")
         .remove([asset.file_path]);
@@ -219,7 +206,6 @@ const MediaGallery: React.FC = () => {
         throw storageError;
       }
       
-      // Delete from database
       const { error: dbError } = await supabase
         .from("media_assets")
         .delete()
@@ -239,12 +225,10 @@ const MediaGallery: React.FC = () => {
   };
 
   const handleDownloadAsset = (asset: MediaAsset) => {
-    // Get the URL
     const { data } = supabase.storage
       .from("media")
       .getPublicUrl(asset.file_path);
     
-    // Create a temporary anchor and trigger download
     const a = document.createElement('a');
     a.href = data.publicUrl;
     a.download = asset.filename;
@@ -311,7 +295,6 @@ const MediaGallery: React.FC = () => {
         </div>
       </div>
       
-      {/* Storage usage indicator */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-sm">
           <span>Storage Used: {(totalStorage / (1024 * 1024)).toFixed(2)} MB</span>
@@ -426,7 +409,6 @@ const MediaGallery: React.FC = () => {
         </div>
       )}
       
-      {/* Preview Modal */}
       {selectedAsset && (
         <Dialog 
           open={!!selectedAsset && !isEditModalOpen} 
@@ -464,7 +446,6 @@ const MediaGallery: React.FC = () => {
         </Dialog>
       )}
       
-      {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
