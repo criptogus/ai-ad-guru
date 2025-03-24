@@ -54,8 +54,21 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     }
   };
 
-  const generateAdImageWithLogging = async (prompt: string) => {
-    console.log("useAdGeneration - Generating image with prompt:", prompt);
+  // Function stubs for LinkedIn and Microsoft ads
+  const generateLinkedInAds = async (campaignData: any) => {
+    console.log("useAdGeneration - Generating LinkedIn ads with data:", campaignData);
+    // Currently reusing Meta ad generation logic
+    return generateMetaAds(campaignData);
+  };
+
+  const generateMicrosoftAds = async (campaignData: any) => {
+    console.log("useAdGeneration - Generating Microsoft ads with data:", campaignData);
+    // Currently reusing Google ad generation logic
+    return generateGoogleAds(campaignData);
+  };
+
+  const generateAdImageWithLogging = async (prompt: string, additionalInfo?: any) => {
+    console.log("useAdGeneration - Generating image with prompt:", prompt, "Additional info:", additionalInfo);
     try {
       const imageUrl = await generateAdImage(prompt);
       console.log("useAdGeneration - Generated image URL:", imageUrl);
@@ -69,6 +82,8 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   return {
     generateGoogleAds,
     generateMetaAds,
+    generateLinkedInAds,
+    generateMicrosoftAds,
     generateAdImage: generateAdImageWithLogging,
     isGenerating,
     googleAds,
