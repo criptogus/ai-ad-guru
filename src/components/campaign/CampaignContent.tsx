@@ -1,15 +1,18 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaignActions } from "@/hooks/campaignActions";
-import CampaignHeader from "./CampaignHeader";
+import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
+import { useWebsiteAnalysisHandler } from "@/hooks/useWebsiteAnalysisHandler";
+import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
+import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
+import { useStepNavigation } from "@/hooks/useStepNavigation";
+import { useAdUpdateHandlers } from "@/hooks/useAdUpdateHandlers";
 import StepIndicator from "./StepIndicator";
 import StepNavigation from "./StepNavigation";
-import { InstaAdTestLink } from "@/components/testing/meta";
-import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
+import CampaignContentHeader from "./content/CampaignContentHeader";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -30,8 +33,6 @@ const CampaignContent: React.FC = () => {
   } = useCampaign();
 
   const { user } = useAuth();
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const { 
     generateGoogleAds, 
@@ -67,94 +68,38 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
-  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
-    const newAds = [...googleAds];
-    newAds[index] = updatedAd;
-    setGoogleAds(newAds);
-  };
+  // Use the custom hooks to manage various aspects of the component
+  const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
+    handleAnalyzeWebsite,
+    setAnalysisResult
+  });
 
-  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
-    const newAds = [...metaAds];
-    newAds[index] = updatedAd;
-    setMetaAds(newAds);
-  };
+  const { handleUpdateGoogleAd, handleUpdateMetaAd, handleUpdateMicrosoftAd } = useAdUpdateHandlers({
+    setGoogleAds,
+    setMetaAds,
+    setMicrosoftAds
+  });
 
-  const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
-    const newAds = [...microsoftAds];
-    newAds[index] = updatedAd;
-    setMicrosoftAds(newAds);
-  };
+  const { handleBack, handleNextWrapper } = useStepNavigation({
+    currentStep,
+    setCurrentStep,
+    setCampaignData,
+    campaignData
+  });
 
-  const handleWebsiteAnalysis = async (url: string): Promise<WebsiteAnalysisResult | null> => {
-    try {
-      const result = await handleAnalyzeWebsite(url);
-      setAnalysisResult(result);
-      return result;
-    } catch (error) {
-      console.error("Error during website analysis:", error);
-      return null;
-    }
-  };
+  const { loadingImageIndex, isGenerating, handleGenerateImageForAd } = useImageGenerationHandler({
+    handleGenerateImage
+  });
 
-  const handleGenerateImageForAd = async (ad: MetaAd, index: number) => {
-    try {
-      setLoadingImageIndex(index);
-      setIsGenerating(true);
-      await handleGenerateImage(ad.imagePrompt, index);
-    } finally {
-      setLoadingImageIndex(null);
-      setIsGenerating(false);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleNextWrapper = (data?: any) => {
-    if (data) {
-      setCampaignData({ ...campaignData, ...data });
-    }
-    handleNext();
-  };
-
-  // Create a properly typed wrapper function that returns void
-  const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
-    try {
-      // Explicitly call and ignore the result - this is the key part to fix
-      const result = await handleGenerateGoogleAds();
-      // The function must return undefined or nothing to enforce void return type
-      return;
-    } catch (error) {
-      console.error("Error generating Google ads:", error);
-      // Return nothing/undefined to maintain void return type
-    }
-  };
-
-  // Define wrappers for other ad generation functions to ensure consistent typing
-  const wrappedHandleGenerateMetaAds = async (): Promise<void> => {
-    try {
-      await handleGenerateMetaAds();
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
-    }
-  };
-
-  const wrappedHandleGenerateMicrosoftAds = async (): Promise<void> => {
-    try {
-      await handleGenerateMicrosoftAds();
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
-    }
-  };
+  const { 
+    wrappedHandleGenerateGoogleAds,
+    wrappedHandleGenerateMetaAds,
+    wrappedHandleGenerateMicrosoftAds
+  } = useAdGenerationWrappers({
+    handleGenerateGoogleAds,
+    handleGenerateMetaAds,
+    handleGenerateMicrosoftAds
+  });
 
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
@@ -183,14 +128,7 @@ const CampaignContent: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <CampaignHeader 
-          onBack={handleBack} 
-          step={currentStep} 
-          currentStep={currentStep} 
-        />
-        <InstaAdTestLink />
-      </div>
+      <CampaignContentHeader onBack={handleBack} currentStep={currentStep} />
       
       <StepIndicator 
         number={currentStep} 
@@ -209,7 +147,7 @@ const CampaignContent: React.FC = () => {
         total={5}
         totalSteps={5}
         onBack={handleBack}
-        onNext={handleNext}
+        onNext={handleNextWrapper}
         isNextDisabled={isCreating}
       />
     </div>
