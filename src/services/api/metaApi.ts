@@ -1,51 +1,39 @@
 
-import { secureApi } from './secureApi';
-import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
+import { supabase } from '@/integrations/supabase/client';
 import { MetaAd } from '@/hooks/adGeneration';
-
-// Define an interface for the API response
-interface ApiResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-}
+import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 
 /**
- * Generates Meta/Instagram Ads based on the provided campaign data and analysis
+ * Generates Instagram/Meta ad suggestions based on website analysis results
  * 
- * @param analysisResult - The website analysis results containing business data
- * @returns An array of generated Meta ads or null if generation fails
+ * @param campaignData The website analysis result data
+ * @returns An array of MetaAd objects or null if generation fails
  */
-export const generateMetaAds = async (
-  analysisResult: WebsiteAnalysisResult
-): Promise<MetaAd[] | null> => {
+export const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
   try {
-    console.log('Generating Meta ads with analysis data:', analysisResult);
+    console.log('Generating Meta ads for:', campaignData.companyName);
     
-    const response = await secureApi.post<ApiResponse>('/generate-ads', {
-      platform: 'meta',
-      campaignData: analysisResult
-    }, { requiresAuth: true });
+    const { data, error } = await supabase.functions.invoke('generate-ads', {
+      body: { 
+        platform: 'meta',
+        campaignData 
+      },
+    });
 
-    console.log('Meta ads API response:', response);
-    
-    if (!response || !response.success || !response.data) {
-      console.error('Failed to generate Meta ads:', response?.error || 'Unknown error');
+    if (error) {
+      console.error('Error generating Meta ads:', error);
       return null;
     }
 
-    // Transform the API response to the MetaAd format
-    const metaAds: MetaAd[] = response.data.map((ad: any) => ({
-      headline: ad.headline || '',
-      primaryText: ad.primaryText || '',
-      description: ad.description || '',
-      imagePrompt: ad.imagePrompt || ''
-    }));
+    if (!data.success) {
+      console.error('Meta ads generation failed:', data.error);
+      return null;
+    }
 
-    console.log('Generated Meta ads:', metaAds);
-    return metaAds;
+    console.log('Meta ads generated successfully:', data.data);
+    return data.data as MetaAd[];
   } catch (error) {
-    console.error('Error generating Meta ads:', error);
+    console.error('Error in generateMetaAds:', error);
     return null;
   }
 };

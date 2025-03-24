@@ -33,7 +33,7 @@ const CampaignContent: React.FC = () => {
     setMetaAds
   } = useCampaign();
 
-  // Initialize the ad generation hook
+  // Initialize the ad generation hooks
   const { 
     generateGoogleAds, 
     generateMetaAds, 
@@ -125,7 +125,7 @@ const CampaignContent: React.FC = () => {
     setMicrosoftAds(newAds);
   };
 
-  // Wrap handlers to return void to match expected type
+  // Make sure we have the proper methods returning void to match expected types
   const handleGenerateGoogleAdsWrapper = async (): Promise<void> => {
     await handleGenerateGoogleAds();
   };
