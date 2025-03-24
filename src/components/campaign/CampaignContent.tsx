@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -68,7 +67,6 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
-  // Use the custom hooks to manage various aspects of the component
   const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
     handleAnalyzeWebsite,
     setAnalysisResult
@@ -87,12 +85,10 @@ const CampaignContent: React.FC = () => {
     campaignData
   });
 
-  // Updated to use the modified handleGenerateImage function that returns Promise<string | null>
   const { loadingImageIndex, isGenerating, handleGenerateImageForAd } = useImageGenerationHandler({
     handleGenerateImage
   });
 
-  // Using the updated wrappers that preserve the original return types
   const { 
     wrappedHandleGenerateGoogleAds,
     wrappedHandleGenerateMetaAds,

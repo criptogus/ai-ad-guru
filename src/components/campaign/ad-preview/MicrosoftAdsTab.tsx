@@ -10,7 +10,7 @@ import MicrosoftAdCard from "./MicrosoftAdCard";
 interface MicrosoftAdsTabProps {
   microsoftAds: any[];
   isGenerating: boolean;
-  onGenerateAds: () => Promise<any[] | null>;
+  onGenerateAds: () => Promise<void>;
   onUpdateMicrosoftAd: (updatedAds: any[]) => void;
   analysisResult: WebsiteAnalysisResult;
 }
@@ -44,13 +44,22 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
         <Card>
           <CardContent>
             <EmptyAdsState platform="Microsoft" />
-            <Button onClick={onGenerateAds} className="mt-4" disabled={isGenerating}>
+            <Button 
+              onClick={onGenerateAds} 
+              className="mt-4 group relative overflow-hidden" 
+              disabled={isGenerating}
+            >
               {isGenerating ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
                   Generating...
                 </>
-              ) : "Generate Microsoft Ads"}
+              ) : (
+                <>
+                  <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+                  <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate Microsoft Ads</span>
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
