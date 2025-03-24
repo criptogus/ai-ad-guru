@@ -6,16 +6,30 @@ import { GoogleAd } from "@/hooks/adGeneration";
 
 interface GoogleAdDetailsProps {
   ad: GoogleAd;
-  isEditing: boolean;
-  onHeadlineChange: (value: string, index: number) => void;
-  onDescriptionChange: (value: string, index: number) => void;
+  isEditing?: boolean;
+  onUpdate?: (updatedAd: GoogleAd) => void;
+  onHeadlineChange?: (value: string, index: number) => void;
+  onDescriptionChange?: (value: string, index: number) => void;
 }
 
 const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
   ad,
-  isEditing,
-  onHeadlineChange,
-  onDescriptionChange,
+  isEditing = false,
+  onUpdate,
+  onHeadlineChange = (value, index) => {
+    if (onUpdate) {
+      const updatedAd = { ...ad };
+      updatedAd.headlines[index] = value;
+      onUpdate(updatedAd);
+    }
+  },
+  onDescriptionChange = (value, index) => {
+    if (onUpdate) {
+      const updatedAd = { ...ad };
+      updatedAd.descriptions[index] = value;
+      onUpdate(updatedAd);
+    }
+  },
 }) => {
   return (
     <div className="mt-4 p-3 bg-[#F1F0FB] border border-[#aaadb0] rounded-md shadow-sm text-sm">

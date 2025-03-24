@@ -2,23 +2,26 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Edit, Check, X } from "lucide-react";
+import { GoogleAd } from "@/hooks/adGeneration";
 
 interface GoogleAdCardHeaderProps {
   index: number;
-  isEditing: boolean;
-  onCopy: () => void;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
+  ad: GoogleAd;
+  isEditing?: boolean;
+  onCopy?: () => void;
+  onEdit?: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
 }
 
 const GoogleAdCardHeader: React.FC<GoogleAdCardHeaderProps> = ({
   index,
-  isEditing,
-  onCopy,
-  onEdit,
-  onSave,
-  onCancel,
+  ad,
+  isEditing = false,
+  onCopy = () => {},
+  onEdit = () => {},
+  onSave = () => {},
+  onCancel = () => {},
 }) => {
   return (
     <div className="flex justify-between items-start mb-2">

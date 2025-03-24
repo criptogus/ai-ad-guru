@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MicrosoftAdPreview from "./microsoft/MicrosoftAdPreview";
@@ -19,6 +19,8 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   analysisResult,
   onUpdate
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  
   // Extract domain from website URL
   const getDomain = (url: string) => {
     try {
@@ -28,11 +30,19 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
     }
   };
 
+  const handleEdit = () => setIsEditing(true);
+  const handleSave = () => setIsEditing(false);
+  const handleCancel = () => setIsEditing(false);
+
   return (
     <Card className="overflow-hidden">
       <MicrosoftAdCardHeader 
-        index={index} 
-        ad={ad} 
+        adIndex={index} 
+        ad={ad}
+        isEditing={isEditing}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancel={handleCancel}
       />
       <CardContent className="p-4 grid gap-4 md:grid-cols-2">
         <div>
@@ -44,7 +54,8 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
         <div>
           <MicrosoftAdDetails 
             ad={ad}
-            onUpdate={onUpdate} 
+            isEditing={isEditing}
+            onUpdate={onUpdate}
           />
         </div>
       </CardContent>

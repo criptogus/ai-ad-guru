@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -20,6 +20,8 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   analysisResult,
   onUpdate
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  
   // Extract domain from website URL
   const getDomain = (url: string) => {
     try {
@@ -29,11 +31,24 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     }
   };
 
+  const handleEdit = () => setIsEditing(true);
+  const handleSave = () => setIsEditing(false);
+  const handleCancel = () => setIsEditing(false);
+  const handleCopy = () => {
+    const textToCopy = `Headlines:\n${ad.headlines.join('\n')}\n\nDescriptions:\n${ad.descriptions.join('\n')}`;
+    navigator.clipboard.writeText(textToCopy);
+  };
+
   return (
     <Card className="overflow-hidden">
       <GoogleAdCardHeader 
         index={index} 
-        ad={ad} 
+        ad={ad}
+        isEditing={isEditing}
+        onCopy={handleCopy}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancel={handleCancel}
       />
       <CardContent className="p-4 grid gap-4 md:grid-cols-2">
         <div>
@@ -45,7 +60,8 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
         <div>
           <GoogleAdDetails 
             ad={ad}
-            onUpdate={onUpdate} 
+            isEditing={isEditing}
+            onUpdate={onUpdate}
           />
         </div>
       </CardContent>

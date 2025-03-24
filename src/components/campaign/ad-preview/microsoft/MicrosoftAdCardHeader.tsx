@@ -5,18 +5,20 @@ import { Copy, Pencil, Save, X } from "lucide-react";
 
 export interface MicrosoftAdCardHeaderProps {
   adIndex: number;
-  isEditing: boolean;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
+  ad: any; // Add the ad prop
+  isEditing?: boolean;
+  onEdit?: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
 }
 
 const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   adIndex,
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel
+  ad,
+  isEditing = false,
+  onEdit = () => {},
+  onSave = () => {},
+  onCancel = () => {}
 }) => {
   return (
     <div className="flex justify-between items-center mb-4">
