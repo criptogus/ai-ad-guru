@@ -19,6 +19,8 @@ import SettingsPage from "./pages/SettingsPage";
 import BillingPage from "./pages/BillingPage";
 import AIInsightsPage from "./pages/AIInsightsPage";
 import { ThemeProvider } from "@/components/theme-provider";
+import UserRolesPage from "./pages/UserRolesPage";
+import AssetPage from "./pages/AssetPage";
 
 function App() {
   return (
@@ -35,9 +37,11 @@ function App() {
           <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
           <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
           <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+          <Route path="/team" element={<ProtectedRoute><UserRolesPage /></ProtectedRoute>} />
+          <Route path="/assets" element={<ProtectedRoute><AssetPage /></ProtectedRoute>} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
