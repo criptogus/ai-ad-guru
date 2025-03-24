@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Loader } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
 import EmptyAdsState from "./EmptyAdsState";
-import { TabContent } from "@/components/campaign/ad-preview/meta";
+import { AdsList } from "@/components/campaign/ad-preview/meta";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -53,26 +54,30 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
 
   if (!metaAds || metaAds.length === 0) {
     return (
-      <EmptyAdsState
-        platform="Instagram"
-        onGenerateAds={handleGenerateAds}
-      />
+      <Card>
+        <CardContent>
+          <EmptyAdsState platform="Instagram" />
+          <Button onClick={handleGenerateAds} className="mt-4" disabled={isGenerating}>
+            Generate Instagram Ads
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="grid gap-4">
-      {metaAds.map((ad, index) => (
-        <TabContent
-          key={index}
-          ad={ad}
-          index={index}
-          isGenerating={isGenerating}
-          loadingImageIndex={loadingImageIndex}
-          onGenerateImage={onGenerateImage}
-          onUpdateMetaAd={onUpdateMetaAd}
-        />
-      ))}
+      <AdsList 
+        metaAds={metaAds}
+        analysisResult={analysisResult}
+        loadingImageIndex={loadingImageIndex}
+        onGenerateImage={onGenerateImage}
+        onUpdateAd={(index, updatedAd) => {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = updatedAd;
+          onUpdateMetaAd(updatedAds);
+        }}
+      />
       <Button onClick={handleGenerateAds} disabled={isGenerating}>
         {isGenerating ? (
           <>

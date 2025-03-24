@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +35,11 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
               key={index}
               ad={ad}
               index={index}
-              onUpdateAd={onUpdateMicrosoftAd}
+              onUpdate={(updatedAd) => {
+                const updatedAds = [...microsoftAds];
+                updatedAds[index] = updatedAd;
+                onUpdateMicrosoftAd(updatedAds);
+              }}
               analysisResult={analysisResult}
             />
           ))

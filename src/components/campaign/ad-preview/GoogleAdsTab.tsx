@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,12 +8,22 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import GoogleAdCard from "./GoogleAdCard";
 import EmptyAdsState from "./EmptyAdsState";
 
+// Adding these exported types for LinkedInAdsTab
+export type PreviewLayout = "split-horizontal" | "split-vertical" | "full";
+export type DevicePreview = "desktop" | "mobile" | "tablet";
+export type AdFormat = "square" | "landscape" | "portrait";
+
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
   isGenerating: boolean;
   onGenerateAds: () => Promise<GoogleAd[] | null>;
   onUpdateGoogleAd: (updatedAds: GoogleAd[]) => void;
   analysisResult: WebsiteAnalysisResult;
+}
+
+interface EmptyAdsStateProps {
+  platform: string;
+  onGenerateAds?: () => Promise<any>;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
@@ -35,7 +46,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               key={index}
               ad={ad}
               index={index}
-              onAdUpdate={(updatedAd) => {
+              onUpdate={(updatedAd) => {
                 const updatedAds = [...googleAds];
                 updatedAds[index] = updatedAd;
                 onUpdateGoogleAd(updatedAds);

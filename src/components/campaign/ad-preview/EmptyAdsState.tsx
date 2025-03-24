@@ -1,49 +1,29 @@
 
-import React, { ReactNode } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 interface EmptyAdsStateProps {
-  title: string;
-  description: string;
-  buttonText: string;
-  isLoading: boolean;
-  onClick: () => void;
-  icon?: ReactNode;
+  platform: string;
+  onGenerateAds?: () => Promise<any>;
+  buttonText?: string;
+  isGenerating?: boolean;
 }
 
-const EmptyAdsState: React.FC<EmptyAdsStateProps> = ({
-  title,
-  description,
+const EmptyAdsState: React.FC<EmptyAdsStateProps> = ({ 
+  platform, 
+  onGenerateAds,
   buttonText,
-  isLoading,
-  onClick,
-  icon
+  isGenerating
 }) => {
   return (
-    <Card className="border-dashed">
-      <CardContent className="py-8">
-        <div className="flex flex-col items-center text-center space-y-3">
-          {icon}
-          <h3 className="text-lg font-medium">{title}</h3>
-          <p className="text-muted-foreground max-w-md">{description}</p>
-          <Button
-            onClick={onClick}
-            disabled={isLoading}
-            className="mt-2"
-            size="lg"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              buttonText
-            )}
-          </Button>
-        </div>
+    <Card className="bg-muted/50">
+      <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+        <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-2">No {platform} Ads</h3>
+        <p className="text-sm text-muted-foreground max-w-md">
+          Click the button below to generate {platform} ads based on your website analysis
+        </p>
       </CardContent>
     </Card>
   );

@@ -17,7 +17,6 @@ export const useImageGenerationHandler = ({
       setLoadingImageIndex(index);
       setIsGenerating(true);
       await handleGenerateImage(ad.imagePrompt, index);
-      // We explicitly return void here by not returning the result
     } finally {
       setLoadingImageIndex(null);
       setIsGenerating(false);

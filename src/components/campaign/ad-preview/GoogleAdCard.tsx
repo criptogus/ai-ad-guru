@@ -14,7 +14,7 @@ interface GoogleAdCardProps {
   ad: GoogleAd;
   index: number;
   analysisResult: WebsiteAnalysisResult;
-  onUpdate?: (index: number, updatedAd: GoogleAd) => void;
+  onUpdate: (updatedAd: GoogleAd) => void;
 }
 
 const GoogleAdCard: React.FC<GoogleAdCardProps> = ({ 
@@ -47,7 +47,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   const handleSave = () => {
     setIsEditing(false);
     if (onUpdate) {
-      onUpdate(index, editedAd);
+      onUpdate(editedAd);
     }
     toast({
       title: "Ad Updated",

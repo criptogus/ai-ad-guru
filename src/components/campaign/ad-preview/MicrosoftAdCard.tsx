@@ -12,7 +12,7 @@ interface MicrosoftAdCardProps {
   ad: GoogleAd;
   index: number;
   analysisResult: WebsiteAnalysisResult;
-  onUpdate?: (index: number, updatedAd: GoogleAd) => void;
+  onUpdate: (updatedAd: GoogleAd) => void;
 }
 
 const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({ 
@@ -45,7 +45,7 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   const handleSave = () => {
     setIsEditing(false);
     if (onUpdate) {
-      onUpdate(index, editedAd);
+      onUpdate(editedAd);
     }
     toast({
       title: "Ad Updated",
