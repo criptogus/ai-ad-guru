@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -125,15 +126,16 @@ const CampaignContent: React.FC = () => {
     handleNext();
   };
 
-  // Properly wrap handleGenerateGoogleAds to ensure it returns Promise<void>
+  // Create a properly typed wrapper function that returns void
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     try {
-      await handleGenerateGoogleAds();
+      const result = await handleGenerateGoogleAds();
+      // Ignore the result to ensure void return type
+      return undefined;
     } catch (error) {
       console.error("Error generating Google ads:", error);
+      return undefined;
     }
-    // Explicitly return void
-    return;
   };
 
   const { getStepContent } = useCampaignStepRenderer({
