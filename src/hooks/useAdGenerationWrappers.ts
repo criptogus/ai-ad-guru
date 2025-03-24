@@ -14,27 +14,31 @@ export const useAdGenerationWrappers = ({
   handleGenerateMicrosoftAds
 }: UseAdGenerationWrappersProps) => {
   
-  const wrappedHandleGenerateGoogleAds = useCallback(async (): Promise<void> => {
+  // These wrapper functions properly handle the return types
+  const wrappedHandleGenerateGoogleAds = useCallback(async (): Promise<GoogleAd[] | null> => {
     try {
-      await handleGenerateGoogleAds();
+      return await handleGenerateGoogleAds();
     } catch (error) {
       console.error("Error generating Google ads:", error);
+      return null;
     }
   }, [handleGenerateGoogleAds]);
 
-  const wrappedHandleGenerateMetaAds = useCallback(async (): Promise<void> => {
+  const wrappedHandleGenerateMetaAds = useCallback(async (): Promise<MetaAd[] | null> => {
     try {
-      await handleGenerateMetaAds();
+      return await handleGenerateMetaAds();
     } catch (error) {
       console.error("Error generating Meta ads:", error);
+      return null;
     }
   }, [handleGenerateMetaAds]);
 
-  const wrappedHandleGenerateMicrosoftAds = useCallback(async (): Promise<void> => {
+  const wrappedHandleGenerateMicrosoftAds = useCallback(async (): Promise<any[] | null> => {
     try {
-      await handleGenerateMicrosoftAds();
+      return await handleGenerateMicrosoftAds();
     } catch (error) {
       console.error("Error generating Microsoft ads:", error);
+      return null;
     }
   }, [handleGenerateMicrosoftAds]);
 

@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 
 interface UseImageGenerationHandlerProps {
-  handleGenerateImage: (imagePrompt: string, index: number) => Promise<void>;
+  handleGenerateImage: (imagePrompt: string, index: number) => Promise<string | null>;
 }
 
 export const useImageGenerationHandler = ({ 
@@ -17,6 +17,7 @@ export const useImageGenerationHandler = ({
       setLoadingImageIndex(index);
       setIsGenerating(true);
       await handleGenerateImage(ad.imagePrompt, index);
+      // We explicitly return void here by not returning the result
     } finally {
       setLoadingImageIndex(null);
       setIsGenerating(false);
