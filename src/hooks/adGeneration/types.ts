@@ -1,11 +1,8 @@
 
 export interface GoogleAd {
-  headline1: string;
-  headline2: string;
-  headline3: string;
-  description1: string;
-  description2: string;
-  finalUrl: string;
+  headlines: string[];
+  descriptions: string[];
+  finalUrl?: string;
   path1?: string;
   path2?: string;
 }

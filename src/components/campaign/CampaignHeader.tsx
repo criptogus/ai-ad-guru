@@ -5,19 +5,35 @@ import { ArrowLeft } from "lucide-react";
 
 interface CampaignHeaderProps {
   onBack: () => void;
-  currentStep?: number; // Added this prop
+  step: number;
 }
 
-const CampaignHeader: React.FC<CampaignHeaderProps> = ({ onBack, currentStep }) => {
+const CampaignHeader: React.FC<CampaignHeaderProps> = ({ onBack, step }) => {
+  const getTitle = (step: number) => {
+    switch (step) {
+      case 1:
+        return "Website Analysis";
+      case 2:
+        return "Select Ad Platforms";
+      case 3:
+        return "Campaign Setup";
+      case 4:
+        return "Ad Preview & Customization";
+      case 5:
+        return "Campaign Summary";
+      default:
+        return "Create Campaign";
+    }
+  };
+
   return (
-    <div className="flex items-center mb-8 bg-accent/50 p-6 rounded-lg shadow-sm">
-      <Button variant="ghost" className="mr-4" onClick={onBack}>
-        <ArrowLeft size={16} />
+    <div className="flex items-center">
+      <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+        <ArrowLeft size={20} />
       </Button>
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Create Campaign</h1>
-        <p className="text-muted-foreground mt-1">Let AI help you create a high-converting ad campaign</p>
-        {currentStep && <p className="text-sm text-muted-foreground mt-1">Step {currentStep} of 5</p>}
+        <h1 className="text-2xl font-bold">{getTitle(step)}</h1>
+        <p className="text-sm text-muted-foreground">Create a new ad campaign</p>
       </div>
     </div>
   );

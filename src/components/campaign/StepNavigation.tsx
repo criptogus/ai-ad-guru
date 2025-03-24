@@ -1,61 +1,51 @@
 
 import React from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import StepIndicator from "./StepIndicator";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface StepNavigationProps {
-  currentStep?: number;
-  totalSteps?: number;
-  onBack?: () => void;
-  onNext?: () => void;
+  current: number;
+  total: number;
+  onBack: () => void;
+  onNext: () => void;
   isNextDisabled?: boolean;
 }
 
-const StepNavigation: React.FC<StepNavigationProps> = ({ 
-  currentStep = 1,
-  totalSteps = 5,
+const StepNavigation: React.FC<StepNavigationProps> = ({
+  current,
+  total,
   onBack,
   onNext,
-  isNextDisabled = false
+  isNextDisabled = false,
 }) => {
-  const steps = [
-    { number: 1, title: "Website Analysis" },
-    { number: 2, title: "Choose Platforms" },
-    { number: 3, title: "Campaign Setup" },
-    { number: 4, title: "Ad Creation" },
-    { number: 5, title: "Review & Launch" }
-  ];
+  const isFirstStep = current === 1;
+  const isLastStep = current === total;
 
   return (
-    <Card className="p-6 mb-6 shadow-md border-accent/20">
-      <div className="flex flex-wrap justify-between mb-6">
-        {steps.slice(0, totalSteps).map((step) => (
-          <StepIndicator
-            key={step.number}
-            number={step.number}
-            title={step.title}
-            active={currentStep === step.number}
-            completed={currentStep > step.number}
-          />
-        ))}
+    <div className="flex justify-between items-center pt-4">
+      <Button
+        variant="outline"
+        onClick={onBack}
+        disabled={isFirstStep}
+        className="flex items-center gap-1"
+      >
+        <ArrowLeft size={16} />
+        Back
+      </Button>
+
+      <div className="text-sm text-muted-foreground">
+        Step {current} of {total}
       </div>
-      
-      {(onBack || onNext) && (
-        <div className="flex justify-between pt-4 border-t">
-          {onBack && (
-            <Button variant="outline" onClick={onBack}>
-              Back
-            </Button>
-          )}
-          {onNext && (
-            <Button onClick={onNext} disabled={isNextDisabled}>
-              Next Step
-            </Button>
-          )}
-        </div>
-      )}
-    </Card>
+
+      <Button
+        onClick={onNext}
+        disabled={isNextDisabled}
+        className="flex items-center gap-1"
+      >
+        {isLastStep ? "Finish" : "Next"}
+        {!isLastStep && <ArrowRight size={16} />}
+      </Button>
+    </div>
   );
 };
 
