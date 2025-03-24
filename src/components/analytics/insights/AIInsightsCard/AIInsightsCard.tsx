@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { GoogleAdTab } from "./tabs/GoogleAdTab";
 import { MetaAdTab } from "./tabs/MetaAdTab";
 import { MicrosoftAdTab } from "./tabs/MicrosoftAdTab";
@@ -27,6 +27,15 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
   
   const mockMicrosoftAd = mockGoogleAd;
   
+  // Create a mock MetaAd for use in the MetaAdTab
+  const mockMetaAd: MetaAd = {
+    primaryText: "Take your advertising to the next level with AI-powered automation.",
+    headline: "Smart Ad Platform",
+    description: "Create, optimize, and manage ads across platforms with ease.",
+    imagePrompt: "Modern digital marketing dashboard with AI recommendations",
+    imageUrl: "https://example.com/placeholder.jpg"
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -43,7 +52,7 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
             <GoogleAdTab ad={mockGoogleAd} />
           </TabsContent>
           <TabsContent value="meta" className="pt-4">
-            <MetaAdTab />
+            <MetaAdTab ad={mockMetaAd} />
           </TabsContent>
           <TabsContent value="microsoft" className="pt-4">
             <MicrosoftAdTab ad={mockMicrosoftAd} />
@@ -53,3 +62,6 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
     </Card>
   );
 };
+
+// Export as default for compatibility with existing imports
+export default AIInsightsCard;

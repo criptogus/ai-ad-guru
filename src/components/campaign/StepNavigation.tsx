@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface StepNavigationProps {
-  current: number;
-  total: number;
+  current?: number;
+  currentStep?: number; // Add this prop for compatibility
+  total?: number;
+  totalSteps?: number; // Add this prop for compatibility
   onBack: () => void;
   onNext: () => void;
   isNextDisabled?: boolean;
@@ -13,13 +15,19 @@ interface StepNavigationProps {
 
 const StepNavigation: React.FC<StepNavigationProps> = ({
   current,
+  currentStep,
   total,
+  totalSteps,
   onBack,
   onNext,
   isNextDisabled = false,
 }) => {
-  const isFirstStep = current === 1;
-  const isLastStep = current === total;
+  // Use either current or currentStep, prioritizing current if both are provided
+  const activeStep = current || currentStep || 1;
+  const totalStep = total || totalSteps || 5;
+  
+  const isFirstStep = activeStep === 1;
+  const isLastStep = activeStep === totalStep;
 
   return (
     <div className="flex justify-between items-center pt-4">
@@ -34,7 +42,7 @@ const StepNavigation: React.FC<StepNavigationProps> = ({
       </Button>
 
       <div className="text-sm text-muted-foreground">
-        Step {current} of {total}
+        Step {activeStep} of {totalStep}
       </div>
 
       <Button

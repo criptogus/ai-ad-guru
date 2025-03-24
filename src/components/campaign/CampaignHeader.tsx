@@ -5,10 +5,14 @@ import { ArrowLeft } from "lucide-react";
 
 interface CampaignHeaderProps {
   onBack: () => void;
-  step: number;
+  step?: number;
+  currentStep?: number; // Add this prop for compatibility
 }
 
-const CampaignHeader: React.FC<CampaignHeaderProps> = ({ onBack, step }) => {
+const CampaignHeader: React.FC<CampaignHeaderProps> = ({ onBack, step, currentStep }) => {
+  // Use either step or currentStep, prioritizing step if both are provided
+  const activeStep = step || currentStep || 1;
+  
   const getTitle = (step: number) => {
     switch (step) {
       case 1:
@@ -32,7 +36,7 @@ const CampaignHeader: React.FC<CampaignHeaderProps> = ({ onBack, step }) => {
         <ArrowLeft size={20} />
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">{getTitle(step)}</h1>
+        <h1 className="text-2xl font-bold">{getTitle(activeStep)}</h1>
         <p className="text-sm text-muted-foreground">Create a new ad campaign</p>
       </div>
     </div>
