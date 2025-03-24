@@ -28,7 +28,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   deviceView = "desktop"
 }) => {
   const companyName = analysisResult?.companyName || "Company Name";
-  const callToAction = ad.description || "Learn More";
+  const callToAction = ad.callToAction || "Learn More";
   
   // Truncate text if it's too long based on deviceView and previewType
   const truncateText = (text: string = "", limit: number) => {
@@ -72,23 +72,23 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   return (
     <div className={`linkedin-ad-preview ${getPreviewLayout()} mx-auto`}>
       <DeviceWrapper>
-        <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="border rounded-lg overflow-hidden bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
           {/* LinkedIn header */}
-          <div className="p-3 border-b flex items-center justify-between">
+          <div className="p-3 border-b dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-blue-100 text-blue-600 rounded-full h-10 w-10 flex items-center justify-center text-base font-bold">
+              <div className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300 rounded-full h-10 w-10 flex items-center justify-center text-base font-bold">
                 {companyName.charAt(0).toUpperCase()}
               </div>
               <div className="ml-2">
-                <p className="font-medium text-sm">{companyName}</p>
-                <div className="flex items-center text-xs text-gray-500">
+                <p className="font-medium text-sm dark:text-gray-200">{companyName}</p>
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Promoted</span>
                   <span className="mx-1">•</span>
                   <span>{deviceView === "mobile" ? "1d" : "1 day ago"}</span>
                 </div>
               </div>
             </div>
-            <button className="text-gray-500 hover:bg-gray-100 p-1 rounded">
+            <button className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
             </button>
           </div>
@@ -96,7 +96,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
           {/* Ad text content before image */}
           {ad.primaryText && (
             <div className="px-3 pt-3 pb-2">
-              <p className="text-sm text-gray-800 whitespace-pre-line">
+              <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
                 {truncatedPrimaryText}
               </p>
             </div>
@@ -114,12 +114,12 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
           {/* Ad content after image */}
           <div className="p-3">
             {ad.headline && (
-              <h3 className="font-semibold text-base mb-1 line-clamp-2">{truncatedHeadline}</h3>
+              <h3 className="font-semibold text-base mb-1 line-clamp-2 dark:text-gray-100">{truncatedHeadline}</h3>
             )}
             
             {/* Display URL or website domain */}
             {analysisResult?.websiteUrl && (
-              <div className="text-xs text-gray-500 mb-2 flex items-center">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center">
                 <ExternalLink className="h-3 w-3 mr-1" />
                 {(() => {
                   try {
@@ -132,25 +132,27 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
             )}
             
             {/* Call to action button */}
-            <Button 
-              variant="outline" 
-              className="mt-2 h-8 text-sm rounded bg-white hover:bg-gray-50 text-blue-600 border-blue-600 hover:border-blue-700 px-3 py-1"
-            >
-              {callToAction}
-            </Button>
+            {previewType !== "message" && (
+              <Button 
+                variant="outline" 
+                className="mt-2 h-8 text-sm rounded bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 hover:border-blue-700 dark:hover:border-blue-500 px-3 py-1"
+              >
+                {callToAction}
+              </Button>
+            )}
           </div>
 
           {/* LinkedIn engagement */}
-          <div className="px-3 py-2 border-t text-gray-500 grid grid-cols-3 gap-1">
-            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 transition-colors">
+          <div className="px-3 py-2 border-t dark:border-gray-700 text-gray-500 dark:text-gray-400 grid grid-cols-3 gap-1">
+            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <ThumbsUp className="w-4 h-4" />
               <span className="text-xs">Like</span>
             </button>
-            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 transition-colors">
+            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <MessageSquare className="w-4 h-4" />
               <span className="text-xs">Comment</span>
             </button>
-            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 transition-colors">
+            <button className="flex items-center justify-center gap-1 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Send className="w-4 h-4" />
               <span className="text-xs">Share</span>
             </button>

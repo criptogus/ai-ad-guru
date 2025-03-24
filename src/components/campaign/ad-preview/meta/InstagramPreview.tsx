@@ -1,289 +1,284 @@
 
-import React, { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useState, useEffect } from "react";
+import { ImageDisplay, ImageLoader, ImagePlaceholder } from "./instagram-preview";
 import { Button } from "@/components/ui/button";
-import ImageContent from "./instagram-preview/ImageContent";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Heart, MessageCircle, Send, Bookmark, Camera } from "lucide-react";
+import { Image, ImageDown, RotateCcw } from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration";
+import InstagramPreviewHeader from "./instagram-preview/InstagramPreviewHeader";
+import InstagramPreviewFooter from "./instagram-preview/InstagramPreviewFooter";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
-  viewType?: "feed" | "story" | "reel";
   loadingImageIndex?: number | null;
   index?: number;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
+  onUploadImage?: (file: File) => Promise<void>;
+  viewType?: "feed" | "story" | "reel";
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName,
-  viewType = "feed",
-  loadingImageIndex,
-  index,
+  loadingImageIndex = null,
+  index = 0,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
+  onUploadImage,
+  viewType = "feed"
 }) => {
-  const isMobile = useIsMobile();
+  const [isImageHovered, setIsImageHovered] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+
+  // Determine if this preview is in loading state
   const isLoading = loadingImageIndex === index;
-  const [isUploading, setIsUploading] = useState(false);
-  
-  // File upload handling
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click();
+
+  // Toggle controls visibility
+  const toggleControls = () => {
+    setShowControls(prev => !prev);
   };
-  
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setIsUploading(true);
-    try {
-      // Here we would handle file upload to storage
-      // For now, we'll just use a local URL
-      const imageUrl = URL.createObjectURL(file);
-      
-      if (onUpdateAd) {
-        onUpdateAd({
-          ...ad,
-          imageUrl
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+
+  // Handle image generation
+  const handleGenerateImage = async () => {
+    if (onGenerateImage) {
+      setIsGenerating(true);
+      await onGenerateImage();
+      setIsGenerating(false);
     }
   };
 
-  // Device wrapper for mobile-style preview
-  const DeviceFrame = ({ children }: { children: React.ReactNode }) => (
-    <div className="relative mx-auto">
-      <div className="bg-gray-800 rounded-[40px] p-2 mx-auto shadow-lg">
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1/3 h-6 bg-gray-800 rounded-b-xl"></div>
-        <div className="border-2 border-gray-600 rounded-[35px] overflow-hidden">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-  
-  const StoryView = () => (
-    <div className="relative h-[600px] bg-gradient-to-br from-purple-500 to-pink-500">
-      {ad.imageUrl ? (
-        <img 
-          src={ad.imageUrl} 
-          alt="Instagram Story" 
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Button 
-            variant="outline" 
-            onClick={onGenerateImage}
-            className="bg-white/30 backdrop-blur-md border-white text-white hover:bg-white/40"
-          >
-            <Camera className="mr-2 h-4 w-4" />
-            Generate Story Image
-          </Button>
-        </div>
-      )}
-      
-      {/* Story header */}
-      <div className="absolute top-0 left-0 right-0 p-3 flex justify-between items-center">
-        <div className="flex items-center">
-          <Avatar className="h-8 w-8 border-2 border-white">
-            <AvatarImage src="" alt={companyName} />
-            <AvatarFallback className="text-xs bg-gradient-to-br from-pink-500 to-purple-600 text-white">
-              {companyName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="ml-2 text-sm font-medium text-white drop-shadow-md">{companyName}</span>
-          <span className="ml-2 text-xs text-white/80 drop-shadow-md">Sponsored</span>
-        </div>
-        <div className="text-white">•••</div>
-      </div>
-      
-      {/* CTA at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        <div className="bg-white/20 backdrop-blur-md rounded-full border border-white/30 p-3 text-center text-white font-medium cursor-pointer hover:bg-white/30 transition">
-          {ad.description || "Learn More"}
-        </div>
-      </div>
-    </div>
-  );
-  
-  // Default feed view
-  const FeedView = () => (
-    <div className="bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden max-w-sm mx-auto">
-      {/* Instagram Header */}
-      <div className="p-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="" alt={companyName} />
-            <AvatarFallback className="text-xs bg-gradient-to-br from-pink-500 to-purple-600 text-white">
-              {companyName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <span className="text-sm font-medium">{companyName}</span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Sponsored</div>
+  // Handle file upload
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0] && onUploadImage) {
+      await onUploadImage(e.target.files[0]);
+    }
+  };
+
+  // Determine dimensions and classes based on view type
+  const getViewDimensions = () => {
+    switch (viewType) {
+      case "story":
+      case "reel":
+        return "aspect-[9/16] max-w-[320px]";
+      case "feed":
+      default:
+        return "aspect-square max-w-[400px]";
+    }
+  };
+
+  // Extract hashtags from the text if present
+  const extractHashtags = (text?: string) => {
+    if (!text) return null;
+    const hashtagRegex = /#[a-zA-Z0-9_]+/g;
+    const matches = text.match(hashtagRegex);
+    return matches ? matches.join(' ') : null;
+  };
+
+  const hashtags = extractHashtags(ad.primaryText) || extractHashtags(ad.description);
+
+  // Device frame classes based on view type
+  const getDeviceFrameClasses = () => {
+    if (viewType === "feed") {
+      return "rounded-xl border-[10px] border-black shadow-lg";
+    } else {
+      return "rounded-[40px] border-[12px] border-black shadow-xl";
+    }
+  };
+
+  return (
+    <div className="instagram-preview-container flex flex-col items-center">
+      {/* Device frame */}
+      <div className={`relative mx-auto ${getDeviceFrameClasses()} overflow-hidden bg-white dark:bg-gray-900`}>
+        {/* Status bar - only for stories/reels */}
+        {(viewType === "story" || viewType === "reel") && (
+          <div className="h-6 w-full bg-black flex justify-between items-center px-4">
+            <div className="text-white text-[10px]">9:41</div>
+            <div className="flex space-x-1">
+              <div className="w-3 h-3">
+                <svg viewBox="0 0 24 24" fill="white">
+                  <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
+                </svg>
+              </div>
+              <div className="w-3 h-3">
+                <svg viewBox="0 0 24 24" fill="white">
+                  <path d="M18 9.5a6.5 6.5 0 0 0-13 0v5a6.5 6.5 0 0 0 13 0v-5z" />
+                </svg>
+              </div>
+              <div className="w-3 h-3">
+                <svg viewBox="0 0 24 24" fill="white">
+                  <rect x="3" y="6" width="18" height="12" rx="2" />
+                  <rect x="5" y="10" width="14" height="4" rx="1" fill="white" />
+                </svg>
+              </div>
+            </div>
           </div>
-        </div>
-        <span className="text-lg text-gray-500 dark:text-gray-400">•••</span>
-      </div>
-      
-      {/* Image Content */}
-      <ImageContent 
-        ad={ad}
-        imageKey={index}
-        isLoading={Boolean(isLoading)}
-        isUploading={isUploading}
-        onGenerateImage={onGenerateImage}
-        triggerFileUpload={triggerFileUpload}
-      />
-      
-      {/* Caption */}
-      <div className="p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4">
-            <Heart className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-            <MessageCircle className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-            <Send className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-          </div>
-          <Bookmark className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-        </div>
-        
-        <div className="text-sm font-medium">
-          Liked by <span className="font-semibold">instagramuser</span> and <span className="font-semibold">others</span>
-        </div>
-        
-        <div className="text-sm">
-          <span className="font-semibold text-gray-900 dark:text-gray-100">{companyName}</span>{" "}
-          <span className="text-gray-800 dark:text-gray-200">{ad.primaryText}</span>
+        )}
+
+        {/* Instagram content container */}
+        <div className={`instagram-content bg-white dark:bg-gray-900 flex flex-col ${getViewDimensions()}`}>
+          {/* Hide header for stories/reels */}
+          {viewType === "feed" && (
+            <InstagramPreviewHeader companyName={companyName} />
+          )}
           
-          {/* Hashtags - Check if we have them before rendering */}
-          {ad.callToAction && typeof ad.callToAction === 'string' && ad.callToAction.includes('#') && (
-            <div className="mt-1 text-blue-600 dark:text-blue-400">
-              {ad.callToAction}
+          {/* Image content */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsImageHovered(true)}
+            onMouseLeave={() => setIsImageHovered(false)}
+          >
+            {ad.imageUrl ? (
+              <ImageDisplay 
+                imageUrl={ad.imageUrl} 
+                aspectRatio={viewType === "feed" ? "square" : "vertical"}
+              />
+            ) : isLoading ? (
+              <ImageLoader viewType={viewType} />
+            ) : (
+              <ImagePlaceholder 
+                text={ad.imagePrompt || "No image prompt provided"} 
+                onClick={handleGenerateImage}
+                viewType={viewType}
+              />
+            )}
+            
+            {/* Story/reel content overlay */}
+            {(viewType === "story" || viewType === "reel") && ad.imageUrl && (
+              <div className="absolute inset-0 flex flex-col justify-between p-4 text-white">
+                <div className="mt-8 text-2xl font-bold text-shadow-md">
+                  {ad.headline}
+                </div>
+                <div className="mb-16">
+                  <div className="text-shadow-md mb-2">{ad.primaryText}</div>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                    <span className="text-white font-medium">Learn More</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Image controls overlay (only when hovered and editable) */}
+            {isImageHovered && onGenerateImage && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center gap-2 transition-opacity">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white text-gray-800 hover:bg-gray-100"
+                  onClick={handleGenerateImage}
+                  disabled={isLoading}
+                >
+                  <Image className="h-4 w-4 mr-2" />
+                  {isLoading ? "Generating..." : "Generate Image"}
+                </Button>
+                
+                <label className="cursor-pointer">
+                  <div className="bg-white text-gray-800 hover:bg-gray-100 rounded-md px-3 py-1.5 text-sm font-medium flex items-center">
+                    <ImageDown className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    disabled={isLoading}
+                  />
+                </label>
+                
+                {ad.imageUrl && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white text-gray-800 hover:bg-gray-100"
+                    onClick={() => onUpdateAd && onUpdateAd({ ...ad, imageUrl: "" })}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Hide footer for stories/reels */}
+          {viewType === "feed" && (
+            <div className="bg-white dark:bg-gray-900 p-3">
+              <div className="flex items-center space-x-4 mb-2 text-gray-500 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 8.7-8.7a.97.97 0 0 1 1.41 0l6.89 6.89" /><path d="M13 13.8 21 21" /><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+              </div>
+              
+              <div>
+                <span className="font-semibold text-sm dark:text-white">{companyName}</span>
+                <span className="text-sm dark:text-gray-200"> {ad.primaryText}</span>
+              </div>
+              
+              {/* Display headline and description */}
+              <div className="mt-1 text-sm">
+                <span className="font-semibold dark:text-white">{ad.headline}</span>
+                {ad.description && (
+                  <span className="text-gray-500 dark:text-gray-400"> {ad.description}</span>
+                )}
+              </div>
+              
+              {/* Hashtags - Check if we have them before rendering */}
+              {hashtags && (
+                <div className="mt-1 text-blue-600 dark:text-blue-400">
+                  {hashtags}
+                </div>
+              )}
+              
+              {/* CTA Button */}
+              <div className="mt-2">
+                <button className="w-full py-1.5 rounded bg-[#0095f6] text-white font-semibold text-sm">
+                  {ad.callToAction || "Learn More"}
+                </button>
+              </div>
             </div>
           )}
         </div>
         
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          View all comments
-        </div>
-        
-        {/* Call to Action */}
-        <Button 
-          className="w-full py-2 mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors"
-        >
-          {ad.description || "Learn More"}
-        </Button>
+        {/* Device home indicator */}
+        <div className="h-1 w-1/3 bg-black mx-auto rounded-full mt-1"></div>
       </div>
       
-      {/* Instagram watermark */}
-      <div className="flex justify-end p-1 border-t border-gray-100 dark:border-gray-800">
-        <div className="text-[10px] text-gray-400">Instagram</div>
-      </div>
-    </div>
-  );
-  
-  // Reel view
-  const ReelView = () => (
-    <div className="relative h-[600px] bg-black">
-      {ad.imageUrl ? (
-        <img 
-          src={ad.imageUrl} 
-          alt="Instagram Reel" 
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
+      {/* View type selector buttons */}
+      {onUpdateAd && (
+        <div className="flex justify-center gap-2 mt-4">
           <Button 
-            variant="outline" 
-            onClick={onGenerateImage}
-            className="bg-white/30 backdrop-blur-md border-white text-white hover:bg-white/40"
+            size="sm" 
+            variant={viewType === "feed" ? "default" : "outline"}
+            className="text-xs"
+            onClick={() => onUpdateAd({ ...ad, format: "feed" })}
           >
-            <Camera className="mr-2 h-4 w-4" />
-            Generate Reel Image
+            Feed
+          </Button>
+          <Button 
+            size="sm" 
+            variant={viewType === "story" ? "default" : "outline"}
+            className="text-xs"
+            onClick={() => onUpdateAd({ ...ad, format: "story" })}
+          >
+            Story
+          </Button>
+          <Button 
+            size="sm" 
+            variant={viewType === "reel" ? "default" : "outline"}
+            className="text-xs"
+            onClick={() => onUpdateAd({ ...ad, format: "reel" })}
+          >
+            Reel
           </Button>
         </div>
       )}
       
-      {/* Reel overlay controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-        <div className="flex items-start mb-3">
-          <Avatar className="h-8 w-8 border-2 border-white">
-            <AvatarImage src="" alt={companyName} />
-            <AvatarFallback className="text-xs bg-gradient-to-br from-pink-500 to-purple-600 text-white">
-              {companyName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="ml-2">
-            <div className="text-sm font-medium text-white">{companyName}</div>
-            <div className="text-xs text-white/80">Sponsored</div>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="ml-auto border-white text-white hover:bg-white/20 hover:text-white"
-          >
-            {ad.description || "Learn More"}
-          </Button>
-        </div>
-        
-        <div className="text-white text-sm">
-          {ad.primaryText}
-        </div>
+      {/* Platform indicator */}
+      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        Instagram {viewType.charAt(0).toUpperCase() + viewType.slice(1)} Preview
       </div>
-      
-      {/* Right side controls */}
-      <div className="absolute right-3 bottom-24 flex flex-col items-center gap-6">
-        <div className="flex flex-col items-center">
-          <Heart className="h-7 w-7 text-white mb-1" />
-          <span className="text-white text-xs">24.5K</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <MessageCircle className="h-7 w-7 text-white mb-1" />
-          <span className="text-white text-xs">1,045</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <Send className="h-7 w-7 text-white mb-1" />
-          <span className="text-white text-xs">Share</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <Bookmark className="h-7 w-7 text-white mb-1" />
-          <span className="text-white text-xs">Save</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="instagram-preview transition-all duration-300">
-      <DeviceFrame>
-        {viewType === "story" && <StoryView />}
-        {viewType === "feed" && <FeedView />}
-        {viewType === "reel" && <ReelView />}
-      </DeviceFrame>
-      
-      {/* Hidden file input */}
-      <input 
-        type="file" 
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handleFileUpload}
-      />
     </div>
   );
 };

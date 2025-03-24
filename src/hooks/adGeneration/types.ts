@@ -31,6 +31,8 @@ export interface MetaAd {
   status?: string;
   audienceId?: string;
   placementId?: string;
+  format?: "feed" | "story" | "reel"; // Added format property
+  hashtags?: string[]; // Added hashtags property
   notes?: string;
 }
 
