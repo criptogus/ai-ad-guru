@@ -8,6 +8,7 @@ import LinkedInAdPreview from "./LinkedInAdPreview";
 import LinkedInAdDetails from "./LinkedInAdDetails";
 import LinkedInAdOptimizationAlert from "./LinkedInAdOptimizationAlert";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LinkedInAdCardProps {
   ad: MetaAd;
@@ -28,6 +29,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<MetaAd>({ ...ad });
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleEdit = () => {
     setEditedAd({ ...ad });
@@ -74,21 +76,44 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   };
   
   const handleUploadImage = async (file: File) => {
-    // This function would typically upload the file to your storage service
-    // and then update the ad with the new image URL
-    // For now we'll use a simple mock implementation
-    
     try {
-      // Show loading toast
-      toast.loading("Uploading image...");
+      setIsUploading(true);
       
-      // Create a temporary URL for the file
-      const imageUrl = URL.createObjectURL(file);
+      // Check file validity
+      if (!file.type.match(/image\/(jpeg|jpg|png)/)) {
+        throw new Error("Please upload a valid image file (JPG or PNG)");
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image size should be less than 5MB");
+      }
+      
+      // Generate a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-linkedin-ad-${index}.${fileExt}`;
+      const filePath = `linkedin-ads/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('ad-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('ad-images')
+        .getPublicUrl(filePath);
       
       // Update the ad with the new image URL
       const updatedAd = {
         ...editedAd,
-        imageUrl
+        imageUrl: publicUrl
       };
       
       // If in editing mode, update the local state
@@ -101,15 +126,19 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
         onUpdateAd(index, updatedAd);
       }
       
-      // Show success toast
       toast.success("Image uploaded successfully", {
         description: "Your LinkedIn ad has been updated with the new image.",
       });
+      
+      return publicUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image", {
-        description: "Please try again or use AI image generation instead.",
+        description: error instanceof Error ? error.message : "Please try again or use AI image generation instead.",
       });
+      return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -131,13 +160,13 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
             <LinkedInAdPreview 
               ad={isEditing ? editedAd : ad} 
               analysisResult={analysisResult}
-              isGeneratingImage={isGeneratingImage}
+              isGeneratingImage={isGeneratingImage || isUploading}
               onGenerateImage={onGenerateImage}
               onUploadImage={handleUploadImage}
             />
           </div>
           
-          {/* LinkedIn Ad Details - Column 3-5 */}
+          {/* Ad Details - Column 3-5 */}
           <div className="lg:col-span-3">
             <LinkedInAdDetails 
               ad={isEditing ? editedAd : ad}

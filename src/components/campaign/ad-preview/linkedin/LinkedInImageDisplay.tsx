@@ -61,18 +61,52 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
   return (
     <div className={`w-full ${getImageDimensions()} relative overflow-hidden bg-gray-100 rounded-md`}>
       {imageUrl ? (
-        <img 
-          src={imageUrl} 
-          alt="LinkedIn Ad" 
-          className="w-full h-full object-cover"
-        />
+        <div className="relative h-full w-full group">
+          <img 
+            src={imageUrl} 
+            alt="LinkedIn Ad" 
+            className="w-full h-full object-cover"
+          />
+          
+          {/* Overlay controls that appear on hover */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+            {onGenerateImage && (
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={onGenerateImage}
+                disabled={isGeneratingImage || isUploading}
+              >
+                Regenerate Image
+              </Button>
+            )}
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={handleFileSelect}
+              disabled={isGeneratingImage || isUploading}
+            >
+              Upload Image
+            </Button>
+          </div>
+        </div>
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center p-4">
-          {isGeneratingImage || isUploading ? (
+          {isGeneratingImage ? (
             <div className="flex flex-col items-center">
               <Loader className="h-8 w-8 animate-spin text-blue-600 mb-2" />
               <p className="text-sm text-gray-500">
-                {isGeneratingImage ? "Generating image..." : "Uploading image..."}
+                Generating AI image...
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                This might take a moment
+              </p>
+            </div>
+          ) : isUploading ? (
+            <div className="flex flex-col items-center">
+              <Loader className="h-8 w-8 animate-spin text-blue-600 mb-2" />
+              <p className="text-sm text-gray-500">
+                Uploading image...
               </p>
             </div>
           ) : (
