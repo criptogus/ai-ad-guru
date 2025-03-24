@@ -1,9 +1,8 @@
-
 import React from "react";
 import TemplateSelection from "./TemplateSelection";
 import BannerEditor from "./BannerEditor";
 import BannerPreview from "./BannerPreview";
-import ExportOptions from "./ExportOptions";
+import ExportOptions from "./export/ExportOptions";
 import { BannerTemplate, BannerFormat, BannerPlatform } from "./types";
 import { BannerElement, TextElement } from "@/hooks/smart-banner/types";
 
