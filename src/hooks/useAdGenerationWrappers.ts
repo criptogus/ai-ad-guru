@@ -12,7 +12,6 @@ export const useAdGenerationWrappers = ({
   handleGenerateMetaAds,
   handleGenerateMicrosoftAds
 }: UseAdGenerationWrappersProps) => {
-  // Create wrapper functions that return the correct types for the component
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
   };

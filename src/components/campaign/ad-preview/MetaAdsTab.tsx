@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +11,7 @@ interface MetaAdsTabProps {
   metaAds: MetaAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
-  onGenerateAds: () => Promise<MetaAd[] | null>;
+  onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateMetaAd: (updatedAds: MetaAd[]) => void;
   analysisResult: WebsiteAnalysisResult;
