@@ -12,6 +12,7 @@ export const useAdGenerationWrappers = ({
   handleGenerateMetaAds,
   handleGenerateMicrosoftAds
 }: UseAdGenerationWrappersProps) => {
+  // All wrapper functions now explicitly return Promise<void>
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
   };

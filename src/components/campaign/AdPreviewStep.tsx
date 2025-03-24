@@ -16,6 +16,7 @@ interface AdPreviewStepProps {
   microsoftAds: any[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
+  // Updated return types to Promise<void> for consistency
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateMicrosoftAds: () => Promise<void>;

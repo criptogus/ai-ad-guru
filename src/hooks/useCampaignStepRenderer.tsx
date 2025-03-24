@@ -1,3 +1,4 @@
+
 import React from "react";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
@@ -19,6 +20,7 @@ interface CampaignStepRendererProps {
   loadingImageIndex: number | null;
   isCreating: boolean;
   handleWebsiteAnalysis: (url: string) => Promise<WebsiteAnalysisResult | null>;
+  // Updated return types to Promise<void> for all ad generation handlers
   handleGenerateGoogleAds: () => Promise<void>;
   handleGenerateMetaAds: () => Promise<void>;
   handleGenerateMicrosoftAds: () => Promise<void>;
