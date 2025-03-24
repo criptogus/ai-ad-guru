@@ -5,83 +5,102 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors from design system */
+    --background: 210 40% 98.1%; /* #F9FAFB */
+    --foreground: 222.2 84% 4.9%; /* #111827 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222.2 84% 4.9%; /* #111827 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 222.2 84% 4.9%; /* #111827 */
 
-    --primary: 240 70% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 221.2 83.2% 53.3%; /* #3B82F6 */
+    --primary-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 14.3% 75.7%; /* #6B7280 */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* #1F2937 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 40% 96.1%; /* #F3F4F6 */
+    --muted-foreground: 220 8.9% 46.1%; /* #6B7280 */
 
-    --accent: 240 70% 95%;
-    --accent-foreground: 240 70% 50%;
+    --accent: 217.2 91.2% 59.8%; /* #3B82F6 */
+    --accent-foreground: 222.2 47.4% 11.2%; /* #1F2937 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 */
+    --destructive-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 240 70% 50%;
+    --success: 158 64% 52%; /* #10B981 */
+    --success-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%; /* #F59E0B */
+    --warning-foreground: 210 40% 98%; /* #FFFFFF */
+    
+    --danger: 0 84.2% 60.2%; /* #EF4444 */
+    --danger-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 214.3 31.8% 91.4%; /* #E5E7EB */
+    --input: 214.3 31.8% 91.4%; /* #D1D5DB */
+    --ring: 221.2 83.2% 53.3%; /* #3B82F6 */
+
+    --radius: 0.75rem; /* Increased radius for modern feel */
+
+    --sidebar-background: 210 40% 98.1%; /* #F9FAFB */
+    --sidebar-foreground: 215.4 16.3% 46.9%; /* #6B7280 */
+    --sidebar-primary: 221.2 83.2% 53.3%; /* #3B82F6 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 217.2 91.2% 59.8% / 0.1; /* #DBEAFE */
+    --sidebar-accent-foreground: 221.2 83.2% 53.3%; /* #3B82F6 */
+    --sidebar-border: 220 13% 91%; /* #E5E7EB */
+    --sidebar-ring: 217.2 91.2% 59.8%; /* #3B82F6 */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222.2 84% 4.9%; /* #111827 */
+    --foreground: 210 40% 98%; /* #F9FAFB */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222.2 47.4% 11.2%; /* #1F2937 */
+    --card-foreground: 210 40% 98%; /* #F9FAFB */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222.2 47.4% 11.2%; /* #1F2937 */
+    --popover-foreground: 210 40% 98%; /* #F9FAFB */
 
-    --primary: 240 70% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%; /* #60A5FA */
+    --primary-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 14% 54%; /* #9CA3AF */
+    --secondary-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217.2 32.6% 17.5%; /* #374151 */
+    --muted-foreground: 215 20.2% 65.1%; /* #9CA3AF */
 
-    --accent: 240 70% 20%;
-    --accent-foreground: 240 70% 98%;
+    --accent: 217.2 91.2% 59.8% / 0.1; /* #1E3A8A */
+    --accent-foreground: 217.2 91.2% 59.8%; /* #60A5FA */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%; /* Darker red */
+    --destructive-foreground: 210 40% 98%; /* #FFFFFF */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 240 70% 60%;
+    --success: 142.1 76.2% 45.3%; /* #6EE7B7 */
+    --success-foreground: 210 40% 98%; /* #FFFFFF */
+
+    --warning: 47.4 95.8% 54.1%; /* #FBBF24 */
+    --warning-foreground: 210 40% 98%; /* #FFFFFF */
     
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --danger: 0 72.2% 50.6%; /* #F87171 */
+    --danger-foreground: 210 40% 98%; /* #FFFFFF */
+
+    --border: 217.2 32.6% 17.5%; /* #374151 */
+    --input: 217.2 32.6% 17.5%; /* #374151 */
+    --ring: 217.2 91.2% 59.8%; /* #60A5FA */
+    
+    --sidebar-background: 222.2 47.4% 11.2%; /* #1F2937 */
+    --sidebar-foreground: 213.6 15.7% 85.1%; /* #D1D5DB */
+    --sidebar-primary: 217.2 91.2% 59.8%; /* #60A5FA */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 217.2 91.2% 59.8% / 0.1; /* Dark blue with opacity */
+    --sidebar-accent-foreground: 213.6 15.7% 85.1%; /* #D1D5DB */
+    --sidebar-border: 215.3 25% 27%; /* #374151 */
+    --sidebar-ring: 217.2 91.2% 59.8%; /* #60A5FA */
   }
 }
 
@@ -92,6 +111,9 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -104,49 +126,82 @@
     @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
   }
   
+  /* Modern card styling */
+  .card-modern {
+    @apply rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:translate-y-[-2px];
+  }
+  
+  /* Button styles following design system */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-primary text-primary hover:bg-accent active:scale-[0.98] transition-all duration-200;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent border border-input text-muted-foreground hover:bg-muted active:scale-[0.98] transition-all duration-200;
+  }
+  
+  /* Text gradient for special accents */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent;
+  }
+  
+  /* Focus styles for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+  
+  /* Input focus effect */
+  .input-focus {
+    @apply focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary;
+  }
+  
   /* Add explicit dark mode styles for campaign components */
   .dark .campaign-card {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   .dark .campaign-form {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   .dark .campaign-preview {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   /* Fix white backgrounds in dark mode */
   .dark .bg-white {
-    @apply bg-gray-800;
+    @apply bg-card;
   }
   
   .dark .border-white {
-    @apply border-gray-700;
+    @apply border-border;
   }
   
   /* Fix tables in dark mode */
   .dark table {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   .dark thead {
-    @apply bg-gray-900;
+    @apply bg-muted;
   }
   
   .dark tbody tr {
-    @apply border-gray-700;
+    @apply border-border;
   }
   
   /* Fix inputs in dark mode */
   .dark input, .dark select, .dark textarea {
-    @apply bg-gray-700 border-gray-600;
+    @apply bg-muted border-border;
   }
   
   /* Fix buttons in dark mode */
   .dark button.bg-white {
-    @apply bg-gray-700 text-white;
+    @apply bg-muted text-foreground;
   }
   
   /* Ensure consistent padding and spacing */
@@ -155,12 +210,12 @@
   }
   
   .card-container {
-    @apply rounded-lg border shadow-sm overflow-hidden;
+    @apply rounded-xl border shadow-sm overflow-hidden;
   }
   
   /* Campaign step styles */
   .campaign-step-card {
-    @apply transition-all duration-300 shadow-md border border-accent/20;
+    @apply transition-all duration-300 shadow-md border border-accent/20 rounded-xl;
   }
   
   /* Campaign wizard navigation styles */
@@ -173,12 +228,12 @@
   }
   
   .step-nav-item.completed {
-    @apply text-green-600;
+    @apply text-success;
   }
   
   /* Enhanced form inputs */
   .campaign-input {
-    @apply border border-input px-3 py-2 rounded-md bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200;
+    @apply border border-input px-3 py-2 rounded-md bg-background input-focus transition-all duration-200;
   }
   
   /* Button enhancements */
@@ -187,10 +242,25 @@
   }
   
   .action-button.primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98];
   }
   
   .action-button.secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98];
+  }
+  
+  /* Story link animation */
+  .story-link {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
+  /* Hover scale animation */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  /* Pulse animation */
+  .pulse {
+    @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
   }
 }

@@ -15,10 +15,15 @@ const ThemeToggle: React.FC = () => {
     <Button 
       variant="ghost" 
       size="icon"
-      className="mb-3 mx-auto block"
+      className="mb-3 mx-auto block transition-all duration-300 hover:scale-[1.05]"
       onClick={toggleTheme}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      {theme === "dark" ? (
+        <Sun size={20} className="text-amber-400" />
+      ) : (
+        <Moon size={20} className="text-indigo-500" />
+      )}
     </Button>
   );
 };

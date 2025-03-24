@@ -22,7 +22,7 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
   
   return (
     <div className="relative">
-      <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-3 font-sans shadow-sm transition-all text-left ${viewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-2xl"}`}>
+      <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 font-sans shadow-sm transition-all text-left ${viewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-2xl"}`}>
         {/* Ad label and domain */}
         <div className="flex items-center mb-1">
           <span className="text-[10px] px-1 mr-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded">Ad</span>
@@ -31,13 +31,13 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
         </div>
         
         {/* Display URL */}
-        <div className="text-green-700 dark:text-green-500 text-xs mb-1 flex items-center">
+        <div className="text-green-700 dark:text-green-500 text-xs mb-1 flex items-center text-left">
           <span>www.{domain}</span>
           {ad.displayPath && <span className="mx-1">/{ad.displayPath}</span>}
         </div>
         
         {/* Headlines */}
-        <div className="text-blue-800 dark:text-blue-400 text-xl font-medium leading-tight cursor-pointer">
+        <div className="text-blue-800 dark:text-blue-400 text-xl font-medium leading-tight cursor-pointer text-left">
           {ad.headlines.map((headline, i) => (
             <React.Fragment key={i}>
               {i > 0 && <span className="mx-1 text-gray-400">|</span>}
@@ -47,14 +47,14 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
         </div>
         
         {/* Descriptions */}
-        <div className="text-gray-700 dark:text-gray-300 mt-1 text-sm leading-snug">
+        <div className="text-gray-700 dark:text-gray-300 mt-1 text-sm leading-snug text-left">
           {ad.descriptions.map((description, i) => (
             <div key={i}>{description}</div>
           ))}
         </div>
         
         {/* Sitelinks */}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-left">
           {siteLinks.map((link, i) => (
             <div key={i} className="text-xs py-0.5 px-2 border border-gray-300 dark:border-gray-600 rounded-full text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
               {link}
@@ -77,7 +77,7 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
       
       {/* Character count indicators with floating edit overlay - only shown with showEditControls=true */}
       {showEditControls && (
-        <div className="absolute top-2 right-2 bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 shadow-sm rounded p-2 text-xs">
+        <div className="absolute top-2 right-2 bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-2 text-xs">
           <div className="flex items-center justify-between mb-1">
             <span>Headlines:</span>
             <span className={`${

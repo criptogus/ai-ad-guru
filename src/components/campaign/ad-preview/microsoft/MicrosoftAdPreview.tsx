@@ -14,7 +14,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
   const displayDomain = domain || (analysisResult ? getUrlFromCompanyName(analysisResult.companyName) : "example.com");
   
   return (
-    <div className="border rounded-md p-3 bg-white dark:bg-gray-800 shadow-sm text-sm w-full text-left">
+    <div className="border rounded-xl p-3 bg-white dark:bg-gray-800 shadow-sm text-sm w-full text-left">
       {/* Microsoft branding */}
       <div className="flex items-center mb-1">
         <span className="text-[10px] px-1 mr-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">Ad</span>
@@ -23,12 +23,12 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
       </div>
       
       {/* Ad URL */}
-      <div className="text-green-700 dark:text-green-500 truncate text-xs">
+      <div className="text-green-700 dark:text-green-500 truncate text-xs text-left">
         www.{displayDomain}
       </div>
       
       {/* Ad Headlines */}
-      <div className="font-medium text-blue-800 dark:text-blue-400 mt-1 text-xl leading-tight">
+      <div className="font-medium text-blue-800 dark:text-blue-400 mt-1 text-xl leading-tight text-left">
         {ad.headlines.map((headline, i) => (
           <React.Fragment key={i}>
             {i > 0 && <span className="mx-1 text-gray-400">|</span>}
@@ -38,7 +38,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
       </div>
       
       {/* Ad Descriptions */}
-      <div className="text-gray-700 dark:text-gray-300 mt-2 leading-tight">
+      <div className="text-gray-700 dark:text-gray-300 mt-2 leading-tight text-left">
         {ad.descriptions.map((description, i) => (
           <div key={i} className="mb-1">
             {description}
@@ -47,7 +47,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
       </div>
       
       {/* Bing-specific Ad Extensions */}
-      <div className="mt-3 flex flex-wrap">
+      <div className="mt-3 flex flex-wrap text-left">
         <span className="text-xs text-gray-500 dark:text-gray-400 mr-2 mb-1 border-r pr-2">
           4.8★ (56 reviews)
         </span>
