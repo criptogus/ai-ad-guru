@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Goal, Globe } from "lucide-react";
 import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import ConnectionTestCard from "@/components/testing/ConnectionTestCard";
-import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/useAdGeneration";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import MetaAdsTestArea from "@/components/testing/MetaAdsTestArea";
 import GoogleAdsTestArea from "@/components/testing/GoogleAdsTestArea";
 import MicrosoftAdsTestArea from "@/components/testing/MicrosoftAdsTestArea";
