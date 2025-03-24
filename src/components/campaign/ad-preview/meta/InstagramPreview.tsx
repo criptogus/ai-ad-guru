@@ -1,8 +1,9 @@
 
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { Button } from "@/components/ui/button";
-import { Loader2, ImagePlus } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ImageContent from "./instagram-preview/ImageContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
@@ -19,161 +20,110 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   loadingImageIndex,
   index,
   onGenerateImage,
-  onUpdateAd,
+  onUpdateAd
 }) => {
+  const isMobile = useIsMobile();
   const isLoading = loadingImageIndex === index;
-  const hasGenerateAction = !!onGenerateImage;
-  const hasImageUrl = !!ad.imageUrl;
-
-  const handleGenerateImage = async () => {
-    if (onGenerateImage) {
-      await onGenerateImage();
+  const [isUploading, setIsUploading] = React.useState(false);
+  
+  // File upload handling
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    try {
+      // Here we would handle file upload to storage
+      // For now, we'll just use a local URL
+      const imageUrl = URL.createObjectURL(file);
+      
+      if (onUpdateAd) {
+        onUpdateAd({
+          ...ad,
+          imageUrl
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white shadow-sm max-w-[360px]">
-      {/* Instagram header */}
-      <div className="flex items-center p-2 border-b">
-        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
-          {companyName.substring(0, 1).toUpperCase()}
+    <div className="bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden max-w-sm mx-auto">
+      {/* Instagram Header */}
+      <div className="p-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-6 w-6">
+            <AvatarImage src="" alt={companyName} />
+            <AvatarFallback className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+              {companyName.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium">{companyName}</span>
         </div>
-        <div className="ml-2 flex-1">
-          <div className="text-sm font-semibold">{companyName}</div>
-          <div className="text-xs text-gray-500">Sponsored</div>
-        </div>
-        <div className="text-gray-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="19" cy="12" r="1" />
-            <circle cx="5" cy="12" r="1" />
-          </svg>
-        </div>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Ad</span>
       </div>
-
-      {/* Ad image */}
-      <div className="aspect-square relative">
-        {hasImageUrl ? (
-          <img
-            src={ad.imageUrl}
-            alt={ad.headline}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-4">
-            {hasGenerateAction ? (
-              <>
-                {isLoading ? (
-                  <div className="text-center">
-                    <Loader2 className="h-10 w-10 text-gray-400 animate-spin mx-auto mb-3" />
-                    <span className="text-sm text-gray-500">
-                      Generating image...
-                    </span>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={handleGenerateImage}
-                    variant="outline"
-                    className="flex flex-col h-auto py-3 gap-2"
-                  >
-                    <ImagePlus className="h-8 w-8 text-gray-400" />
-                    <span>Generate Image</span>
-                  </Button>
-                )}
-              </>
-            ) : (
-              <div className="text-center">
-                <ImagePlus className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                <span className="text-sm text-gray-500">Image placeholder</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Ad content */}
+      
+      {/* Image Content */}
+      <ImageContent 
+        ad={ad}
+        imageKey={index}
+        isLoading={Boolean(isLoading)}
+        isUploading={isUploading}
+        onGenerateImage={onGenerateImage}
+        triggerFileUpload={triggerFileUpload}
+      />
+      
+      {/* Caption */}
       <div className="p-3 space-y-2">
-        <div className="text-sm">
-          <span className="font-semibold">{companyName}</span> {ad.primaryText}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <span className="text-gray-800 dark:text-gray-200">❤️</span>
+            <span className="text-gray-800 dark:text-gray-200">💬</span>
+            <span className="text-gray-800 dark:text-gray-200">🔄</span>
+          </div>
+          <span className="text-gray-800 dark:text-gray-200">🔖</span>
         </div>
-
-        <div className="text-sm font-medium text-blue-700">{ad.headline}</div>
-
-        <div className="text-xs text-gray-500">{ad.description}</div>
-      </div>
-
-      {/* Instagram engagement bar */}
-      <div className="border-t px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-700"
-          >
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7.1 7 7-7" />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-700"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-700"
-          >
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
+        
+        <div>
+          <p className="text-sm">
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{companyName}</span>{" "}
+            {ad.primaryText}
+          </p>
+          
+          {ad.headline && (
+            <p className="text-sm font-medium mt-1 text-gray-900 dark:text-gray-100">
+              {ad.headline}
+            </p>
+          )}
         </div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-gray-700"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
+        
+        {/* Call to Action */}
+        <button className="w-full py-2 mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors">
+          Learn More
+        </button>
       </div>
+      
+      {/* Hidden file input */}
+      <input 
+        type="file" 
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleFileUpload}
+      />
     </div>
   );
 };

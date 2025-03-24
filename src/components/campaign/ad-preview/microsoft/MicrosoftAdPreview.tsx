@@ -14,21 +14,21 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
   const displayDomain = domain || (analysisResult ? getUrlFromCompanyName(analysisResult.companyName) : "example.com");
   
   return (
-    <div className="border rounded-md p-3 bg-white shadow-sm text-sm w-full">
+    <div className="border rounded-md p-3 bg-white dark:bg-gray-800 shadow-sm text-sm w-full">
       {/* Microsoft branding */}
       <div className="flex items-center mb-1">
-        <span className="text-xs text-green-600 font-semibold">Ad</span>
-        <span className="mx-1 text-xs text-gray-400">·</span>
-        <span className="text-xs text-blue-700">Microsoft Advertising</span>
+        <span className="text-[10px] px-1 mr-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">Ad</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">·</span>
+        <span className="text-xs text-blue-700 dark:text-blue-400">Microsoft Advertising</span>
       </div>
       
       {/* Ad URL */}
-      <div className="text-green-700 truncate text-xs">
+      <div className="text-green-700 dark:text-green-500 truncate text-xs">
         www.{displayDomain}
       </div>
       
       {/* Ad Headlines */}
-      <div className="font-medium text-blue-800 mt-1 text-xl leading-tight">
+      <div className="font-medium text-blue-800 dark:text-blue-400 mt-1 text-xl leading-tight">
         {ad.headlines.map((headline, i) => (
           <React.Fragment key={i}>
             {i > 0 && <span className="mx-1 text-gray-400">|</span>}
@@ -38,7 +38,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
       </div>
       
       {/* Ad Descriptions */}
-      <div className="text-gray-600 mt-2 leading-tight">
+      <div className="text-gray-700 dark:text-gray-300 mt-2 leading-tight">
         {ad.descriptions.map((description, i) => (
           <div key={i} className="mb-1">
             {description}
@@ -48,16 +48,16 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
       
       {/* Bing-specific Ad Extensions */}
       <div className="mt-3 flex flex-wrap">
-        <span className="text-xs text-gray-500 mr-2 mb-1 border-r pr-2">
+        <span className="text-xs text-gray-500 dark:text-gray-400 mr-2 mb-1 border-r pr-2">
           4.8★ (56 reviews)
         </span>
-        <span className="text-xs text-blue-700 mr-2 mb-1 border-r pr-2">
+        <span className="text-xs text-blue-700 dark:text-blue-400 mr-2 mb-1 border-r pr-2">
           Products
         </span>
-        <span className="text-xs text-blue-700 mr-2 mb-1 border-r pr-2">
+        <span className="text-xs text-blue-700 dark:text-blue-400 mr-2 mb-1 border-r pr-2">
           Services
         </span>
-        <span className="text-xs text-blue-700 mb-1">
+        <span className="text-xs text-blue-700 dark:text-blue-400 mb-1">
           Contact Us
         </span>
       </div>

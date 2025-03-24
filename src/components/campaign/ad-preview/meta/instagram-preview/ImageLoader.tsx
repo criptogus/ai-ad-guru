@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ImageLoaderProps {
   imageSrc: string;
@@ -19,29 +18,19 @@ const ImageLoader: React.FC<ImageLoaderProps> = ({
   onImageLoad,
   onImageError
 }) => {
-  const [loading, setLoading] = React.useState(true);
-
+  // We use the key prop to force react to create a new image element when the URL changes
+  // This ensures that the onLoad and onError events are properly triggered
+  const uniqueKey = `img-${imageKey || 0}-${retryCount}-${Date.now()}`;
+  
   return (
-    <div className="relative w-full h-full">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Skeleton className="w-full h-full absolute" />
-          <span className="z-10 text-xs text-gray-500">Loading image...</span>
-        </div>
-      )}
-      
-      <img
-        src={imageSrc}
-        alt={altText}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
-        key={`${imageKey}-${retryCount}`}
-        onLoad={() => {
-          setLoading(false);
-          onImageLoad();
-        }}
-        onError={onImageError}
-      />
-    </div>
+    <img
+      key={uniqueKey}
+      src={imageSrc}
+      alt={altText}
+      className="w-full h-full object-cover"
+      onLoad={onImageLoad}
+      onError={onImageError}
+    />
   );
 };
 

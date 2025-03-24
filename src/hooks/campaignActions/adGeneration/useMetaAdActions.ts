@@ -4,7 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 import { toast as sonerToast } from 'sonner';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { MetaAd } from '@/hooks/adGeneration';
-import { getCreditCosts, consumeCredits } from '@/services';
+import { getCreditCosts } from '@/services';
+import { checkUserCredits, deductUserCredits } from '@/services/credits/creditChecks';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useMetaAdActions = (
@@ -39,36 +40,43 @@ export const useMetaAdActions = (
       return;
     }
 
+    // Check if user has enough credits
+    const metaAdCost = creditCosts.metaAdGeneration || 5; // Fallback to 5 if not defined
+    const hasCredits = await checkUserCredits(user.id, metaAdCost);
+    
+    if (!hasCredits) {
+      sonerToast.error("Insufficient Credits", {
+        description: `You need ${metaAdCost} credits to generate Instagram ads`,
+        duration: 5000,
+      });
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
       // Show credit usage preview
       sonerToast.info("Credit Usage Preview", {
-        description: `This will use ${creditCosts.metaAdGeneration} credits to generate Instagram ad suggestions`,
+        description: `This will use ${metaAdCost} credits to generate Instagram ad suggestions`,
         duration: 3000,
       });
       
-      // Consume credits before generating the ads
-      const creditSuccess = await consumeCredits(
-        user.id,
-        creditCosts.metaAdGeneration,
-        'meta_ad_generation',
-        'Instagram ad generation'
-      );
-      
-      if (!creditSuccess) {
-        sonerToast.error("Insufficient Credits", {
-          description: "You don't have enough credits for this operation",
-          duration: 5000,
-        });
-        setIsGenerating(false);
-        return;
-      }
-
       console.log("Generating Meta ads with analysis result:", analysisResult);
       const generatedAds = await generateMetaAds(analysisResult);
       
       if (generatedAds && generatedAds.length > 0) {
+        // Actually consume credits after successful generation
+        const creditSuccess = await deductUserCredits(
+          user.id,
+          metaAdCost,
+          'meta_ad_generation',
+          'Instagram ad generation'
+        );
+        
+        if (!creditSuccess) {
+          console.error("Failed to deduct credits but ads were generated");
+        }
+        
         // Update campaign data with the generated Meta ads
         setCampaignData(prev => ({
           ...prev,
@@ -76,20 +84,12 @@ export const useMetaAdActions = (
         }));
         
         sonerToast.success("Instagram Ads Generated", {
-          description: `${generatedAds.length} ads created using ${creditCosts.metaAdGeneration} credits`,
+          description: `${generatedAds.length} ads created using ${metaAdCost} credits`,
           duration: 3000,
         });
       } else {
-        // If generation failed, refund the credits
-        await consumeCredits(
-          user.id,
-          -creditCosts.metaAdGeneration, // Negative amount for refund
-          'credit_refund',
-          'Refund for failed Instagram ad generation'
-        );
-        
         sonerToast.error("Generation Failed", {
-          description: "Failed to generate Instagram ads. Your credits have been refunded.",
+          description: "Failed to generate Instagram ads. Please try again.",
           duration: 5000,
         });
       }
@@ -100,16 +100,6 @@ export const useMetaAdActions = (
         description: "An error occurred while generating Instagram ads",
         variant: "destructive",
       });
-      
-      // Refund credits on error
-      if (user) {
-        await consumeCredits(
-          user.id,
-          -creditCosts.metaAdGeneration,
-          'credit_refund',
-          'Refund for failed Instagram ad generation'
-        );
-      }
     } finally {
       setIsGenerating(false);
     }

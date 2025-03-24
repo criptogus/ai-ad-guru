@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import ImagePlaceholder from "./ImagePlaceholder";
 import ImageLoader from "./ImageLoader";
-import DebugInfo from "./DebugInfo";
 import { AlertCircle } from "lucide-react";
 
 interface ImageContentProps {
@@ -31,7 +30,6 @@ const ImageContent: React.FC<ImageContentProps> = ({
   // Reset error state and set up image source when the image URL changes
   useEffect(() => {
     if (ad.imageUrl) {
-      console.log("ImageContent - New image URL detected:", ad.imageUrl);
       setImageError(false);
       setIsImageLoaded(false);
       setRetryCount(0);
@@ -42,7 +40,6 @@ const ImageContent: React.FC<ImageContentProps> = ({
         ? `${ad.imageUrl}&${cacheBuster}` 
         : `${ad.imageUrl}?${cacheBuster}`;
       
-      console.log("Setting image src to:", newSrc);
       setImageSrc(newSrc);
     } else {
       setImageSrc(null);
@@ -65,12 +62,10 @@ const ImageContent: React.FC<ImageContentProps> = ({
       setRetryCount(nextRetry);
       
       const delay = Math.pow(2, nextRetry) * 1000; // Exponential backoff
-      console.log(`Retrying image load (attempt ${nextRetry}) after ${delay}ms`);
       
       setTimeout(() => {
         const withoutQuery = ad.imageUrl!.split('?')[0];
         const newSrc = `${withoutQuery}?nocache=${Date.now()}-retry-${nextRetry}`;
-        console.log("Retrying with new src:", newSrc);
         setImageSrc(newSrc);
       }, delay);
     } else {
@@ -80,7 +75,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 aspect-square relative overflow-hidden rounded-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+    <div className="bg-gray-100 dark:bg-gray-800 aspect-square relative overflow-hidden transition-all duration-300 border border-gray-200 dark:border-gray-700">
       {imageError && !isLoading && !isUploading && (
         <div className="absolute top-2 right-2 z-10">
           <div className="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 p-1.5 rounded-full">
@@ -90,13 +85,12 @@ const ImageContent: React.FC<ImageContentProps> = ({
       )}
       
       {imageSrc && !imageError ? (
-        <ImageLoader 
-          imageSrc={imageSrc}
-          altText={ad.headline || "Instagram ad"}
-          imageKey={imageKey}
-          retryCount={retryCount}
-          onImageLoad={handleImageLoad}
-          onImageError={handleImageError}
+        <img
+          src={imageSrc}
+          alt={ad.headline || "Instagram ad"}
+          className="w-full h-full object-cover"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
       ) : (
         <ImagePlaceholder 
@@ -107,13 +101,6 @@ const ImageContent: React.FC<ImageContentProps> = ({
           triggerFileUpload={triggerFileUpload}
         />
       )}
-      
-      <DebugInfo 
-        imageUrl={ad.imageUrl}
-        isImageLoaded={isImageLoaded}
-        imageError={imageError}
-        retryCount={retryCount}
-      />
     </div>
   );
 };
