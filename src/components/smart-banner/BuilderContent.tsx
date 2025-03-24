@@ -1,9 +1,9 @@
+
 import React from "react";
-import TemplateSelection from "./TemplateSelection";
-import BannerEditor from "./BannerEditor";
-import BannerPreview from "./BannerPreview";
-import ExportOptions from "./export/ExportOptions";
 import { BannerTemplate, BannerFormat, BannerPlatform } from "./types";
+import TemplateSelection from "./TemplateSelection";
+import BannerEditor from "./editor/BannerEditor";
+import ExportOptions from "./export/ExportOptions";
 import { BannerElement, TextElement } from "@/hooks/smart-banner/types";
 
 interface BuilderContentProps {
@@ -57,51 +57,38 @@ const BuilderContent: React.FC<BuilderContentProps> = ({
     return (
       <TemplateSelection 
         templates={templates} 
-        onSelectTemplate={onTemplateSelect} 
+        onSelect={onTemplateSelect} 
       />
     );
   }
 
   if (currentStep === "editor" && selectedTemplate) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <BannerEditor 
-            template={selectedTemplate}
-            format={selectedFormat}
-            platform={selectedPlatform}
-            backgroundImage={backgroundImage}
-            textElements={textElements}
-            onUpdateTextElement={onUpdateTextElement}
-            onGenerateAIImage={onGenerateAIImage}
-            onRegenerateImage={onRegenerateImage}
-            onGenerateAIText={onGenerateAIText}
-            onUploadImage={onUploadImage}
-            isGeneratingImage={isGeneratingImage}
-            isUploading={isUploading}
-            onGoToExport={onGoToExport}
-            bannerElements={bannerElements}
-            onUpdateBannerElements={onUpdateBannerElements}
-            userImages={userImages}
-            onSelectUserImage={onSelectUserImage}
-          />
-        </div>
-        <div className="lg:col-span-1">
-          <BannerPreview
-            format={selectedFormat}
-            platform={selectedPlatform}
-            backgroundImage={backgroundImage}
-            textElements={textElements}
-            bannerElements={bannerElements}
-          />
-        </div>
-      </div>
+      <BannerEditor 
+        template={selectedTemplate}
+        format={selectedFormat}
+        platform={selectedPlatform}
+        backgroundImage={backgroundImage}
+        textElements={textElements}
+        bannerElements={bannerElements}
+        userImages={userImages}
+        onUpdateTextElement={onUpdateTextElement}
+        onGenerateAIImage={onGenerateAIImage}
+        onRegenerateImage={onRegenerateImage}
+        onGenerateAIText={onGenerateAIText}
+        onUploadImage={onUploadImage}
+        onSelectUserImage={onSelectUserImage}
+        isGeneratingImage={isGeneratingImage}
+        isUploading={isUploading}
+        onGoToExport={onGoToExport}
+        onUpdateBannerElements={onUpdateBannerElements}
+      />
     );
   }
 
   if (currentStep === "export") {
     return (
-      <ExportOptions 
+      <ExportOptions
         format={selectedFormat}
         platform={selectedPlatform}
         backgroundImage={backgroundImage}
