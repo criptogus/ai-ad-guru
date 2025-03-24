@@ -6,12 +6,14 @@ interface UseAdUpdateHandlersProps {
   setGoogleAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
   setMicrosoftAds: React.Dispatch<React.SetStateAction<any[]>>;
+  setLinkedInAds?: React.Dispatch<React.SetStateAction<MetaAd[]>>;
 }
 
 export const useAdUpdateHandlers = ({
   setGoogleAds,
   setMetaAds,
-  setMicrosoftAds
+  setMicrosoftAds,
+  setLinkedInAds
 }: UseAdUpdateHandlersProps) => {
   
   const handleUpdateGoogleAd = useCallback((index: number, updatedAd: GoogleAd) => {
@@ -38,9 +40,20 @@ export const useAdUpdateHandlers = ({
     });
   }, [setMicrosoftAds]);
 
+  const handleUpdateLinkedInAd = useCallback((index: number, updatedAd: MetaAd) => {
+    if (setLinkedInAds) {
+      setLinkedInAds(prev => {
+        const newAds = [...prev];
+        newAds[index] = updatedAd;
+        return newAds;
+      });
+    }
+  }, [setLinkedInAds]);
+
   return {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
-    handleUpdateMicrosoftAd
+    handleUpdateMicrosoftAd,
+    handleUpdateLinkedInAd
   };
 };

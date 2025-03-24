@@ -10,6 +10,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
+  const [linkedInAds, setLinkedInAds] = useState<MetaAd[]>([]);
   const { toast } = useToast();
 
   const generateGoogleAds = async (campaignData: any): Promise<GoogleAd[] | null> => {
@@ -115,7 +116,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   };
 
   // Add the missing functions
-  const generateLinkedInAds = async (campaignData: any): Promise<any[] | null> => {
+  const generateLinkedInAds = async (campaignData: any): Promise<MetaAd[] | null> => {
     if (!campaignData) {
       toast({
         title: "Error",
@@ -129,20 +130,30 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     
     try {
       // Example of placeholder code - this would be your actual API call
-      console.log('Generating LinkedIn ads with data:', campaignData);
+      const { data, error } = await supabase.functions.invoke('generate-ads', {
+        body: { 
+          platform: 'linkedin',
+          campaignData,
+        },
+      });
+
+      if (error) {
+        console.error('Error generating LinkedIn ads:', error);
+        throw error;
+      }
+
+      console.log('Generated LinkedIn ads:', data);
       
-      // Placeholder for LinkedIn ads generation
-      const mockAds = [
-        { id: 1, headline: "LinkedIn Ad 1", description: "Description for LinkedIn ad 1" },
-        { id: 2, headline: "LinkedIn Ad 2", description: "Description for LinkedIn ad 2" }
-      ];
+      // Cast to correct type
+      const ads = data?.ads as MetaAd[] || [];
+      setLinkedInAds(ads);
       
       toast({
-        title: "LinkedIn Ads",
-        description: "LinkedIn ads generation is in development",
+        title: "Ads Generated",
+        description: `Successfully created ${ads.length} LinkedIn ads`,
       });
       
-      return mockAds;
+      return ads;
     } catch (error) {
       console.error('Error generating LinkedIn ads:', error);
       toast({
@@ -245,6 +256,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     generateAdImage,
     isGenerating,
     googleAds,
-    metaAds
+    metaAds,
+    linkedInAds
   };
 };

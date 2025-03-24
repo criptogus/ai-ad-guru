@@ -15,6 +15,7 @@ interface CampaignStepRendererProps {
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: any[];
+  linkedInAds: MetaAd[];
   isAnalyzing: boolean;
   isGenerating: boolean;
   loadingImageIndex: number | null;
@@ -24,10 +25,12 @@ interface CampaignStepRendererProps {
   handleGenerateGoogleAds: () => Promise<void>;
   handleGenerateMetaAds: () => Promise<void>;
   handleGenerateMicrosoftAds: () => Promise<void>;
+  handleGenerateLinkedInAds: () => Promise<void>;
   handleGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   handleUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   handleUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
   handleUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
+  handleUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   setCampaignData: React.Dispatch<React.SetStateAction<any>>;
   handleBack: () => void;
   handleNextWrapper: (data?: any) => void;
@@ -42,6 +45,7 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
     googleAds,
     metaAds,
     microsoftAds,
+    linkedInAds,
     isAnalyzing,
     isGenerating,
     loadingImageIndex,
@@ -50,10 +54,12 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds,
     handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
+    handleUpdateLinkedInAd,
     setCampaignData,
     handleBack,
     handleNextWrapper,
@@ -104,15 +110,18 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
+            linkedInAds={linkedInAds}
             isGenerating={isGenerating}
             loadingImageIndex={loadingImageIndex}
             onGenerateGoogleAds={handleGenerateGoogleAds}
             onGenerateMetaAds={handleGenerateMetaAds}
             onGenerateMicrosoftAds={handleGenerateMicrosoftAds}
+            onGenerateLinkedInAds={handleGenerateLinkedInAds}
             onGenerateImage={handleGenerateImage}
             onUpdateGoogleAd={handleUpdateGoogleAd}
             onUpdateMetaAd={handleUpdateMetaAd}
             onUpdateMicrosoftAd={handleUpdateMicrosoftAd}
+            onUpdateLinkedInAd={handleUpdateLinkedInAd}
             onNext={handleNextWrapper}
             onBack={handleBack}
           />
@@ -134,6 +143,7 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
+            linkedInAds={linkedInAds}
             onApprove={createCampaign}
             onEdit={handleBack}
             isLoading={isCreating}

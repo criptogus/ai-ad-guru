@@ -5,12 +5,14 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdPreview from "../ad-preview/google/GoogleAdPreview";
 import { InstagramPreview } from "../ad-preview/meta";
 import { MicrosoftAdPreview } from "../ad-preview/microsoft";
+import LinkedInAdPreview from "../ad-preview/linkedin/LinkedInAdPreview";
 
 interface AdPreviewsSectionProps {
   platform: string;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: GoogleAd[];
+  linkedInAds?: MetaAd[];
   websiteUrl: string;
   analysisResult: WebsiteAnalysisResult;
 }
@@ -20,6 +22,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   googleAds,
   metaAds,
   microsoftAds,
+  linkedInAds = [],
   websiteUrl,
   analysisResult,
 }) => {
@@ -59,6 +62,24 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
                   <InstagramPreview 
                     ad={ad}
                     companyName={analysisResult.companyName}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      
+      case 'linkedin':
+        return linkedInAds.length > 0 ? (
+          <div className="space-y-4">
+            <h4 className="text-md font-medium">LinkedIn Ads</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {linkedInAds.slice(0, 2).map((ad, index) => (
+                <div key={index} className="border rounded-md p-2">
+                  <LinkedInAdPreview 
+                    ad={ad}
+                    analysisResult={analysisResult}
+                    imageFormat="landscape"
                   />
                 </div>
               ))}

@@ -22,6 +22,7 @@ interface CampaignSummaryProps {
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: any[];
+  linkedInAds?: MetaAd[];
   onApprove: () => Promise<void>;
   onEdit: () => void;
   isLoading: boolean;
@@ -42,6 +43,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   googleAds,
   metaAds,
   microsoftAds,
+  linkedInAds = [],
   onApprove,
   onEdit,
   isLoading,
@@ -99,6 +101,9 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   {platformId === 'meta' && metaAds.length > 0 && (
                     <span className="ml-2 text-sm text-muted-foreground">({metaAds.length} variations)</span>
                   )}
+                  {platformId === 'linkedin' && linkedInAds.length > 0 && (
+                    <span className="ml-2 text-sm text-muted-foreground">({linkedInAds.length} variations)</span>
+                  )}
                   {platformId === 'microsoft' && microsoftAds.length > 0 && (
                     <span className="ml-2 text-sm text-muted-foreground">({microsoftAds.length} variations)</span>
                   )}
@@ -124,6 +129,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   googleAds={googleAds}
                   metaAds={metaAds}
                   microsoftAds={microsoftAds}
+                  linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
                 />
@@ -134,6 +140,18 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   googleAds={googleAds}
                   metaAds={metaAds}
                   microsoftAds={microsoftAds}
+                  linkedInAds={linkedInAds}
+                  websiteUrl={websiteUrl}
+                  analysisResult={analysisResult}
+                />
+              )}
+              {(platformId === 'linkedin' && linkedInAds.length > 0) && (
+                <AdPreviewsSection
+                  platform="linkedin"
+                  googleAds={googleAds}
+                  metaAds={metaAds}
+                  microsoftAds={microsoftAds}
+                  linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
                 />
@@ -144,6 +162,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   googleAds={googleAds}
                   metaAds={metaAds}
                   microsoftAds={microsoftAds}
+                  linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
                 />

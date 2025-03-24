@@ -8,22 +8,26 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import MetaAdsTab from "./ad-preview/MetaAdsTab";
 import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
+import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: any[];
+  linkedInAds: MetaAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
   // Updated return types to Promise<void> for consistency
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateMicrosoftAds: () => Promise<void>;
+  onGenerateLinkedInAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
   onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
+  onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -33,15 +37,18 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   googleAds,
   metaAds,
   microsoftAds,
+  linkedInAds = [], // Default to empty array
   isGenerating,
   loadingImageIndex,
   onGenerateGoogleAds,
   onGenerateMetaAds,
   onGenerateMicrosoftAds,
+  onGenerateLinkedInAds,
   onGenerateImage,
   onUpdateGoogleAd,
   onUpdateMetaAd,
   onUpdateMicrosoftAd,
+  onUpdateLinkedInAd,
   onNext,
   onBack,
 }) => {
@@ -51,8 +58,9 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const hasGoogleAds = googleAds.length > 0;
   const hasMetaAds = metaAds.length > 0;
   const hasMicrosoftAds = microsoftAds.length > 0;
+  const hasLinkedInAds = linkedInAds.length > 0;
   
-  const hasAnyAds = hasGoogleAds || hasMetaAds || hasMicrosoftAds;
+  const hasAnyAds = hasGoogleAds || hasMetaAds || hasMicrosoftAds || hasLinkedInAds;
 
   return (
     <Card className="w-full">
@@ -64,9 +72,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="google">Google Ads</TabsTrigger>
             <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
+            <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
             <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
           </TabsList>
           
@@ -97,6 +106,22 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 });
               }}
               analysisResult={analysisResult}
+            />
+          </TabsContent>
+          
+          <TabsContent value="linkedin">
+            <LinkedInAdsTab
+              linkedInAds={linkedInAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateAds={onGenerateLinkedInAds}
+              onGenerateImage={onGenerateImage}
+              onUpdateLinkedInAd={(updatedAds) => {
+                updatedAds.forEach((ad, index) => {
+                  onUpdateLinkedInAd(index, ad);
+                });
+              }}
             />
           </TabsContent>
           
