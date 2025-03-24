@@ -8,7 +8,7 @@ import { MetaAdTab } from "./tabs/MetaAdTab";
 import { MicrosoftAdTab } from "./tabs/MicrosoftAdTab";
 
 interface AIInsightsCardProps {
-  campaignId: string;
+  campaignId?: string;
 }
 
 export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
@@ -63,5 +63,5 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
   );
 };
 
-// Export as default for compatibility with existing imports
+// Add explicit default export
 export default AIInsightsCard;

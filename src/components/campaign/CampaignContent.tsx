@@ -129,6 +129,7 @@ const CampaignContent: React.FC = () => {
   // Wrap handleGenerateGoogleAds to ensure it returns Promise<void>
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
+    return;
   };
 
   const { getStepContent } = useCampaignStepRenderer({

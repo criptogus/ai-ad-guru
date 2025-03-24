@@ -1,3 +1,3 @@
 
 export { AIInsightsCard } from './AIInsightsCard';
-export default from './AIInsightsCard';
+export { default as default } from './AIInsightsCard';
