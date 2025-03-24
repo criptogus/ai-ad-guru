@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Sparkles, ChevronRight, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -47,29 +48,37 @@ const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({ campaign }) => 
     }
   ];
 
-  const getImpactColor = (impact: string) => {
+  const getImpactBadge = (impact: string) => {
     switch(impact) {
-      case "critical": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-      case "high": return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-      case "medium": return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+      case "critical":
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900">Critical</Badge>;
+      case "high":
+        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-900">High</Badge>;
+      case "medium":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900">Medium</Badge>;
+      default:
+        return <Badge variant="outline">Low</Badge>;
     }
   };
 
-  const getPlatformColor = (platform: string) => {
+  const getPlatformBadge = (platform: string) => {
     switch(platform) {
-      case "Google": return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      case "Meta": return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
-      case "Microsoft": return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+      case "Google":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900">Google</Badge>;
+      case "Meta":
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-900">Meta</Badge>;
+      case "Microsoft":
+        return <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-400 dark:border-cyan-900">Microsoft</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
   return (
-    <Card className="border-amber-100 shadow-sm h-full overflow-hidden">
+    <Card className="shadow-sm h-full">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-500" />
             <span>AI Optimization</span>
           </CardTitle>
@@ -83,22 +92,18 @@ const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({ campaign }) => 
         <div className="divide-y">
           {optimizations.map((opt) => (
             <div key={opt.id} className="p-4 hover:bg-muted/50 transition-colors">
-              <div className="flex gap-3">
-                <div className="mt-1 flex flex-col gap-2 items-center">
-                  <div className={`text-xs px-2.5 py-1 rounded-full font-medium ${getPlatformColor(opt.platform)}`}>
-                    {opt.platform}
-                  </div>
-                  <div className={`text-xs px-2.5 py-1 rounded-full font-medium ${getImpactColor(opt.impact)}`}>
-                    {opt.impact}
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="mt-1 flex-shrink-0 flex flex-col gap-2 items-center">
+                  {getPlatformBadge(opt.platform)}
+                  {getImpactBadge(opt.impact)}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground mb-2">{opt.description}</p>
+                <div className="flex-grow space-y-2">
+                  <p className="text-sm text-foreground">{opt.description}</p>
                   <div className="flex items-center justify-between">
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                    <Button size="sm" variant="outline" className="text-xs h-8">
                       Apply ({opt.credits} credits)
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-xs h-7 px-2">
+                    <Button size="sm" variant="ghost" className="text-xs h-8">
                       Details <ChevronRight className="h-3 w-3 ml-1" />
                     </Button>
                   </div>

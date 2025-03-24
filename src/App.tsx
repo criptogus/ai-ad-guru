@@ -17,6 +17,7 @@ import { Toaster as SonnerToaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import SettingsPage from "./pages/SettingsPage";
 import BillingPage from "./pages/BillingPage";
+import AIInsightsPage from "./pages/AIInsightsPage";
 import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+          <Route path="/insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>

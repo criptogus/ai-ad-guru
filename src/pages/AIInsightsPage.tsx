@@ -1,12 +1,29 @@
 
 import React, { useState } from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AIOptimizationCard, AIInsightsCard } from "@/components/analytics/insights";
-import { ChevronRight, RefreshCw } from "lucide-react";
-import AnalyticsOverview, { Campaign } from "@/components/analytics/AnalyticsOverview";
+import { RefreshCw, PieChart, BarChart2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
+import PerformanceAnalysis from "@/components/analytics/PerformanceAnalysis";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Define the Campaign type directly within this component
+interface Campaign {
+  id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  spent: number;
+  clicks: number;
+  impressions: number;
+  conversions: number;
+  ctr: number;
+  startDate: string;
+  endDate?: string;
+}
 
 const AIInsightsPage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -14,7 +31,7 @@ const AIInsightsPage: React.FC = () => {
   // For demonstration purposes showing last optimization: 24 hours ago
   const lastOptimizationTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString();
   
-  // For demonstration purposes, using mock campaigns with the correct shape
+  // For demonstration purposes, using mock campaigns
   const campaigns: Campaign[] = [
     {
       id: "campaign-1",
@@ -58,7 +75,6 @@ const AIInsightsPage: React.FC = () => {
       startDate: "2023-07-20",
       endDate: "2023-08-20",
     },
-    // More campaign data...
   ];
   
   // Handle refresh of AI insights
@@ -97,56 +113,62 @@ const AIInsightsPage: React.FC = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="insights">AI Insights</TabsTrigger>
             <TabsTrigger value="analytics">Campaign Analytics</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
           
           <TabsContent value="insights" className="space-y-6">
-            {/* Changed from grid to space-y-6 for vertical stacking */}
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <AIOptimizationCard />
-              <div className="w-full">
-                <AIInsightsCard />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium">Performance Analysis</CardTitle>
+                  <CardTitle className="text-lg font-medium">Last AI Optimization</CardTitle>
+                  <CardDescription>
+                    Automatic optimizations applied to your campaigns
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Detailed analysis of your campaign performance with AI-powered recommendations for optimization.
-                  </p>
-                  <div className="h-[220px] flex items-center justify-center bg-muted/30 rounded-md">
-                    <p className="text-sm text-muted-foreground">Performance chart will appear here</p>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center dark:bg-green-900/30">
+                          <PieChart className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Budget Reallocation</p>
+                          <p className="text-xs text-muted-foreground">Optimized spend across campaigns</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{lastOptimizationTime}</p>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center dark:bg-blue-900/30">
+                          <BarChart2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Ad Copy Improvement</p>
+                          <p className="text-xs text-muted-foreground">Auto-generated headlines for better CTR</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{lastOptimizationTime}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button variant="outline" className="w-full justify-between">
-                    Generate New Ad Variations
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between">
-                    Optimize Budget Allocation
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between">
-                    Analyze Competitor Ads
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
+            </div>
+            
+            <div className="w-full">
+              <AIInsightsCard />
             </div>
           </TabsContent>
           
           <TabsContent value="analytics">
             <AnalyticsOverview campaigns={campaigns} />
+          </TabsContent>
+          
+          <TabsContent value="performance">
+            <PerformanceAnalysis />
           </TabsContent>
         </Tabs>
       </div>
