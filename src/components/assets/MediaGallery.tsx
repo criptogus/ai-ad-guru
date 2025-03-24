@@ -125,9 +125,27 @@ const MediaGallery: React.FC = () => {
         upsert: false
       };
       
+      const trackProgress = () => {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 10;
+          if (progress <= 90) {
+            setUploadProgress(progress);
+          } else {
+            clearInterval(interval);
+          }
+        }, 100);
+        
+        return () => clearInterval(interval);
+      };
+      
+      const cleanup = trackProgress();
+      
       const { data, error } = await supabase.storage
         .from("media")
         .upload(filePath, file, uploadOptions);
+      
+      cleanup();
       
       if (error) {
         throw error;
@@ -476,3 +494,4 @@ const MediaGallery: React.FC = () => {
 };
 
 export default MediaGallery;
+

@@ -21,11 +21,197 @@ declare module '@supabase/supabase-js' {
         "Zero Digital Agency LLC": any;
         
         // Our custom tables
-        media_assets: any;
-        copywriting_assets: any;
-        customer_data: any;
-        customer_data_imports: any;
-        company_info: any;
+        media_assets: {
+          Row: {
+            id: string;
+            user_id: string;
+            filename: string;
+            file_path: string;
+            file_size: number;
+            file_type: string;
+            campaigns: string[];
+            metadata: Record<string, any> | null;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            filename: string;
+            file_path: string;
+            file_size: number;
+            file_type: string;
+            campaigns?: string[];
+            metadata?: Record<string, any> | null;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            filename?: string;
+            file_path?: string;
+            file_size?: number;
+            file_type?: string;
+            campaigns?: string[];
+            metadata?: Record<string, any> | null;
+            created_at?: string;
+            updated_at?: string;
+          };
+        };
+        
+        copywriting_assets: {
+          Row: {
+            id: string;
+            user_id: string;
+            text: string;
+            platform: string;
+            character_count: number;
+            published_at: string;
+            created_at: string;
+            updated_at: string;
+            campaign_id?: string;
+            ad_type?: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            text: string;
+            platform: string;
+            character_count: number;
+            published_at?: string;
+            created_at?: string;
+            updated_at?: string;
+            campaign_id?: string;
+            ad_type?: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            text?: string;
+            platform?: string;
+            character_count?: number;
+            published_at?: string;
+            created_at?: string;
+            updated_at?: string;
+            campaign_id?: string;
+            ad_type?: string;
+          };
+        };
+        
+        customer_data: {
+          Row: {
+            id: string;
+            user_id: string;
+            email: string;
+            name?: string;
+            segment?: string;
+            created_at: string;
+            updated_at: string;
+            list_name?: string;
+            import_batch?: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            email: string;
+            name?: string;
+            segment?: string;
+            created_at?: string;
+            updated_at?: string;
+            list_name?: string;
+            import_batch?: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            email?: string;
+            name?: string;
+            segment?: string;
+            created_at?: string;
+            updated_at?: string;
+            list_name?: string;
+            import_batch?: string;
+          };
+        };
+        
+        customer_data_imports: {
+          Row: {
+            id: string;
+            user_id: string;
+            list_name: string;
+            record_count: number;
+            created_at: string;
+            status: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            list_name: string;
+            record_count: number;
+            created_at?: string;
+            status: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            list_name?: string;
+            record_count?: number;
+            created_at?: string;
+            status?: string;
+          };
+        };
+        
+        company_info: {
+          Row: {
+            id: string;
+            user_id: string;
+            company_name: string;
+            website?: string;
+            industry?: string;
+            target_market?: string;
+            language?: string;
+            tone_of_voice?: string;
+            custom_tone?: string;
+            primary_color?: string;
+            secondary_color?: string;
+            logo_url?: string;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            company_name: string;
+            website?: string;
+            industry?: string;
+            target_market?: string;
+            language?: string;
+            tone_of_voice?: string;
+            custom_tone?: string;
+            primary_color?: string;
+            secondary_color?: string;
+            logo_url?: string;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            company_name?: string;
+            website?: string;
+            industry?: string;
+            target_market?: string;
+            language?: string;
+            tone_of_voice?: string;
+            custom_tone?: string;
+            primary_color?: string;
+            secondary_color?: string;
+            logo_url?: string;
+            created_at?: string;
+            updated_at?: string;
+          };
+        };
       };
     };
   }
