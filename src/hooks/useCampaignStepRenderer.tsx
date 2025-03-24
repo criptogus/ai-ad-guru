@@ -1,4 +1,3 @@
-
 import React from "react";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
@@ -116,12 +115,12 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             onBack={handleBack}
           />
         );
-      case 5: // Adjusted case number
+      case 5:
         return (
           <CampaignSummary
             campaignName={campaignData.name}
             platform={campaignData.platform}
-            platforms={campaignData.platforms} // Add platforms array
+            platforms={campaignData.platforms}
             budget={campaignData.budget}
             budgetType={campaignData.budgetType || "daily"}
             startDate={campaignData.startDate}
@@ -145,3 +144,5 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
 
   return { getStepContent };
 };
+
+export default useCampaignStepRenderer;

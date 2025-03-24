@@ -129,13 +129,30 @@ const CampaignContent: React.FC = () => {
   // Create a properly typed wrapper function that returns void
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     try {
-      // Explicitly await the result and ignore it
-      await handleGenerateGoogleAds();
-      // Return undefined to enforce void return type
-      return undefined;
+      // Explicitly call and ignore the result - this is the key part to fix
+      const result = await handleGenerateGoogleAds();
+      // The function must return undefined or nothing to enforce void return type
+      return;
     } catch (error) {
       console.error("Error generating Google ads:", error);
-      return undefined;
+      // Return nothing/undefined to maintain void return type
+    }
+  };
+
+  // Define wrappers for other ad generation functions to ensure consistent typing
+  const wrappedHandleGenerateMetaAds = async (): Promise<void> => {
+    try {
+      await handleGenerateMetaAds();
+    } catch (error) {
+      console.error("Error generating Meta ads:", error);
+    }
+  };
+
+  const wrappedHandleGenerateMicrosoftAds = async (): Promise<void> => {
+    try {
+      await handleGenerateMicrosoftAds();
+    } catch (error) {
+      console.error("Error generating Microsoft ads:", error);
     }
   };
 
@@ -152,8 +169,8 @@ const CampaignContent: React.FC = () => {
     isCreating,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds: wrappedHandleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateMicrosoftAds,
+    handleGenerateMetaAds: wrappedHandleGenerateMetaAds,
+    handleGenerateMicrosoftAds: wrappedHandleGenerateMicrosoftAds,
     handleGenerateImage: handleGenerateImageForAd,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
