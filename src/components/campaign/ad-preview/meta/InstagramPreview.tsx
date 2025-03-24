@@ -139,7 +139,14 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
             ) : (
               <ImagePlaceholder 
                 text={ad.imagePrompt || "No image prompt provided"} 
-                onClick={handleGenerateImage}
+                onGenerateImage={handleGenerateImage}
+                triggerFileUpload={() => {
+                  const fileInput = document.createElement('input');
+                  fileInput.type = 'file';
+                  fileInput.accept = 'image/*';
+                  fileInput.onchange = handleFileChange as any;
+                  fileInput.click();
+                }}
                 viewType={viewType}
               />
             )}
