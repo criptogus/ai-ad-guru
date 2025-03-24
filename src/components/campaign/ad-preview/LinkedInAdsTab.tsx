@@ -37,12 +37,17 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
 }) => {
   const hasAds = linkedInAds && linkedInAds.length > 0;
   
+  // Wrap the generate ads function to match the expected return type
+  const handleGenerateAds = async () => {
+    return await onGenerateLinkedInAds();
+  };
+  
   return (
     <div className="pt-4 space-y-4">
       {!hasAds ? (
         <EmptyAdState 
           platform="LinkedIn"
-          onGenerate={onGenerateLinkedInAds}
+          onGenerate={handleGenerateAds}
           isGenerating={isGenerating}
           buttonText="Generate LinkedIn Ads"
         />

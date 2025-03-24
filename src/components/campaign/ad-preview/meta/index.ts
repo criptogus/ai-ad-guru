@@ -1,6 +1,6 @@
 
 // Export Instagram Preview
-export { default as InstagramPreview } from './instagram-preview/index';
+export { default as InstagramPreview } from './InstagramPreview';
 
 // Export AdsList
 export { default as AdsList } from './ads-list';

@@ -1,59 +1,42 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
 interface EmptyAdStateProps {
   platform: string;
-  onGenerate: () => Promise<void>;
+  onGenerate: () => Promise<any>;
   isGenerating: boolean;
   buttonText?: string;
 }
 
-const EmptyAdState: React.FC<EmptyAdStateProps> = ({ 
-  platform, 
-  onGenerate, 
+const EmptyAdState: React.FC<EmptyAdStateProps> = ({
+  platform,
+  onGenerate,
   isGenerating,
-  buttonText
+  buttonText = `Generate ${platform} Ads`
 }) => {
-  const platformDisplay = {
-    'google': 'Google Ads',
-    'meta': 'Instagram Ads',
-    'linkedin': 'LinkedIn Ads',
-    'microsoft': 'Microsoft Ads'
-  }[platform] || platform;
-
-  const defaultButtonText = `Generate ${platformDisplay}`;
-  
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-      <img 
-        src={`/images/empty-${platform}.svg`} 
-        alt={`No ${platformDisplay}`}
-        className="w-24 h-24 mb-4 opacity-50"
-        onError={(e) => {
-          e.currentTarget.src = "/images/empty-default.svg";
-        }}
-      />
-      
-      <h3 className="text-lg font-medium text-gray-700 mb-2">No {platformDisplay} Generated Yet</h3>
-      
-      <p className="text-gray-500 text-center mb-6 max-w-md">
-        Click the button below to generate AI-powered {platformDisplay} based on your website analysis.
+    <div className="text-center py-10 px-6 border border-dashed rounded-lg bg-muted/30">
+      <h3 className="text-lg font-medium mb-2">No {platform} Ads Created Yet</h3>
+      <p className="text-muted-foreground mb-6">
+        Generate AI-powered ads based on your website analysis
       </p>
-      
       <Button 
-        onClick={onGenerate}
+        onClick={onGenerate} 
         disabled={isGenerating}
-        size="lg"
+        className="group relative overflow-hidden"
       >
         {isGenerating ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
             Generating...
           </>
         ) : (
-          buttonText || defaultButtonText
+          <>
+            <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">{buttonText}</span>
+          </>
         )}
       </Button>
     </div>

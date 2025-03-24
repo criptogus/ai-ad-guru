@@ -1,114 +1,55 @@
 
-import React, { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import {
-  GoogleAdCardHeader,
-  GoogleAdPreview,
-  GoogleAdDetails,
-  GoogleAdOptimizationAlert,
-} from "./google";
+import GoogleAdPreview from "./google/GoogleAdPreview";
+import GoogleAdCardHeader from "./google/GoogleAdCardHeader";
+import GoogleAdDetails from "./google/GoogleAdDetails";
 
 interface GoogleAdCardProps {
   ad: GoogleAd;
   index: number;
   analysisResult: WebsiteAnalysisResult;
-  onUpdate: (updatedAd: GoogleAd) => void;
+  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
 const GoogleAdCard: React.FC<GoogleAdCardProps> = ({ 
   ad, 
   index, 
   analysisResult,
-  onUpdate 
+  onUpdate
 }) => {
-  const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
-
-  const domain = analysisResult.websiteUrl 
-    ? new URL(analysisResult.websiteUrl).hostname 
-    : `www.${analysisResult.companyName.toLowerCase().replace(/\s+/g, "")}.com`;
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: "The text has been copied to your clipboard",
-      duration: 2000,
-    });
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    if (onUpdate) {
-      onUpdate(editedAd);
+  // Extract domain from website URL
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname.replace('www.', '');
+    } catch (e) {
+      return url;
     }
-    toast({
-      title: "Ad Updated",
-      description: "Your changes have been saved",
-      duration: 2000,
-    });
   };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditedAd(ad);
-  };
-
-  const handleHeadlineChange = (value: string, headlineIndex: number) => {
-    const updatedHeadlines = [...editedAd.headlines];
-    updatedHeadlines[headlineIndex] = value;
-    setEditedAd({ ...editedAd, headlines: updatedHeadlines });
-  };
-
-  const handleDescriptionChange = (value: string, descIndex: number) => {
-    const updatedDescriptions = [...editedAd.descriptions];
-    updatedDescriptions[descIndex] = value;
-    setEditedAd({ ...editedAd, descriptions: updatedDescriptions });
-  };
-
-  const handleCopy = () => {
-    const adText = `${ad.headlines.join(" | ")}\n\n${ad.descriptions.join("\n")}`;
-    copyToClipboard(adText);
-  };
-
-  // We use the edited ad when in editing mode, otherwise use the original ad
-  const displayAd = isEditing ? editedAd : ad;
 
   return (
-    <div className="border rounded-md p-4 bg-white shadow-sm mb-4">
+    <Card className="overflow-hidden">
       <GoogleAdCardHeader 
-        index={index}
-        isEditing={isEditing}
-        onCopy={handleCopy}
-        onEdit={handleEdit}
-        onSave={handleSave}
-        onCancel={handleCancel}
+        index={index} 
+        ad={ad} 
       />
-      
-      {index === 0 && <GoogleAdOptimizationAlert />}
-      
-      <div className="md:flex md:gap-6 items-start">
-        <div className="md:w-1/2 mb-4 md:mb-0">
-          <GoogleAdPreview ad={displayAd} domain={domain} />
-        </div>
-        
-        <div className="md:w-1/2">
-          <GoogleAdDetails 
-            ad={displayAd}
-            isEditing={isEditing}
-            onHeadlineChange={handleHeadlineChange}
-            onDescriptionChange={handleDescriptionChange}
+      <CardContent className="p-4 grid gap-4 md:grid-cols-2">
+        <div>
+          <GoogleAdPreview 
+            ad={ad} 
+            domain={getDomain(analysisResult.websiteUrl)} 
           />
         </div>
-      </div>
-    </div>
+        <div>
+          <GoogleAdDetails 
+            ad={ad}
+            onUpdate={onUpdate} 
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

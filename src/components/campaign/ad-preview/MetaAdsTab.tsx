@@ -57,8 +57,13 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
       <Card>
         <CardContent>
           <EmptyAdsState platform="Instagram" />
-          <Button onClick={handleGenerateAds} className="mt-4" disabled={isGenerating}>
-            Generate Instagram Ads
+          <Button 
+            onClick={handleGenerateAds} 
+            className="mt-4 group relative overflow-hidden" 
+            disabled={isGenerating}
+          >
+            <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate Instagram Ads</span>
           </Button>
         </CardContent>
       </Card>
@@ -78,14 +83,21 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
           onUpdateMetaAd(updatedAds);
         }}
       />
-      <Button onClick={handleGenerateAds} disabled={isGenerating}>
+      <Button 
+        onClick={handleGenerateAds} 
+        disabled={isGenerating}
+        className="group relative overflow-hidden"
+      >
         {isGenerating ? (
           <>
             <Loader className="mr-2 h-4 w-4 animate-spin" />
             Generating...
           </>
         ) : (
-          "Generate More Instagram Ads"
+          <>
+            <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate More Instagram Ads</span>
+          </>
         )}
       </Button>
     </div>

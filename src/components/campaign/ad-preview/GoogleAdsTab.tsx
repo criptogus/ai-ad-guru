@@ -5,13 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd } from "@/hooks/adGeneration";
-import GoogleAdCard from "./GoogleAdCard";
 import EmptyAdsState from "./EmptyAdsState";
-
-// Adding these exported types for LinkedInAdsTab
-export type PreviewLayout = "split-horizontal" | "split-vertical" | "full";
-export type DevicePreview = "desktop" | "mobile" | "tablet";
-export type AdFormat = "square" | "landscape" | "portrait";
+import GoogleAdCard from "./GoogleAdCard";
 
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
@@ -21,11 +16,6 @@ interface GoogleAdsTabProps {
   analysisResult: WebsiteAnalysisResult;
 }
 
-interface EmptyAdsStateProps {
-  platform: string;
-  onGenerateAds?: () => Promise<any>;
-}
-
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   googleAds,
   isGenerating,
@@ -33,46 +23,69 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   onUpdateGoogleAd,
   analysisResult,
 }) => {
-  const handleGenerateAds = async () => {
-    await onGenerateAds();
+  const handleUpdateAd = (index: number, updatedAd: GoogleAd) => {
+    const updatedAds = [...googleAds];
+    updatedAds[index] = updatedAd;
+    onUpdateGoogleAd(updatedAds);
   };
 
+  if (!analysisResult) {
+    return (
+      <Card>
+        <CardContent>
+          Please analyze a website to generate ads.
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        {googleAds.length > 0 ? (
-          googleAds.map((ad, index) => (
+    <div className="grid gap-4">
+      {googleAds.length === 0 ? (
+        <Card>
+          <CardContent>
+            <EmptyAdsState platform="Google" />
+            <Button 
+              onClick={onGenerateAds} 
+              className="mt-4 group relative overflow-hidden" 
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+                  <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate Google Ads</span>
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {googleAds.map((ad, index) => (
             <GoogleAdCard
               key={index}
               ad={ad}
               index={index}
-              onUpdate={(updatedAd) => {
-                const updatedAds = [...googleAds];
-                updatedAds[index] = updatedAd;
-                onUpdateGoogleAd(updatedAds);
-              }}
               analysisResult={analysisResult}
+              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
             />
-          ))
-        ) : (
-          <EmptyAdsState platform="Google Ads" />
-        )}
-
-        <Button
-          onClick={handleGenerateAds}
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            "Generate Google Ads"
-          )}
-        </Button>
-      </CardContent>
-    </Card>
+          ))}
+          <Button onClick={onGenerateAds} disabled={isGenerating} className="mt-4">
+            {isGenerating ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : "Generate More Google Ads"}
+          </Button>
+        </>
+      )}
+    </div>
   );
 };
 

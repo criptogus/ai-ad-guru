@@ -22,47 +22,60 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   onUpdateMicrosoftAd,
   analysisResult,
 }) => {
-  const handleGenerateAds = async () => {
-    await onGenerateAds();
+  const handleUpdateAd = (index: number, updatedAd: any) => {
+    const updatedAds = [...microsoftAds];
+    updatedAds[index] = updatedAd;
+    onUpdateMicrosoftAd(updatedAds);
   };
 
+  if (!analysisResult) {
+    return (
+      <Card>
+        <CardContent>
+          Please analyze a website to generate ads.
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        {microsoftAds.length > 0 ? (
-          microsoftAds.map((ad, index) => (
+    <div className="grid gap-4">
+      {microsoftAds.length === 0 ? (
+        <Card>
+          <CardContent>
+            <EmptyAdsState platform="Microsoft" />
+            <Button onClick={onGenerateAds} className="mt-4" disabled={isGenerating}>
+              {isGenerating ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : "Generate Microsoft Ads"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {microsoftAds.map((ad, index) => (
             <MicrosoftAdCard
               key={index}
               ad={ad}
               index={index}
-              onUpdate={(updatedAd) => {
-                const updatedAds = [...microsoftAds];
-                updatedAds[index] = updatedAd;
-                onUpdateMicrosoftAd(updatedAds);
-              }}
               analysisResult={analysisResult}
+              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
             />
-          ))
-        ) : (
-          <EmptyAdsState platform="Microsoft" />
-        )}
-
-        <Button
-          variant="secondary"
-          onClick={handleGenerateAds}
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            "Generate Microsoft Ads"
-          )}
-        </Button>
-      </CardContent>
-    </Card>
+          ))}
+          <Button onClick={onGenerateAds} disabled={isGenerating} className="mt-4">
+            {isGenerating ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : "Generate More Microsoft Ads"}
+          </Button>
+        </>
+      )}
+    </div>
   );
 };
 
