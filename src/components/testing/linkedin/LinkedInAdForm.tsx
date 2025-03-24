@@ -129,7 +129,7 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
           
           <div className="space-y-2">
             <Label className="text-sm">Quick Prompt Templates</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {promptTemplates.map((template, idx) => (
                 <Button 
                   key={idx} 
@@ -140,8 +140,8 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
                 >
                   <div>
                     <p className="font-medium">{template.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {template.prompt.substring(0, 50)}...
+                    <p className="text-xs text-muted-foreground">
+                      {template.prompt}
                     </p>
                   </div>
                 </Button>
