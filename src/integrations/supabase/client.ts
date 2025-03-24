@@ -1,13 +1,13 @@
 
 // This file contains the Supabase client for database access
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
 
 const SUPABASE_URL = "https://svnockyhgohttzgbgydo.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bm9ja3loZ29odHR6Z2JneWRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMDEwMTEsImV4cCI6MjA1Nzg3NzAxMX0.wJ4kM_H0HR-X1u5LQecSzgEq0UuebZaeYUaI_uS2ah4";
 
 // Type definitions for our Supabase database
 export type Tables = {
+  // Original tables
   campaign_performance: any;
   campaigns: any;
   profiles: any;
@@ -16,7 +16,7 @@ export type Tables = {
   user_integrations: any;
   "Zero Digital Agency LLC": any;
   
-  // Our custom tables with complete type definitions
+  // Custom tables with complete type definitions
   media_assets: {
     Row: {
       id: string;
@@ -63,11 +63,11 @@ export type Tables = {
       text: string;
       platform: string;
       character_count: number;
+      campaign_id?: string;
+      ad_type?: string;
       published_at: string;
       created_at: string;
       updated_at: string;
-      campaign_id?: string;
-      ad_type?: string;
     };
     Insert: {
       id?: string;
@@ -75,11 +75,11 @@ export type Tables = {
       text: string;
       platform: string;
       character_count: number;
+      campaign_id?: string;
+      ad_type?: string;
       published_at?: string;
       created_at?: string;
       updated_at?: string;
-      campaign_id?: string;
-      ad_type?: string;
     };
     Update: {
       id?: string;
@@ -87,11 +87,11 @@ export type Tables = {
       text?: string;
       platform?: string;
       character_count?: number;
+      campaign_id?: string;
+      ad_type?: string;
       published_at?: string;
       created_at?: string;
       updated_at?: string;
-      campaign_id?: string;
-      ad_type?: string;
     };
   };
   
@@ -102,10 +102,10 @@ export type Tables = {
       email: string;
       name?: string;
       segment?: string;
-      created_at: string;
-      updated_at: string;
       list_name?: string;
       import_batch?: string;
+      created_at: string;
+      updated_at: string;
     };
     Insert: {
       id?: string;
@@ -113,10 +113,10 @@ export type Tables = {
       email: string;
       name?: string;
       segment?: string;
-      created_at?: string;
-      updated_at?: string;
       list_name?: string;
       import_batch?: string;
+      created_at?: string;
+      updated_at?: string;
     };
     Update: {
       id?: string;
@@ -124,10 +124,10 @@ export type Tables = {
       email?: string;
       name?: string;
       segment?: string;
-      created_at?: string;
-      updated_at?: string;
       list_name?: string;
       import_batch?: string;
+      created_at?: string;
+      updated_at?: string;
     };
   };
   
@@ -137,24 +137,24 @@ export type Tables = {
       user_id: string;
       list_name: string;
       record_count: number;
-      created_at: string;
       status: string;
+      created_at: string;
     };
     Insert: {
       id?: string;
       user_id: string;
       list_name: string;
       record_count: number;
-      created_at?: string;
       status: string;
+      created_at?: string;
     };
     Update: {
       id?: string;
       user_id?: string;
       list_name?: string;
       record_count?: number;
-      created_at?: string;
       status?: string;
+      created_at?: string;
     };
   };
   
@@ -210,7 +210,7 @@ export type Tables = {
   };
 };
 
-// Modify the Database interface declaration for type augmentation
+// Database interface declaration for type augmentation
 export interface Database {
   public: {
     Tables: Tables;
@@ -238,4 +238,3 @@ export interface Database {
 
 // Create and export the supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
