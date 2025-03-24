@@ -18,6 +18,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NavigationItemProps {
   to: string;
@@ -34,6 +35,8 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
   label,
   badge
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -42,12 +45,15 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
         tooltip={label}
       >
         <Link to={to} className="flex items-center">
-          {icon}
-          <span className="ml-3">{label}</span>
+          {React.cloneElement(icon as React.ReactElement, { 
+            className: "h-4 w-4", 
+            size: isMobile ? 16 : 18 
+          })}
+          <span className="ml-3 text-xs sm:text-sm">{label}</span>
         </Link>
       </SidebarMenuButton>
       {badge && (
-        <SidebarMenuBadge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+        <SidebarMenuBadge className="bg-purple-100 text-purple-800 text-xs dark:bg-purple-900 dark:text-purple-100">
           {badge}
         </SidebarMenuBadge>
       )}
@@ -69,45 +75,45 @@ export const SidebarNavigationItems: React.FC = () => {
       <NavigationItem
         to="/dashboard"
         active={isActiveRoute("/dashboard")}
-        icon={<Home className="h-4 w-4" />}
+        icon={<Home />}
         label="Dashboard"
       />
       <NavigationItem
         to="/campaigns"
         active={isActiveRoute("/campaigns")}
-        icon={<Megaphone className="h-4 w-4" />}
+        icon={<Megaphone />}
         label="Campaigns"
       />
       <NavigationItem
         to="/smart-banner"
         active={isActiveRoute("/smart-banner")}
-        icon={<Wand2 className="h-4 w-4" />}
+        icon={<Wand2 />}
         label="Smart Banner Builder"
         badge="Beta"
       />
       <NavigationItem
         to="/analytics"
         active={isActiveRoute("/analytics")}
-        icon={<LineChart className="h-4 w-4" />}
+        icon={<LineChart />}
         label="Analytics"
       />
       <NavigationItem
         to="/config"
         active={isActiveRoute("/config")}
-        icon={<Settings className="h-4 w-4" />}
+        icon={<Settings />}
         label="Account Setup"
       />
       <NavigationItem
         to="/billing"
         active={isActiveRoute("/billing")}
-        icon={<CreditCard className="h-4 w-4" />}
+        icon={<CreditCard />}
         label="Billing"
       />
       {user?.role === "admin" && (
         <NavigationItem
           to="/user-roles"
           active={isActiveRoute("/user-roles")}
-          icon={<Users className="h-4 w-4" />}
+          icon={<Users />}
           label="User Roles"
         />
       )}
@@ -115,7 +121,7 @@ export const SidebarNavigationItems: React.FC = () => {
         <NavigationItem
           to="/test-ads"
           active={isActiveRoute("/test-ads")}
-          icon={<LayoutTemplate className="h-4 w-4" />}
+          icon={<LayoutTemplate />}
           label="Test Ads"
         />
       )}
@@ -123,7 +129,7 @@ export const SidebarNavigationItems: React.FC = () => {
         <NavigationItem
           to="/openai-test"
           active={isActiveRoute("/openai-test")}
-          icon={<SlidersHorizontal className="h-4 w-4" />}
+          icon={<SlidersHorizontal />}
           label="OpenAI Test"
         />
       )}

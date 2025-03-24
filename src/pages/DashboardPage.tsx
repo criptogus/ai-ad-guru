@@ -11,6 +11,7 @@ import AiInsights from "@/components/dashboard/AiInsights";
 import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
 import SmartNotifications from "@/components/dashboard/SmartNotifications";
 import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Create an interface that matches what the dashboard components expect
 interface DashboardUser {
@@ -24,12 +25,13 @@ interface DashboardUser {
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
+  const isMobile = useIsMobile();
   
   React.useEffect(() => {
     // In a real app, we would fetch campaigns from an API
-    const mockCampaigns = generateMockCampaigns(5);
+    const mockCampaigns = generateMockCampaigns(isMobile ? 3 : 5);
     setCampaigns(mockCampaigns);
-  }, []);
+  }, [isMobile]);
 
   // Convert CustomUser to DashboardUser with required properties
   const dashboardUser: DashboardUser = {
@@ -42,16 +44,16 @@ const DashboardPage: React.FC = () => {
 
   return (
     <AppLayout activePage="dashboard">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <DashboardHeader user={dashboardUser} />
         
         {/* Full width Notifications */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <SmartNotifications />
         </div>
         
         {/* Credits Status as a solo horizontal column */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <CreditsStatus user={dashboardUser} />
         </div>
         
@@ -61,9 +63,9 @@ const DashboardPage: React.FC = () => {
         {/* Business Overview */}
         <BusinessOverview campaigns={campaigns} />
         
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           {/* Vertical column for campaigns taking up full width */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <CampaignSummaryCards campaigns={campaigns} />
             <ActiveCampaigns campaigns={campaigns} />
           </div>

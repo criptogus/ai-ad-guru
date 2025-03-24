@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 import ProfileDropdown from "./ProfileDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCreditCosts } from "@/services";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -23,11 +24,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { user } = useAuth();
   const credits = user?.credits || 0;
+  const isMobile = useIsMobile();
 
   return (
     <div className={cn(
-      "relative h-screen bg-background border-r p-3 flex flex-col transition-all duration-300 ease-in-out",
-      collapsed ? "w-[68px]" : "w-[240px]"
+      "relative h-screen bg-background border-r p-2 sm:p-3 flex flex-col transition-all duration-300 ease-in-out z-10",
+      collapsed ? "w-[60px] sm:w-[68px]" : "w-[240px]"
     )}>
       {/* Collapse button */}
       <SidebarCollapseButton 
@@ -40,8 +42,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Credits Display */}
       <div className={cn(
-        "mb-4 px-2 py-2 border rounded-lg text-center bg-purple-50 dark:bg-purple-900/20 transition-all",
-        collapsed ? "mx-0 p-2" : "mx-1"
+        "mb-4 px-1 sm:px-2 py-2 border rounded-lg text-center bg-purple-50 dark:bg-purple-900/20 transition-all",
+        collapsed ? "mx-0 p-1 sm:p-2" : "mx-1"
       )}>
         {collapsed ? (
           <div className="text-center font-semibold text-purple-700 dark:text-purple-300">
