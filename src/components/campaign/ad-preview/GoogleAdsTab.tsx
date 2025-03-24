@@ -11,7 +11,7 @@ import GoogleAdCard from "./GoogleAdCard";
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
   isGenerating: boolean;
-  onGenerateAds: () => Promise<GoogleAd[] | null>;
+  onGenerateAds: () => Promise<void>;
   onUpdateGoogleAd: (updatedAds: GoogleAd[]) => void;
   analysisResult: WebsiteAnalysisResult;
 }

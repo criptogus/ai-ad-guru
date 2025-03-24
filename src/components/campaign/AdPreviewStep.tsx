@@ -16,9 +16,9 @@ interface AdPreviewStepProps {
   microsoftAds: any[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
-  onGenerateGoogleAds: () => Promise<GoogleAd[] | null>;
-  onGenerateMetaAds: () => Promise<MetaAd[] | null>;
-  onGenerateMicrosoftAds: () => Promise<any[] | null>;
+  onGenerateGoogleAds: () => Promise<void>;
+  onGenerateMetaAds: () => Promise<void>;
+  onGenerateMicrosoftAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;

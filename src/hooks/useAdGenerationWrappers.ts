@@ -12,20 +12,17 @@ export const useAdGenerationWrappers = ({
   handleGenerateMetaAds,
   handleGenerateMicrosoftAds
 }: UseAdGenerationWrappersProps) => {
-  // Create wrapper functions that have the correct return types
-  const wrappedHandleGenerateGoogleAds = async (): Promise<GoogleAd[] | null> => {
+  // Create wrapper functions that return the correct types for the component
+  const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     await handleGenerateGoogleAds();
-    return null; // Return null as a fallback
   };
 
-  const wrappedHandleGenerateMetaAds = async (): Promise<MetaAd[] | null> => {
+  const wrappedHandleGenerateMetaAds = async (): Promise<void> => {
     await handleGenerateMetaAds();
-    return null; // Return null as a fallback
   };
 
-  const wrappedHandleGenerateMicrosoftAds = async (): Promise<any[] | null> => {
+  const wrappedHandleGenerateMicrosoftAds = async (): Promise<void> => {
     await handleGenerateMicrosoftAds();
-    return null; // Return null as a fallback
   };
 
   return {
