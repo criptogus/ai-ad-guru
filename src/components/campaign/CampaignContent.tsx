@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -126,9 +125,14 @@ const CampaignContent: React.FC = () => {
     handleNext();
   };
 
-  // Wrap handleGenerateGoogleAds to ensure it returns Promise<void>
+  // Properly wrap handleGenerateGoogleAds to ensure it returns Promise<void>
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
-    await handleGenerateGoogleAds();
+    try {
+      await handleGenerateGoogleAds();
+    } catch (error) {
+      console.error("Error generating Google ads:", error);
+    }
+    // Explicitly return void
     return;
   };
 
@@ -160,7 +164,11 @@ const CampaignContent: React.FC = () => {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
-        <CampaignHeader onBack={handleBack} step={currentStep} />
+        <CampaignHeader 
+          onBack={handleBack} 
+          step={currentStep} 
+          currentStep={currentStep} 
+        />
         <InstaAdTestLink />
       </div>
       
@@ -177,7 +185,9 @@ const CampaignContent: React.FC = () => {
       
       <StepNavigation
         current={currentStep}
+        currentStep={currentStep}
         total={5}
+        totalSteps={5}
         onBack={handleBack}
         onNext={handleNext}
         isNextDisabled={isCreating}
