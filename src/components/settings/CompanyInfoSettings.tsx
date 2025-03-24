@@ -1,506 +1,589 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Check, Loader2 } from "lucide-react";
+import { ImagePlus, Trash } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { CompanyInfo } from "@/types/supabase";
 
-const industryOptions = [
-  "Technology",
-  "E-commerce",
-  "Finance",
-  "Healthcare",
-  "Education",
-  "Real Estate",
-  "Retail",
-  "Manufacturing",
+const INDUSTRY_OPTIONS = [
+  "Software & Technology",
   "Marketing & Advertising",
-  "Entertainment",
+  "E-commerce & Retail",
+  "Healthcare & Wellness",
+  "Finance & Insurance",
+  "Education & Training",
+  "Professional Services",
   "Travel & Hospitality",
+  "Manufacturing",
+  "Real Estate",
+  "Media & Entertainment",
+  "Non-profit & NGO",
   "Other"
 ];
 
-const languageOptions = [
-  { value: "en", label: "English" },
-  { value: "es", label: "Spanish" },
-  { value: "pt", label: "Portuguese" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" }
+const LANGUAGE_OPTIONS = [
+  "English",
+  "Spanish",
+  "Portuguese",
+  "French",
+  "German",
+  "Italian",
+  "Dutch",
+  "Chinese",
+  "Japanese",
+  "Korean",
+  "Russian",
+  "Arabic",
+  "Other"
 ];
 
-const toneOptions = [
-  { value: "professional", label: "Professional", example: "Trusted by enterprises." },
-  { value: "conversational", label: "Conversational", example: "Let's grow your business together." },
-  { value: "fun", label: "Fun", example: "Marketing made easy and awesome!" },
-  { value: "bold", label: "Bold", example: "Dominate your market with AI." },
-  { value: "custom", label: "Custom", example: "" }
+const TONE_OPTIONS = [
+  "Professional",
+  "Conversational",
+  "Fun",
+  "Bold",
+  "Custom"
 ];
 
-const companyInfoSchema = z.object({
-  companyName: z.string().min(1, "Company name is required"),
-  website: z.string().url("Please enter a valid URL").or(z.string().length(0)),
-  industry: z.string().min(1, "Please select an industry"),
-  targetMarket: z.string().optional(),
-  language: z.string().min(1, "Please select a language"),
-  toneOfVoice: z.string().min(1, "Please select a tone of voice"),
-  customTone: z.string().optional(),
-  primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i, "Please enter a valid hex color").optional(),
-  secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i, "Please enter a valid hex color").optional()
-});
-
-type CompanyInfoValues = z.infer<typeof companyInfoSchema>;
+const TONE_EXAMPLES = {
+  Professional: "Trusted by enterprises worldwide.",
+  Conversational: "Let's grow your business together!",
+  Fun: "Marketing made easy and awesome!",
+  Bold: "Dominate your market with AI.",
+  Custom: "Create your own tone of voice."
+};
 
 const CompanyInfoSettings: React.FC = () => {
+  const { toast } = useToast();
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [logoUploading, setLogoUploading] = useState(false);
-
-  const form = useForm<CompanyInfoValues>({
-    resolver: zodResolver(companyInfoSchema),
-    defaultValues: {
-      companyName: "",
-      website: "",
-      industry: "",
-      targetMarket: "",
-      language: "en",
-      toneOfVoice: "professional",
-      customTone: "",
-      primaryColor: "#4F46E5",
-      secondaryColor: "#10B981"
-    }
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Form fields
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
+    id: "",
+    user_id: "",
+    company_name: "",
+    website: "",
+    industry: "",
+    target_market: "",
+    language: "English",
+    tone_of_voice: "Professional",
+    custom_tone: "",
+    primary_color: "#0070f3",
+    secondary_color: "",
+    logo_url: "",
+    created_at: "",
+    updated_at: ""
   });
-
-  const selectedTone = form.watch("toneOfVoice");
-
-  // Fetch company info on component mount
+  
   useEffect(() => {
-    const fetchCompanyInfo = async () => {
-      if (!user) return;
-      
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('company_info')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (data) {
-          form.reset({
-            companyName: data.company_name || "",
-            website: data.website || "",
-            industry: data.industry || "",
-            targetMarket: data.target_market || "",
-            language: data.language || "en",
-            toneOfVoice: data.tone_of_voice || "professional",
-            customTone: data.custom_tone || "",
-            primaryColor: data.primary_color || "#4F46E5",
-            secondaryColor: data.secondary_color || "#10B981"
-          });
-          
-          if (data.logo_url) {
-            setLogoPreview(data.logo_url);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching company info:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchCompanyInfo();
+    if (user) {
+      fetchCompanyInfo();
+    }
   }, [user]);
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      // Check file size (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Logo file must be less than 2MB");
-        return;
-      }
-      
-      // Check file type
-      if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
-        toast.error("Only PNG, JPEG, and SVG files are allowed");
-        return;
-      }
-      
-      setLogoFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadLogo = async (): Promise<string | null> => {
-    if (!logoFile || !user) return null;
-    
-    setLogoUploading(true);
-    try {
-      const fileExt = logoFile.name.split('.').pop();
-      const filePath = `company_logos/${user.id}/${Date.now()}.${fileExt}`;
-      
-      // Check if storage bucket exists, create if not
-      const { error: storageError } = await supabase.storage.getBucket('company_assets');
-      if (storageError) {
-        await supabase.storage.createBucket('company_assets', {
-          public: false
-        });
-      }
-      
-      const { error: uploadError } = await supabase.storage
-        .from('company_assets')
-        .upload(filePath, logoFile, {
-          upsert: true
-        });
-      
-      if (uploadError) throw uploadError;
-      
-      const { data } = supabase.storage
-        .from('company_assets')
-        .getPublicUrl(filePath);
-      
-      return data.publicUrl;
-    } catch (error) {
-      console.error("Error uploading logo:", error);
-      toast.error("Failed to upload logo");
-      return null;
-    } finally {
-      setLogoUploading(false);
-    }
-  };
-
-  const onSubmit = async (data: CompanyInfoValues) => {
+  
+  const fetchCompanyInfo = async () => {
     if (!user) return;
     
-    setIsLoading(true);
     try {
-      let logoUrl = logoPreview;
+      setIsLoading(true);
       
-      // Upload logo if there's a new one
-      if (logoFile) {
-        const uploadedUrl = await uploadLogo();
-        if (uploadedUrl) {
-          logoUrl = uploadedUrl;
+      const { data, error } = await supabase
+        .from("company_info")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (error) {
+        if (error.code !== 'PGRST116') { // PGRST116 is "row not found" error
+          throw error;
         }
-      }
-      
-      const { error } = await supabase
-        .from('company_info')
-        .upsert({
-          user_id: user.id,
-          company_name: data.companyName,
-          website: data.website || null,
-          industry: data.industry,
-          target_market: data.targetMarket || null,
-          language: data.language,
-          tone_of_voice: data.toneOfVoice,
-          custom_tone: data.toneOfVoice === 'custom' ? data.customTone : null,
-          logo_url: logoUrl,
-          primary_color: data.primaryColor || null,
-          secondary_color: data.secondaryColor || null,
-          updated_at: new Date().toISOString()
+        // If not found, we'll use the default empty state
+      } else if (data) {
+        // Cast the data to our CompanyInfo type
+        const companyData = data as unknown as CompanyInfo;
+        setCompanyInfo({
+          ...companyData,
+          primary_color: companyData.primary_color || "#0070f3",
+          language: companyData.language || "English",
+          tone_of_voice: companyData.tone_of_voice || "Professional"
         });
-      
-      if (error) throw error;
-      
-      toast.success("Company information saved successfully");
+      }
     } catch (error) {
-      console.error("Error saving company info:", error);
-      toast.error("Failed to save company information");
+      console.error("Error fetching company info:", error);
+      toast({
+        title: "Failed to load company information",
+        description: "There was an error loading your company details",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
-
+  
+  const handleInputChange = (field: keyof CompanyInfo, value: string) => {
+    setCompanyInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Special handling for tone of voice
+    if (field === 'tone_of_voice' && value !== 'Custom') {
+      setCompanyInfo(prev => ({
+        ...prev,
+        custom_tone: ''
+      }));
+    }
+  };
+  
+  const handleSave = async () => {
+    if (!user) return;
+    
+    // Validation
+    if (!companyInfo.company_name.trim()) {
+      toast({
+        title: "Company name required",
+        description: "Please enter your company name",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      
+      const updateData = {
+        user_id: user.id,
+        company_name: companyInfo.company_name,
+        website: companyInfo.website,
+        industry: companyInfo.industry,
+        target_market: companyInfo.target_market,
+        language: companyInfo.language,
+        tone_of_voice: companyInfo.tone_of_voice,
+        custom_tone: companyInfo.custom_tone,
+        primary_color: companyInfo.primary_color,
+        secondary_color: companyInfo.secondary_color,
+        logo_url: companyInfo.logo_url
+      };
+      
+      let result;
+      
+      if (companyInfo.id) {
+        // Update existing record
+        result = await supabase
+          .from("company_info")
+          .update(updateData)
+          .eq("id", companyInfo.id)
+          .eq("user_id", user.id);
+      } else {
+        // Insert new record
+        result = await supabase
+          .from("company_info")
+          .insert([updateData]);
+      }
+      
+      if (result.error) {
+        throw result.error;
+      }
+      
+      toast({
+        title: "Changes saved",
+        description: "Your company information has been updated",
+      });
+      
+      // Refresh data
+      fetchCompanyInfo();
+      
+    } catch (error) {
+      console.error("Error saving company info:", error);
+      toast({
+        title: "Failed to save changes",
+        description: "There was an error updating your company information",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+    
+    // Validate file type
+    const fileType = file.type;
+    if (!fileType.match(/image\/(png|jpeg|jpg|svg\+xml)/)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PNG, JPG, or SVG image",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Logo image must be less than 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsUploading(true);
+      
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.floor(Math.random() * 10000)}.${fileExt}`;
+      const filePath = `logos/${user.id}/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from("company")
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("company")
+        .getPublicUrl(filePath);
+      
+      // Update company info with logo URL
+      setCompanyInfo(prev => ({
+        ...prev,
+        logo_url: publicUrl
+      }));
+      
+      toast({
+        title: "Logo uploaded",
+        description: "Your company logo has been uploaded",
+      });
+      
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your logo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  const handleRemoveLogo = async () => {
+    if (!companyInfo.logo_url || !user) return;
+    
+    try {
+      // Remove from storage if it's in our bucket
+      if (companyInfo.logo_url.includes('supabase')) {
+        const path = companyInfo.logo_url.split('/').slice(-2).join('/');
+        await supabase.storage.from("company").remove([`logos/${path}`]);
+      }
+      
+      // Update company info to remove logo URL
+      setCompanyInfo(prev => ({
+        ...prev,
+        logo_url: ""
+      }));
+      
+      toast({
+        title: "Logo removed",
+        description: "Your company logo has been removed",
+      });
+      
+    } catch (error) {
+      console.error("Error removing logo:", error);
+      toast({
+        title: "Failed to remove logo",
+        description: "There was an error removing your logo",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Company Information</CardTitle>
+          <CardDescription>Loading your company details...</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center p-6">
+          <div className="h-8 w-8 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card className="max-w-4xl">
       <CardHeader>
         <CardTitle>Company Information</CardTitle>
         <CardDescription>
-          Define your brand identity to be used throughout the platform
+          Define your brand identity for AI-generated content
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Company Logo */}
-                <div className="space-y-2 col-span-full">
-                  <Label htmlFor="logo">Company Logo</Label>
-                  <div className="flex items-start gap-4">
-                    <div className="h-24 w-24 rounded-md border flex items-center justify-center overflow-hidden bg-muted">
-                      {logoPreview ? (
-                        <img 
-                          src={logoPreview} 
-                          alt="Company Logo" 
-                          className="h-full w-full object-contain"
-                        />
-                      ) : (
-                        <div className="text-sm text-muted-foreground">
-                          No logo
-                        </div>
-                      )}
+      <CardContent className="space-y-6">
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Basic Information</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="company-name">Company Name *</Label>
+              <Input
+                id="company-name"
+                value={companyInfo.company_name}
+                onChange={(e) => handleInputChange("company_name", e.target.value)}
+                placeholder="Your Company Inc."
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="website">Website URL</Label>
+              <Input
+                id="website"
+                value={companyInfo.website || ""}
+                onChange={(e) => handleInputChange("website", e.target.value)}
+                placeholder="https://yourcompany.com"
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select 
+                value={companyInfo.industry || ""} 
+                onValueChange={(value) => handleInputChange("industry", value)}
+              >
+                <SelectTrigger id="industry">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRY_OPTIONS.map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="target-market">Target Market</Label>
+              <Input
+                id="target-market"
+                value={companyInfo.target_market || ""}
+                onChange={(e) => handleInputChange("target_market", e.target.value)}
+                placeholder="Small businesses, enterprise, etc."
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Logo Upload */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Logo</h3>
+          
+          <div className="flex items-start gap-4">
+            <div className="h-24 w-24 border rounded-md flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
+              {companyInfo.logo_url ? (
+                <img 
+                  src={companyInfo.logo_url} 
+                  alt="Company Logo" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <ImagePlus className="h-8 w-8 text-gray-400" />
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Upload Logo (Recommended: 500x500px, PNG/SVG)</Label>
+              
+              <div className="flex flex-col xs:flex-row gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => document.getElementById('logo-upload')?.click()}
+                  disabled={isUploading}
+                  className="relative"
+                >
+                  {isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                      <div className="h-5 w-5 border-t-2 border-current rounded-full animate-spin"></div>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <Input 
-                        id="logo" 
-                        type="file" 
-                        accept=".png,.jpg,.jpeg,.svg"
-                        onChange={handleLogoChange}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Recommended: 500x500px, PNG/SVG. Max size: 2MB
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Company Name */}
-                <FormField
-                  control={form.control}
-                  name="companyName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Acme Inc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
                   )}
-                />
-
-                {/* Website */}
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Industry */}
-                <FormField
-                  control={form.control}
-                  name="industry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Industry</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an industry" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {industryOptions.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
-                              {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Target Market */}
-                <FormField
-                  control={form.control}
-                  name="targetMarket"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target Market</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Small businesses, B2B, etc." 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Language */}
-                <FormField
-                  control={form.control}
-                  name="language"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Language</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a language" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {languageOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Tone of Voice */}
-                <FormField
-                  control={form.control}
-                  name="toneOfVoice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tone of Voice</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a tone" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {toneOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {selectedTone !== "custom" && (
-                        <FormDescription>
-                          Example: {toneOptions.find(t => t.value === selectedTone)?.example}
-                        </FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Custom Tone (conditional) */}
-                {selectedTone === "custom" && (
-                  <FormField
-                    control={form.control}
-                    name="customTone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Custom Tone Description</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Describe your brand's tone of voice" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {companyInfo.logo_url ? "Change Logo" : "Upload Logo"}
+                </Button>
+                
+                {companyInfo.logo_url && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handleRemoveLogo}
+                    disabled={isUploading}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Remove
+                  </Button>
                 )}
+                
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml"
+                  onChange={handleLogoUpload}
+                  style={{ display: 'none' }}
+                />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Primary Brand Color</Label>
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      type="color" 
-                      id="primaryColor"
-                      className="w-12 h-10 p-1"
-                      {...form.register("primaryColor")}
-                    />
-                    <Input 
-                      type="text" 
-                      className="flex-1"
-                      {...form.register("primaryColor")}
-                    />
-                  </div>
-                  {form.formState.errors.primaryColor && (
-                    <p className="text-sm text-destructive">{form.formState.errors.primaryColor.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="secondaryColor">Secondary / Accent Color</Label>
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      type="color" 
-                      id="secondaryColor"
-                      className="w-12 h-10 p-1"
-                      {...form.register("secondaryColor")}
-                    />
-                    <Input 
-                      type="text" 
-                      className="flex-1"
-                      {...form.register("secondaryColor")}
-                    />
-                  </div>
-                  {form.formState.errors.secondaryColor && (
-                    <p className="text-sm text-destructive">{form.formState.errors.secondaryColor.message}</p>
-                  )}
-                </div>
+              
+              <p className="text-sm text-muted-foreground">
+                This logo will be used in your generated content
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Content Style */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Content Style</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="language">Language</Label>
+              <Select 
+                value={companyInfo.language || "English"} 
+                onValueChange={(value) => handleInputChange("language", value)}
+              >
+                <SelectTrigger id="language">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGE_OPTIONS.map((language) => (
+                    <SelectItem key={language} value={language}>
+                      {language}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="tone">Tone of Voice</Label>
+              <Select 
+                value={companyInfo.tone_of_voice || "Professional"} 
+                onValueChange={(value) => handleInputChange("tone_of_voice", value)}
+              >
+                <SelectTrigger id="tone">
+                  <SelectValue placeholder="Select tone" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TONE_OPTIONS.map((tone) => (
+                    <SelectItem key={tone} value={tone}>
+                      {tone}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {companyInfo.tone_of_voice && companyInfo.tone_of_voice !== "Custom" && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Example: "{TONE_EXAMPLES[companyInfo.tone_of_voice as keyof typeof TONE_EXAMPLES]}"
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {companyInfo.tone_of_voice === "Custom" && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-tone">Custom Tone Description</Label>
+              <Textarea
+                id="custom-tone"
+                value={companyInfo.custom_tone || ""}
+                onChange={(e) => handleInputChange("custom_tone", e.target.value)}
+                placeholder="Describe your brand's unique tone of voice..."
+                className="min-h-[100px]"
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* Brand Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Brand Colors</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="primary-color">Primary Color</Label>
+              <div className="flex gap-2">
+                <div 
+                  className="h-10 w-10 rounded-md border"
+                  style={{ backgroundColor: companyInfo.primary_color || "#0070f3" }}
+                />
+                <Input
+                  id="primary-color"
+                  type="color"
+                  value={companyInfo.primary_color || "#0070f3"}
+                  onChange={(e) => handleInputChange("primary_color", e.target.value)}
+                  className="w-full h-10"
+                />
               </div>
             </div>
-
-            <Button 
-              type="submit" 
-              disabled={isLoading || logoUploading}
-              className="w-full md:w-auto"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Save Settings
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
+            
+            <div className="space-y-2">
+              <Label htmlFor="secondary-color">Secondary Color (Optional)</Label>
+              <div className="flex gap-2">
+                <div 
+                  className="h-10 w-10 rounded-md border"
+                  style={{ backgroundColor: companyInfo.secondary_color || "" }}
+                />
+                <Input
+                  id="secondary-color"
+                  type="color"
+                  value={companyInfo.secondary_color || "#ffffff"}
+                  onChange={(e) => handleInputChange("secondary_color", e.target.value)}
+                  className="w-full h-10"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Save Button */}
+        <div className="flex justify-end pt-4">
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving || !companyInfo.company_name.trim()}
+            className="min-w-[120px]"
+          >
+            {isSaving ? (
+              <>
+                <div className="h-4 w-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>
+                Saving...
+              </>
+            ) : "Save Changes"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

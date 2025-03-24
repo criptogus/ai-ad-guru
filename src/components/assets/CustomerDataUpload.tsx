@@ -1,52 +1,18 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  Upload, Database, Download, Trash2, Users, FileSpreadsheet,
-  AlertTriangle, Check, X, RefreshCw, Search
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Dialog, DialogContent, DialogTitle, DialogDescription, 
-  DialogHeader, DialogFooter 
-} from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import Papa from 'papaparse';
-
-interface CustomerData {
-  id: string;
-  email: string;
-  name?: string;
-  segment?: string;
-  created_at: string;
-  list_name?: string;
-}
-
-interface CustomerImport {
-  id: string;
-  list_name: string;
-  record_count: number;
-  created_at: string;
-  status: string;
-}
-
-interface DataPreview {
-  emails: string[];
-  names: string[];
-  segments: string[];
-  validCount: number;
-  invalidCount: number;
-  duplicateCount: number;
-  listName: string;
-}
+import React, { useState, useEffect, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Upload, Users, X, Download, Trash2, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CustomerData, CustomerImport } from "@/types/supabase";
+import { format } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 
 const CustomerDataUpload: React.FC = () => {
   const { user } = useAuth();
@@ -54,706 +20,632 @@ const CustomerDataUpload: React.FC = () => {
   const [filteredCustomers, setFilteredCustomers] = useState<CustomerData[]>([]);
   const [imports, setImports] = useState<CustomerImport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [totalContacts, setTotalContacts] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [listName, setListName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [dataPreview, setDataPreview] = useState<DataPreview | null>(null);
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [selectAll, setSelectAll] = useState(false);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_RECORDS = 10000;
 
   useEffect(() => {
     if (user) {
-      fetchCustomers();
-      fetchImports();
+      fetchCustomerData();
+      fetchImportHistory();
     }
   }, [user]);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = customers.filter(customer => 
-        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (customer.name && customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (customer.segment && customer.segment.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      setFilteredCustomers(filtered);
-    } else {
+    if (searchQuery.trim() === "") {
       setFilteredCustomers(customers);
+    } else {
+      const query = searchQuery.toLowerCase();
+      setFilteredCustomers(
+        customers.filter((customer) => 
+          customer.email.toLowerCase().includes(query) ||
+          (customer.name && customer.name.toLowerCase().includes(query)) ||
+          (customer.segment && customer.segment.toLowerCase().includes(query))
+        )
+      );
     }
-  }, [customers, searchTerm]);
+  }, [searchQuery, customers]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomerData = async () => {
     if (!user) return;
     
-    setIsLoading(true);
     try {
+      setIsLoading(true);
+      
       const { data, error } = await supabase
-        .from('customer_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("customer_data")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      setCustomers(data || []);
-      setTotalContacts(data?.length || 0);
+      setCustomers(data as unknown as CustomerData[]);
+      setFilteredCustomers(data as unknown as CustomerData[]);
     } catch (error) {
-      console.error('Error fetching customer data:', error);
-      toast.error('Failed to load customer data');
+      console.error("Error fetching customer data:", error);
+      toast.error("Failed to load customer data");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchImports = async () => {
+  const fetchImportHistory = async () => {
     if (!user) return;
     
     try {
       const { data, error } = await supabase
-        .from('customer_data_imports')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("customer_data_imports")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      setImports(data || []);
+      setImports(data as unknown as CustomerImport[]);
     } catch (error) {
-      console.error('Error fetching import history:', error);
+      console.error("Error fetching import history:", error);
     }
   };
 
-  const validateEmail = (email: string) => {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0 || !user) return;
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
     
-    const file = files[0];
-    
-    // Check file type
-    if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
-      toast.error('Only CSV and TXT files are supported');
-      return;
-    }
-    
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File too large. Maximum size is 10MB.');
-      return;
-    }
-    
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        previewData(results.data, file.name);
-      },
-      error: (error) => {
-        toast.error(`Error parsing file: ${error.message}`);
-      }
-    });
-  };
-
-  const previewData = (data: any[], fileName: string) => {
-    if (data.length === 0) {
-      toast.error('File is empty or has no valid data');
-      return;
-    }
-    
-    if (data.length > 10000) {
-      toast.error('File contains too many records. Maximum is 10,000.');
-      return;
-    }
-
-    // Extract headers to identify columns
-    const headers = Object.keys(data[0]).map(h => h.toLowerCase());
-    
-    // Check if email column exists
-    const emailColumn = headers.find(h => h === 'email' || h.includes('email'));
-    if (!emailColumn) {
-      toast.error('File must contain an email column');
-      return;
-    }
-    
-    // Identify name and segment columns
-    const nameColumn = headers.find(h => h === 'name' || h.includes('name') || h === 'fullname' || h === 'full name' || h === 'firstname' || h === 'first name');
-    const segmentColumn = headers.find(h => h === 'segment' || h === 'tag' || h === 'category' || h === 'group');
-    
-    // Process data
-    const emails: string[] = [];
-    const names: string[] = [];
-    const segments: string[] = [];
-    const uniqueEmails = new Set<string>();
-    let validCount = 0;
-    let invalidCount = 0;
-    let duplicateCount = 0;
-    
-    data.forEach(row => {
-      const email = row[emailColumn]?.trim();
-      const name = nameColumn ? row[nameColumn]?.trim() : undefined;
-      const segment = segmentColumn ? row[segmentColumn]?.trim() : undefined;
-      
-      if (email && validateEmail(email)) {
-        if (uniqueEmails.has(email.toLowerCase())) {
-          duplicateCount++;
-        } else {
-          uniqueEmails.add(email.toLowerCase());
-          emails.push(email);
-          names.push(name || '');
-          segments.push(segment || '');
-          validCount++;
-        }
-      } else if (email) {
-        invalidCount++;
-      }
-    });
-    
-    if (validCount === 0) {
-      toast.error('No valid email addresses found in file');
-      return;
-    }
-    
-    // Generate list name from file name
-    const listName = fileName.replace(/\.[^/.]+$/, "");
-    
-    setDataPreview({
-      emails,
-      names,
-      segments,
-      validCount,
-      invalidCount,
-      duplicateCount,
-      listName
-    });
-    
-    setPreviewOpen(true);
-  };
-
-  const uploadCustomerData = async () => {
-    if (!user || !dataPreview) return;
-    
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    try {
-      // Generate a batch ID for all records
-      const batchId = crypto.randomUUID();
-      
-      // Insert the import record
-      const { error: importError } = await supabase
-        .from('customer_data_imports')
-        .insert([
-          {
-            user_id: user.id,
-            list_name: dataPreview.listName,
-            record_count: dataPreview.validCount,
-            status: 'processing'
-          }
-        ]);
-      
-      if (importError) throw importError;
-      
-      // Prepare customer data records
-      const customerRecords = dataPreview.emails.map((email, index) => ({
-        user_id: user.id,
-        email,
-        name: dataPreview.names[index] || null,
-        segment: dataPreview.segments[index] || null,
-        list_name: dataPreview.listName,
-        import_batch: batchId
-      }));
-      
-      // Upload in batches of 100 to show progress
-      const batchSize = 100;
-      const batches = Math.ceil(customerRecords.length / batchSize);
-      
-      for (let i = 0; i < batches; i++) {
-        const batchStart = i * batchSize;
-        const batchEnd = Math.min((i + 1) * batchSize, customerRecords.length);
-        const batch = customerRecords.slice(batchStart, batchEnd);
-        
-        const { error: batchError } = await supabase
-          .from('customer_data')
-          .insert(batch);
-        
-        if (batchError) throw batchError;
-        
-        // Update progress
-        const progress = Math.round(((i + 1) / batches) * 100);
-        setUploadProgress(progress);
-      }
-      
-      // Update import status to complete
-      await supabase
-        .from('customer_data_imports')
-        .update({ status: 'completed' })
-        .eq('list_name', dataPreview.listName)
-        .eq('user_id', user.id);
-      
-      toast.success(`Uploaded ${dataPreview.validCount} contacts successfully`);
-      fetchCustomers();
-      fetchImports();
-      setPreviewOpen(false);
-    } catch (error: any) {
-      console.error('Error uploading customer data:', error);
-      toast.error(`Upload failed: ${error.message}`);
-      
-      // Update import status to failed
-      if (dataPreview.listName) {
-        await supabase
-          .from('customer_data_imports')
-          .update({ status: 'failed' })
-          .eq('list_name', dataPreview.listName)
-          .eq('user_id', user.id);
-      }
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
+    // Validate file type
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (fileExt !== 'csv' && fileExt !== 'txt') {
+      toast.error("Invalid file format. Please upload a CSV or TXT file");
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    }
-  };
-
-  const exportCustomerData = () => {
-    if (filteredCustomers.length === 0) {
-      toast.error('No data to export');
       return;
     }
     
-    // Convert the data to CSV
-    const headers = ['Email', 'Name', 'Segment', 'Upload Date', 'List'];
-    const csvContent = [
-      headers.join(','),
-      ...filteredCustomers.map(customer => [
-        customer.email,
-        customer.name || '',
-        customer.segment || '',
-        new Date(customer.created_at).toLocaleDateString(),
-        customer.list_name || ''
-      ].join(','))
-    ].join('\n');
+    setImportFile(file);
     
-    // Create and download the CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Use filename without extension as default list name
+    const baseName = file.name.split('.')[0];
+    setListName(baseName);
+  };
+
+  const validateCSV = (content: string): { valid: boolean; records: any[]; errorMessage?: string } => {
+    // Split content into lines
+    const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+    
+    if (lines.length === 0) {
+      return { valid: false, records: [], errorMessage: "File is empty" };
+    }
+    
+    // Parse header row
+    const headers = lines[0].split(',').map(header => header.trim().toLowerCase());
+    
+    // Check if required email column exists
+    if (!headers.includes('email')) {
+      return { valid: false, records: [], errorMessage: "CSV must include an 'email' column" };
+    }
+    
+    // Check record limit
+    if (lines.length - 1 > MAX_RECORDS) {
+      return { 
+        valid: false, 
+        records: [], 
+        errorMessage: `Maximum ${MAX_RECORDS} records allowed (found ${lines.length - 1})` 
+      };
+    }
+    
+    // Parse data rows
+    const records: any[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim() === '') continue;
+      
+      const values = lines[i].split(',').map(value => value.trim());
+      
+      // Skip rows with wrong number of columns
+      if (values.length !== headers.length) {
+        continue;
+      }
+      
+      const record: any = {};
+      headers.forEach((header, index) => {
+        record[header] = values[index];
+      });
+      
+      // Skip if no email
+      if (!record.email || !isValidEmail(record.email)) {
+        continue;
+      }
+      
+      records.push(record);
+    }
+    
+    return { valid: true, records };
+  };
+
+  const isValidEmail = (email: string): boolean => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleImport = async () => {
+    if (!importFile || !listName.trim() || !user) return;
+    
+    setIsUploading(true);
+    
+    try {
+      const content = await importFile.text();
+      
+      // Validate and parse CSV
+      const validation = validateCSV(content);
+      
+      if (!validation.valid) {
+        toast.error(validation.errorMessage || "Invalid CSV format");
+        setIsUploading(false);
+        return;
+      }
+      
+      const { records } = validation;
+      
+      if (records.length === 0) {
+        toast.error("No valid records found in the file");
+        setIsUploading(false);
+        return;
+      }
+      
+      // Create import record
+      const importBatchId = uuidv4();
+      const { error: importError } = await supabase
+        .from("customer_data_imports")
+        .insert([
+          {
+            user_id: user.id,
+            list_name: listName,
+            record_count: records.length,
+            status: "completed"
+          }
+        ]);
+      
+      if (importError) {
+        throw importError;
+      }
+      
+      // Create customer records
+      const customerRecords = records.map(record => ({
+        user_id: user.id,
+        email: record.email,
+        name: record.name || "",
+        segment: record.segment || "",
+        list_name: listName,
+        import_batch: importBatchId
+      }));
+      
+      // Insert in batches to avoid request size limitations
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < customerRecords.length; i += BATCH_SIZE) {
+        const batch = customerRecords.slice(i, i + BATCH_SIZE);
+        const { error: batchError } = await supabase
+          .from("customer_data")
+          .insert(batch);
+        
+        if (batchError) {
+          throw batchError;
+        }
+      }
+      
+      toast.success(`Successfully imported ${records.length} contacts`);
+      
+      setIsImportModalOpen(false);
+      setImportFile(null);
+      setListName("");
+      
+      // Refresh data
+      await fetchCustomerData();
+      await fetchImportHistory();
+      
+    } catch (error) {
+      console.error("Error importing data:", error);
+      toast.error("Failed to import customer data");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteList = async (importId: string) => {
+    if (!confirm("Are you sure you want to delete this list? All contacts in this list will be removed.")) {
+      return;
+    }
+    
+    try {
+      // Get the import record to find the list name
+      const { data: importData, error: importError } = await supabase
+        .from("customer_data_imports")
+        .select("list_name")
+        .eq("id", importId)
+        .single();
+      
+      if (importError || !importData) {
+        throw importError || new Error("Could not find import record");
+      }
+      
+      // Delete customer records for this list
+      const { error: deleteCustomersError } = await supabase
+        .from("customer_data")
+        .delete()
+        .eq("user_id", user!.id)
+        .eq("list_name", importData.list_name);
+      
+      if (deleteCustomersError) {
+        throw deleteCustomersError;
+      }
+      
+      // Delete import record
+      const { error: deleteImportError } = await supabase
+        .from("customer_data_imports")
+        .delete()
+        .eq("id", importId)
+        .eq("user_id", user!.id);
+      
+      if (deleteImportError) {
+        throw deleteImportError;
+      }
+      
+      toast.success("List deleted successfully");
+      
+      // Refresh data
+      await fetchCustomerData();
+      await fetchImportHistory();
+      
+    } catch (error) {
+      console.error("Error deleting list:", error);
+      toast.error("Failed to delete list");
+    }
+  };
+
+  const exportList = (listName: string) => {
+    const listData = customers.filter(customer => customer.list_name === listName);
+    
+    if (listData.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    
+    // Get all unique fields
+    const fields = new Set<string>();
+    listData.forEach(customer => {
+      Object.keys(customer).forEach(key => {
+        if (key !== 'id' && key !== 'user_id' && key !== 'import_batch' && key !== 'created_at' && key !== 'updated_at') {
+          fields.add(key);
+        }
+      });
+    });
+    
+    const headers = Array.from(fields);
+    
+    // Create CSV content
+    const rows = listData.map(customer => 
+      headers.map(header => {
+        const value = (customer as any)[header];
+        return value ? `"${value.toString().replace(/"/g, '""')}"` : "";
+      })
+    );
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `customer-data-${new Date().toISOString().slice(0, 10)}.csv`);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${listName}-export-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const deleteSelectedCustomers = async () => {
-    if (!user || selectedRows.size === 0) return;
+  const deleteAllData = async () => {
+    if (!confirm("Are you sure you want to delete ALL customer data? This action cannot be undone.")) {
+      return;
+    }
     
     try {
-      const ids = Array.from(selectedRows);
-      
-      const { error } = await supabase
-        .from('customer_data')
+      // Delete all customer records
+      const { error: deleteCustomersError } = await supabase
+        .from("customer_data")
         .delete()
-        .in('id', ids);
+        .eq("user_id", user!.id);
       
-      if (error) throw error;
+      if (deleteCustomersError) {
+        throw deleteCustomersError;
+      }
       
-      toast.success(`Deleted ${ids.length} contacts successfully`);
-      fetchCustomers();
-      setSelectedRows(new Set());
-      setSelectAll(false);
-      setConfirmDelete(false);
-    } catch (error: any) {
-      console.error('Error deleting contacts:', error);
-      toast.error(`Deletion failed: ${error.message}`);
-    }
-  };
-
-  const deleteAllCustomers = async () => {
-    if (!user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('customer_data')
+      // Delete all import records
+      const { error: deleteImportsError } = await supabase
+        .from("customer_data_imports")
         .delete()
-        .eq('user_id', user.id);
+        .eq("user_id", user!.id);
       
-      if (error) throw error;
+      if (deleteImportsError) {
+        throw deleteImportsError;
+      }
       
-      toast.success('All contacts deleted successfully');
-      fetchCustomers();
-      setSelectedRows(new Set());
-      setSelectAll(false);
-      setConfirmDelete(false);
-    } catch (error: any) {
-      console.error('Error deleting all contacts:', error);
-      toast.error(`Deletion failed: ${error.message}`);
+      toast.success("All customer data deleted successfully");
+      
+      // Refresh data
+      setCustomers([]);
+      setFilteredCustomers([]);
+      setImports([]);
+      
+    } catch (error) {
+      console.error("Error deleting all data:", error);
+      toast.error("Failed to delete customer data");
     }
-  };
-
-  const toggleSelectAll = () => {
-    if (selectAll) {
-      setSelectedRows(new Set());
-    } else {
-      const allIds = filteredCustomers.map(customer => customer.id);
-      setSelectedRows(new Set(allIds));
-    }
-    setSelectAll(!selectAll);
-  };
-
-  const toggleSelectRow = (id: string) => {
-    const newSelected = new Set(selectedRows);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedRows(newSelected);
-    setSelectAll(newSelected.size === filteredCustomers.length);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle>Customer Data</CardTitle>
-            <CardDescription>
-              Manage customer email lists for targeting
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold">Customer Data</h2>
+          <p className="text-sm text-muted-foreground">
+            Upload and manage your customer contact lists
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => setIsImportModalOpen(true)}
+            className="whitespace-nowrap"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Upload List
+          </Button>
+        </div>
+      </div>
+      
+      {/* Import lists section */}
+      <h3 className="text-lg font-medium mt-6">Import History</h3>
+      {imports.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-lg font-medium mb-2">No imported lists yet</p>
+            <p className="text-muted-foreground mb-4">
+              Upload your first customer list in CSV format
+            </p>
+            <Button onClick={() => setIsImportModalOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               Upload List
             </Button>
-            <Input 
-              ref={fileInputRef}
-              type="file" 
-              className="hidden"
-              onChange={handleFileUpload}
-              accept=".csv,.txt"
-            />
-            <Button 
-              variant="outline" 
-              onClick={exportCustomerData}
-              disabled={filteredCustomers.length === 0}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => setConfirmDelete(true)}
-              disabled={selectedRows.size === 0 && customers.length === 0}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Database className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Total Contacts: <strong>{totalContacts}</strong>
-            </span>
-          </div>
-          <div className="relative w-full sm:w-auto sm:min-w-[300px]">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search contacts..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        
-        {/* Upload Progress */}
-        {isUploading && (
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">
-                Uploading contacts...
-              </span>
-              <span className="text-sm font-medium">
-                {uploadProgress}%
-              </span>
-            </div>
-            <Progress value={uploadProgress} />
-          </div>
-        )}
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : filteredCustomers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <Users className="h-16 w-16 text-muted-foreground mb-4" />
-            {searchTerm ? (
-              <p className="text-muted-foreground">No contacts found matching "{searchTerm}"</p>
-            ) : (
-              <>
-                <p className="font-medium mb-2">No customer data yet</p>
-                <p className="text-muted-foreground mb-4">Upload a CSV file with email addresses to get started</p>
-                <Button onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Customer List
-                </Button>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="border rounded-md overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <Checkbox 
-                      checked={selectAll}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Tag</TableHead>
-                  <TableHead>Upload Date</TableHead>
-                  <TableHead>List</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell>
-                      <Checkbox 
-                        checked={selectedRows.has(customer.id)}
-                        onCheckedChange={() => toggleSelectRow(customer.id)}
-                      />
-                    </TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.name || '-'}</TableCell>
-                    <TableCell>{customer.segment || '-'}</TableCell>
-                    <TableCell>{formatDate(customer.created_at)}</TableCell>
-                    <TableCell>{customer.list_name || '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-        
-        {/* Import History */}
-        {imports.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-lg font-medium mb-4">Import History</h3>
-            <div className="border rounded-md overflow-hidden">
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0 sm:p-2">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>List Name</TableHead>
-                    <TableHead>Records</TableHead>
+                    <TableHead>Contacts</TableHead>
                     <TableHead>Import Date</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {imports.map((imp) => (
-                    <TableRow key={imp.id}>
-                      <TableCell>{imp.list_name}</TableCell>
-                      <TableCell>{imp.record_count}</TableCell>
-                      <TableCell>{formatDate(imp.created_at)}</TableCell>
+                  {imports.map((importItem) => (
+                    <TableRow key={importItem.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <TableCell className="font-medium">
+                        {importItem.list_name}
+                      </TableCell>
+                      <TableCell>{importItem.record_count}</TableCell>
                       <TableCell>
-                        {imp.status === 'completed' && (
-                          <span className="flex items-center text-green-600">
-                            <Check className="h-4 w-4 mr-1" />
-                            Completed
-                          </span>
-                        )}
-                        {imp.status === 'processing' && (
-                          <span className="flex items-center text-amber-600">
-                            <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                            Processing
-                          </span>
-                        )}
-                        {imp.status === 'failed' && (
-                          <span className="flex items-center text-red-600">
-                            <X className="h-4 w-4 mr-1" />
-                            Failed
-                          </span>
-                        )}
+                        {format(new Date(importItem.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => exportList(importItem.list_name)}
+                            title="Export list"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteList(importItem.id)}
+                            title="Delete list"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          </div>
-        )}
-      </CardContent>
-
-      {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Verify Import Data</DialogTitle>
-            <DialogDescription>
-              Review the data before importing into your account
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            {dataPreview && (
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Customer data section */}
+      <div className="flex justify-between items-center mt-6">
+        <h3 className="text-lg font-medium">Contact Data</h3>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search contacts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 w-full sm:w-64"
+          />
+          {searchQuery && (
+            <X
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700"
+              onClick={() => setSearchQuery("")}
+            />
+          )}
+        </div>
+      </div>
+      
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-6 flex justify-center">
+            <div className="h-6 w-6 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+          </CardContent>
+        </Card>
+      ) : filteredCustomers.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            {searchQuery ? (
+              <p className="text-muted-foreground">No contacts found matching "{searchQuery}"</p>
+            ) : (
               <>
-                <div className="space-y-2">
-                  <Label>File Summary</Label>
-                  <div className="flex flex-wrap gap-4">
-                    <div className="bg-muted p-2 rounded-md flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">{dataPreview.validCount} valid emails</span>
-                    </div>
-                    {dataPreview.invalidCount > 0 && (
-                      <div className="bg-muted p-2 rounded-md flex items-center gap-2">
-                        <X className="h-4 w-4 text-red-600" />
-                        <span className="text-sm">{dataPreview.invalidCount} invalid emails</span>
-                      </div>
-                    )}
-                    {dataPreview.duplicateCount > 0 && (
-                      <div className="bg-muted p-2 rounded-md flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm">{dataPreview.duplicateCount} duplicates (skipped)</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="listName">List Name</Label>
-                  <Input 
-                    id="listName"
-                    value={dataPreview.listName}
-                    onChange={(e) => setDataPreview({...dataPreview, listName: e.target.value})}
-                    placeholder="Give this list a name"
-                  />
-                </div>
-                
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Please verify your data</AlertTitle>
-                  <AlertDescription>
-                    By uploading this list, you confirm that you have permission to use these email addresses for marketing purposes.
-                  </AlertDescription>
-                </Alert>
-                
-                {dataPreview.emails.length > 0 && (
-                  <div className="border rounded-md overflow-hidden max-h-60 overflow-y-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Tag</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dataPreview.emails.slice(0, 10).map((email, i) => (
-                          <TableRow key={i}>
-                            <TableCell>{email}</TableCell>
-                            <TableCell>{dataPreview.names[i] || '-'}</TableCell>
-                            <TableCell>{dataPreview.segments[i] || '-'}</TableCell>
-                          </TableRow>
-                        ))}
-                        {dataPreview.emails.length > 10 && (
-                          <TableRow>
-                            <TableCell colSpan={3} className="text-center text-muted-foreground">
-                              + {dataPreview.emails.length - 10} more contacts
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                <p className="text-lg font-medium mb-2">No contacts yet</p>
+                <p className="text-muted-foreground mb-4">
+                  Upload a CSV file to import customer contact data
+                </p>
+                <Button onClick={() => setIsImportModalOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Contacts
+                </Button>
               </>
             )}
-          </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <Card>
+            <CardContent className="p-0 sm:p-2">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Segment</TableHead>
+                      <TableHead>List</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCustomers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-medium">
+                          {customer.email}
+                        </TableCell>
+                        <TableCell>{customer.name || "—"}</TableCell>
+                        <TableCell>{customer.segment || "—"}</TableCell>
+                        <TableCell>{customer.list_name || "—"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
           
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setPreviewOpen(false)}
-              disabled={isUploading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={uploadCustomerData}
-              disabled={isUploading || !dataPreview || dataPreview.validCount === 0}
-            >
-              {isUploading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Import {dataPreview?.validCount} Contacts
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <DialogContent>
+          {/* Delete all data button */}
+          {customers.length > 0 && (
+            <div className="flex justify-end mt-6">
+              <Button 
+                variant="destructive" 
+                onClick={deleteAllData}
+                size="sm"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All Contact Data
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+      
+      {/* Import Modal */}
+      <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              {selectedRows.size > 0 
-                ? `Are you sure you want to delete ${selectedRows.size} selected contacts?` 
-                : 'Are you sure you want to delete all contacts?'}
-            </DialogDescription>
+            <DialogTitle>Upload Customer List</DialogTitle>
           </DialogHeader>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button 
-              variant="outline" 
-              onClick={() => setConfirmDelete(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={selectedRows.size > 0 ? deleteSelectedCustomers : deleteAllCustomers}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {selectedRows.size > 0 ? 'Delete Selected' : 'Delete All'}
-            </Button>
-          </DialogFooter>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="list-name">List Name</Label>
+              <Input
+                id="list-name"
+                value={listName}
+                onChange={(e) => setListName(e.target.value)}
+                placeholder="E.g., Newsletter Subscribers"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="csv-file">CSV File</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="csv-file"
+                  type="file"
+                  accept=".csv,.txt"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                CSV file must include an "email" column. Other columns like "name" and "segment" will be imported if present.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Maximum {MAX_RECORDS.toLocaleString()} records per upload.
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline" 
+                onClick={() => {
+                  setIsImportModalOpen(false);
+                  setImportFile(null);
+                  setListName("");
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                  }
+                }}
+                disabled={isUploading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleImport} 
+                disabled={isUploading || !importFile || !listName.trim()}
+              >
+                {isUploading ? (
+                  <>
+                    <div className="h-4 w-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>
+                    Importing...
+                  </>
+                ) : "Import"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 };
 

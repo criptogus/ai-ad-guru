@@ -1,79 +1,73 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Copy, FileText, Download, Plus } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-interface CopyAsset {
-  id: string;
-  text: string;
-  platform: string;
-  character_count: number;
-  published_at: string;
-  ad_type?: string;
-}
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Clipboard, Search, X, Calendar, Download } from "lucide-react";
+import { CopyAsset } from "@/types/supabase";
+import { format } from "date-fns";
 
 const CopywritingArchive: React.FC = () => {
   const { user } = useAuth();
-  const [assets, setAssets] = useState<CopyAsset[]>([]);
+  const [copyAssets, setCopyAssets] = useState<CopyAsset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<CopyAsset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [platformFilter, setPlatformFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [platformFilter, setPlatformFilter] = useState<string>("all");
 
   useEffect(() => {
     if (user) {
-      fetchAssets();
+      fetchCopyAssets();
     }
   }, [user]);
 
   useEffect(() => {
     filterAssets();
-  }, [assets, searchTerm, platformFilter]);
+  }, [searchQuery, platformFilter, copyAssets]);
 
-  const fetchAssets = async () => {
+  const fetchCopyAssets = async () => {
     if (!user) return;
     
-    setIsLoading(true);
     try {
+      setIsLoading(true);
+      
       const { data, error } = await supabase
-        .from('copywriting_assets')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('published_at', { ascending: false });
+        .from("copywriting_assets")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      setAssets(data || []);
+      setCopyAssets(data as unknown as CopyAsset[]);
     } catch (error) {
-      console.error('Error fetching copywriting assets:', error);
-      toast.error('Failed to load copywriting archive');
+      console.error("Error fetching copywriting assets:", error);
+      toast.error("Failed to load copywriting archive");
     } finally {
       setIsLoading(false);
     }
   };
 
   const filterAssets = () => {
-    let filtered = [...assets];
+    let filtered = [...copyAssets];
     
-    // Apply platform filter
-    if (platformFilter !== 'all') {
+    // Filter by platform
+    if (platformFilter !== "all") {
       filtered = filtered.filter(asset => asset.platform === platformFilter);
     }
     
-    // Apply search filter
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
+    // Filter by search query
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(asset => 
-        asset.text.toLowerCase().includes(lowerSearch) ||
-        asset.platform.toLowerCase().includes(lowerSearch)
+        asset.text.toLowerCase().includes(query)
       );
     }
     
@@ -82,221 +76,218 @@ const CopywritingArchive: React.FC = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
+    toast.success("Copied to clipboard");
   };
 
   const duplicateAsset = async (asset: CopyAsset) => {
     if (!user) return;
     
     try {
+      const newAsset = {
+        user_id: user.id,
+        text: asset.text,
+        platform: asset.platform,
+        character_count: asset.character_count,
+        published_at: new Date().toISOString(),
+        ad_type: asset.ad_type
+      };
+      
       const { error } = await supabase
-        .from('copywriting_assets')
-        .insert([
-          {
-            user_id: user.id,
-            text: asset.text,
-            platform: asset.platform,
-            character_count: asset.character_count,
-            published_at: new Date().toISOString(),
-            ad_type: asset.ad_type
-          }
-        ]);
+        .from("copywriting_assets")
+        .insert([newAsset]);
       
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      toast.success('Duplicated successfully');
-      fetchAssets();
+      toast.success("Text duplicated successfully");
+      fetchCopyAssets();
     } catch (error) {
-      console.error('Error duplicating asset:', error);
-      toast.error('Failed to duplicate');
+      console.error("Error duplicating asset:", error);
+      toast.error("Failed to duplicate text");
     }
   };
 
   const exportAsCSV = () => {
-    if (filteredAssets.length === 0) {
-      toast.error('No data to export');
-      return;
-    }
+    // Create CSV content
+    const headers = ["Text", "Platform", "Characters", "Date Published"];
+    const rows = filteredAssets.map(asset => [
+      `"${asset.text.replace(/"/g, '""')}"`,
+      asset.platform,
+      asset.character_count.toString(),
+      new Date(asset.published_at).toLocaleDateString()
+    ]);
     
-    const headers = ['Text', 'Platform', 'Characters', 'Date Published', 'Ad Type'];
     const csvContent = [
-      headers.join(','),
-      ...filteredAssets.map(asset => [
-        `"${asset.text.replace(/"/g, '""')}"`,
-        asset.platform,
-        asset.character_count,
-        new Date(asset.published_at).toLocaleDateString(),
-        asset.ad_type || ''
-      ].join(','))
-    ].join('\n');
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `copywriting-archive-${new Date().toISOString().slice(0, 10)}.csv`);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `copywriting-export-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const getPlatformLabel = (platform: string) => {
-    switch(platform.toLowerCase()) {
-      case 'google':
-        return 'Google';
-      case 'meta':
-        return 'Meta';
-      case 'facebook':
-        return 'Facebook';
-      case 'instagram':
-        return 'Instagram';
-      case 'linkedin':
-        return 'LinkedIn';
-      case 'microsoft':
-        return 'Microsoft';
-      default:
-        return platform;
+    switch (platform) {
+      case "google": return "Google Ads";
+      case "meta": return "Meta Ads";
+      case "linkedin": return "LinkedIn";
+      case "microsoft": return "Microsoft Ads";
+      default: return platform;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const truncateText = (text: string, maxLength: number = 60) => {
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + '...'
-      : text;
+    try {
+      return format(new Date(dateString), "MMM d, yyyy");
+    } catch (e) {
+      return dateString;
+    }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle>Copywriting Archive</CardTitle>
-            <CardDescription>
-              Archive of all your ad copy for reuse
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={exportAsCSV}
-              disabled={filteredAssets.length === 0}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {/* Search and Filter */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search ad copy..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select
-            value={platformFilter}
-            onValueChange={setPlatformFilter}
-          >
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="All Platforms" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
-              <SelectItem value="google">Google</SelectItem>
-              <SelectItem value="meta">Meta</SelectItem>
-              <SelectItem value="facebook">Facebook</SelectItem>
-              <SelectItem value="instagram">Instagram</SelectItem>
-              <SelectItem value="linkedin">LinkedIn</SelectItem>
-              <SelectItem value="microsoft">Microsoft</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold">Copywriting Archive</h2>
+          <p className="text-sm text-muted-foreground">
+            Store and reuse your ad text content
+          </p>
         </div>
         
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : filteredAssets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
-            {searchTerm || platformFilter !== 'all' ? (
-              <p className="text-muted-foreground">No copy found matching your filters</p>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={exportAsCSV} disabled={filteredAssets.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search text..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+          {searchQuery && (
+            <X
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700"
+              onClick={() => setSearchQuery("")}
+            />
+          )}
+        </div>
+        
+        <Select value={platformFilter} onValueChange={setPlatformFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Platforms</SelectItem>
+            <SelectItem value="google">Google Ads</SelectItem>
+            <SelectItem value="meta">Meta Ads</SelectItem>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
+            <SelectItem value="microsoft">Microsoft Ads</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-6 flex justify-center">
+            <div className="h-6 w-6 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+          </CardContent>
+        </Card>
+      ) : filteredAssets.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Clipboard className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            {searchQuery || platformFilter !== "all" ? (
+              <p className="text-muted-foreground">No copy assets found matching your filters</p>
             ) : (
               <>
-                <p className="font-medium mb-2">No saved copywriting yet</p>
-                <p className="text-muted-foreground mb-4">
-                  When you create ads, your copy will be archived here for reuse
+                <p className="text-lg font-medium mb-2">No copy assets yet</p>
+                <p className="text-muted-foreground">
+                  Ad texts generated during campaign creation will be saved here
                 </p>
               </>
             )}
-          </div>
-        ) : (
-          <div className="border rounded-md overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[45%]">Text</TableHead>
-                  <TableHead>Ad Network</TableHead>
-                  <TableHead>Characters</TableHead>
-                  <TableHead>Date Published</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAssets.map((asset) => (
-                  <TableRow key={asset.id}>
-                    <TableCell>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{truncateText(asset.text)}</span>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-md">
-                            <p>{asset.text}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </TableCell>
-                    <TableCell>{getPlatformLabel(asset.platform)}</TableCell>
-                    <TableCell>{asset.character_count}</TableCell>
-                    <TableCell>{formatDate(asset.published_at)}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => copyToClipboard(asset.text)}
-                        title="Copy to clipboard"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => duplicateAsset(asset)}
-                        title="Duplicate"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0 sm:p-2">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50%]">Text</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Characters</TableHead>
+                    <TableHead>Date Published</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssets.map((asset) => (
+                    <TableRow key={asset.id}>
+                      <TableCell className="font-medium">
+                        <div className="max-w-md truncate" title={asset.text}>
+                          {asset.text}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          {getPlatformLabel(asset.platform)}
+                        </div>
+                      </TableCell>
+                      <TableCell>{asset.character_count}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-muted-foreground text-sm">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {formatDate(asset.published_at)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => copyToClipboard(asset.text)}
+                            title="Copy to clipboard"
+                          >
+                            <Clipboard className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => duplicateAsset(asset)}
+                            className="h-8"
+                            title="Duplicate"
+                          >
+                            Duplicate
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

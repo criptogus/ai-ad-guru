@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import LandingPage from "./pages/LandingPage";
@@ -21,8 +21,14 @@ import AIInsightsPage from "./pages/AIInsightsPage";
 import { ThemeProvider } from "@/components/theme-provider";
 import UserRolesPage from "./pages/UserRolesPage";
 import AssetPage from "./pages/AssetPage";
+import { ensureStorageBucketsExist } from "@/integrations/supabase/storage";
 
 function App() {
+  useEffect(() => {
+    // Ensure storage buckets exist when the app starts
+    ensureStorageBucketsExist();
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <AuthProvider>
