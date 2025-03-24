@@ -57,7 +57,7 @@ const BuilderContent: React.FC<BuilderContentProps> = ({
     return (
       <TemplateSelection 
         templates={templates} 
-        onSelect={onTemplateSelect} 
+        onSelectTemplate={onTemplateSelect} 
       />
     );
   }
