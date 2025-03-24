@@ -1,52 +1,49 @@
 
-// Helper functions for the generate-image edge function
+import { getBrandToneStyle } from "./utils.ts";
 
-// CORS headers for cross-origin requests
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Enhanced function to get style based on brand tone
+// Handle CORS preflight requests
+export function handleCorsRequest(req: Request) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders
+    });
+  }
+  return null;
+}
+
+// Get styling based on brand tone
 export function getBrandToneStyle(brandTone?: string): string {
-  if (!brandTone) return "Professional photography style with clean product focus";
-  
-  const tone = brandTone.toLowerCase();
-  
-  if (tone.includes("luxury") || tone.includes("premium") || tone.includes("elegant")) {
-    return "Luxury high-end photography with rich textures, premium lighting, sophisticated composition, elegant atmosphere, subtle gold/black accents, aspirational lifestyle";
+  switch (brandTone?.toLowerCase()) {
+    case 'professional':
+      return 'Corporate and polished with muted colors, clean lines, professional setting';
+    case 'friendly':
+    case 'casual':
+      return 'Warm and approachable with soft lighting, casual environment, natural interactions';
+    case 'luxury':
+    case 'premium':
+      return 'High-end and elegant with rich colors, premium materials, sophisticated environment';
+    case 'playful':
+    case 'fun':
+      return 'Vibrant and energetic with bright colors, dynamic composition, playful elements';
+    case 'minimalist':
+      return 'Clean and simple with ample white space, minimal elements, intentional composition';
+    case 'bold':
+    case 'dynamic':
+      return 'Strong and impactful with high contrast, dramatic lighting, powerful visual elements';
+    case 'innovative':
+    case 'tech':
+      return 'Modern and cutting-edge with blue tones, digital elements, futuristic aesthetic';
+    default:
+      return 'Clean, modern, and professional with balanced composition and commercial quality';
   }
-  
-  if (tone.includes("tech") || tone.includes("modern") || tone.includes("innovative")) {
-    return "Modern tech photography with sleek minimalism, blue undertones, clean workspace, innovative context, subtle futuristic elements, product-centered composition";
-  }
-  
-  if (tone.includes("playful") || tone.includes("fun") || tone.includes("energetic")) {
-    return "Vibrant lifestyle photography with authentic joy, bright natural lighting, candid moments, genuine emotional reactions, dynamic composition, real people using product";
-  }
-  
-  if (tone.includes("minimalist") || tone.includes("simple") || tone.includes("clean")) {
-    return "Minimalist photography with ample negative space, single focal point, monochromatic palette, subtle shadows, clean lines, uncluttered composition";
-  }
-  
-  if (tone.includes("professional") || tone.includes("business") || tone.includes("corporate")) {
-    return "Professional business photography with confident professionals, productive environment, neutral tones, clean office setting, trustworthy expressions";
-  }
-  
-  if (tone.includes("natural") || tone.includes("organic") || tone.includes("eco")) {
-    return "Natural organic photography with warm sunlight, earthy tones, environmental elements, authentic textures, sustainable lifestyle context";
-  }
-  
-  // Default style if no specific tone is matched
-  return "High-quality professional product photography with lifestyle context, natural lighting, and authentic setting";
 }
 
-// Enhanced function to get LinkedIn-specific brand colors
-export function getLinkedInPalette(): string {
-  return "Professional color palette with combinations of: #0077B5 (LinkedIn blue), #313335 (charcoal gray), #F5F5F5 (light gray), #FFFFFF (white), with subtle accents of #0073B1 (darker blue) for corporate identity";
-}
-
-// LinkedIn-specific image prompt enhancer
+// LinkedIn-specific prompt enhancement
 export function enhanceLinkedInPrompt(data: any): string {
   const {
     prompt,
@@ -55,51 +52,92 @@ export function enhanceLinkedInPrompt(data: any): string {
     targetAudience,
     uniqueSellingPoints,
     industry,
-    adTheme
+    adTheme,
+    imageFormat
   } = data;
   
   // Format unique selling points if they exist
   const formattedUSPs = Array.isArray(uniqueSellingPoints) 
     ? uniqueSellingPoints.join(', ') 
-    : uniqueSellingPoints || 'Professional solutions, reliability, expertise';
+    : uniqueSellingPoints || 'Quality, reliability, expertise';
   
-  // Get brand tone style from utility function
+  // Get style based on brand tone
   const brandToneStyle = getBrandToneStyle(brandTone);
-  const linkedInPalette = getLinkedInPalette();
   
-  // Create enhanced prompt for DALL-E 3 with LinkedIn-specific structure
-  return `
-Generate a high-quality, professional LinkedIn advertising image designed for B2B marketing.
-
-📌 Business Context: ${companyName || 'the company'} - ${prompt}
-📌 Industry: ${industry || 'Business/Technology'}
-📌 Ad Theme: ${adTheme || 'Professional Services'}
-📌 Target Audience: ${targetAudience || 'Business professionals, executives, and decision-makers'} 
-📌 Unique Selling Points: ${formattedUSPs}
-📌 Setting: Modern corporate environment, professional workspace, business meeting, or data-driven context
-📌 Visual Style: ${brandToneStyle}
-📌 Composition: Clean, well-balanced, corporate aesthetic with clear focal point and professional environment
-📌 Color Palette: ${linkedInPalette}
-📌 Mood & Emotion: Authoritative, trustworthy, success-oriented, professional, credible
-📌 Background: Professional business context appropriate for LinkedIn B2B advertising
-📌 Photography Standard: Corporate photography style, premium lighting, realistic professional environment
-
-🎯 Goal: Create a business-appropriate LinkedIn ad image that resonates with professionals and drives B2B engagement.
-
-CRITICAL REQUIREMENTS:
-1. Image MUST look PROFESSIONAL, CORPORATE, and BUSINESS-APPROPRIATE
-2. Must be PHOTOREALISTIC with professional business context
-3. No abstract art or playful elements that would be inappropriate for LinkedIn
-4. NO text overlay (LinkedIn restricts excessive text in ad images)
-5. Must convey trustworthiness, credibility, and professional expertise
-6. Image must be clean, uncluttered, and appropriate for B2B marketing
-`.trim();
-}
-
-// Handle CORS for preflight requests
-export function handleCorsRequest(req: Request) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  // Format for LinkedIn specifically
+  const formatDesc = imageFormat === 'landscape' 
+    ? 'wide rectangular format (1200x627px)' 
+    : 'square format (1080x1080px)';
+  
+  // Industry-specific styling
+  let industryStyling = '';
+  if (industry) {
+    switch(industry.toLowerCase()) {
+      case 'technology':
+        industryStyling = 'sleek devices, digital interfaces, innovation visuals';
+        break;
+      case 'finance':
+        industryStyling = 'professional settings, subtle wealth indicators, data visualizations';
+        break;
+      case 'healthcare':
+        industryStyling = 'clean environments, caring professionals, wellness imagery';
+        break;
+      case 'education':
+        industryStyling = 'learning environments, diverse students, knowledge symbols';
+        break;
+      default:
+        industryStyling = 'professional imagery suitable for business context';
+    }
   }
-  return null;
+  
+  // Theme-specific elements
+  let themeElements = '';
+  if (adTheme) {
+    switch(adTheme.toLowerCase()) {
+      case 'innovation':
+        themeElements = 'futuristic elements, cutting-edge visuals, forward-thinking';
+        break;
+      case 'leadership':
+        themeElements = 'confident posture, authoritative presence, guiding visuals';
+        break;
+      case 'collaboration':
+        themeElements = 'team settings, partnership imagery, connection metaphors';
+        break;
+      case 'growth':
+        themeElements = 'upward trends, expansion visuals, development metaphors';
+        break;
+      default:
+        themeElements = 'professional business elements';
+    }
+  }
+
+  // Create enhanced prompt for DALL-E 3 with B2B focus
+  return `
+Generate a high-end, professional advertising image for LinkedIn campaigns.
+
+📌 Core Focus: ${prompt}
+📌 Industry Elements: ${industryStyling}
+📌 Visual Theme: ${themeElements}
+📌 Company: ${companyName || 'the brand'}
+📌 Target Audience: ${targetAudience || 'B2B professionals'}
+📌 Key Value Propositions: ${formattedUSPs}
+📌 Visual Style: ${brandToneStyle}
+📌 Format Optimization: ${formatDesc}
+
+Technical Specifications:
+- Create an ultra-polished, agency-quality image in ${formatDesc}
+- Professional and sleek aesthetic with business-appropriate visuals
+- Clean composition with strong focal point and space for later text overlay
+- No text or logos in the image itself
+- Modern, premium lighting with subtle depth and dimension
+
+Concept Options (choose most appropriate):
+1. Tech-Driven Success: Sleek devices or interfaces in a minimalist setting
+2. Professional Environment: Modern workspace with collaborative elements
+3. Abstract Business Concept: Dynamic visuals symbolizing growth or innovation
+4. Confident Professional: Diverse business person exuding competence and trust
+5. Premium Product/Service: High-end representation with dramatic lighting
+
+Apply cinematic, commercial-grade lighting and composition techniques to create an image that feels agency-crafted, purposeful, and versatile for B2B marketing.
+`.trim();
 }

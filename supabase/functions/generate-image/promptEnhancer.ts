@@ -1,3 +1,4 @@
+
 import { getBrandToneStyle, enhanceLinkedInPrompt } from "./utils.ts";
 
 interface PromptData {
@@ -24,7 +25,8 @@ export function enhancePrompt(data: PromptData): string {
     companyName,
     brandTone,
     targetAudience,
-    uniqueSellingPoints
+    uniqueSellingPoints,
+    platform
   } = data;
   
   // Format unique selling points if they exist
@@ -35,29 +37,35 @@ export function enhancePrompt(data: PromptData): string {
   // Get brand tone style from utility function
   const brandToneStyle = getBrandToneStyle(brandTone);
   
+  // Determine if we're creating for Instagram specifically
+  const isInstagram = platform === 'instagram' || platform === 'meta';
+  
   // Create enhanced prompt for DALL-E 3 with optimized structure for advertising images
   return `
-Generate a high-end, photorealistic advertising image designed for an Instagram ad campaign.
+Generate a high-end, photorealistic advertising image designed for ${isInstagram ? 'an Instagram ad campaign' : 'digital advertising'}.
 
-📌 Product & Brand: ${companyName || 'the company'} - ${prompt}
+📌 Core Focus: ${prompt}
+📌 Brand Context: ${companyName || 'the company'}
 📌 Target Audience: ${targetAudience || 'General consumers'}
 📌 Unique Selling Points: ${formattedUSPs}
 📌 Visual Style: ${brandToneStyle}
-📌 Composition: Professional product showcase with balanced framing, cinematic lighting, and subtle depth of field
-📌 Background: A realistic, high-end commercial setting matching the brand tone
-📌 Mood & Emotion: Engaging, aspirational, eye-catching
-📌 Color Palette: Vibrant, high contrast, optimized for social media engagement
-📌 Photography Standard: Commercial studio-grade quality, natural shadows, crisp details
-📌 Avoid: Abstract elements, surreal distortions, unnatural proportions, excessive blur, ANY TEXT OVERLAYS
 
-🎯 Goal: Create a realistic and high-conversion Instagram ad image that will drive clicks and engagement.
+Technical Specifications:
+- Professional product/service showcase with balanced framing and cinematic lighting
+- Realistic, high-end commercial setting matching the brand tone
+- Engaging, aspirational, eye-catching mood
+- Vibrant, high contrast color palette optimized for social media engagement
+- Commercial studio-grade quality with natural shadows and crisp details
+- NO text overlays or logos
+- Clean composition with space for later text addition
 
-CRITICAL REQUIREMENTS:
-1. This MUST be a PHOTOREALISTIC commercial photograph, NOT digital art or illustration
-2. Use professional studio-quality photography techniques
-3. Show the product/service in a real-world context that resonates with ${targetAudience || 'the target audience'}
-4. Include subtle emotional elements that highlight the benefits
-5. NO text overlay (Meta restricts excessive text in ad images)
-6. Image must be clean, uncluttered, and focus on the main product/message
+Concept Options (choose most appropriate):
+1. Lifestyle Elevation: Confident individual in vibrant environment showing product/service benefits
+2. Product Spotlight: High-end product in dramatic setting with premium lighting
+3. Abstract Impact: Dynamic visuals symbolizing the core benefit or emotion
+4. Modern Context: Contemporary setting showing the product/service in real-world use
+5. Tech-Forward: Sleek, innovative presentation with modern aesthetic
+
+This MUST be a PHOTOREALISTIC commercial photograph, NOT digital art or illustration, using professional studio-quality photography techniques.
 `.trim();
 }
