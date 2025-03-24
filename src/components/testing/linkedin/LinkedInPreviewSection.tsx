@@ -10,7 +10,7 @@ interface LinkedInPreviewSectionProps {
   testAd: MetaAd;
   companyInfo: WebsiteAnalysisResult;
   isGenerating: boolean;
-  onGenerateImage: () => void;
+  onGenerateImage: () => Promise<void>;
 }
 
 const LinkedInPreviewSection: React.FC<LinkedInPreviewSectionProps> = ({

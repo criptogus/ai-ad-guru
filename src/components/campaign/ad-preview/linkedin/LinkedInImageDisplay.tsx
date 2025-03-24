@@ -74,7 +74,7 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
               <Button 
                 variant="secondary" 
                 size="sm"
-                onClick={onGenerateImage}
+                onClick={() => onGenerateImage()}
                 disabled={isGeneratingImage || isUploading}
               >
                 Regenerate Image
@@ -119,7 +119,7 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={onGenerateImage}
+                    onClick={() => onGenerateImage()}
                     className="group relative overflow-hidden"
                   >
                     <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>

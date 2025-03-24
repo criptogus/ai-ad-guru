@@ -35,7 +35,7 @@ const LinkedInAdsTestArea: React.FC = () => {
     toast.info("Test ad reset to default values");
   };
 
-  const handleGenerateImage = async () => {
+  const handleGenerateImage = async (): Promise<void> => {
     if (!testAd.imagePrompt) {
       toast.error("Please provide an image prompt first");
       return;
