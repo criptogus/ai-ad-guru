@@ -213,6 +213,25 @@ declare module '@supabase/supabase-js' {
           };
         };
       };
+      Views: {
+        [key: string]: {
+          Row: Record<string, unknown>;
+        };
+      };
+      Functions: {
+        [key: string]: {
+          Args: Record<string, unknown>;
+          Returns: unknown;
+        };
+      };
+      Enums: {
+        [key: string]: string[];
+      };
+      CompositeTypes: {
+        [key: string]: {
+          [key: string]: unknown;
+        };
+      };
     };
   }
 }

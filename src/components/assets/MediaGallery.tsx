@@ -125,6 +125,7 @@ const MediaGallery: React.FC = () => {
         upsert: false
       };
       
+      // Manual progress tracking since onUploadProgress isn't supported
       const trackProgress = () => {
         let progress = 0;
         const interval = setInterval(() => {
@@ -494,4 +495,3 @@ const MediaGallery: React.FC = () => {
 };
 
 export default MediaGallery;
-
