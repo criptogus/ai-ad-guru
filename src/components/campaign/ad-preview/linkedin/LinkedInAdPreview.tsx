@@ -9,6 +9,7 @@ interface LinkedInAdPreviewProps {
   analysisResult: WebsiteAnalysisResult;
   isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
+  onUploadImage?: (file: File) => Promise<void>;
   imageFormat?: string;
 }
 
@@ -17,6 +18,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   analysisResult,
   isGeneratingImage = false,
   onGenerateImage,
+  onUploadImage,
   imageFormat = "square"
 }) => {
   const companyName = analysisResult?.companyName || "Company Name";
@@ -40,6 +42,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
         imageUrl={ad.imageUrl}
         isGeneratingImage={isGeneratingImage}
         onGenerateImage={onGenerateImage}
+        onUploadImage={onUploadImage}
         imageFormat={imageFormat}
       />
 

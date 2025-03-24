@@ -4,14 +4,18 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./linkedin/LinkedInAdCard";
 import EmptyAdState from "./EmptyAdState";
-import { PreviewLayout, DevicePreview, AdFormat } from "./GoogleAdsTab";
+
+// Define types locally instead of importing from GoogleAdsTab
+type PreviewLayout = "split-horizontal" | "split-vertical" | "full";
+type DevicePreview = "desktop" | "mobile" | "tablet";
+type AdFormat = "square" | "landscape" | "portrait";
 
 interface LinkedInAdsTabProps {
   linkedInAds: MetaAd[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   loadingImageIndex: number | null;
-  onGenerateLinkedInAds: () => Promise<void>;
+  onGenerateLinkedInAds: () => Promise<MetaAd[] | null>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateAd?: (index: number, updatedAd: MetaAd) => void;
   previewLayout?: PreviewLayout;
@@ -37,7 +41,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
     <div className="pt-4 space-y-4">
       {!hasAds ? (
         <EmptyAdState 
-          platform="linkedin"
+          platform="LinkedIn"
           onGenerate={onGenerateLinkedInAds}
           isGenerating={isGenerating}
           buttonText="Generate LinkedIn Ads"

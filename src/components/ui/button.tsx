@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -52,5 +53,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 )
 Button.displayName = "Button"
+
+// Add animation for gradient
+// This would normally go in your tailwind.config.js, but we're adding it here for reference
+// @keyframes gradient-x {
+//   0% { background-position: 0% 50%; }
+//   50% { background-position: 100% 50%; }
+//   100% { background-position: 0% 50%; }
+// }
+// .animate-gradient-x { animation: gradient-x 3s ease infinite; background-size: 200% 200%; }
 
 export { Button, buttonVariants }

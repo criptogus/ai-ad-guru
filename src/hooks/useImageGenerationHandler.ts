@@ -13,10 +13,17 @@ export const useImageGenerationHandler = ({
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateImageForAd = useCallback(async (ad: MetaAd, index: number): Promise<void> => {
+    if (!ad.imagePrompt) {
+      console.warn("No image prompt provided for ad at index", index);
+      return;
+    }
+
     try {
       setLoadingImageIndex(index);
       setIsGenerating(true);
       await handleGenerateImage(ad.imagePrompt, index);
+    } catch (error) {
+      console.error("Error generating image for ad:", error);
     } finally {
       setLoadingImageIndex(null);
       setIsGenerating(false);

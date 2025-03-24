@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -140,18 +141,21 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
       
       <Button
         type="submit"
-        className="w-full gap-2"
+        className="w-full gap-2 relative overflow-hidden group"
         disabled={isGenerating || !prompt.trim()}
       >
+        {/* Animated gradient background that appears on hover */}
+        <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-gradient-x"></span>
+        
         {isGenerating ? (
           <>
-            <RefreshCw size={16} className="animate-spin" />
-            Generating...
+            <RefreshCw size={16} className="animate-spin relative" />
+            <span className="relative">Generating...</span>
           </>
         ) : (
           <>
-            <Sparkles size={16} />
-            Generate AI Image
+            <Sparkles size={16} className="relative animate-pulse" />
+            <span className="relative">Generate AI Image</span>
           </>
         )}
       </Button>

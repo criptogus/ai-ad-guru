@@ -7,6 +7,7 @@ import LinkedInAdCardHeader from "./LinkedInAdCardHeader";
 import LinkedInAdPreview from "./LinkedInAdPreview";
 import LinkedInAdDetails from "./LinkedInAdDetails";
 import LinkedInAdOptimizationAlert from "./LinkedInAdOptimizationAlert";
+import { toast } from "sonner";
 
 interface LinkedInAdCardProps {
   ad: MetaAd;
@@ -71,6 +72,46 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
       imagePrompt: value
     }));
   };
+  
+  const handleUploadImage = async (file: File) => {
+    // This function would typically upload the file to your storage service
+    // and then update the ad with the new image URL
+    // For now we'll use a simple mock implementation
+    
+    try {
+      // Show loading toast
+      toast.loading("Uploading image...");
+      
+      // Create a temporary URL for the file
+      const imageUrl = URL.createObjectURL(file);
+      
+      // Update the ad with the new image URL
+      const updatedAd = {
+        ...editedAd,
+        imageUrl
+      };
+      
+      // If in editing mode, update the local state
+      if (isEditing) {
+        setEditedAd(updatedAd);
+      }
+      
+      // If we have an update callback, call it
+      if (onUpdateAd) {
+        onUpdateAd(index, updatedAd);
+      }
+      
+      // Show success toast
+      toast.success("Image uploaded successfully", {
+        description: "Your LinkedIn ad has been updated with the new image.",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image", {
+        description: "Please try again or use AI image generation instead.",
+      });
+    }
+  };
 
   return (
     <Card>
@@ -92,6 +133,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
               analysisResult={analysisResult}
               isGeneratingImage={isGeneratingImage}
               onGenerateImage={onGenerateImage}
+              onUploadImage={handleUploadImage}
             />
           </div>
           
