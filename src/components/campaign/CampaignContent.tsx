@@ -129,8 +129,9 @@ const CampaignContent: React.FC = () => {
   // Create a properly typed wrapper function that returns void
   const wrappedHandleGenerateGoogleAds = async (): Promise<void> => {
     try {
-      const result = await handleGenerateGoogleAds();
-      // Ignore the result to ensure void return type
+      // Explicitly await the result and ignore it
+      await handleGenerateGoogleAds();
+      // Return undefined to enforce void return type
       return undefined;
     } catch (error) {
       console.error("Error generating Google ads:", error);
