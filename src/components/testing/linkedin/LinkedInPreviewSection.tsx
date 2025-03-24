@@ -4,6 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import LinkedInImageDisplay from "@/components/campaign/ad-preview/linkedin/LinkedInImageDisplay";
 
 interface LinkedInPreviewSectionProps {
   testAd: MetaAd;
@@ -38,28 +39,14 @@ const LinkedInPreviewSection: React.FC<LinkedInPreviewSectionProps> = ({
         <div className="p-3">
           <p className="text-sm mb-3">{testAd.primaryText}</p>
           
-          {/* Image area */}
-          <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-            {testAd.imageUrl ? (
-              <img 
-                src={testAd.imageUrl} 
-                alt="LinkedIn Ad" 
-                className="w-full h-full object-cover rounded-md"
-              />
-            ) : (
-              <div className="text-center p-4">
-                <p className="text-gray-500 mb-2">No image generated yet</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onGenerateImage}
-                  disabled={isGenerating}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Generate Image
-                </Button>
-              </div>
-            )}
+          {/* Image area - now using the LinkedInImageDisplay component */}
+          <div className="aspect-video mb-3">
+            <LinkedInImageDisplay
+              imageUrl={testAd.imageUrl}
+              isGeneratingImage={isGenerating}
+              onGenerateImage={onGenerateImage}
+              imageFormat="landscape"
+            />
           </div>
           
           {/* Headline and CTA */}
