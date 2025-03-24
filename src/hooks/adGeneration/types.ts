@@ -12,6 +12,7 @@ export interface GoogleAd {
   adId?: string;
   status?: string;
   callToActionType?: string;
+  siteLinks?: string[]; // Added siteLinks property
   notes?: string;
 }
 

@@ -170,10 +170,10 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
           <span className="font-semibold text-gray-900 dark:text-gray-100">{companyName}</span>{" "}
           <span className="text-gray-800 dark:text-gray-200">{ad.primaryText}</span>
           
-          {/* Hashtags */}
-          {ad.hashtags && (
+          {/* Hashtags - Check if we have them before rendering */}
+          {ad.callToAction && typeof ad.callToAction === 'string' && ad.callToAction.includes('#') && (
             <div className="mt-1 text-blue-600 dark:text-blue-400">
-              {ad.hashtags}
+              {ad.callToAction}
             </div>
           )}
         </div>

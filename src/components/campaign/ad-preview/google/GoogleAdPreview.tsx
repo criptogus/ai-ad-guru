@@ -14,10 +14,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
   domain,
   viewMode = "desktop" 
 }) => {
-  // Get site links from ad or use defaults
-  const siteLinks = ad.siteLinks || [
-    "Features", "Benefits", "Services", "About Us"
-  ];
+  // Use default site links if not provided in the ad
+  const defaultSiteLinks = ["Features", "Benefits", "Services", "About Us"];
+  const siteLinks = ad.siteLinks || defaultSiteLinks;
   
   return (
     <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-3 font-sans shadow-sm transition-all ${viewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-2xl"}`}>
