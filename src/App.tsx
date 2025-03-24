@@ -1,43 +1,51 @@
-
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import LandingPage from "./pages/LandingPage";
 import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import CampaignsPage from "./pages/CampaignsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import TestAdsPage from "./pages/TestAdsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import NotFound from "./pages/NotFound";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
-import SmartBannerBuilderPage from "./pages/SmartBannerBuilderPage";
-import ConfigPage from "./pages/ConfigPage";
-import BillingPage from "./pages/BillingPage";
-import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "@/components/ui/toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
+import { Toaster as SonnerToaster } from "sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import SettingsPage from "./pages/SettingsPage";
+import BillingPage from "./pages/BillingPage";
+import SmartBannerPage from "./pages/SmartBannerPage";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/campaigns" element={<CampaignsPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/create-campaign" element={<CreateCampaignPage />} />
-          <Route path="/smart-banner" element={<SmartBannerBuilderPage />} />
-          <Route path="/smart-banner-builder" element={<SmartBannerBuilderPage />} />
-          <Route path="/config" element={<ConfigPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-        <Toaster />
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
+            <Route path="/test-ads" element={<ProtectedRoute><TestAdsPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+            <Route path="/smart-banner" element={<ProtectedRoute><SmartBannerPage /></ProtectedRoute>} />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+          <SonnerToaster position="top-right" />
+        </Router>
       </AuthProvider>
-    </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
