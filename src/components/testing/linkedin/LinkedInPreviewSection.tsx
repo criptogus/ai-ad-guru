@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import LinkedInImageDisplay from "@/components/campaign/ad-preview/linkedin/LinkedInImageDisplay";
 import LinkedInAdPreview from "@/components/campaign/ad-preview/linkedin/LinkedInAdPreview";
 import LinkedInPreviewControls from "@/components/campaign/ad-preview/linkedin/LinkedInPreviewControls";
 

@@ -155,7 +155,7 @@ const LinkedInAdDetails: React.FC<LinkedInAdDetailsProps> = ({
             />
           </div>
         ) : (
-          <div className="border p-3 rounded-md text-sm bg-gray-50">
+          <div className="border p-3 rounded-md bg-gray-50 text-sm">
             {ad.imagePrompt || "No image prompt provided"}
           </div>
         )}
