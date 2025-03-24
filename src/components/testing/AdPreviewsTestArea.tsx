@@ -57,7 +57,8 @@ const AdPreviewsTestArea: React.FC = () => {
     primaryText: "Harness the power of AI to create stunning ad campaigns across multiple platforms. Our tool analyzes performance in real-time and optimizes for maximum ROI. #digitalmarketing #aimarketing",
     description: "Try our AI-powered platform today and see the difference.",
     imageUrl: "https://images.unsplash.com/photo-1579869847514-7c1a19d2d2ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
-    callToAction: "Start Free Trial"
+    callToAction: "Start Free Trial",
+    hashtags: ["digitalmarketing", "aimarketing", "adtech"]
   };
 
   const sampleWebsiteAnalysis = {
@@ -65,7 +66,10 @@ const AdPreviewsTestArea: React.FC = () => {
     businessDescription: "An AI-powered platform for creating and optimizing digital ad campaigns",
     targetAudience: "Digital marketers and business owners",
     brandTone: "Professional, innovative, helpful",
-    websiteUrl: "https://aiadmanager.com"
+    websiteUrl: "https://aiadmanager.com",
+    keywords: ["ai marketing", "ad optimization", "digital ads"],
+    callToAction: "Start optimizing your ads today",
+    uniqueSellingPoints: ["AI-powered optimization", "Multi-platform support", "Real-time analytics"]
   };
 
   return (

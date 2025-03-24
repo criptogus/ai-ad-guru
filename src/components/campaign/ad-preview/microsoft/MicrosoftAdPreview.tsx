@@ -14,7 +14,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({ ad, analysisRes
   const displayDomain = domain || (analysisResult ? getUrlFromCompanyName(analysisResult.companyName) : "example.com");
   
   return (
-    <div className="border rounded-md p-3 bg-white dark:bg-gray-800 shadow-sm text-sm w-full">
+    <div className="border rounded-md p-3 bg-white dark:bg-gray-800 shadow-sm text-sm w-full text-left">
       {/* Microsoft branding */}
       <div className="flex items-center mb-1">
         <span className="text-[10px] px-1 mr-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">Ad</span>

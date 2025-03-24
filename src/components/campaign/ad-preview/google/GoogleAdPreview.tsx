@@ -22,7 +22,7 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
   
   return (
     <div className="relative">
-      <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-3 font-sans shadow-sm transition-all ${viewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-2xl"}`}>
+      <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-3 font-sans shadow-sm transition-all text-left ${viewMode === "mobile" ? "max-w-sm mx-auto" : "max-w-2xl"}`}>
         {/* Ad label and domain */}
         <div className="flex items-center mb-1">
           <span className="text-[10px] px-1 mr-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded">Ad</span>
