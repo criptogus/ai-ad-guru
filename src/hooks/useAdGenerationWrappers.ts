@@ -2,9 +2,9 @@
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 
 interface UseAdGenerationWrappersProps {
-  handleGenerateGoogleAds: () => Promise<void>;
-  handleGenerateMetaAds: () => Promise<void>;
-  handleGenerateMicrosoftAds: () => Promise<void>;
+  handleGenerateGoogleAds: () => Promise<any>;
+  handleGenerateMetaAds: () => Promise<any>;
+  handleGenerateMicrosoftAds: () => Promise<any>;
 }
 
 export const useAdGenerationWrappers = ({

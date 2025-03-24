@@ -90,6 +90,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateImage
   });
 
+  // Ensure all ad generation wrappers have Promise<void> return type
   const { 
     wrappedHandleGenerateGoogleAds,
     wrappedHandleGenerateMetaAds,

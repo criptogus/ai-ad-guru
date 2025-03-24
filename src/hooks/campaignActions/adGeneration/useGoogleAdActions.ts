@@ -19,7 +19,7 @@ export const useGoogleAdActions = (
   const [isGenerating, setIsGenerating] = useState(false);
   const creditCosts = getCreditCosts();
   
-  const handleGenerateGoogleAds = async () => {
+  const handleGenerateGoogleAds = async (): Promise<void> => {
     if (isGenerating) return;
     if (!analysisResult) {
       toast({
