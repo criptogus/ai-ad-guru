@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
@@ -75,7 +74,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
     }));
   };
   
-  const handleUploadImage = async (file: File) => {
+  const handleUploadImage = async (file: File): Promise<void> => {
     try {
       setIsUploading(true);
       
@@ -130,13 +129,12 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
         description: "Your LinkedIn ad has been updated with the new image.",
       });
       
-      return publicUrl;
+      // Remove the return statement to ensure Promise<void>
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image", {
         description: error instanceof Error ? error.message : "Please try again or use AI image generation instead.",
       });
-      return null;
     } finally {
       setIsUploading(false);
     }
