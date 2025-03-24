@@ -7,6 +7,8 @@ export interface ImagePlaceholderProps {
   imageError?: boolean;
   onGenerateImage?: () => Promise<void>;
   triggerFileUpload?: () => void;
+  text?: string;
+  viewType?: "feed" | "story" | "reel";
 }
 
 const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({ 
@@ -14,7 +16,9 @@ const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
   isUploading = false, 
   imageError = false,
   onGenerateImage,
-  triggerFileUpload
+  triggerFileUpload,
+  text,
+  viewType
 }) => {
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -55,7 +59,7 @@ const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">No image available</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{text || "No image available"}</p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <button 
                 onClick={onGenerateImage} 

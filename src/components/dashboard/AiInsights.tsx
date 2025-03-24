@@ -48,13 +48,15 @@ const AiInsights: React.FC = () => {
         <div className="divide-y">
           {insights.map((insight) => (
             <div key={insight.id} className="p-4 hover:bg-muted/50 transition-colors">
-              <div className="flex gap-3">
-                <div className="mt-0.5">
+              <div className="flex items-start">
+                <div className="mr-3 mt-1">
                   {insight.icon}
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-sm font-medium">{insight.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">{insight.description}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
+                </div>
+                <div className="ml-3">
                   <Button size="sm" variant="outline" className="text-xs h-7 px-2">
                     Apply
                   </Button>

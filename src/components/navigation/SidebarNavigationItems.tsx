@@ -15,7 +15,6 @@ import {
   Users,
   LayoutTemplate,
   SlidersHorizontal,
-  Wand2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,13 +82,6 @@ export const SidebarNavigationItems: React.FC = () => {
         active={isActiveRoute("/campaigns")}
         icon={<Megaphone />}
         label="Campaigns"
-      />
-      <NavigationItem
-        to="/smart-banner"
-        active={isActiveRoute("/smart-banner")}
-        icon={<Wand2 />}
-        label="Smart Banner Builder"
-        badge="Beta"
       />
       <NavigationItem
         to="/analytics"
