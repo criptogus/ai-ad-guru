@@ -42,7 +42,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   return (
     <Card className="overflow-hidden">
       <LinkedInAdCardHeader 
-        index={index}
+        adIndex={index}
         isEditing={isEditing}
         onCopy={handleCopy}
         onEdit={handleEdit}

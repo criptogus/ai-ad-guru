@@ -73,10 +73,11 @@ const CampaignContent: React.FC = () => {
     setAnalysisResult
   });
 
-  const { handleUpdateGoogleAd, handleUpdateMetaAd, handleUpdateMicrosoftAd } = useAdUpdateHandlers({
+  const { handleUpdateGoogleAd, handleUpdateMetaAd, handleUpdateMicrosoftAd, handleUpdateLinkedInAd } = useAdUpdateHandlers({
     setGoogleAds,
     setMetaAds,
-    setMicrosoftAds
+    setMicrosoftAds,
+    setLinkedInAds
   });
 
   const { handleBack, handleNextWrapper } = useStepNavigation({
@@ -94,11 +95,13 @@ const CampaignContent: React.FC = () => {
   const { 
     wrappedHandleGenerateGoogleAds,
     wrappedHandleGenerateMetaAds,
-    wrappedHandleGenerateMicrosoftAds
+    wrappedHandleGenerateMicrosoftAds,
+    wrappedHandleGenerateLinkedInAds
   } = useAdGenerationWrappers({
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
-    handleGenerateMicrosoftAds
+    handleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds
   });
 
   const { getStepContent } = useCampaignStepRenderer({
@@ -108,6 +111,7 @@ const CampaignContent: React.FC = () => {
     googleAds,
     metaAds,
     microsoftAds,
+    linkedInAds,
     isAnalyzing,
     isGenerating,
     loadingImageIndex,
@@ -116,10 +120,12 @@ const CampaignContent: React.FC = () => {
     handleGenerateGoogleAds: wrappedHandleGenerateGoogleAds,
     handleGenerateMetaAds: wrappedHandleGenerateMetaAds,
     handleGenerateMicrosoftAds: wrappedHandleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds: wrappedHandleGenerateLinkedInAds,
     handleGenerateImage: handleGenerateImageForAd,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
+    handleUpdateLinkedInAd,
     setCampaignData,
     handleBack,
     handleNextWrapper,

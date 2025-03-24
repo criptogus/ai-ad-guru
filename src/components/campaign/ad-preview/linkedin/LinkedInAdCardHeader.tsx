@@ -2,7 +2,7 @@
 import React from "react";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Save, X, Linkedin } from "lucide-react";
+import { Edit2, Save, X, Linkedin, Copy } from "lucide-react";
 
 interface LinkedInAdCardHeaderProps {
   adIndex: number;
@@ -10,6 +10,7 @@ interface LinkedInAdCardHeaderProps {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  onCopy?: () => void;
 }
 
 const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
@@ -17,7 +18,8 @@ const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
   isEditing,
   onEdit,
   onSave,
-  onCancel
+  onCancel,
+  onCopy
 }) => {
   return (
     <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
@@ -49,15 +51,28 @@ const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
             </Button>
           </>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            <Edit2 className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
+          <>
+            {onCopy && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCopy}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <Edit2 className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+          </>
         )}
       </div>
     </CardHeader>
