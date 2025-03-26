@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TriggerButtonInlineProps {
-  onSelectTrigger: (trigger: string) => void;
+  onSelectTrigger?: (trigger: string) => void;
+  onInsert?: (trigger: string) => void; // Added for backward compatibility
   children?: React.ReactNode;
   className?: string;
 }
@@ -67,11 +68,18 @@ const triggers = [
 
 export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   onSelectTrigger,
+  onInsert,
   children,
   className = "",
 }) => {
+  // Unified handler that works with either onSelectTrigger or onInsert
   const handleCopyTrigger = (trigger: string) => {
-    onSelectTrigger(trigger);
+    if (onSelectTrigger) {
+      onSelectTrigger(trigger);
+    }
+    if (onInsert) {
+      onInsert(trigger);
+    }
   };
 
   return (
