@@ -15,6 +15,7 @@ interface GoogleAdsTabProps {
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateGoogleAd: (ads: GoogleAd[]) => void;
+  mindTrigger?: string;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
@@ -23,6 +24,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   isGenerating,
   onGenerateAds,
   onUpdateGoogleAd,
+  mindTrigger,
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<GoogleAd[]>([]);
@@ -77,6 +79,17 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      {mindTrigger && (
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {googleAds.length === 0 ? (
         <Card>
           <CardContent className="pt-6">

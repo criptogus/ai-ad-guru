@@ -233,7 +233,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                   });
                 }}
                 analysisResult={analysisResult}
-                mindTrigger={mindTriggers["google"]}
               />
             </TabsContent>
 
@@ -252,7 +251,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                     }
                   });
                 }}
-                mindTrigger={mindTriggers["meta"]}
               />
             </TabsContent>
 
@@ -271,7 +269,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                     }
                   });
                 }}
-                mindTrigger={mindTriggers["linkedin"]}
               />
             </TabsContent>
 
@@ -288,7 +285,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                     }
                   });
                 }}
-                mindTrigger={mindTriggers["microsoft"]}
               />
             </TabsContent>
           </Tabs>

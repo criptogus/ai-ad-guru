@@ -5,7 +5,7 @@ import { useCampaign } from "@/contexts/CampaignContext";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { useToast } from "@/hooks/use-toast";
-import { useSupabase } from "@/hooks/useSupabase";
+import useSupabase from "@/hooks/useSupabase";
 import { useAuth } from "@/contexts/AuthContext";
 import CampaignHeader from "./CampaignHeader";
 import StepIndicator from "./StepIndicator";
@@ -18,6 +18,7 @@ const CampaignContent: React.FC = () => {
   const { user } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const {
     currentStep,
@@ -58,6 +59,7 @@ const CampaignContent: React.FC = () => {
   // Handle analyzing a website and extracting information
   const handleWebsiteAnalysis = async (websiteUrl: string): Promise<WebsiteAnalysisResult | null> => {
     try {
+      setIsAnalyzing(true);
       const { data, error } = await supabase.functions.invoke("analyze-website", {
         body: { websiteUrl },
       });
@@ -88,6 +90,8 @@ const CampaignContent: React.FC = () => {
         variant: "destructive",
       });
       return null;
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -100,7 +104,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateGoogleAds({
         ...analysisResult,
         ...campaignData,
-      }, mindTrigger);
+      });
       
       if (result) {
         setGoogleAds(result);
@@ -124,7 +128,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateMetaAds({
         ...analysisResult,
         ...campaignData,
-      }, mindTrigger);
+      });
       
       if (result) {
         setMetaAds(result);
@@ -148,7 +152,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateMicrosoftAds({
         ...analysisResult,
         ...campaignData,
-      }, mindTrigger);
+      });
       
       if (result) {
         setMicrosoftAds(result);
@@ -172,7 +176,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateLinkedInAds({
         ...analysisResult,
         ...campaignData,
-      }, mindTrigger);
+      });
       
       if (result) {
         setLinkedInAds(result);
@@ -347,7 +351,7 @@ const CampaignContent: React.FC = () => {
     metaAds,
     microsoftAds,
     linkedInAds,
-    isAnalyzing: false,
+    isAnalyzing,
     isGenerating,
     loadingImageIndex,
     isCreating,
@@ -367,12 +371,14 @@ const CampaignContent: React.FC = () => {
     createCampaign,
   });
 
+  const stepTitles = getStepTitles();
+
   return (
     <div className="space-y-6">
-      <CampaignHeader />
-      <StepIndicator
-        currentStep={currentStep}
-        steps={getStepTitles()}
+      <CampaignHeader onBack={handleBack} />
+      <StepIndicator 
+        steps={stepTitles} 
+        currentStepIndex={currentStep} 
         onStepClick={(step) => {
           // Only allow going back to previous steps
           if (step < currentStep) {

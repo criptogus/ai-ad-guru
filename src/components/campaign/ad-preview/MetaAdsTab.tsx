@@ -7,6 +7,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MetaAdCard from "./meta/MetaAdCard";
 import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -16,6 +17,7 @@ interface MetaAdsTabProps {
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateMetaAd: (ads: MetaAd[]) => void;
+  mindTrigger?: string;
 }
 
 const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
@@ -26,6 +28,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   onGenerateAds,
   onGenerateImage,
   onUpdateMetaAd,
+  mindTrigger,
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<MetaAd[]>(metaAds);
@@ -66,6 +69,17 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      {mindTrigger && (
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {metaAds.length === 0 ? (
         <Card>
           <CardContent className="pt-6">

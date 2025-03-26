@@ -7,6 +7,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./linkedin/LinkedInAdCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface LinkedInAdsTabProps {
   linkedInAds: MetaAd[];
@@ -16,6 +17,7 @@ interface LinkedInAdsTabProps {
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateLinkedInAd: (ads: MetaAd[]) => void;
+  mindTrigger?: string;
 }
 
 const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
@@ -26,6 +28,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   onGenerateAds,
   onGenerateImage,
   onUpdateLinkedInAd,
+  mindTrigger,
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<MetaAd[]>([]);
@@ -78,6 +81,17 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      {mindTrigger && (
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {linkedInAds.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
