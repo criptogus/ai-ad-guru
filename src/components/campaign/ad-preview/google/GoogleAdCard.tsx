@@ -54,6 +54,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     <Card className="overflow-hidden">
       <GoogleAdCardHeader
         index={index}
+        ad={ad}
         isEditing={isEditing}
         onEdit={onEdit}
         onSave={handleSaveClick}
@@ -71,8 +72,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           <GoogleAdDetails 
             ad={editedAd}
             isEditing={isEditing}
-            onHeadlineChange={handleHeadlineChange}
-            onDescriptionChange={handleDescriptionChange}
+            onUpdate={(updatedAd) => setEditedAd(updatedAd)}
           />
         </div>
       </CardContent>

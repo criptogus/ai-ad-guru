@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MetaAd } from "@/hooks/adGeneration";
 import MentalTriggersSection from "../MentalTriggersSection";
-import { TriggerButtonInline } from "../TriggerButtonInline";
+import TriggerButtonInline from "../TriggerButtonInline";
 
 interface InstagramAdEditorProps {
   ad: MetaAd;

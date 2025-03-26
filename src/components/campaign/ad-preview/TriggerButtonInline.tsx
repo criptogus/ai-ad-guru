@@ -11,23 +11,14 @@ import { ChevronDown } from "lucide-react";
 
 interface TriggerButtonInlineProps {
   onInsert: (text: string) => void;
+  className?: string;
 }
 
-const triggers = [
-  { id: "scarcity", text: "Limited Time Offer" },
-  { id: "urgency", text: "Act Now" },
-  { id: "social-proof", text: "Trusted by Thousands" },
-  { id: "curiosity", text: "Discover How" },
-  { id: "value", text: "Save 50% Today" },
-  { id: "fear", text: "Don't Miss Out" },
-  { id: "exclusivity", text: "Exclusive Access" }
-];
-
-const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert }) => {
+const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert, className = "" }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 px-2">
+        <Button variant="ghost" size="sm" className={`h-6 px-2 ${className}`}>
           <ChevronDown className="h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
@@ -45,5 +36,15 @@ const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert }) =
     </DropdownMenu>
   );
 };
+
+const triggers = [
+  { id: "scarcity", text: "Limited Time Offer" },
+  { id: "urgency", text: "Act Now" },
+  { id: "social-proof", text: "Trusted by Thousands" },
+  { id: "curiosity", text: "Discover How" },
+  { id: "value", text: "Save 50% Today" },
+  { id: "fear", text: "Don't Miss Out" },
+  { id: "exclusivity", text: "Exclusive Access" }
+];
 
 export default TriggerButtonInline;

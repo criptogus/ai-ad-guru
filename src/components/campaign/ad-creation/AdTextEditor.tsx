@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
+import TriggerButtonInline from "@/components/campaign/ad-preview/TriggerButtonInline";
 
 interface AdTextEditorProps {
   label: string;

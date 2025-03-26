@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GoogleAd } from "@/hooks/adGeneration";
 import MentalTriggersSection from "../MentalTriggersSection";
-import { TriggerButtonInline } from "../TriggerButtonInline";
+import TriggerButtonInline from "../TriggerButtonInline";
 
 interface GoogleAdEditorProps {
   ad: GoogleAd;
@@ -28,7 +27,6 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({ ad, onChange }) => {
   };
 
   const handleInsertTrigger = (triggerText: string) => {
-    // Add the selected trigger to the first headline as a starting point
     handleHeadlineChange(0, triggerText);
   };
 
