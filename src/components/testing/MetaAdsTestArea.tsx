@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,10 @@ const MetaAdsTestArea: React.FC = () => {
     targetAudience: "Business professionals, 30-45 years old",
     uniqueSellingPoints: "Quality, Innovation, Reliability",
     primaryKeywords: ["efficiency", "professional", "innovation"],
-    secondaryKeywords: ["time-saving", "productivity", "modern solution"]
+    secondaryKeywords: ["time-saving", "productivity", "modern solution"],
+    businessDescription: "A leading provider of technology solutions", // Added missing properties
+    keywords: ["technology", "innovation", "solutions"], // Added missing properties
+    callToAction: ["Contact us today", "Learn more"] // Added missing properties
   });
   
   // Meta-specific image generation parameters
