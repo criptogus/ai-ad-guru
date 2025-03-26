@@ -108,7 +108,7 @@ const LinkedInImageContent: React.FC<LinkedInImageContentProps> = ({
           isLoading={isLoading}
           isUploading={isUploading}
           imageError={imageError}
-          onGenerateImage={onGenerateImage}
+          onGenerate={onGenerateImage}
           triggerFileUpload={triggerFileUpload}
           format={imageFormat}
         />
