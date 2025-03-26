@@ -8,6 +8,9 @@ export { default as ImageUploadHandler } from './ImageUploadHandler';
 export { default as ImageDisplay } from './ImageDisplay';
 export { default as ImageLoader } from './ImageLoader';
 export { default as DebugInfo } from './DebugInfo';
+export { default as HeaderContent } from './HeaderContent';
+export { default as TextContent } from './TextContent';
+export { default as ActionBar } from './ActionBar';
 
 // There's no need for a composite component here since we're using the individual components
 // and we already have InstagramPreview.tsx in another directory
