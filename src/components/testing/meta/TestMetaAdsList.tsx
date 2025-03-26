@@ -1,7 +1,7 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import MetaAdCard from "@/components/campaign/ad-preview/meta/card/MetaAdCard";
+import { MetaAdCard } from "@/components/campaign/ad-preview/meta/card";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 interface TestMetaAdsListProps {
@@ -19,6 +19,27 @@ const TestMetaAdsList: React.FC<TestMetaAdsListProps> = ({
   handleGenerateImage,
   handleUpdateAd
 }) => {
+  // Create local state to track which ad is being edited
+  const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
+
+  const handleEdit = (index: number) => {
+    setEditingAdIndex(index);
+  };
+
+  const handleSave = (index: number, updatedAd: MetaAd) => {
+    handleUpdateAd(index, updatedAd);
+    setEditingAdIndex(null);
+  };
+
+  const handleCancel = () => {
+    setEditingAdIndex(null);
+  };
+
+  const handleCopy = (ad: MetaAd) => {
+    const text = `Headline: ${ad.headline}\n\nPrimary Text: ${ad.primaryText}\n\nDescription: ${ad.description}`;
+    navigator.clipboard.writeText(text);
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Test Ads ({metaAds.length})</h2>
@@ -34,9 +55,14 @@ const TestMetaAdsList: React.FC<TestMetaAdsListProps> = ({
             ad={ad} 
             index={index} 
             analysisResult={defaultAnalysisResult}
+            isEditing={editingAdIndex === index}
+            isGeneratingImage={loadingImageIndex === index}
             loadingImageIndex={loadingImageIndex}
+            onEdit={() => handleEdit(index)}
+            onSave={(updatedAd) => handleSave(index, updatedAd)}
+            onCancel={handleCancel}
+            onCopy={() => handleCopy(ad)}
             onGenerateImage={() => handleGenerateImage(ad, index)}
-            onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
           />
         ))
       )}

@@ -1,13 +1,13 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAdCard } from "./card";
-import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -33,7 +33,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<MetaAd[]>(metaAds);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalAds(metaAds);
   }, [metaAds]);
 
@@ -47,6 +47,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     setLocalAds(newAds);
     onUpdateMetaAd(index, updatedAd);
     setEditingAdIndex(null);
+    toast.success("Ad updated successfully");
   };
 
   const handleCancelEdit = () => {
@@ -57,13 +58,17 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   const handleCopyAd = (ad: MetaAd) => {
     const text = `Headline: ${ad.headline}\n\nPrimary Text: ${ad.primaryText}\n\nDescription: ${ad.description}`;
     navigator.clipboard.writeText(text);
+    toast.success("Ad content copied to clipboard");
   };
 
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
-      return await onGenerateImage(ad, index);
+      await onGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
       throw error;
     }
   };
