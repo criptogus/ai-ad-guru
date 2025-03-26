@@ -14,27 +14,17 @@ import PromptTemplatePage from './pages/PromptTemplatePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
-function App() {
-  return (
-    <AuthProvider>
-      <LanguageProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </LanguageProvider>
-    </AuthProvider>
-  );
-}
+// Define auth layout
+const AuthLayout = () => {
+  return <Outlet />;
+};
 
 // Define layout routes
 const AppLayout = () => {
   return <Outlet />;
 };
 
-// Define auth layout
-const AuthLayout = () => {
-  return <Outlet />;
-};
-
+// Define the router configuration
 const router = createBrowserRouter([
   {
     path: "/",
@@ -150,5 +140,16 @@ const router = createBrowserRouter([
     element: <Navigate to="/auth/register" replace />
   }
 ]);
+
+function App() {
+  return (
+    <AuthProvider>
+      <LanguageProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </LanguageProvider>
+    </AuthProvider>
+  );
+}
 
 export default App;

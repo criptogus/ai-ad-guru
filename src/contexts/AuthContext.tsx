@@ -13,6 +13,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { user, setUser, session, isAuthenticated, isLoading: authStateLoading } = useAuthState();
+  
+  // Initialize auth actions without navigate function
   const { 
     login, 
     loginWithGoogle, 
@@ -49,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
     session,
-    setUser, // Added the missing setUser property here
+    setUser,
   };
 
   return (

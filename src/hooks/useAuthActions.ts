@@ -10,12 +10,13 @@ import { useState } from 'react';
 
 export const useAuthActions = (
   user?: User | null,
-  setUser?: (user: User | null) => void
+  setUser?: (user: User | null) => void,
+  navigate?: (path: string) => void
 ) => {
-  const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions();
-  const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser);
-  const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser);
-  const { createTestAccount, isLoading: isTestAccountLoading } = useTestAccountAction(setUser);
+  const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions(navigate);
+  const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser, navigate);
+  const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser, navigate);
+  const { createTestAccount, isLoading: isTestAccountLoading } = useTestAccountAction(setUser, navigate);
   const { 
     updateUserPaymentStatus, 
     simulateSuccessfulPayment,

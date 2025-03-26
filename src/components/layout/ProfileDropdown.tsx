@@ -43,12 +43,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ collapsed }) => {
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="bg-blue-100 text-blue-600">
-              {user.name.substring(0, 2).toUpperCase()}
+              {user.name?.substring(0, 2).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 text-left overflow-hidden">
-              <p className="text-sm font-medium truncate">{user.name}</p>
+              <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
             </div>
           )}
         </Button>

@@ -1,14 +1,12 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
 
-export const useLogoutAction = (setUser: (user: CustomUser | null) => void) => {
+export const useLogoutAction = (setUser: (user: CustomUser | null) => void, navigate?: (path: string) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const logout = async () => {
     try {
@@ -22,7 +20,11 @@ export const useLogoutAction = (setUser: (user: CustomUser | null) => void) => {
 
       console.log('User logged out successfully');
       setUser(null);
-      navigate('/login');
+      
+      // Only navigate if the navigate function is provided
+      if (navigate) {
+        navigate('/login');
+      }
     } catch (error: any) {
       toast({
         title: "Logout Failed",
