@@ -67,6 +67,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
       adImageUrl: localAd.imageUrl,
       isLoading,
       isEditing,
+      format: localAd.format
     });
   }, [localAd, isLoading, index, isEditing]);
 

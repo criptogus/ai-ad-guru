@@ -10,8 +10,8 @@ interface ImageGenerationConfig {
 export async function generateImageWithGPT4o(config: ImageGenerationConfig): Promise<{ url: string, revisedPrompt?: string }> {
   const { prompt, imageFormat, openaiApiKey } = config;
   
-  // Limit prompt length to 1000 characters as required by OpenAI API
-  const MAX_PROMPT_LENGTH = 1000;
+  // Limit prompt length to 950 characters to allow room for the system message
+  const MAX_PROMPT_LENGTH = 950;
   const truncatedPrompt = prompt.length > MAX_PROMPT_LENGTH 
     ? prompt.substring(0, MAX_PROMPT_LENGTH - 3) + "..." 
     : prompt;
@@ -19,6 +19,14 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
   console.log("Enhanced prompt (truncated):", truncatedPrompt);
   console.log(`Image format: ${imageFormat}`);
   console.log(`Original prompt length: ${prompt.length}, truncated to: ${truncatedPrompt.length}`);
+  
+  // Determine aspect ratio based on image format
+  let aspectRatio = "1:1"; // Default square
+  if (imageFormat === "landscape") {
+    aspectRatio = "16:9";
+  } else if (imageFormat === "portrait" || imageFormat === "story" || imageFormat === "reel") {
+    aspectRatio = "9:16";
+  }
   
   // Retry mechanism for OpenAI API
   let retries = 0;
@@ -37,8 +45,12 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
           model: "gpt-4o",
           messages: [
             {
+              role: "system",
+              content: `Generate a high-quality advertisement image in ${aspectRatio} aspect ratio format.`
+            },
+            {
               role: "user",
-              content: `Generate an image for a ${imageFormat} format LinkedIn ad: ${truncatedPrompt}`
+              content: truncatedPrompt
             }
           ],
           tools: [

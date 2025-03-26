@@ -28,9 +28,9 @@ export function enhancePrompt({
   if (imageFormat === "square") {
     formatGuide = "Use a square format (1:1 aspect ratio).";
   } else if (imageFormat === "landscape") {
-    formatGuide = "Use a landscape format (1.91:1 aspect ratio, like 1792x1024).";
-  } else if (imageFormat === "portrait") {
-    formatGuide = "Use a portrait/vertical format (9:16 aspect ratio, ideal for Stories/Reels).";
+    formatGuide = "Use a landscape format (1.91:1 aspect ratio).";
+  } else if (imageFormat === "portrait" || imageFormat === "story" || imageFormat === "reel") {
+    formatGuide = "Use a portrait/vertical format (9:16 aspect ratio).";
   }
   
   // Create platform-specific guidelines
@@ -38,8 +38,8 @@ export function enhancePrompt({
   if (platform === "linkedin") {
     platformGuide = "Create a professional, business-oriented image for LinkedIn.";
   } else if (platform === "instagram") {
-    if (imageFormat === "portrait") {
-      platformGuide = "Create a visually striking vertical image for Instagram Stories/Reels.";
+    if (imageFormat === "portrait" || imageFormat === "story" || imageFormat === "reel") {
+      platformGuide = "Create a vibrant, visually striking vertical image for Instagram Stories/Reels.";
     } else {
       platformGuide = "Create a vibrant, attention-grabbing image for Instagram Feed.";
     }

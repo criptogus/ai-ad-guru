@@ -1,81 +1,104 @@
 
 import React from "react";
+import { Loader2, Upload, ImagePlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export interface ImagePlaceholderProps {
-  isLoading?: boolean;
-  isUploading?: boolean;
-  imageError?: boolean;
+interface ImagePlaceholderProps {
+  isLoading: boolean;
+  isUploading: boolean;
+  imageError: boolean;
   onGenerateImage?: () => Promise<void>;
-  triggerFileUpload?: () => void;
-  text?: string;
-  viewType?: "feed" | "story" | "reel";
+  triggerFileUpload: () => void;
+  format?: string;
 }
 
-const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({ 
-  isLoading = false, 
-  isUploading = false, 
-  imageError = false,
+const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
+  isLoading,
+  isUploading,
+  imageError,
   onGenerateImage,
   triggerFileUpload,
-  text,
-  viewType
+  format = "feed"
 }) => {
-  return (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-      <div className="text-center p-4">
-        {imageError ? (
-          <>
-            <p className="text-red-500 mb-2">Failed to load image</p>
-            <button 
-              onClick={onGenerateImage} 
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+  // Get format-specific styles
+  const getFormatClasses = () => {
+    if (format === "story" || format === "reel") {
+      return "aspect-[9/16]";
+    }
+    return "aspect-square";
+  };
+
+  const formatText = format === "story" ? "Story" : format === "reel" ? "Reel" : "Feed";
+
+  if (isLoading) {
+    return (
+      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
+        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+        <p className="text-xs">Generating image...</p>
+      </div>
+    );
+  }
+
+  if (isUploading) {
+    return (
+      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
+        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+        <p className="text-xs">Uploading image...</p>
+      </div>
+    );
+  }
+
+  if (imageError) {
+    return (
+      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
+        <div className="flex flex-col items-center gap-2 p-4 text-center">
+          <div className="rounded-full bg-red-100 p-2 text-red-600">
+            <ImagePlus className="h-6 w-6" />
+          </div>
+          <p className="text-xs text-red-600">Image could not be loaded</p>
+          {onGenerateImage && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onGenerateImage}
+              className="mt-2"
             >
               Try Again
-            </button>
-          </>
-        ) : isLoading || isUploading ? (
-          <div className="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
-            <svg
-              className="animate-spin h-8 w-8 mb-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
+      <div className="flex flex-col items-center gap-2 p-4 text-center">
+        <div className="rounded-full bg-gray-100 dark:bg-gray-700 p-2">
+          <ImagePlus className="h-6 w-6" />
+        </div>
+        <p className="text-xs">Instagram {formatText} Image</p>
+        <div className="flex flex-col gap-2 w-full mt-2">
+          {onGenerateImage && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onGenerateImage}
+              className="text-xs"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span className="text-sm">{isUploading ? "Uploading..." : "Generating image..."}</span>
-          </div>
-        ) : (
-          <>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{text || "No image available"}</p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <button 
-                onClick={onGenerateImage} 
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-sm"
-              >
-                Generate with AI
-              </button>
-              <button 
-                onClick={triggerFileUpload} 
-                className="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-colors text-sm"
-              >
-                Upload Image
-              </button>
-            </div>
-          </>
-        )}
+              Generate with AI
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={triggerFileUpload}
+            className="text-xs"
+          >
+            <Upload className="h-3 w-3 mr-1" />
+            Upload
+          </Button>
+        </div>
       </div>
     </div>
   );

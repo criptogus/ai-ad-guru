@@ -12,6 +12,7 @@ interface ImageContentProps {
   isUploading: boolean;
   onGenerateImage?: () => Promise<void>;
   triggerFileUpload: () => void;
+  format?: string;
 }
 
 const ImageContent: React.FC<ImageContentProps> = ({
@@ -20,7 +21,8 @@ const ImageContent: React.FC<ImageContentProps> = ({
   isLoading,
   isUploading,
   onGenerateImage,
-  triggerFileUpload
+  triggerFileUpload,
+  format = "feed"
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -74,8 +76,16 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
 
+  // Determine aspect ratio class based on format
+  const getAspectRatioClass = () => {
+    if (format === "story" || format === "reel" || ad.format === "story" || ad.format === "reel") {
+      return "aspect-[9/16]";
+    }
+    return "aspect-square";
+  };
+
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 aspect-square relative overflow-hidden transition-all duration-300 border border-gray-200 dark:border-gray-700">
+    <div className={`bg-gray-100 dark:bg-gray-800 ${getAspectRatioClass()} relative overflow-hidden transition-all duration-300 border border-gray-200 dark:border-gray-700`}>
       {imageError && !isLoading && !isUploading && (
         <div className="absolute top-2 right-2 z-10">
           <div className="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 p-1.5 rounded-full">
@@ -99,6 +109,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
           imageError={imageError}
           onGenerateImage={onGenerateImage}
           triggerFileUpload={triggerFileUpload}
+          format={format || ad.format}
         />
       )}
     </div>
