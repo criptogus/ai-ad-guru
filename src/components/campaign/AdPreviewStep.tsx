@@ -131,6 +131,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             <TabsContent value="microsoft" className="mt-0">
               <MicrosoftAdsTab
                 microsoftAds={microsoftAds}
+                analysisResult={analysisResult}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateMicrosoftAds}
                 onUpdateMicrosoftAd={(updatedAds) => {

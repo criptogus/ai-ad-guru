@@ -9,10 +9,10 @@ import MicrosoftAdCard from "./MicrosoftAdCard";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: any[];
+  analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateMicrosoftAd: (updatedAds: any[]) => void;
-  analysisResult: WebsiteAnalysisResult;
 }
 
 const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
