@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Loader, ImagePlus, AlertTriangle } from "lucide-react";
+import { Loader, ImagePlus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LinkedInImagePlaceholderProps {
@@ -52,7 +52,7 @@ const LinkedInImagePlaceholder: React.FC<LinkedInImagePlaceholderProps> = ({
   if (imageError) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full p-4 text-center">
-        <AlertTriangle className="w-10 h-10 text-orange-500 mb-3" />
+        <AlertCircle className="w-10 h-10 text-orange-500 mb-3" />
         <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Image failed to load</p>
         <div className="flex gap-2 mt-3">
           {onGenerateImage && (
