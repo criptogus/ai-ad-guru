@@ -17,6 +17,7 @@ export type CreditAction =
   | 'credit_refund'
   | 'meta_ad_generation'
   | 'google_ad_generation'
+  | 'microsoft_ad_generation'  // Added this entry
   | 'smart_banner_creation'
   | 'ad_optimization';
 

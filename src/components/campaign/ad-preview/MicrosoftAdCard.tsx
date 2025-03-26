@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import MicrosoftAdPreview from "./microsoft/MicrosoftAdPreview";
+import { MicrosoftAdPreview } from "@/components/campaign/ad-preview/microsoft";
 import MicrosoftAdCardHeader from "./microsoft/MicrosoftAdCardHeader";
 import MicrosoftAdDetails from "./microsoft/MicrosoftAdDetails";
 
@@ -33,16 +33,21 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
   const handleCancel = () => setIsEditing(false);
+  const handleCopy = () => {
+    // Implement copy functionality
+    const textToCopy = `Headlines: ${ad.headlines?.join(', ')}\nDescriptions: ${ad.descriptions?.join(', ')}`;
+    navigator.clipboard.writeText(textToCopy);
+  };
 
   return (
     <Card className="overflow-hidden">
       <MicrosoftAdCardHeader 
         adIndex={index} 
-        ad={ad}
         isEditing={isEditing}
         onEdit={handleEdit}
         onSave={handleSave}
         onCancel={handleCancel}
+        onCopy={handleCopy}
       />
       <CardContent className="p-4 grid gap-4 md:grid-cols-2">
         <div>

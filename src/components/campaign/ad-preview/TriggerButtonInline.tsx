@@ -1,39 +1,48 @@
 
-import React, { useState } from "react";
+import React from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Lightbulb } from "lucide-react";
-import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
+import { ChevronDown } from "lucide-react";
 
 interface TriggerButtonInlineProps {
   onInsert: (text: string) => void;
-  className?: string;
 }
 
-export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
-  onInsert,
-  className = "",
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
+const triggers = [
+  { id: "scarcity", text: "Limited Time Offer" },
+  { id: "urgency", text: "Act Now" },
+  { id: "social-proof", text: "Trusted by Thousands" },
+  { id: "curiosity", text: "Discover How" },
+  { id: "value", text: "Save 50% Today" },
+  { id: "fear", text: "Don't Miss Out" },
+  { id: "exclusivity", text: "Exclusive Access" }
+];
 
+const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert }) => {
   return (
-    <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className={`h-7 px-2 ${className}`}
-        onClick={() => setIsOpen(true)}
-      >
-        <Lightbulb className="h-3.5 w-3.5 mr-1" />
-        <span className="text-xs">Triggers</span>
-      </Button>
-      
-      <TriggerGallery
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        onSelectTrigger={onInsert}
-      />
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-6 px-2">
+          <ChevronDown className="h-3 w-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {triggers.map((trigger) => (
+          <DropdownMenuItem 
+            key={trigger.id}
+            onClick={() => onInsert(trigger.text)}
+            className="cursor-pointer"
+          >
+            {trigger.text}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

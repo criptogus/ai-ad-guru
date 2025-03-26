@@ -15,6 +15,11 @@ interface LinkedInAdCardProps {
   isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
+  isEditing?: boolean;
+  onEdit?: () => void;
+  onSave?: (updatedAd: MetaAd) => void;
+  onCancel?: () => void;
+  onCopy?: () => void;
 }
 
 const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
@@ -23,20 +28,64 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   analysisResult,
   isGeneratingImage = false,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
+  isEditing: externalIsEditing,
+  onEdit: externalOnEdit,
+  onSave: externalOnSave,
+  onCancel: externalOnCancel,
+  onCopy: externalOnCopy
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [previewType, setPreviewType] = useState<"feed" | "sidebar" | "message">("feed");
   const [deviceView, setDeviceView] = useState<"desktop" | "mobile">("desktop");
   const [imageFormat, setImageFormat] = useState<string>("landscape");
-
-  const handleEdit = () => setIsEditing(true);
-  const handleSave = () => setIsEditing(false);
-  const handleCancel = () => setIsEditing(false);
+  const [localAd, setLocalAd] = useState<MetaAd>(ad);
+  
+  // Use external props if provided, otherwise use internal state
+  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+  
+  const handleEdit = () => {
+    if (externalOnEdit) {
+      externalOnEdit();
+    } else {
+      setInternalIsEditing(true);
+    }
+  };
+  
+  const handleSave = () => {
+    if (externalOnSave) {
+      externalOnSave(localAd);
+    } else {
+      setInternalIsEditing(false);
+      if (onUpdateAd) {
+        onUpdateAd(localAd);
+      }
+    }
+  };
+  
+  const handleCancel = () => {
+    if (externalOnCancel) {
+      externalOnCancel();
+    } else {
+      setInternalIsEditing(false);
+      setLocalAd(ad);
+    }
+  };
   
   const handleCopy = () => {
-    const textToCopy = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
-    navigator.clipboard.writeText(textToCopy);
+    if (externalOnCopy) {
+      externalOnCopy();
+    } else {
+      const textToCopy = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
+      navigator.clipboard.writeText(textToCopy);
+    }
+  };
+  
+  const handleUpdateAd = (updatedAd: MetaAd) => {
+    setLocalAd(updatedAd);
+    if (onUpdateAd) {
+      onUpdateAd(updatedAd);
+    }
   };
 
   return (
@@ -63,7 +112,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-gray-50 p-4 rounded-md">
             <LinkedInAdPreview 
-              ad={ad}
+              ad={isEditing ? localAd : ad}
               analysisResult={analysisResult}
               isGeneratingImage={isGeneratingImage}
               onGenerateImage={onGenerateImage}
@@ -75,9 +124,9 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
           
           <div>
             <LinkedInAdDetails 
-              ad={ad}
+              ad={localAd}
               isEditing={isEditing}
-              onUpdateAd={onUpdateAd}
+              onUpdateAd={handleUpdateAd}
             />
           </div>
         </div>

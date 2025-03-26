@@ -1,12 +1,12 @@
 
-import MicrosoftAdCardHeader from "./MicrosoftAdCardHeader";
 import MicrosoftAdPreview from "./MicrosoftAdPreview";
+import MicrosoftAdCardHeader from "./MicrosoftAdCardHeader";
 import MicrosoftAdDetails from "./MicrosoftAdDetails";
-import MicrosoftAdOptimizationAlert from "./MicrosoftAdOptimizationAlert";
+import MicrosoftAdCard from "../MicrosoftAdCard";
 
 export {
-  MicrosoftAdCardHeader,
   MicrosoftAdPreview,
+  MicrosoftAdCardHeader,
   MicrosoftAdDetails,
-  MicrosoftAdOptimizationAlert,
+  MicrosoftAdCard
 };

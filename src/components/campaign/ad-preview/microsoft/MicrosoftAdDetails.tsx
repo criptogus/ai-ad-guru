@@ -1,99 +1,129 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { GoogleAd } from "@/hooks/adGeneration";
+import TriggerButtonInline from "@/components/campaign/ad-preview/TriggerButtonInline";
 
 interface MicrosoftAdDetailsProps {
   ad: GoogleAd;
-  isEditing?: boolean;
-  onUpdate?: (updatedAd: any) => void;
-  onHeadlineChange?: (value: string, index: number) => void;
-  onDescriptionChange?: (value: string, index: number) => void;
+  isEditing: boolean;
+  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
 const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
   ad,
-  isEditing = false,
-  onUpdate,
-  onHeadlineChange = (value, index) => {
-    if (onUpdate) {
-      const updatedAd = { ...ad };
-      updatedAd.headlines[index] = value;
-      onUpdate(updatedAd);
-    }
-  },
-  onDescriptionChange = (value, index) => {
-    if (onUpdate) {
-      const updatedAd = { ...ad };
-      updatedAd.descriptions[index] = value;
-      onUpdate(updatedAd);
-    }
-  }
+  isEditing,
+  onUpdate
 }) => {
+  const [editedAd, setEditedAd] = useState<GoogleAd>({ ...ad });
+
+  const handleHeadlineChange = (index: number, value: string) => {
+    if (!isEditing || !onUpdate) return;
+    
+    const newHeadlines = [...(editedAd.headlines || [])];
+    newHeadlines[index] = value;
+    
+    const updatedAd = { ...editedAd, headlines: newHeadlines };
+    setEditedAd(updatedAd);
+    onUpdate(updatedAd);
+  };
+
+  const handleDescriptionChange = (index: number, value: string) => {
+    if (!isEditing || !onUpdate) return;
+    
+    const newDescriptions = [...(editedAd.descriptions || [])];
+    newDescriptions[index] = value;
+    
+    const updatedAd = { ...editedAd, descriptions: newDescriptions };
+    setEditedAd(updatedAd);
+    onUpdate(updatedAd);
+  };
+
+  const insertTrigger = (text: string, fieldType: 'headline' | 'description', index: number) => {
+    if (!isEditing || !onUpdate) return;
+    
+    if (fieldType === 'headline') {
+      const newHeadlines = [...(editedAd.headlines || [])];
+      newHeadlines[index] = `${newHeadlines[index] || ''} ${text}`.trim();
+      
+      const updatedAd = { ...editedAd, headlines: newHeadlines };
+      setEditedAd(updatedAd);
+      onUpdate(updatedAd);
+    } else {
+      const newDescriptions = [...(editedAd.descriptions || [])];
+      newDescriptions[index] = `${newDescriptions[index] || ''} ${text}`.trim();
+      
+      const updatedAd = { ...editedAd, descriptions: newDescriptions };
+      setEditedAd(updatedAd);
+      onUpdate(updatedAd);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <div>
-        <h4 className="text-md font-medium mb-2">Headlines</h4>
-        <div className="space-y-3">
-          {ad.headlines.map((headline, index) => (
-            <div key={index}>
-              <Label htmlFor={`headline-${index}`} className="text-xs font-normal text-gray-500 mb-1">
-                Headline {index + 1} ({headline.length}/30 characters)
-              </Label>
-              {isEditing ? (
-                <Input
-                  id={`headline-${index}`}
-                  value={headline}
-                  onChange={(e) => onHeadlineChange(e.target.value, index)}
-                  maxLength={30}
-                  className="mt-1"
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium">Headlines (30 chars max)</h4>
+        {isEditing ? (
+          (editedAd.headlines || []).map((headline, index) => (
+            <div key={`headline-${index}`} className="relative">
+              <Input
+                value={headline || ''}
+                onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                maxLength={30}
+                placeholder={`Headline ${index + 1}`}
+                className="pr-20"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+                <span className="text-xs text-muted-foreground">
+                  {(headline || '').length}/30
+                </span>
+                <TriggerButtonInline
+                  onInsert={(text) => insertTrigger(text, 'headline', index)}
                 />
-              ) : (
-                <div className="border p-2 rounded-md text-sm">
-                  {headline}
-                </div>
-              )}
+              </div>
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          (ad.headlines || []).map((headline, index) => (
+            <div key={`headline-${index}`} className="border p-2 rounded-md">
+              {headline || `Headline ${index + 1} (empty)`}
+            </div>
+          ))
+        )}
       </div>
-      
-      <div>
-        <h4 className="text-md font-medium mb-2">Descriptions</h4>
-        <div className="space-y-3">
-          {ad.descriptions.map((description, index) => (
-            <div key={index}>
-              <Label htmlFor={`description-${index}`} className="text-xs font-normal text-gray-500 mb-1">
-                Description {index + 1} ({description.length}/90 characters)
-              </Label>
-              {isEditing ? (
-                <Input
-                  id={`description-${index}`}
-                  value={description}
-                  onChange={(e) => onDescriptionChange(e.target.value, index)}
-                  maxLength={90}
-                  className="mt-1"
+
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium">Descriptions (90 chars max)</h4>
+        {isEditing ? (
+          (editedAd.descriptions || []).map((description, index) => (
+            <div key={`description-${index}`} className="relative">
+              <Textarea
+                value={description || ''}
+                onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                maxLength={90}
+                placeholder={`Description ${index + 1}`}
+                className="min-h-[80px] pr-20"
+              />
+              <div className="absolute right-2 top-2 flex items-center space-x-1">
+                <span className="text-xs text-muted-foreground">
+                  {(description || '').length}/90
+                </span>
+                <TriggerButtonInline
+                  onInsert={(text) => insertTrigger(text, 'description', index)}
                 />
-              ) : (
-                <div className="border p-2 rounded-md text-sm">
-                  {description}
-                </div>
-              )}
+              </div>
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          (ad.descriptions || []).map((description, index) => (
+            <div key={`description-${index}`} className="border p-2 rounded-md">
+              {description || `Description ${index + 1} (empty)`}
+            </div>
+          ))
+        )}
       </div>
-      
-      {isEditing && (
-        <div className="text-xs text-gray-500 mt-4">
-          <p>Microsoft Ad Character Limits:</p>
-          <ul className="list-disc list-inside">
-            <li>Headlines: 30 characters each</li>
-            <li>Descriptions: 90 characters each</li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
