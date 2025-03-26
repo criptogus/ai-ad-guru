@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tag, MessageSquare } from "lucide-react";
+import { Tag, MessageSquare, Sparkles } from "lucide-react";
 import { InstagramTemplate } from './InstagramTemplateGallery';
 
 interface TemplateCardProps {
@@ -26,31 +26,29 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect }
   };
   
   return (
-    <Card className="cursor-pointer hover:border-primary transition-colors h-full flex flex-col">
-      <CardHeader className="p-4 pb-2 flex-shrink-0">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-md line-clamp-1">{template.title}</CardTitle>
+    <Card className="cursor-pointer hover:border-primary/50 transition-colors h-full flex flex-col overflow-hidden">
+      <CardHeader className="p-3 pb-2 flex-shrink-0 border-b">
+        <div className="flex justify-between items-start gap-2">
+          <CardTitle className="text-sm line-clamp-1 flex items-center">
+            <span className="mr-1.5">{getCategoryEmoji(template.category)}</span>
+            {template.title}
+          </CardTitle>
         </div>
-        <Badge variant="outline" className="w-fit">
-          {getCategoryEmoji(template.category)} {template.category.split('-').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1)
-          ).join(' ')}
-        </Badge>
       </CardHeader>
-      <CardContent className="p-4 pt-2 flex-grow">
-        <p className="text-sm line-clamp-3 text-muted-foreground">
-          {template.prompt.substring(0, 150)}
-          {template.prompt.length > 150 && '...'}
+      <CardContent className="p-3 pt-2 flex-grow">
+        <p className="text-xs line-clamp-2 text-muted-foreground">
+          {template.prompt.substring(0, 100)}
+          {template.prompt.length > 100 && '...'}
         </p>
       </CardContent>
-      <CardFooter className="p-4 pt-2 flex-shrink-0">
+      <CardFooter className="p-3 pt-2 flex-shrink-0 bg-muted/30">
         <Button 
           size="sm" 
           variant="secondary" 
-          className="w-full"
+          className="w-full h-7 text-xs"
           onClick={() => onSelect(template)}
         >
-          <MessageSquare className="h-3.5 w-3.5 mr-1" />
+          <Sparkles className="h-3.5 w-3.5 mr-1" />
           Use Template
         </Button>
       </CardFooter>

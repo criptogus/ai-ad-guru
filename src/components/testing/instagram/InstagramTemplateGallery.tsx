@@ -1,11 +1,11 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Tag, MessageSquare, Edit } from "lucide-react";
+import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
+import { Tag, MessageSquare, Edit, Sparkles } from "lucide-react";
 import { TemplateCard } from "./TemplateCard";
 
 export interface InstagramTemplate {
@@ -135,62 +135,51 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
     : templates.filter(template => template.category === activeCategory);
   
   return (
-    <div className="flex flex-col h-full">
+    <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Instagram Ad Templates</h3>
+        <TriggerButtonInline 
+          onInsert={() => {}} 
+          className="opacity-0 pointer-events-none" 
+        />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-full">
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-base">Categories</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-1">
-                  <Button
-                    variant={activeCategory === "all" ? "secondary" : "ghost"}
-                    className="w-full justify-start text-sm font-normal"
-                    onClick={() => setActiveCategory("all")}
-                  >
-                    ✨ All Templates
-                  </Button>
-                  
-                  {categories.map((category) => (
-                    <Button
-                      key={category.id}
-                      variant={activeCategory === category.id ? "secondary" : "ghost"}
-                      className="w-full justify-start text-sm font-normal"
-                      onClick={() => setActiveCategory(category.id)}
-                    >
-                      {category.emoji} {category.name}
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button
+          variant={activeCategory === "all" ? "secondary" : "outline"}
+          size="sm"
+          className="text-xs"
+          onClick={() => setActiveCategory("all")}
+        >
+          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+          All Templates
+        </Button>
         
-        <div className="md:col-span-3">
-          <Card className="h-full">
-            <CardContent className="p-4 h-full">
-              <ScrollArea className="h-[400px]">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredTemplates.map((template) => (
-                    <TemplateCard 
-                      key={template.id}
-                      template={template}
-                      onSelect={onSelectTemplate}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
+        {categories.map((category) => (
+          <Button
+            key={category.id}
+            variant={activeCategory === category.id ? "secondary" : "outline"}
+            size="sm"
+            className="text-xs"
+            onClick={() => setActiveCategory(category.id)}
+          >
+            <span className="mr-1.5">{category.emoji}</span>
+            {category.name}
+          </Button>
+        ))}
       </div>
+      
+      <ScrollArea className="h-[400px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredTemplates.map((template) => (
+            <TemplateCard 
+              key={template.id}
+              template={template}
+              onSelect={onSelectTemplate}
+            />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
