@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // This effect attempts to validate and preload the image URL when it's generated
   useEffect(() => {
@@ -55,6 +57,9 @@ export const useImageGeneration = () => {
       // Prepare parameters for image generation
       const imageFormat = additionalInfo?.imageFormat || "square";
       const platform = additionalInfo?.platform || "instagram";
+      const userId = user?.id || additionalInfo?.userId;
+      const templateId = additionalInfo?.templateId;
+      const campaignId = additionalInfo?.campaignId;
       
       // Show generating toast
       sonnerToast.info(`Generating ${platform} image...`, {
@@ -68,6 +73,9 @@ export const useImageGeneration = () => {
           prompt,
           imageFormat,
           platform,
+          userId,
+          templateId,
+          campaignId,
           ...additionalInfo
         },
       });

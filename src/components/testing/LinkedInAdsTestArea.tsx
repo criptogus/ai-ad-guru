@@ -7,22 +7,35 @@ import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
 import LinkedInAdForm from "./linkedin/LinkedInAdForm";
 import LinkedInPreviewSection from "./linkedin/LinkedInPreviewSection";
 import { defaultAd, defaultAnalysisResult } from "./linkedin/defaultData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LinkedInAdsTestArea: React.FC = () => {
   const [testAd, setTestAd] = useState<MetaAd>(defaultAd);
   const [companyInfo, setCompanyInfo] = useState(defaultAnalysisResult);
   const { generateAdImage, isGenerating, lastError } = useImageGeneration();
+  const { user } = useAuth();
   
   // LinkedIn-specific image generation parameters
   const [industry, setIndustry] = useState("Technology");
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
   const [imageFormat, setImageFormat] = useState("square"); // square (1080x1080) or landscape (1200x627)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
   };
 
   const handleAdChange = (field: keyof MetaAd, value: string) => {
+    if (field === "imagePrompt") {
+      // Extract templateId if this is coming from a template
+      const templateIdMatch = value.match(/templateId:([a-f0-9-]+)/i);
+      if (templateIdMatch && templateIdMatch[1]) {
+        setSelectedTemplateId(templateIdMatch[1]);
+      } else {
+        setSelectedTemplateId(null);
+      }
+    }
+    
     setTestAd({ ...testAd, [field]: value });
   };
 
@@ -32,6 +45,7 @@ const LinkedInAdsTestArea: React.FC = () => {
     setIndustry("Technology");
     setAdTheme("Innovation & Technology");
     setImageFormat("square");
+    setSelectedTemplateId(null);
     toast.info("Test ad reset to default values");
   };
 
@@ -42,10 +56,7 @@ const LinkedInAdsTestArea: React.FC = () => {
     }
 
     try {
-      // Create a more concise LinkedIn-focused prompt
-      const basePrompt = testAd.imagePrompt;
-      
-      // Pass additional context from companyInfo to enhance image generation
+      // Pass additional context to enhance image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
         brandTone: companyInfo.brandTone,
@@ -53,17 +64,27 @@ const LinkedInAdsTestArea: React.FC = () => {
         uniqueSellingPoints: companyInfo.uniqueSellingPoints,
         industry: industry,
         adTheme: adTheme,
-        imageFormat: imageFormat, // square or landscape format for LinkedIn
-        platform: "linkedin" // Specify platform for image generation
+        imageFormat: imageFormat,
+        platform: "linkedin",
+        userId: user?.id, // Pass user ID for database storing
+        templateId: selectedTemplateId // Pass template ID if using a template
       };
 
-      const imageUrl = await generateAdImage(basePrompt, additionalInfo);
+      const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
       
       if (imageUrl) {
         setTestAd(prev => ({ ...prev, imageUrl }));
+        
+        // Show credit usage toast
+        toast.success("LinkedIn ad image generated", {
+          description: "5 credits were used for this AI-powered image generation"
+        });
       }
     } catch (error) {
       console.error("Error generating LinkedIn ad image:", error);
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
+      });
     }
   };
 

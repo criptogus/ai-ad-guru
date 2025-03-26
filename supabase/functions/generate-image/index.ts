@@ -1,111 +1,116 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, handleCorsRequest } from "./utils.ts";
-import { enhancePrompt } from "./promptEnhancer.ts";
 import { generateImageWithGPT4o, downloadImage } from "./imageGenerator.ts";
-import { storeImageInSupabase, createErrorResponse } from "./storageHandler.ts";
+import { saveGeneratedImage } from "./databaseHandler.ts";
+import { storeImageInSupabase } from "./storageHandler.ts";
+import { corsHeaders } from "./utils.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  const corsResponse = handleCorsRequest(req);
-  if (corsResponse) return corsResponse;
-  
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders
+    });
+  }
+
   try {
-    console.log("Starting image generation process with DALL-E...");
+    // Get the request body
+    const requestData = await req.json();
     
-    // Get API keys from environment variables
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    // Extract the required parameters
+    const {
+      prompt,
+      imageFormat = "square", // Default to square format
+      platform = "instagram", // Default to instagram
+      userId,
+      templateId,
+      campaignId,
+      mainText,
+      subText
+    } = requestData;
+
+    // Validate the required parameters
+    if (!prompt) {
+      throw new Error("Missing required parameter: prompt");
+    }
+
+    // Get environment variables
+    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!openaiApiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+      throw new Error("OPENAI_API_KEY is not set in environment variables");
     }
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Supabase credentials are not properly set');
+      throw new Error("Supabase environment variables are not properly set");
     }
 
-    // Parse request body
-    const requestBody = await req.json();
-    console.log("Request body:", JSON.stringify(requestBody, null, 2));
+    console.log(`Generating image for platform: ${platform}, format: ${imageFormat}`);
     
-    const { 
-      prompt, 
-      brandTone, 
-      companyName, 
-      targetAudience, 
-      uniqueSellingPoints,
-      platform = "instagram", // Default platform is instagram
-      industry,
-      adTheme,
-      imageFormat = "square" // Default to square format (1024x1024)
-    } = requestBody;
-    
-    if (!prompt) {
-      throw new Error('Image prompt is required');
-    }
-    
-    console.log(`Generating image with DALL-E prompt: ${prompt}`);
-    console.log(`Company: ${companyName}, Brand Tone: ${brandTone}`);
-    console.log(`Platform: ${platform}, Image format: ${imageFormat}`);
-    
-    // Create enhanced prompt for the image generation
-    const enhancedPrompt = enhancePrompt({
+    // Generate the image using OpenAI
+    const { url: originalImageUrl, revisedPrompt } = await generateImageWithGPT4o({
       prompt,
-      companyName,
-      brandTone,
-      targetAudience,
-      uniqueSellingPoints,
-      platform,
-      industry,
-      adTheme,
-      imageFormat
-    });
-    
-    console.log("Enhanced prompt for DALL-E:", enhancedPrompt);
-    
-    // Generate image with DALL-E
-    const { url: temporaryImageUrl, revisedPrompt } = await generateImageWithGPT4o({
-      prompt: enhancedPrompt,
       imageFormat,
-      openaiApiKey
+      openaiApiKey,
+      mainText,
+      subText,
+      templateId
     });
-    
-    // Download the image from OpenAI
-    const imageBlob = await downloadImage(temporaryImageUrl);
-    
-    // Store the image in Supabase
+
+    // Store a persistent copy in Supabase Storage
+    const imageBlob = await downloadImage(originalImageUrl);
     const persistentImageUrl = await storeImageInSupabase(imageBlob, {
       supabaseUrl,
       supabaseServiceKey
     });
-
-    console.log("Image generation process completed successfully");
-    console.log("Persistent image URL:", persistentImageUrl);
     
-    // Add cache-busting timestamp to the URL
-    const cacheBustedUrl = `${persistentImageUrl}?t=${Date.now()}`;
+    // Save the image record to the database if a user ID is provided
+    let finalImageUrl = persistentImageUrl;
+    if (userId) {
+      finalImageUrl = await saveGeneratedImage({
+        imageUrl: persistentImageUrl,
+        prompt,
+        userId,
+        templateId,
+        campaignId,
+        supabaseUrl,
+        supabaseKey: supabaseServiceKey
+      });
+    }
 
-    // Return the persistent image URL and the revised prompt used by DALL-E
+    // Return the success response
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        imageUrl: cacheBustedUrl,
-        originalUrl: persistentImageUrl,
-        prompt: enhancedPrompt,
-        revisedPrompt: revisedPrompt || enhancedPrompt
-      }), 
+      JSON.stringify({
+        success: true,
+        imageUrl: finalImageUrl,
+        revisedPrompt,
+        originalUrl: originalImageUrl
+      }),
       {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
-        },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
       }
     );
-    
   } catch (error) {
-    return createErrorResponse(error);
+    console.error("Error in generate-image function:", error);
+    
+    // Return the error response
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      }
+    );
   }
 });

@@ -1,20 +1,31 @@
-
 import { corsHeaders } from "./utils.ts";
 
 interface ImageGenerationConfig {
   prompt: string;
   imageFormat: string;
   openaiApiKey: string;
+  mainText?: string;
+  subText?: string;
+  templateId?: string;
 }
 
 export async function generateImageWithGPT4o(config: ImageGenerationConfig): Promise<{ url: string, revisedPrompt?: string }> {
-  const { prompt, imageFormat, openaiApiKey } = config;
+  const { prompt, imageFormat, openaiApiKey, mainText, subText } = config;
+  
+  // Process template variables if present
+  let processedPrompt = prompt;
+  if (mainText) {
+    processedPrompt = processedPrompt.replace(/\${mainText:[^}]*}/g, mainText);
+  }
+  if (subText) {
+    processedPrompt = processedPrompt.replace(/\${subText:[^}]*}/g, subText);
+  }
   
   // Limit prompt length to 950 characters to allow room for the system message
   const MAX_PROMPT_LENGTH = 950;
-  const truncatedPrompt = prompt.length > MAX_PROMPT_LENGTH 
-    ? prompt.substring(0, MAX_PROMPT_LENGTH - 3) + "..." 
-    : prompt;
+  const truncatedPrompt = processedPrompt.length > MAX_PROMPT_LENGTH 
+    ? processedPrompt.substring(0, MAX_PROMPT_LENGTH - 3) + "..." 
+    : processedPrompt;
   
   console.log("Enhanced prompt (truncated):", truncatedPrompt);
   console.log(`Image format: ${imageFormat}`);
@@ -77,6 +88,13 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
 
       const imageUrl = data.data[0].url;
       const revisedPrompt = data.data[0].revised_prompt || undefined;
+      
+      // Save the generated image to the database
+      if (config.templateId) {
+        // Note: This would be implemented in a separate function that handles
+        // database operations, but we're keeping the function pure here
+        console.log("Image generated with template ID:", config.templateId);
+      }
       
       return { 
         url: imageUrl,
