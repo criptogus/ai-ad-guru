@@ -17,6 +17,7 @@ export interface CampaignData {
   metaAds?: MetaAd[];
   linkedInAds?: LinkedInAd[];
   microsoftAds?: MicrosoftAd[];
+  mindTriggers?: Record<string, string>; // Platform to mind trigger mapping
   [key: string]: any;
 }
 
@@ -46,6 +47,7 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     name: "",
     description: "",
     targetAudience: "",
+    mindTriggers: {},
   });
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);

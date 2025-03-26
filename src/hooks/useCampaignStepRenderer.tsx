@@ -3,6 +3,7 @@ import React from "react";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import PlatformSelectionStep from "@/components/campaign/PlatformSelectionStep";
+import MindTriggerSelectionStep from "@/components/campaign/MindTriggerSelectionStep";
 import AdPreviewStep from "@/components/campaign/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -95,6 +96,19 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
         );
       case 3:
         return (
+          <MindTriggerSelectionStep
+            selectedPlatforms={campaignData.platforms || []}
+            selectedTriggers={campaignData.mindTriggers || {}}
+            onTriggersChange={(mindTriggers) => setCampaignData({
+              ...campaignData,
+              mindTriggers
+            })}
+            onNext={handleNextWrapper}
+            onBack={handleBack}
+          />
+        );
+      case 4:
+        return (
           <CampaignSetupStep
             analysisResult={analysisResult!}
             campaignData={campaignData}
@@ -103,7 +117,7 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             onBack={handleBack}
           />
         );
-      case 4:
+      case 5:
         return (
           <AdPreviewStep
             analysisResult={analysisResult!}
@@ -124,9 +138,10 @@ export const useCampaignStepRenderer = (props: CampaignStepRendererProps) => {
             onUpdateLinkedInAd={handleUpdateLinkedInAd}
             onNext={handleNextWrapper}
             onBack={handleBack}
+            mindTriggers={campaignData.mindTriggers || {}}
           />
         );
-      case 5:
+      case 6:
         return (
           <CampaignSummary
             campaignName={campaignData.name}

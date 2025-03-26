@@ -1,190 +1,209 @@
 
 import { WebsiteAnalysisResult } from "./types.ts";
 
-export function createGoogleAdsPrompt(data: WebsiteAnalysisResult): string {
-  const uniqueSellingPoints = Array.isArray(data.uniqueSellingPoints) 
-    ? data.uniqueSellingPoints.join("\n- ") 
-    : data.uniqueSellingPoints || "";
-    
-  const callToAction = Array.isArray(data.callToAction) 
-    ? data.callToAction.join(", ") 
-    : data.callToAction || "Learn More";
-    
-  const keywords = Array.isArray(data.keywords) 
-    ? data.keywords.join(", ") 
-    : data.keywords || "";
-
-  return `
-Create 5 Google Search Ads for the following business:
+// Helper function to process mind trigger input
+function getMindTriggerInstructions(mindTrigger?: string): string {
+  if (!mindTrigger) return "";
   
-Company name: ${data.companyName}
-Business description: ${data.businessDescription || ""}
-Target audience: ${data.targetAudience || ""}
-Brand tone: ${data.brandTone || "Professional"}
-
-Unique selling points:
-- ${uniqueSellingPoints}
-
-Primary keywords: ${keywords}
-Call to action options: ${callToAction}
-
-The output should be a JSON array of ad objects. Each ad should have:
-1. "headlines": An array of 3 headlines, each 30 characters or less
-2. "descriptions": An array of 2 descriptions, each 90 characters or less
-
-Response format example:
-[
-  {
-    "headlines": ["First Headline", "Second Headline", "Third Headline"],
-    "descriptions": ["First description line that's compelling and under 90 chars.", "Second description line also under 90 characters."]
-  },
-  {...}
-]
-
-Ensure the content is professional, compelling, and within character limits. Include relevant keywords and CTAs from the provided options.
-ONLY return the valid JSON array, nothing else. Do not use backticks or markdown formatting in your response.
-`;
+  // Check if this is a custom trigger or a predefined one
+  if (mindTrigger.startsWith("custom:")) {
+    return `\n\nIMPORTANT: Use this specific approach in the ads: ${mindTrigger.substring(7)}`;
+  }
+  
+  // Return instructions based on predefined triggers
+  const triggerMap: Record<string, string> = {
+    // Google ad triggers
+    urgency: "Create a sense of urgency and scarcity. Use phrases like 'Limited Time', 'Act Now', or 'Today Only'.",
+    social_proof: "Leverage social proof. Mention testimonials, reviews, or how many customers are already using the product/service.",
+    problem_solution: "Structure the ads using a problem-solution framework. Identify a pain point first, then present your solution.",
+    curiosity: "Create curiosity gaps. Present intriguing but incomplete information that makes people want to learn more.",
+    comparison: "Use comparative phrases that position the offering as superior to alternatives or competitors.",
+    
+    // Meta ad triggers
+    lifestyle: "Focus on the aspirational lifestyle that the product enables. Show the positive outcome of using the product/service.",
+    before_after: "Highlight transformation and results. Emphasize the contrast between life before and after using the product/service.",
+    user_generated: "Create ads that feel like authentic user-generated content. Use a conversational and genuine tone.",
+    storytelling: "Use narrative structures that connect emotionally with viewers. Tell a mini-story within the ad.",
+    tutorial: "Structure ads like mini-tutorials that demonstrate value through instruction or education.",
+    
+    // LinkedIn ad triggers
+    thought_leadership: "Position the brand as an industry expert or thought leader. Emphasize knowledge and expertise.",
+    data_insights: "Include data points, statistics, or research findings that provide valuable business intelligence.",
+    professional_growth: "Focus on how the offering helps professionals advance their careers or businesses.",
+    industry_trends: "Highlight industry trends and how the product/service helps capitalize on emerging opportunities.",
+    case_study: "Structure the ads like mini case studies that showcase real-world business results.",
+    
+    // Microsoft ad triggers
+    specificity: "Use precise numbers and specific details rather than general claims.",
+    authority: "Establish expertise and credibility through credentials or trusted associations.",
+    emotional: "Appeal to emotions rather than just logic. Connect on a deeper level.",
+    question: "Pose questions that make the reader reflect on their needs or challenges.",
+    benefit_driven: "Focus entirely on benefits to the user rather than features of the product/service."
+  };
+  
+  return `\n\nIMPORTANT: ${triggerMap[mindTrigger] || `Use this specific approach in the ads: ${mindTrigger}`}`;
 }
 
-export function createLinkedInAdsPrompt(data: WebsiteAnalysisResult): string {
-  const uniqueSellingPoints = Array.isArray(data.uniqueSellingPoints) 
-    ? data.uniqueSellingPoints.join("\n- ") 
-    : data.uniqueSellingPoints || "";
-    
-  const callToAction = Array.isArray(data.callToAction) 
-    ? data.callToAction.join(", ") 
-    : data.callToAction || "Learn More";
-    
-  const keywords = Array.isArray(data.keywords) 
-    ? data.keywords.join(", ") 
-    : data.keywords || "";
-
-  return `
-Create 3 LinkedIn Ads for the following business:
+export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
+  const companyName = campaignData.companyName || "Our Company";
+  const businessDescription = campaignData.businessDescription || "";
+  const targetAudience = campaignData.targetAudience || "";
+  const keywords = campaignData.keywords?.join(", ") || "";
+  const cta = campaignData.callToAction?.[0] || "Learn More";
+  const usp = campaignData.uniqueSellingPoints?.join(", ") || "";
   
-Company name: ${data.companyName}
-Business description: ${data.businessDescription || ""}
-Target audience: ${data.targetAudience || ""}
-Brand tone: ${data.brandTone || "Professional"}
+  // Add mind trigger instructions
+  const triggerInstructions = getMindTriggerInstructions(mindTrigger);
+  
+  return `Create 5 Google Search Ads for ${companyName}.
 
-Unique selling points:
-- ${uniqueSellingPoints}
+Business Description: ${businessDescription}
+Target Audience: ${targetAudience}
+Keywords: ${keywords}
+Call to Action: ${cta}
+Unique Selling Points: ${usp}
 
-Primary keywords: ${keywords}
-Call to action options: ${callToAction}
+Each Google Search Ad should include:
+- 3 Headlines (max 30 characters each)
+- 2 Descriptions (max 90 characters each)
+- 1 CTA
+- Path (max 15 characters each, 2 path segments)
 
-The output should be a JSON array of ad objects. Each ad should have:
-1. "headline": A headline (150 characters max)
-2. "primaryText": The main ad copy (600 characters max)
-3. "description": A brief description that can be used as a CTA (150 characters max)
-4. "imagePrompt": A descriptive prompt for generating an image that would work well with this ad
+The ads should be optimized for search, highlight benefits, and be compelling within Google's character limits.${triggerInstructions}
 
-Response format example:
-[
-  {
-    "headline": "Compelling Headline Here",
-    "primaryText": "Main ad copy that's informative and engaging goes here. This should speak to the target audience and highlight benefits.",
-    "description": "Learn more about our solutions today.",
-    "imagePrompt": "Professional image showing [relevant subject] that would represent the business well"
-  },
-  {...}
-]
-
-Ensure the content is professional, compelling, and within character limits. Create ads that would perform well on LinkedIn for the specified target audience.
-ONLY return the valid JSON array, nothing else. Do not use backticks or markdown formatting in your response.
-`;
+Format your response as JSON:
+{
+  "ads": [
+    {
+      "headline1": "...",
+      "headline2": "...",
+      "headline3": "...",
+      "description1": "...",
+      "description2": "...",
+      "path1": "...",
+      "path2": "..."
+    }
+  ]
+}`;
 }
 
-export function createMicrosoftAdsPrompt(data: WebsiteAnalysisResult): string {
-  const uniqueSellingPoints = Array.isArray(data.uniqueSellingPoints) 
-    ? data.uniqueSellingPoints.join("\n- ") 
-    : data.uniqueSellingPoints || "";
-    
-  const callToAction = Array.isArray(data.callToAction) 
-    ? data.callToAction.join(", ") 
-    : data.callToAction || "Learn More";
-    
-  const keywords = Array.isArray(data.keywords) 
-    ? data.keywords.join(", ") 
-    : data.keywords || "";
-
-  return `
-Create 5 Microsoft Search Ads for the following business:
+export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
+  const companyName = campaignData.companyName || "Our Company";
+  const businessDescription = campaignData.businessDescription || "";
+  const targetAudience = campaignData.targetAudience || "";
+  const brandTone = campaignData.brandTone || "Professional";
+  const usp = campaignData.uniqueSellingPoints?.join(", ") || "";
   
-Company name: ${data.companyName}
-Business description: ${data.businessDescription || ""}
-Target audience: ${data.targetAudience || ""}
-Brand tone: ${data.brandTone || "Professional"}
+  // Add mind trigger instructions
+  const triggerInstructions = getMindTriggerInstructions(mindTrigger);
+  
+  return `Create 3 Instagram/Meta Ads for ${companyName}.
 
-Unique selling points:
-- ${uniqueSellingPoints}
+Business Description: ${businessDescription}
+Target Audience: ${targetAudience}
+Brand Tone: ${brandTone}
+Unique Selling Points: ${usp}
 
-Primary keywords: ${keywords}
-Call to action options: ${callToAction}
+Each Instagram Ad should include:
+- Headline (max 40 characters)
+- Primary Text (max 125 characters)
+- Description (max 30 characters)
+- Image Prompt (detailed description for AI image generation)
 
-The output should be a JSON array of ad objects. Each ad should have:
-1. "headlines": An array of 3 headlines, each 30 characters or less
-2. "descriptions": An array of 2 descriptions, each 90 characters or less
+Create ads that are visually compelling and would perform well on Instagram with strong visual elements.${triggerInstructions}
 
-Response format example:
-[
-  {
-    "headlines": ["First Headline", "Second Headline", "Third Headline"],
-    "descriptions": ["First description line that's compelling and under 90 chars.", "Second description line also under 90 characters."]
-  },
-  {...}
-]
-
-Ensure the content is professional, compelling, and within character limits. Include relevant keywords and CTAs from the provided options.
-ONLY return the valid JSON array, nothing else. Do not use backticks or markdown formatting in your response.
-`;
+Format your response as JSON:
+{
+  "ads": [
+    {
+      "headline": "...",
+      "primaryText": "...",
+      "description": "...",
+      "imagePrompt": "...",
+      "format": "feed"
+    }
+  ]
+}`;
 }
 
-export function createMetaAdsPrompt(data: WebsiteAnalysisResult): string {
-  const uniqueSellingPoints = Array.isArray(data.uniqueSellingPoints) 
-    ? data.uniqueSellingPoints.join("\n- ") 
-    : data.uniqueSellingPoints || "";
-    
-  const callToAction = Array.isArray(data.callToAction) 
-    ? data.callToAction.join(", ") 
-    : data.callToAction || "Learn More";
-    
-  const keywords = Array.isArray(data.keywords) 
-    ? data.keywords.join(", ") 
-    : data.keywords || "";
-
-  return `
-Create 3 Instagram Ads for the following business:
+export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
+  const companyName = campaignData.companyName || "Our Company";
+  const businessDescription = campaignData.businessDescription || "";
+  const targetAudience = campaignData.targetAudience || "";
+  const brandTone = campaignData.brandTone || "Professional";
+  const usp = campaignData.uniqueSellingPoints?.join(", ") || "";
   
-Company name: ${data.companyName}
-Business description: ${data.businessDescription || ""}
-Target audience: ${data.targetAudience || ""}
-Brand tone: ${data.brandTone || "Professional"}
+  // Add mind trigger instructions
+  const triggerInstructions = getMindTriggerInstructions(mindTrigger);
+  
+  return `Create 3 LinkedIn Ads for ${companyName}.
 
-Unique selling points:
-- ${uniqueSellingPoints}
+Business Description: ${businessDescription}
+Target Audience: ${targetAudience}
+Brand Tone: ${brandTone}
+Unique Selling Points: ${usp}
 
-Primary keywords: ${keywords}
-Call to action options: ${callToAction}
+Each LinkedIn Ad should include:
+- Headline (max 50 characters)
+- Primary Text (max 150 characters)
+- Description (max 70 characters)
+- Image Prompt (detailed description for AI image generation)
 
-The output should be a JSON array of ad objects. Each ad should have:
-1. "headline": A headline (150 characters max)
-2. "primaryText": The main ad copy (600 characters max)
-3. "description": A brief description that can be used as a CTA (150 characters max)
-4. "imagePrompt": A descriptive prompt for generating an image that would work well with this ad
+Create ads that are professional, business-focused, and would appeal to LinkedIn's B2B audience.${triggerInstructions}
 
-Response format example:
-[
-  {
-    "headline": "Compelling Headline Here",
-    "primaryText": "Main ad copy that's informative and engaging goes here. This should speak to the target audience and highlight benefits.",
-    "description": "Learn more about our solutions today.",
-    "imagePrompt": "Professional image showing [relevant subject] that would represent the business well"
-  },
-  {...}
-]
+Format your response as JSON:
+{
+  "ads": [
+    {
+      "headline": "...",
+      "primaryText": "...",
+      "description": "...",
+      "imagePrompt": "...",
+      "format": "feed"
+    }
+  ]
+}`;
+}
 
-Ensure the content is professional, compelling, and within character limits. Create ads that would perform well on Instagram for the specified target audience.
-ONLY return the valid JSON array, nothing else. Do not use backticks or markdown formatting in your response.
-`;
+export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
+  const companyName = campaignData.companyName || "Our Company";
+  const businessDescription = campaignData.businessDescription || "";
+  const targetAudience = campaignData.targetAudience || "";
+  const keywords = campaignData.keywords?.join(", ") || "";
+  const cta = campaignData.callToAction?.[0] || "Learn More";
+  const usp = campaignData.uniqueSellingPoints?.join(", ") || "";
+  
+  // Add mind trigger instructions
+  const triggerInstructions = getMindTriggerInstructions(mindTrigger);
+  
+  return `Create 5 Microsoft Ads for ${companyName} to appear on Bing Search.
+
+Business Description: ${businessDescription}
+Target Audience: ${targetAudience}
+Keywords: ${keywords}
+Call to Action: ${cta}
+Unique Selling Points: ${usp}
+
+Each Microsoft Ad should include:
+- 3 Headlines (max 30 characters each)
+- 2 Descriptions (max 90 characters each)
+- 1 CTA
+- Path (max 15 characters each, 2 path segments)
+
+The ads should be optimized for Bing search, highlight benefits, and be slightly more descriptive than Google Ads.${triggerInstructions}
+
+Format your response as JSON:
+{
+  "ads": [
+    {
+      "headline1": "...",
+      "headline2": "...",
+      "headline3": "...",
+      "description1": "...",
+      "description2": "...",
+      "path1": "...",
+      "path2": "..."
+    }
+  ]
+}`;
 }

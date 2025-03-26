@@ -1,31 +1,36 @@
+
 import { WebsiteAnalysisResult } from "./types.ts";
 import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
-export async function generateGoogleAds(campaignData: WebsiteAnalysisResult): Promise<string> {
-  const prompt = createGoogleAdsPrompt(campaignData);
+export async function generateGoogleAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
+  // Apply mind trigger to enhance prompt and generation
+  const prompt = createGoogleAdsPrompt(campaignData, mindTrigger);
   
   const response = await callOpenAI(prompt);
   return response;
 }
 
-export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult): Promise<string> {
-  const prompt = createLinkedInAdsPrompt(campaignData);
+export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
+  // Apply mind trigger to enhance prompt and generation
+  const prompt = createLinkedInAdsPrompt(campaignData, mindTrigger);
   
   const response = await callOpenAI(prompt);
   return response;
 }
 
-export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult): Promise<string> {
-  const prompt = createMicrosoftAdsPrompt(campaignData);
+export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
+  // Apply mind trigger to enhance prompt and generation
+  const prompt = createMicrosoftAdsPrompt(campaignData, mindTrigger);
   
   const response = await callOpenAI(prompt);
   return response;
 }
 
-export async function generateMetaAds(campaignData: WebsiteAnalysisResult): Promise<string> {
-  const prompt = createMetaAdsPrompt(campaignData);
+export async function generateMetaAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
+  // Apply mind trigger to enhance prompt and generation
+  const prompt = createMetaAdsPrompt(campaignData, mindTrigger);
   
   const response = await callOpenAI(prompt);
   return response;

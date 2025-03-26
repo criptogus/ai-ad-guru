@@ -2,7 +2,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Chrome, Linkedin, Instagram, Target } from "lucide-react";
 
@@ -25,24 +24,28 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
       name: "Google Ads",
       description: "Text and display ads shown on Google Search and Partner sites",
       icon: <Chrome className="h-5 w-5 text-red-500" />,
+      creditCost: 5,
     },
     {
       id: "microsoft",
       name: "Microsoft Ads (Bing)",
       description: "Search ads for Bing, Yahoo, and Microsoft partners",
       icon: <Target className="h-5 w-5 text-blue-500" />,
+      creditCost: 5,
     },
     {
       id: "linkedin",
       name: "LinkedIn Ads",
       description: "Professional B2B targeting for the LinkedIn network",
       icon: <Linkedin className="h-5 w-5 text-blue-700" />,
+      creditCost: 5,
     },
     {
       id: "meta",
       name: "Instagram (Meta Ads)",
       description: "Visual ads for Instagram and Facebook platforms",
       icon: <Instagram className="h-5 w-5 text-pink-600" />,
+      creditCost: 5,
     },
   ];
 
@@ -55,6 +58,10 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   };
 
   const showWarning = selectedPlatforms.length === 0;
+  const totalCreditCost = selectedPlatforms.reduce((total, platformId) => {
+    const platform = platforms.find(p => p.id === platformId);
+    return total + (platform?.creditCost || 0);
+  }, 0);
 
   return (
     <Card>
@@ -66,33 +73,30 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {platforms.map((platform) => (
               <div
                 key={platform.id}
-                className={`flex items-start space-x-4 rounded-lg border p-4 transition-colors ${
+                className={`flex items-start p-4 rounded-lg border cursor-pointer transition-colors ${
                   selectedPlatforms.includes(platform.id)
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
                     : "hover:bg-muted/50"
                 }`}
+                onClick={() => handlePlatformToggle(platform.id)}
               >
-                <Checkbox
-                  id={`platform-${platform.id}`}
-                  checked={selectedPlatforms.includes(platform.id)}
-                  onCheckedChange={() => handlePlatformToggle(platform.id)}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <label
-                    htmlFor={`platform-${platform.id}`}
-                    className="flex cursor-pointer items-center gap-2"
-                  >
+                <div className="flex-1 flex items-start gap-3">
+                  <div className={`rounded-full p-2 ${selectedPlatforms.includes(platform.id) ? "bg-blue-100 dark:bg-blue-900" : "bg-gray-100 dark:bg-gray-800"}`}>
                     {platform.icon}
-                    <span className="font-medium">{platform.name}</span>
-                  </label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {platform.description}
-                  </p>
+                  </div>
+                  <div>
+                    <div className="font-medium">{platform.name}</div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {platform.description}
+                    </p>
+                    <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                      {platform.creditCost} credits per campaign
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -109,7 +113,7 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
 
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              <strong>Note:</strong> You'll only be charged credits and receive AI-generated ads for the platforms you choose.
+              <strong>Selected platforms will cost {totalCreditCost} credits total.</strong> You'll receive AI-generated ads with professionally crafted copy and visuals optimized for each platform.
             </p>
           </div>
 

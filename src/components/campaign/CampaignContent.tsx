@@ -1,20 +1,24 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCampaign } from "@/contexts/CampaignContext";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { useToast } from "@/hooks/use-toast";
+import { useSupabase } from "@/hooks/useSupabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCampaignActions } from "@/hooks/campaignActions";
-import { useAdGeneration } from "@/hooks/useAdGeneration";
-import { useCampaignStepRenderer } from "@/hooks/useCampaignStepRenderer";
-import { useWebsiteAnalysisHandler } from "@/hooks/useWebsiteAnalysisHandler";
-import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
-import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
-import { useStepNavigation } from "@/hooks/useStepNavigation";
-import { useAdUpdateHandlers } from "@/hooks/useAdUpdateHandlers";
+import CampaignHeader from "./CampaignHeader";
 import StepIndicator from "./StepIndicator";
-import StepNavigation from "./StepNavigation";
-import CampaignContentHeader from "./content/CampaignContentHeader";
+import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 
 const CampaignContent: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const supabase = useSupabase();
+  const { user } = useAuth();
+  const [isCreating, setIsCreating] = useState(false);
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+
   const {
     currentStep,
     setCurrentStep,
@@ -24,85 +28,317 @@ const CampaignContent: React.FC = () => {
     setAnalysisResult,
     googleAds,
     setGoogleAds,
-    linkedInAds,
-    setLinkedInAds,
+    metaAds,
+    setMetaAds,
     microsoftAds,
     setMicrosoftAds,
-    metaAds,
-    setMetaAds
+    linkedInAds,
+    setLinkedInAds,
   } = useCampaign();
 
-  const { user } = useAuth();
-
-  const { 
-    generateGoogleAds, 
-    generateMetaAds, 
-    generateLinkedInAds,
-    generateMicrosoftAds,
-    generateAdImage 
-  } = useAdGeneration();
-
   const {
-    handleAnalyzeWebsite,
-    isAnalyzing,
-    handleGenerateGoogleAds,
-    handleGenerateLinkedInAds,
-    handleGenerateMetaAds,
-    handleGenerateMicrosoftAds,
-    handleGenerateImage,
-    imageGenerationError,
-    clearImageGenerationError,
-    createCampaign,
-    isCreating
-  } = useCampaignActions(
-    user,
-    campaignData,
-    analysisResult,
-    googleAds,
-    linkedInAds,
-    microsoftAds,
     generateGoogleAds,
+    generateMetaAds,
     generateLinkedInAds,
     generateMicrosoftAds,
     generateAdImage,
-    setCampaignData
-  );
+    isGenerating,
+  } = useAdGeneration();
 
-  const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
-    handleAnalyzeWebsite,
-    setAnalysisResult
-  });
+  // Get step titles based on our updated flow
+  const getStepTitles = () => [
+    "Website Analysis",
+    "Platform Selection",
+    "Mind Triggers",
+    "Campaign Setup",
+    "Ad Preview",
+    "Review & Create",
+  ];
 
-  const { handleUpdateGoogleAd, handleUpdateMetaAd, handleUpdateMicrosoftAd, handleUpdateLinkedInAd } = useAdUpdateHandlers({
-    setGoogleAds,
-    setMetaAds,
-    setMicrosoftAds,
-    setLinkedInAds
-  });
+  // Handle analyzing a website and extracting information
+  const handleWebsiteAnalysis = async (websiteUrl: string): Promise<WebsiteAnalysisResult | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-website", {
+        body: { websiteUrl },
+      });
 
-  const { handleBack, handleNextWrapper } = useStepNavigation({
-    currentStep,
-    setCurrentStep,
-    setCampaignData,
-    campaignData
-  });
+      if (error) {
+        console.error("Error analyzing website:", error);
+        toast({
+          title: "Analysis Failed",
+          description: error.message || "Failed to analyze website. Please check the URL and try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
 
-  const { loadingImageIndex, isGenerating, handleGenerateImageForAd } = useImageGenerationHandler({
-    handleGenerateImage
-  });
+      // Add the website URL to the result
+      const result: WebsiteAnalysisResult = {
+        ...data,
+        websiteUrl,
+      };
 
-  const { 
-    wrappedHandleGenerateGoogleAds,
-    wrappedHandleGenerateMetaAds,
-    wrappedHandleGenerateMicrosoftAds,
-    wrappedHandleGenerateLinkedInAds
-  } = useAdGenerationWrappers({
-    handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateMicrosoftAds,
-    handleGenerateLinkedInAds
-  });
+      setAnalysisResult(result);
+      return result;
+    } catch (error) {
+      console.error("Error in handleWebsiteAnalysis:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "An unexpected error occurred during analysis. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
+  // Generate Google Ads based on analysis
+  const handleGenerateGoogleAds = async (): Promise<void> => {
+    if (!analysisResult) return;
+    
+    try {
+      const mindTrigger = campaignData.mindTriggers?.google;
+      const result = await generateGoogleAds({
+        ...analysisResult,
+        ...campaignData,
+      }, mindTrigger);
+      
+      if (result) {
+        setGoogleAds(result);
+      }
+    } catch (error) {
+      console.error("Error generating Google Ads:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate Google Ads. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Generate Meta Ads based on analysis
+  const handleGenerateMetaAds = async (): Promise<void> => {
+    if (!analysisResult) return;
+    
+    try {
+      const mindTrigger = campaignData.mindTriggers?.meta;
+      const result = await generateMetaAds({
+        ...analysisResult,
+        ...campaignData,
+      }, mindTrigger);
+      
+      if (result) {
+        setMetaAds(result);
+      }
+    } catch (error) {
+      console.error("Error generating Meta Ads:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate Instagram Ads. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Generate Microsoft Ads based on analysis
+  const handleGenerateMicrosoftAds = async (): Promise<void> => {
+    if (!analysisResult) return;
+    
+    try {
+      const mindTrigger = campaignData.mindTriggers?.microsoft;
+      const result = await generateMicrosoftAds({
+        ...analysisResult,
+        ...campaignData,
+      }, mindTrigger);
+      
+      if (result) {
+        setMicrosoftAds(result);
+      }
+    } catch (error) {
+      console.error("Error generating Microsoft Ads:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate Microsoft Ads. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Generate LinkedIn Ads based on analysis
+  const handleGenerateLinkedInAds = async (): Promise<void> => {
+    if (!analysisResult) return;
+    
+    try {
+      const mindTrigger = campaignData.mindTriggers?.linkedin;
+      const result = await generateLinkedInAds({
+        ...analysisResult,
+        ...campaignData,
+      }, mindTrigger);
+      
+      if (result) {
+        setLinkedInAds(result);
+      }
+    } catch (error) {
+      console.error("Error generating LinkedIn Ads:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate LinkedIn Ads. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Generate image for Meta Ads
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    if (!ad.imagePrompt) {
+      toast({
+        title: "Missing Prompt",
+        description: "Image prompt is required to generate an image",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingImageIndex(index);
+
+    try {
+      const imageUrl = await generateAdImage(ad.imagePrompt, {
+        platform: "instagram",
+        format: ad.format || "feed",
+        companyName: analysisResult?.companyName,
+        brandTone: analysisResult?.brandTone,
+      });
+
+      if (imageUrl) {
+        // Update the ad with the new image URL
+        const updatedAd = { ...ad, imageUrl };
+        const updatedAds = [...metaAds];
+        updatedAds[index] = updatedAd;
+        setMetaAds(updatedAds);
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Image Generation Failed",
+        description: "Failed to generate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingImageIndex(null);
+    }
+  };
+
+  // Handle ad updates
+  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
+    const updatedAds = [...googleAds];
+    updatedAds[index] = updatedAd;
+    setGoogleAds(updatedAds);
+  };
+
+  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
+    const updatedAds = [...metaAds];
+    updatedAds[index] = updatedAd;
+    setMetaAds(updatedAds);
+  };
+
+  const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
+    const updatedAds = [...microsoftAds];
+    updatedAds[index] = updatedAd;
+    setMicrosoftAds(updatedAds);
+  };
+
+  const handleUpdateLinkedInAd = (index: number, updatedAd: MetaAd) => {
+    const updatedAds = [...linkedInAds];
+    updatedAds[index] = updatedAd;
+    setLinkedInAds(updatedAds);
+  };
+
+  // Navigation functions
+  const handleNext = () => {
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleNextWrapper = (data?: any) => {
+    if (data) {
+      setCampaignData({
+        ...campaignData,
+        ...data,
+      });
+    }
+    handleNext();
+  };
+
+  // Create a new campaign
+  const createCampaign = async (): Promise<void> => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a campaign",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      // Prepare ad data for storage
+      const adData = {
+        googleAds,
+        metaAds,
+        microsoftAds,
+        linkedInAds,
+      };
+
+      // Create campaign record
+      const { data, error } = await supabase
+        .from("campaigns")
+        .insert({
+          user_id: user.id,
+          name: campaignData.name,
+          description: campaignData.description,
+          platform: campaignData.platforms?.join(","),
+          status: "draft",
+          website_url: analysisResult?.websiteUrl,
+          target_audience: campaignData.targetAudience,
+          objective: campaignData.objective,
+          budget: campaignData.budget,
+          budget_type: campaignData.budgetType,
+          start_date: campaignData.startDate,
+          end_date: campaignData.endDate,
+          mind_triggers: campaignData.mindTriggers,
+          ads_data: adData,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Campaign Created",
+        description: "Your campaign has been created successfully",
+      });
+
+      // Navigate to the campaign details page
+      navigate(`/campaigns/${data.id}`);
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create campaign. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Render step content using custom hook
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -111,16 +347,16 @@ const CampaignContent: React.FC = () => {
     metaAds,
     microsoftAds,
     linkedInAds,
-    isAnalyzing,
+    isAnalyzing: false,
     isGenerating,
     loadingImageIndex,
     isCreating,
     handleWebsiteAnalysis,
-    handleGenerateGoogleAds: wrappedHandleGenerateGoogleAds,
-    handleGenerateMetaAds: wrappedHandleGenerateMetaAds,
-    handleGenerateMicrosoftAds: wrappedHandleGenerateMicrosoftAds,
-    handleGenerateLinkedInAds: wrappedHandleGenerateLinkedInAds,
-    handleGenerateImage: handleGenerateImageForAd,
+    handleGenerateGoogleAds,
+    handleGenerateMetaAds,
+    handleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds,
+    handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
@@ -128,33 +364,23 @@ const CampaignContent: React.FC = () => {
     setCampaignData,
     handleBack,
     handleNextWrapper,
-    createCampaign
+    createCampaign,
   });
 
   return (
-    <div className="py-6 space-y-6">
-      <CampaignContentHeader onBack={handleBack} currentStep={currentStep} />
-      
-      <StepIndicator 
-        number={currentStep} 
-        title={`Step ${currentStep}`} 
-        active={true} 
-        completed={false} 
-      />
-      
-      <div className="bg-card dark:bg-card rounded-xl border p-4 sm:p-6 shadow-sm">
-        {getStepContent()}
-      </div>
-      
-      <StepNavigation
-        current={currentStep}
+    <div className="space-y-6">
+      <CampaignHeader />
+      <StepIndicator
         currentStep={currentStep}
-        total={5}
-        totalSteps={5}
-        onBack={handleBack}
-        onNext={handleNextWrapper}
-        isNextDisabled={isCreating}
+        steps={getStepTitles()}
+        onStepClick={(step) => {
+          // Only allow going back to previous steps
+          if (step < currentStep) {
+            setCurrentStep(step);
+          }
+        }}
       />
+      {getStepContent()}
     </div>
   );
 };
