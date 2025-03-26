@@ -81,7 +81,14 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 googleAds={googleAds}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateGoogleAds}
-                onUpdateAd={onUpdateGoogleAd}
+                onUpdateGoogleAd={(updatedAds) => {
+                  googleAds.forEach((_, index) => {
+                    if (updatedAds[index]) {
+                      onUpdateGoogleAd(index, updatedAds[index]);
+                    }
+                  });
+                }}
+                analysisResult={analysisResult}
               />
             </TabsContent>
 
@@ -93,7 +100,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
-                onUpdateAd={onUpdateMetaAd}
+                onUpdateMetaAd={(updatedAds) => {
+                  metaAds.forEach((_, index) => {
+                    if (updatedAds[index]) {
+                      onUpdateMetaAd(index, updatedAds[index]);
+                    }
+                  });
+                }}
               />
             </TabsContent>
 
@@ -105,7 +118,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateLinkedInAds}
                 onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
-                onUpdateAd={onUpdateLinkedInAd}
+                onUpdateLinkedInAd={(updatedAds) => {
+                  linkedInAds.forEach((_, index) => {
+                    if (updatedAds[index]) {
+                      onUpdateLinkedInAd(index, updatedAds[index]);
+                    }
+                  });
+                }}
               />
             </TabsContent>
 
@@ -114,7 +133,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 microsoftAds={microsoftAds}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateMicrosoftAds}
-                onUpdateAd={onUpdateMicrosoftAd}
+                onUpdateMicrosoftAd={(updatedAds) => {
+                  microsoftAds.forEach((_, index) => {
+                    if (updatedAds[index]) {
+                      onUpdateMicrosoftAd(index, updatedAds[index]);
+                    }
+                  });
+                }}
               />
             </TabsContent>
           </Tabs>

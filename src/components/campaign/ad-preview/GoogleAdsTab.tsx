@@ -13,7 +13,7 @@ interface GoogleAdsTabProps {
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateGoogleAd: (updatedAds: GoogleAd[]) => void;
-  analysisResult: WebsiteAnalysisResult;
+  analysisResult?: WebsiteAnalysisResult;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({

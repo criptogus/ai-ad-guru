@@ -3,17 +3,17 @@ import React from "react";
 import { Edit } from "lucide-react";
 
 interface CharacterCountIndicatorProps {
-  label: string;
-  currentCount: number;
-  maxCount: number;
+  text: string;
+  limit: number;
+  label?: string;
   onEdit?: () => void;
   position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
 }
 
 const CharacterCountIndicator: React.FC<CharacterCountIndicatorProps> = ({
+  text = "",
+  limit,
   label,
-  currentCount,
-  maxCount,
   onEdit,
   position = "top-right"
 }) => {
@@ -26,7 +26,8 @@ const CharacterCountIndicator: React.FC<CharacterCountIndicatorProps> = ({
   };
 
   // Calculate percentage for color indication
-  const percentage = (currentCount / maxCount) * 100;
+  const currentCount = (text || "").length;
+  const percentage = (currentCount / limit) * 100;
   let indicatorColor = "text-green-600";
   
   if (percentage > 90) {
@@ -39,9 +40,9 @@ const CharacterCountIndicator: React.FC<CharacterCountIndicatorProps> = ({
     <div className={`absolute ${positionClasses[position]} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
       <div className="bg-white border border-gray-200 shadow-sm rounded-md p-1.5 flex items-center space-x-2">
         <div>
-          <div className="text-xs font-medium text-gray-700">{label}</div>
+          {label && <div className="text-xs font-medium text-gray-700">{label}</div>}
           <div className={`text-xs ${indicatorColor}`}>
-            {currentCount}/{maxCount} characters
+            {currentCount}/{limit} characters
           </div>
         </div>
         
