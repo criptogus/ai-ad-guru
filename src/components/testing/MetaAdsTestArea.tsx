@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { MetaAd } from "@/hooks/adGeneration";
-import { useAdGeneration } from "@/hooks/useAdGeneration";
+import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import NewMetaAdForm from "./meta/NewMetaAdForm";
 import ImageLoadingTest from "./meta/ImageLoadingTest";
@@ -22,7 +22,7 @@ const defaultAnalysisResult: WebsiteAnalysisResult = {
 };
 
 const MetaAdsTestArea: React.FC = () => {
-  const { generateAdImage } = useAdGeneration();
+  const { generateAdImage, isGenerating, lastError } = useImageGeneration();
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const [newAd, setNewAd] = useState<MetaAd>({
@@ -48,7 +48,14 @@ const MetaAdsTestArea: React.FC = () => {
       setLoadingImageIndex(index);
       
       console.log("Generating image with prompt:", ad.imagePrompt);
-      const imageUrl = await generateAdImage(ad.imagePrompt);
+      
+      // Add platform-specific context
+      const additionalInfo = {
+        platform: "instagram",
+        imageFormat: ad.format || "square", // Use ad format if available or default to square
+      };
+      
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (imageUrl) {
         console.log("Image generated successfully:", imageUrl);
@@ -57,15 +64,11 @@ const MetaAdsTestArea: React.FC = () => {
         const updatedAds = [...metaAds];
         updatedAds[index] = { ...ad, imageUrl };
         setMetaAds(updatedAds);
-        
-        toast.success("Image generated successfully");
       } else {
         console.error("Failed to generate image - null response");
-        toast.error("Failed to generate image");
       }
     } catch (error) {
       console.error("Error generating image:", error);
-      toast.error("Error generating image");
     } finally {
       setLoadingImageIndex(null);
     }
@@ -127,6 +130,10 @@ const MetaAdsTestArea: React.FC = () => {
         handleGenerateImage={handleGenerateImage}
         handleUpdateAd={handleUpdateAd}
       />
+      
+      {lastError && (
+        <p className="text-sm text-red-500 mt-2">{lastError}</p>
+      )}
     </div>
   );
 };

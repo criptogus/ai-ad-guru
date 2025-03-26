@@ -34,30 +34,23 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
   
   while (retries <= maxRetries) {
     try {
-      // Make request to OpenAI API using the Chat Completions endpoint with the image_generation tool
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      // Make request to OpenAI API using the DALL-E-3 model
+      const response = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `Generate a high-quality advertisement image in ${aspectRatio} aspect ratio format.`
-            },
-            {
-              role: "user",
-              content: truncatedPrompt
-            }
-          ],
-          tools: [
-            {
-              type: "image_generation"
-            }
-          ]
+          model: "dall-e-3",
+          prompt: `${truncatedPrompt} Use a ${aspectRatio} aspect ratio format.`,
+          n: 1,
+          size: imageFormat === "portrait" || imageFormat === "story" || imageFormat === "reel" 
+                 ? "1024x1792" 
+                 : imageFormat === "landscape" 
+                 ? "1792x1024" 
+                 : "1024x1024",
+          response_format: "url"
         })
       });
       
@@ -77,23 +70,17 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
       
       const data = await response.json();
       
-      // Parse the tool_calls from the response
-      const toolCalls = data.choices?.[0]?.message?.tool_calls;
-      
-      if (!toolCalls || toolCalls.length === 0) {
-        throw new Error("No image generation tool calls found in response");
-      }
-      
-      // Find the image generation tool call
-      const imageToolCall = toolCalls.find((call: any) => call.type === "image_generation");
-      
-      if (!imageToolCall || !imageToolCall.image || !imageToolCall.image.url) {
+      // Extract the image URL from the response
+      if (!data.data || !data.data[0] || !data.data[0].url) {
         throw new Error("No image URL found in the response");
       }
+
+      const imageUrl = data.data[0].url;
+      const revisedPrompt = data.data[0].revised_prompt || undefined;
       
       return { 
-        url: imageToolCall.image.url,
-        revisedPrompt: truncatedPrompt !== prompt ? truncatedPrompt : undefined
+        url: imageUrl,
+        revisedPrompt
       };
     } catch (error) {
       console.error("Error occurred, retrying...", error);

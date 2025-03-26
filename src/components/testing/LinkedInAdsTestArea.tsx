@@ -41,11 +41,6 @@ const LinkedInAdsTestArea: React.FC = () => {
       return;
     }
 
-    toast.info("Generating LinkedIn ad image...", {
-      description: "This might take a few moments. No credits will be consumed in test mode.",
-      duration: 3000,
-    });
-
     try {
       // Create a more concise LinkedIn-focused prompt
       const basePrompt = testAd.imagePrompt;
@@ -66,14 +61,9 @@ const LinkedInAdsTestArea: React.FC = () => {
       
       if (imageUrl) {
         setTestAd(prev => ({ ...prev, imageUrl }));
-        toast.success("LinkedIn ad image generated successfully");
       }
     } catch (error) {
       console.error("Error generating LinkedIn ad image:", error);
-      toast.error("Failed to generate image", {
-        description: error instanceof Error ? error.message : "Please try again later",
-        duration: 5000,
-      });
     }
   };
 

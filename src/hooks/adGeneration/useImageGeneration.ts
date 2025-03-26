@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,45 +49,53 @@ export const useImageGeneration = () => {
     setGeneratedImageUrl(null); // Reset previous URL
     
     try {
-      console.log('Generating image with DALL-E prompt:', prompt);
+      console.log('Generating image with prompt:', prompt);
       console.log('Additional context:', JSON.stringify(additionalInfo, null, 2));
       
       // Prepare parameters for image generation
       const imageFormat = additionalInfo?.imageFormat || "square";
+      const platform = additionalInfo?.platform || "instagram";
+      
+      // Show generating toast
+      sonnerToast.info(`Generating ${platform} image...`, {
+        description: "This may take up to 15 seconds.",
+        duration: 5000,
+      });
       
       // Include additional context in the function call
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt,
           imageFormat,
+          platform,
           ...additionalInfo
         },
       });
 
-      console.log('DALL-E image generation response:', JSON.stringify(data, null, 2));
+      console.log('Image generation response:', JSON.stringify(data, null, 2));
 
       if (error) {
-        console.error('Error generating image with DALL-E:', error);
+        console.error('Error generating image:', error);
         const errorMessage = error.message || "Service error while generating image";
         setLastError(errorMessage);
         throw new Error(errorMessage);
       }
 
       if (!data || !data.success) {
-        console.error('DALL-E image generation failed:', data?.error || 'Unknown error');
+        console.error('Image generation failed:', data?.error || 'Unknown error');
         const errorMessage = data?.error || "Failed to generate image";
         setLastError(errorMessage);
         throw new Error(errorMessage);
       }
 
       if (!data.imageUrl) {
-        console.error('No image URL returned from DALL-E function');
+        console.error('No image URL returned from image generation function');
         const errorMessage = "No image URL returned";
         setLastError(errorMessage);
         throw new Error(errorMessage);
       }
 
-      console.log('Image generated successfully with DALL-E, URL:', data.imageUrl);
+      console.log('Image generated successfully, URL:', data.imageUrl);
       
       // Store the generated URL in state
       setGeneratedImageUrl(data.imageUrl);
@@ -106,10 +115,9 @@ export const useImageGeneration = () => {
       };
       img.src = imageUrl;
       
-      // Inform the user about credit usage (5 credits for Instagram ad image)
-      toast({
-        title: "Image Generated Successfully",
-        description: "5 credits have been used for this ad image",
+      // Inform the user about successful generation
+      sonnerToast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} image generated`, {
+        description: "AI has created an image for your ad",
         duration: 3000,
       });
       
@@ -118,13 +126,13 @@ export const useImageGeneration = () => {
       console.error('Error calling generate-image function:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to generate image";
       setLastError(errorMessage);
-      toast({
-        title: "Image Generation Failed",
+      
+      sonnerToast.error("Image Generation Failed", {
         description: errorMessage,
-        variant: "destructive",
         duration: 5000,
       });
-      throw error; // Re-throw to allow component-level handling
+      
+      return null;
     } finally {
       setIsGenerating(false);
     }
