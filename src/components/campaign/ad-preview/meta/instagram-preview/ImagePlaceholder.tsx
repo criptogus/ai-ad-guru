@@ -1,105 +1,73 @@
 
 import React from "react";
-import { Loader2, Upload, ImagePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ImageIcon, Upload, Sparkles } from "lucide-react";
 
-interface ImagePlaceholderProps {
+export interface ImagePlaceholderProps {
+  onGenerateImage?: () => Promise<void>;
+  triggerFileUpload?: () => void;
   isLoading?: boolean;
   isUploading?: boolean;
   imageError?: boolean;
-  onGenerateImage?: () => Promise<void>;
-  triggerFileUpload?: () => void;
   format?: string;
-  isGenerating?: boolean; // Added missing prop
 }
 
 const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
+  onGenerateImage,
+  triggerFileUpload,
   isLoading = false,
   isUploading = false,
   imageError = false,
-  onGenerateImage,
-  triggerFileUpload = () => {},
-  format = "feed",
-  isGenerating = false // Added with default value
+  format = "feed"
 }) => {
-  // Get format-specific styles
-  const getFormatClasses = () => {
-    if (format === "story" || format === "reel") {
-      return "aspect-[9/16]";
+  const getFormatClass = () => {
+    switch (format) {
+      case "story":
+        return "aspect-[9/16]";
+      case "portrait":
+        return "aspect-[4/5]";
+      case "landscape":
+        return "aspect-video";
+      default: // feed/square
+        return "aspect-square";
     }
-    return "aspect-square";
   };
 
-  const formatText = format === "story" ? "Story" : format === "reel" ? "Reel" : "Feed";
-
-  if (isLoading || isGenerating) {
-    return (
-      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
-        <Loader2 className="h-8 w-8 animate-spin mb-2" />
-        <p className="text-xs">Generating image...</p>
-      </div>
-    );
-  }
-
-  if (isUploading) {
-    return (
-      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
-        <Loader2 className="h-8 w-8 animate-spin mb-2" />
-        <p className="text-xs">Uploading image...</p>
-      </div>
-    );
-  }
-
-  if (imageError) {
-    return (
-      <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
-        <div className="flex flex-col items-center gap-2 p-4 text-center">
-          <div className="rounded-full bg-red-100 p-2 text-red-600">
-            <ImagePlus className="h-6 w-6" />
-          </div>
-          <p className="text-xs text-red-600">Image could not be loaded</p>
-          {onGenerateImage && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onGenerateImage}
-              className="mt-2"
-            >
-              Try Again
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
-      <div className="flex flex-col items-center gap-2 p-4 text-center">
-        <div className="rounded-full bg-gray-100 dark:bg-gray-700 p-2">
-          <ImagePlus className="h-6 w-6" />
-        </div>
-        <p className="text-xs">Instagram {formatText} Image</p>
-        <div className="flex flex-col gap-2 w-full mt-2">
+    <div className={`w-full ${getFormatClass()} flex flex-col items-center justify-center p-6 ${
+      imageError ? "bg-red-50 border-red-200" : "bg-gray-50 dark:bg-gray-800"
+    }`}>
+      <div className="mb-4">
+        <ImageIcon className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+      </div>
+      <div className="text-center">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          {imageError
+            ? "Error loading image. Please try again."
+            : "Add an image to your ad"}
+        </p>
+        
+        <div className="flex flex-col gap-2">
           {onGenerateImage && (
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <button
               onClick={onGenerateImage}
-              className="text-xs"
+              disabled={isLoading || isUploading}
+              className="flex items-center justify-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Generate with AI
-            </Button>
+              <Sparkles className="h-4 w-4" />
+              <span>{isLoading ? "Generating..." : "Generate with AI"}</span>
+            </button>
           )}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={triggerFileUpload}
-            className="text-xs"
-          >
-            <Upload className="h-3 w-3 mr-1" />
-            Upload
-          </Button>
+          
+          {triggerFileUpload && (
+            <button
+              onClick={triggerFileUpload}
+              disabled={isLoading || isUploading}
+              className="flex items-center justify-center gap-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Upload className="h-4 w-4" />
+              <span>{isUploading ? "Uploading..." : "Upload Image"}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

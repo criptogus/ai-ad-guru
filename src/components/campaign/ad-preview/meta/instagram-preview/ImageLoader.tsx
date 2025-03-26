@@ -3,12 +3,12 @@ import React from "react";
 
 export interface ImageLoaderProps {
   viewType?: "feed" | "story" | "reel";
-  text?: string; // Added missing prop
+  text?: string;
 }
 
 const ImageLoader: React.FC<ImageLoaderProps> = ({ 
-  viewType = "feed", // Added default value
-  text = "Generating image..." // Added default value
+  viewType = "feed",
+  text = "Generating image..." 
 }) => {
   return (
     <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${

@@ -1,134 +1,193 @@
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Copy, Edit, Save, X } from "lucide-react";
 import LinkedInAdPreview from "./LinkedInAdPreview";
-import LinkedInAdCardHeader from "./LinkedInAdCardHeader";
-import LinkedInAdDetails from "./LinkedInAdDetails";
-import LinkedInPreviewControls from "./LinkedInPreviewControls";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface LinkedInAdCardProps {
   ad: MetaAd;
   index: number;
   analysisResult: WebsiteAnalysisResult;
-  isGeneratingImage?: boolean;
-  onGenerateImage?: () => Promise<void>;
+  isGeneratingImage: boolean;
+  onGenerateImage: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
-  isEditing?: boolean;
-  onEdit?: () => void;
-  onSave?: (updatedAd: MetaAd) => void;
-  onCancel?: () => void;
-  onCopy?: () => void;
 }
 
 const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   ad,
   index,
   analysisResult,
-  isGeneratingImage = false,
+  isGeneratingImage,
   onGenerateImage,
-  onUpdateAd,
-  isEditing: externalIsEditing,
-  onEdit: externalOnEdit,
-  onSave: externalOnSave,
-  onCancel: externalOnCancel,
-  onCopy: externalOnCopy
+  onUpdateAd
 }) => {
-  const [internalIsEditing, setInternalIsEditing] = useState(false);
-  const [previewType, setPreviewType] = useState<"feed" | "sidebar" | "message">("feed");
-  const [deviceView, setDeviceView] = useState<"desktop" | "mobile">("desktop");
-  const [imageFormat, setImageFormat] = useState<string>("landscape");
-  const [localAd, setLocalAd] = useState<MetaAd>(ad);
-  
-  // Use external props if provided, otherwise use internal state
-  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
-  
-  const handleEdit = () => {
-    if (externalOnEdit) {
-      externalOnEdit();
-    } else {
-      setInternalIsEditing(true);
-    }
-  };
-  
-  const handleSave = () => {
-    if (externalOnSave) {
-      externalOnSave(localAd);
-    } else {
-      setInternalIsEditing(false);
-      if (onUpdateAd) {
-        onUpdateAd(localAd);
-      }
-    }
-  };
-  
-  const handleCancel = () => {
-    if (externalOnCancel) {
-      externalOnCancel();
-    } else {
-      setInternalIsEditing(false);
-      setLocalAd(ad);
-    }
-  };
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+
   const handleCopy = () => {
-    if (externalOnCopy) {
-      externalOnCopy();
-    } else {
-      const textToCopy = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
-      navigator.clipboard.writeText(textToCopy);
-    }
+    const adText = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
+    navigator.clipboard.writeText(adText);
   };
-  
-  const handleUpdateAd = (updatedAd: MetaAd) => {
-    setLocalAd(updatedAd);
-    if (onUpdateAd) {
-      onUpdateAd(updatedAd);
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    // Reset to original if canceling edit
+    if (isEditing) {
+      setEditedAd(ad);
     }
   };
 
+  const handleSave = () => {
+    if (onUpdateAd) {
+      onUpdateAd(editedAd);
+    }
+    setIsEditing(false);
+  };
+
+  const handleChange = (field: keyof MetaAd, value: string) => {
+    setEditedAd(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   return (
-    <Card className="overflow-hidden">
-      <LinkedInAdCardHeader 
-        adIndex={index}
-        isEditing={isEditing}
-        onCopy={handleCopy}
-        onEdit={handleEdit}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
-      
-      <CardContent className="p-4 grid gap-6">
-        <LinkedInPreviewControls 
-          previewType={previewType}
-          deviceView={deviceView}
-          imageFormat={imageFormat}
-          onPreviewTypeChange={setPreviewType}
-          onDeviceViewChange={setDeviceView}
-          onImageFormatChange={setImageFormat}
-        />
-        
+    <Card>
+      <CardHeader className="p-4 flex flex-row items-center justify-between">
+        <div className="text-sm font-medium">LinkedIn Ad {index + 1}</div>
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleEditToggle}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleSave}
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCopy}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleEditToggle}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            </>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md">
+          <div>
             <LinkedInAdPreview 
-              ad={isEditing ? localAd : ad}
+              ad={isEditing ? editedAd : ad}
               analysisResult={analysisResult}
               isGeneratingImage={isGeneratingImage}
               onGenerateImage={onGenerateImage}
-              imageFormat={imageFormat}
-              previewType={previewType}
-              deviceView={deviceView}
-              onUpdateAd={handleUpdateAd}
+              onUpdateAd={onUpdateAd}
             />
           </div>
           
-          <div>
-            <LinkedInAdDetails 
-              ad={localAd}
-              isEditing={isEditing}
-              onUpdateAd={handleUpdateAd}
-            />
+          <div className="space-y-4">
+            {isEditing ? (
+              <>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Headline</label>
+                  <Input 
+                    value={editedAd.headline}
+                    onChange={(e) => handleChange('headline', e.target.value)}
+                    maxLength={70}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    {editedAd.headline?.length || 0}/70 characters
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Primary Text</label>
+                  <Textarea 
+                    value={editedAd.primaryText}
+                    onChange={(e) => handleChange('primaryText', e.target.value)}
+                    maxLength={150}
+                    rows={3}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    {editedAd.primaryText?.length || 0}/150 characters
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Description</label>
+                  <Input 
+                    value={editedAd.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    maxLength={30}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    {editedAd.description?.length || 0}/30 characters
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Image Prompt (for AI generation)</label>
+                  <Textarea 
+                    value={editedAd.imagePrompt}
+                    onChange={(e) => handleChange('imagePrompt', e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <h4 className="text-sm font-medium">Headline</h4>
+                  <p className="text-sm">{ad.headline}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium">Primary Text</h4>
+                  <p className="text-sm">{ad.primaryText}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium">Description</h4>
+                  <p className="text-sm">{ad.description}</p>
+                </div>
+                
+                {ad.imagePrompt && (
+                  <div>
+                    <h4 className="text-sm font-medium">Image Prompt</h4>
+                    <p className="text-xs text-gray-500">{ad.imagePrompt}</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </CardContent>

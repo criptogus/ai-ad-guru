@@ -4,14 +4,14 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface ImageDisplayProps {
-  imageUrl?: string; // Changed from src
+  imageUrl?: string;
   alt?: string;
   onGenerateImage?: () => Promise<void>;
   isLoading?: boolean;
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({ 
-  imageUrl, // Renamed from src
+  imageUrl,
   alt = "Instagram ad",
   onGenerateImage,
   isLoading = false 
