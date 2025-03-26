@@ -63,11 +63,12 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
     toast.success("LinkedIn ad text copied to clipboard");
   };
 
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
-      await onGenerateImage(ad, index);
+      return await onGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
+      throw error;
     }
   };
 

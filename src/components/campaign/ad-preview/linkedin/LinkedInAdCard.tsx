@@ -14,8 +14,13 @@ interface LinkedInAdCardProps {
   index: number;
   analysisResult: WebsiteAnalysisResult;
   isGeneratingImage: boolean;
+  isEditing?: boolean;
   onGenerateImage: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
+  onEdit?: () => void;
+  onSave?: (updatedAd: MetaAd) => void;
+  onCancel?: () => void;
+  onCopy?: () => void;
 }
 
 const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
@@ -23,30 +28,57 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   index,
   analysisResult,
   isGeneratingImage,
+  isEditing: externalIsEditing,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
+  onEdit,
+  onSave,
+  onCancel,
+  onCopy
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+  
+  // Use external editing state if provided, otherwise use internal state
+  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 
   const handleCopy = () => {
-    const adText = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
-    navigator.clipboard.writeText(adText);
+    if (onCopy) {
+      onCopy();
+    } else {
+      const adText = `Headline: ${ad.headline}\nPrimary Text: ${ad.primaryText}\nDescription: ${ad.description}`;
+      navigator.clipboard.writeText(adText);
+    }
   };
 
   const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    // Reset to original if canceling edit
-    if (isEditing) {
-      setEditedAd(ad);
+    if (onEdit) {
+      onEdit();
+    } else {
+      setInternalIsEditing(!internalIsEditing);
+      // Reset to original if canceling edit
+      if (internalIsEditing) {
+        setEditedAd(ad);
+      }
     }
   };
 
   const handleSave = () => {
-    if (onUpdateAd) {
+    if (onSave) {
+      onSave(editedAd);
+    } else if (onUpdateAd) {
       onUpdateAd(editedAd);
+      setInternalIsEditing(false);
     }
-    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      setInternalIsEditing(false);
+      setEditedAd(ad);
+    }
   };
 
   const handleChange = (field: keyof MetaAd, value: string) => {
@@ -66,7 +98,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleEditToggle}
+                onClick={handleCancel}
               >
                 <X className="h-4 w-4 mr-1" />
                 Cancel

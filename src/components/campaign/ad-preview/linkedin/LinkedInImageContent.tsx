@@ -11,7 +11,7 @@ interface LinkedInImageContentProps {
   isUploading?: boolean;
   onGenerateImage?: () => Promise<void>;
   triggerFileUpload?: () => void;
-  imageFormat?: string;
+  imageFormat?: "square" | "landscape" | "portrait";
 }
 
 const LinkedInImageContent: React.FC<LinkedInImageContentProps> = ({

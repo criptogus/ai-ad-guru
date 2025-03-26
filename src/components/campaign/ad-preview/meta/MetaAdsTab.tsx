@@ -1,11 +1,13 @@
 
 import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Loader2, PlusCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { Loader2 } from "lucide-react";
-import AdsList from "./ads-list/AdsList";
-import { AdTemplate } from "../template-gallery/TemplateGallery";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import MetaAdCard from "./meta/MetaAdCard";
+import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -26,51 +28,129 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   onGenerateAds,
   onGenerateImage,
   onUpdateMetaAd,
-  mindTrigger
+  mindTrigger,
 }) => {
-  const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
-    onUpdateMetaAd(index, updatedAd);
+  const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
+  const [localAds, setLocalAds] = useState<MetaAd[]>(metaAds);
+
+  React.useEffect(() => {
+    setLocalAds(metaAds);
+  }, [metaAds]);
+
+  const handleEditAd = (index: number) => {
+    setEditingAdIndex(index);
   };
 
-  const handleGenerateImage = (ad: MetaAd, index: number) => {
-    onGenerateImage(ad, index);
+  const handleSaveAd = (index: number, updatedAd: MetaAd) => {
+    const newAds = [...localAds];
+    newAds[index] = updatedAd;
+    setLocalAds(newAds);
+    onUpdateMetaAd(index, updatedAd);
+    setEditingAdIndex(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAdIndex(null);
+    setLocalAds(metaAds);
+  };
+
+  const handleCopyAd = (ad: MetaAd) => {
+    const text = `Headline: ${ad.headline}\n\nPrimary Text: ${ad.primaryText}\n\nDescription: ${ad.description}`;
+    navigator.clipboard.writeText(text);
+  };
+
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    try {
+      return await onGenerateImage(ad, index);
+    } catch (error) {
+      console.error("Error generating image:", error);
+      throw error;
+    }
   };
 
   return (
-    <div>
+    <div className="space-y-4">
+      {mindTrigger && (
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {metaAds.length === 0 ? (
-        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
-            Generate Instagram ads based on your website content and mind triggers. Our AI will create compelling ad content designed to engage your audience.
-          </p>
-          <Button 
-            onClick={onGenerateAds} 
-            disabled={isGenerating}
-            className="min-w-[200px]"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Ads...
-              </>
-            ) : (
-              <>Generate Instagram Ads</>
-            )}
-          </Button>
-          {mindTrigger && (
-            <div className="mt-4 text-sm p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-              <span className="font-medium">Using mind trigger:</span> {mindTrigger}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4 py-6">
+              <h3 className="text-lg font-medium">No Instagram Ads Created Yet</h3>
+              <p className="text-muted-foreground">
+                Generate Instagram ads based on your website analysis.
+              </p>
+              <Button 
+                onClick={onGenerateAds} 
+                disabled={isGenerating}
+                className="mt-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Ads...
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Generate Instagram Ads
+                  </>
+                )}
+              </Button>
+              <div className="text-xs text-muted-foreground mt-2">
+                This will use 5 credits
+              </div>
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       ) : (
-        <AdsList
-          metaAds={metaAds}
-          analysisResult={analysisResult}
-          loadingImageIndex={loadingImageIndex}
-          onGenerateImage={handleGenerateImage}
-          onUpdateAd={handleUpdateAd}
-        />
+        <>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium">Instagram Ad Variations</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onGenerateAds}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                "Regenerate Ads"
+              )}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {localAds.map((ad, index) => (
+              <MetaAdCard
+                key={index}
+                index={index}
+                ad={ad}
+                companyName={analysisResult.companyName}
+                isEditing={editingAdIndex === index}
+                isGeneratingImage={loadingImageIndex === index}
+                onEdit={() => handleEditAd(index)}
+                onSave={(updatedAd) => handleSaveAd(index, updatedAd)}
+                onCancel={handleCancelEdit}
+                onCopy={() => handleCopyAd(ad)}
+                onGenerateImage={() => handleGenerateImage(ad, index)}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
