@@ -11,6 +11,7 @@ import PromptTemplateGallery from "@/components/templates/PromptTemplateGallery"
 import { PromptTemplate } from "@/hooks/template/usePromptTemplates";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles } from "lucide-react";
+import PromptTemplates from "./PromptTemplates";
 
 interface LinkedInAdFormProps {
   testAd: MetaAd;
