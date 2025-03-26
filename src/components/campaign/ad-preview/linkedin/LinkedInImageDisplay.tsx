@@ -1,157 +1,53 @@
 
-import React, { useRef, useState } from "react";
-import { Loader } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
+import { MetaAd } from "@/hooks/adGeneration";
+import LinkedInImagePlaceholder from "./LinkedInImagePlaceholder";
 
 interface LinkedInImageDisplayProps {
-  imageUrl?: string;
+  ad: MetaAd;
   isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
-  onUploadImage?: (file: File) => Promise<void>;
-  imageFormat?: string;
+  format?: string;
 }
 
 const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
-  imageUrl,
+  ad,
   isGeneratingImage = false,
   onGenerateImage,
-  onUploadImage,
-  imageFormat = "square"
+  format = "landscape"
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const getImageDimensions = () => {
-    switch (imageFormat) {
+  // Determine aspect ratio based on format
+  const getAspectRatioClass = () => {
+    switch (format) {
       case "square":
         return "aspect-square";
-      case "landscape":
-        return "aspect-[1.91/1]";
-      case "portrait":
+      case "vertical":
         return "aspect-[4/5]";
+      case "landscape":
       default:
-        return "aspect-square";
+        return "aspect-[1.91/1]"; // LinkedIn's recommended 1.91:1
     }
   };
-  
-  const handleFileSelect = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-  
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !onUploadImage) return;
-    
-    try {
-      setIsUploading(true);
-      await onUploadImage(file);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-  
+
   return (
-    <div className={`w-full ${getImageDimensions()} relative overflow-hidden bg-gray-100 rounded-md`}>
-      {imageUrl ? (
-        <div className="relative h-full w-full group">
-          <img 
-            src={imageUrl} 
-            alt="LinkedIn Ad" 
-            className="w-full h-full object-cover"
-          />
-          
-          {/* Overlay controls that appear on hover */}
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
-            {onGenerateImage && (
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => onGenerateImage()}
-                disabled={isGeneratingImage || isUploading}
-              >
-                Regenerate Image
-              </Button>
-            )}
-            <Button 
-              variant="secondary" 
-              size="sm"
-              onClick={handleFileSelect}
-              disabled={isGeneratingImage || isUploading}
-            >
-              Upload Image
-            </Button>
-          </div>
-        </div>
+    <div className={`w-full ${getAspectRatioClass()} relative overflow-hidden bg-gray-100 dark:bg-gray-800`}>
+      {ad.imageUrl ? (
+        <img
+          src={ad.imageUrl}
+          alt={ad.headline || "LinkedIn Ad"}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            console.error("LinkedIn image load error");
+            e.currentTarget.style.display = "none";
+          }}
+        />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center p-4">
-          {isGeneratingImage ? (
-            <div className="flex flex-col items-center">
-              <Loader className="h-8 w-8 animate-spin text-blue-600 mb-2" />
-              <p className="text-sm text-gray-500">
-                Generating AI image...
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                This might take a moment
-              </p>
-            </div>
-          ) : isUploading ? (
-            <div className="flex flex-col items-center">
-              <Loader className="h-8 w-8 animate-spin text-blue-600 mb-2" />
-              <p className="text-sm text-gray-500">
-                Uploading image...
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center text-center space-y-3">
-              <p className="text-sm text-gray-500">
-                No image available
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                {onGenerateImage && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => onGenerateImage()}
-                    className="group relative overflow-hidden"
-                  >
-                    <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
-                    <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate AI Image</span>
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleFileSelect}
-                >
-                  Upload Image
-                </Button>
-              </div>
-              <div className="text-xs text-gray-400 mt-2">
-                <p>Recommended specs:</p>
-                <p>• Square: 1200 x 1200px</p>
-                <p>• Landscape: 1200 x 628px</p>
-                <p>• Max file size: 5MB</p>
-                <p>• Formats: JPG, PNG</p>
-              </div>
-            </div>
-          )}
-        </div>
+        <LinkedInImagePlaceholder
+          isLoading={isGeneratingImage}
+          onGenerate={onGenerateImage}
+          format={format}
+        />
       )}
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/jpeg, image/png"
-        onChange={handleFileChange}
-      />
     </div>
   );
 };

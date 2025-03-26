@@ -1,13 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TriggerButtonInlineProps {
   onSelectTrigger?: (trigger: string) => void;
-  onInsert?: (trigger: string) => void; // Added for backward compatibility
+  onInsert?: (trigger: string) => void; // For backward compatibility
   children?: React.ReactNode;
   className?: string;
 }
@@ -72,6 +75,19 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   children,
   className = "",
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  
+  // Filter triggers based on search query and active tab
+  const filteredTriggers = triggers.flatMap(category => {
+    return category.items
+      .filter(item => 
+        item.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (activeTab === "all" || activeTab === category.category.toLowerCase().replace(/\s+/g, '-'))
+      )
+      .map(item => ({ category: category.category, text: item }));
+  });
+
   // Unified handler that works with either onSelectTrigger or onInsert
   const handleCopyTrigger = (trigger: string) => {
     if (onSelectTrigger) {
@@ -94,36 +110,61 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
           {children || "Add Trigger"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Psychological Ad Triggers</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="mt-2 max-h-[70vh] pr-4">
-          <div className="space-y-6 py-2">
-            {triggers.map((category, catIndex) => (
-              <div key={`cat-${catIndex}`} className="space-y-3">
-                <h3 className="text-sm font-medium">{category.category}</h3>
-                <div className="space-y-2">
-                  {category.items.map((trigger, i) => (
-                    <div 
-                      key={`trigger-${catIndex}-${i}`} 
-                      className="flex items-center justify-between p-2 rounded-md border bg-card hover:bg-muted/50 transition-colors"
-                    >
-                      <span className="text-sm">{trigger}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleCopyTrigger(trigger)}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        
+        <div className="relative my-2">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search triggers..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="flex flex-wrap h-auto mb-2">
+            <TabsTrigger value="all">All</TabsTrigger>
+            {triggers.map((category, idx) => (
+              <TabsTrigger 
+                key={idx} 
+                value={category.category.toLowerCase().replace(/\s+/g, '-')}
+              >
+                {category.category}
+              </TabsTrigger>
             ))}
-          </div>
-        </ScrollArea>
+          </TabsList>
+          
+          <ScrollArea className="max-h-[50vh]">
+            <div className="space-y-4 pr-4 py-2">
+              {filteredTriggers.length > 0 ? (
+                filteredTriggers.map((trigger, idx) => (
+                  <div 
+                    key={idx} 
+                    className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="text-sm pr-4 flex-grow">{trigger.text}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleCopyTrigger(trigger.text)}
+                      className="whitespace-nowrap"
+                    >
+                      Insert
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No triggers found matching your search
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

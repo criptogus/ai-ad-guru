@@ -1,20 +1,18 @@
 
-import React, { useState, useRef, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState, useRef } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload } from "lucide-react";
+import InstagramPreviewHeader from "./instagram-preview/InstagramPreviewHeader";
 import ImageContent from "./instagram-preview/ImageContent";
-import HeaderContent from "./instagram-preview/HeaderContent";
 import TextContent from "./instagram-preview/TextContent";
 import ActionBar from "./instagram-preview/ActionBar";
+import InstagramPreviewFooter from "./instagram-preview/InstagramPreviewFooter";
+import ImageUploadHandler from "./instagram-preview/ImageUploadHandler";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
-  loadingImageIndex?: number | null;
   index?: number;
+  loadingImageIndex?: number | null;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
 }
@@ -22,161 +20,80 @@ interface InstagramPreviewProps {
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName,
-  loadingImageIndex,
-  index,
+  index = 0,
+  loadingImageIndex = null,
   onGenerateImage,
-  onUpdateAd
+  onUpdateAd,
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [activeFormat, setActiveFormat] = useState<"feed" | "story" | "reel">(
-    ad.format as "feed" | "story" | "reel" || "feed"
-  );
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isLoading = typeof loadingImageIndex === 'number' && typeof index === 'number' && loadingImageIndex === index;
+  const isLoading = loadingImageIndex === index;
 
-  useEffect(() => {
-    // Ensure the format selector stays in sync with the ad's format
-    if (ad.format && (ad.format === "feed" || ad.format === "story" || ad.format === "reel")) {
-      setActiveFormat(ad.format);
-    }
-  }, [ad.format]);
-
-  const handleGenerateImage = async () => {
-    if (onGenerateImage) {
-      await onGenerateImage();
-    }
-  };
-
-  const handleFileUpload = () => {
+  // Trigger file input dialog
+  const triggerFileUpload = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Image upload logic would go here
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      // Fake upload process for demo purposes
-      setTimeout(() => {
-        setIsUploading(false);
-      }, 1500);
-    }
-  };
+  // Handle file upload
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !onUpdateAd) return;
 
-  const handleFormatChange = (format: "feed" | "story" | "reel") => {
-    setActiveFormat(format);
-    
-    if (onUpdateAd && format !== ad.format) {
+    try {
+      setIsUploading(true);
+      
+      // Create a local URL for preview
+      const localUrl = URL.createObjectURL(file);
+      
+      // Update the ad with the new image URL
       onUpdateAd({
         ...ad,
-        format
+        imageUrl: localUrl,
+        imageFile: file
       });
+
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4 space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-medium">Instagram Preview</h3>
-          
-          <Tabs 
-            value={activeFormat} 
-            onValueChange={(v) => handleFormatChange(v as "feed" | "story" | "reel")}
-            className="w-auto"
-          >
-            <TabsList className="grid grid-cols-3 h-8">
-              <TabsTrigger value="feed" className="text-xs px-2">Feed</TabsTrigger>
-              <TabsTrigger value="story" className="text-xs px-2">Story</TabsTrigger>
-              <TabsTrigger value="reel" className="text-xs px-2">Reel</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        
-        <div className="bg-white border rounded-md overflow-hidden max-w-[350px] mx-auto">
-          <div className="flex flex-col">
-            <HeaderContent companyName={companyName} />
-            
-            <Tabs value={activeFormat} className="w-full">
-              <TabsContent value="feed" className="m-0">
-                <ImageContent 
-                  ad={ad}
-                  imageKey={index}
-                  isLoading={isLoading}
-                  isUploading={isUploading}
-                  onGenerateImage={handleGenerateImage}
-                  triggerFileUpload={handleFileUpload}
-                  format="feed"
-                />
-              </TabsContent>
-              
-              <TabsContent value="story" className="m-0">
-                <ImageContent 
-                  ad={ad}
-                  imageKey={index}
-                  isLoading={isLoading}
-                  isUploading={isUploading}
-                  onGenerateImage={handleGenerateImage}
-                  triggerFileUpload={handleFileUpload}
-                  format="story"
-                />
-              </TabsContent>
-              
-              <TabsContent value="reel" className="m-0">
-                <ImageContent 
-                  ad={ad}
-                  imageKey={index}
-                  isLoading={isLoading}
-                  isUploading={isUploading}
-                  onGenerateImage={handleGenerateImage}
-                  triggerFileUpload={handleFileUpload}
-                  format="reel"
-                />
-              </TabsContent>
-            </Tabs>
-            
-            {activeFormat === "feed" && (
-              <>
-                <TextContent ad={ad} />
-                <ActionBar />
-              </>
-            )}
-          </div>
-        </div>
-        
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*"
-          onChange={handleFileSelected}
+    <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">
+      <InstagramPreviewHeader companyName={companyName} />
+      
+      <ImageContent 
+        ad={ad}
+        imageKey={index}
+        isLoading={isLoading}
+        isUploading={isUploading}
+        onGenerateImage={onGenerateImage}
+        triggerFileUpload={triggerFileUpload}
+        format={ad.format || "feed"}
+      />
+      
+      <div className="p-3">
+        <ActionBar />
+        <TextContent 
+          headline={ad.headline || ""} 
+          primaryText={ad.primaryText || ""}
+          companyName={companyName}
         />
-        
-        {!ad.imageUrl && !isLoading && !isUploading && onGenerateImage && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={handleGenerateImage}
-            >
-              Generate Image
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={handleFileUpload}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <InstagramPreviewFooter />
+      </div>
+      
+      <ImageUploadHandler 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+      />
+    </div>
   );
 };
 

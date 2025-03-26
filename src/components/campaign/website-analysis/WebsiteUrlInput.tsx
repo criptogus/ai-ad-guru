@@ -1,9 +1,8 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SearchIcon } from "lucide-react";
 
 interface WebsiteUrlInputProps {
   website: string;
@@ -18,29 +17,48 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
   onAnalyze,
   isAnalyzing,
 }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAnalyze();
+  };
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor="website">Website URL</Label>
-      <div className="flex space-x-2">
-        <div className="relative flex-1">
-          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <label htmlFor="website-url" className="text-sm font-medium">
+        Website URL
+      </label>
+      <div className="flex gap-2">
+        <div className="relative flex-grow">
           <Input
-            id="website"
-            placeholder="https://example.com"
-            className="pl-10"
+            id="website-url"
+            type="url"
+            placeholder="https://your-website.com"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
+            required
+            className="pr-10 bg-background"
             disabled={isAnalyzing}
           />
         </div>
         <Button 
-          onClick={onAnalyze} 
-          disabled={isAnalyzing || !website}
+          type="submit" 
+          disabled={!website || isAnalyzing}
+          className="min-w-[100px]"
         >
-          {isAnalyzing ? "Analyzing..." : "Analyze"}
+          {isAnalyzing ? (
+            "Analyzing..."
+          ) : (
+            <>
+              <SearchIcon className="h-4 w-4 mr-2" />
+              Analyze
+            </>
+          )}
         </Button>
       </div>
-    </div>
+      <p className="text-xs text-muted-foreground mt-1">
+        Enter your website URL so we can analyze it and suggest optimal ad campaign settings
+      </p>
+    </form>
   );
 };
 
