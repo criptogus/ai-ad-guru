@@ -1,70 +1,106 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { GoogleAdTab } from "./tabs/GoogleAdTab";
-import { MetaAdTab } from "./tabs/MetaAdTab";
-import { MicrosoftAdTab } from "./tabs/MicrosoftAdTab";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import AIInsightsSuggestions from './AIInsightsSuggestions';
+import AdActions from './AdActions';
+import ControlsSection from './ControlsSection';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChatBubbleIcon, BarChartIcon } from '@radix-ui/react-icons';
+import GoogleAdTab from './tabs/GoogleAdTab';
+import MetaAdTab from './tabs/MetaAdTab';
+import MicrosoftAdTab from './tabs/MicrosoftAdTab';
 
 interface AIInsightsCardProps {
-  campaignId?: string;
+  campaignId: string;
 }
 
-export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
-  // This would normally come from an API call
-  const mockGoogleAd: GoogleAd = {
-    headline1: "Boost Your Business Today",
-    headline2: "Professional AI Solutions",
-    headline3: "Smart Advertising Platform",
-    description1: "Create high-converting ads with our AI-powered platform. Save time and money.",
-    description2: "Get more leads and sales with automated ad generation and optimization.",
-    headlines: [
-      "Boost Your Business Today",
-      "Professional AI Solutions",
-      "Smart Advertising Platform"
-    ],
-    descriptions: [
-      "Create high-converting ads with our AI-powered platform. Save time and money.",
-      "Get more leads and sales with automated ad generation and optimization."
-    ],
-    displayPath: "ai-advertising/solutions",
-    siteLinks: ["Features", "Pricing", "Case Studies", "Support"]
+export interface SiteLink {
+  title: string;
+  link: string;
+}
+
+const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
+  const [selectedTab, setSelectedTab] = useState('insights');
+  const [selectedPlatform, setSelectedPlatform] = useState('google');
+  const [accepting, setAccepting] = useState(false);
+  const [insights, setInsights] = useState(['Performance is below average compared to similar campaigns', 'CTR is 30% lower than the industry standard', 'Consider revising ad copy to highlight unique value propositions', 'Test different call-to-action phrases to improve engagement']);
+
+  // Example sitelinks - corrected to match interface
+  const sitelinks: SiteLink[] = [
+    { title: "Our Services", link: "/services" },
+    { title: "Pricing Plans", link: "/pricing" },
+    { title: "Success Stories", link: "/testimonials" },
+    { title: "Free Consultation", link: "/contact" }
+  ];
+
+  const handleAcceptSuggestion = () => {
+    setAccepting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setAccepting(false);
+    }, 1500);
   };
-  
-  const mockMicrosoftAd = {...mockGoogleAd};
-  
-  // Create a mock MetaAd for use in the MetaAdTab
-  const mockMetaAd: MetaAd = {
-    primaryText: "Take your advertising to the next level with AI-powered automation.",
-    headline: "Smart Ad Platform",
-    description: "Create, optimize, and manage ads across platforms with ease.",
-    imagePrompt: "Modern digital marketing dashboard with AI recommendations",
-    imageUrl: "https://example.com/placeholder.jpg"
-  };
-  
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>AI Insights & Recommendations</CardTitle>
+    <Card className="shadow-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl flex justify-between items-center">
+          <span>AI Performance Insights</span>
+          <Tabs 
+            value={selectedTab} 
+            className="w-auto" 
+            onValueChange={setSelectedTab}
+          >
+            <TabsList className="grid grid-cols-2 h-8">
+              <TabsTrigger value="insights" className="text-xs px-3 flex items-center gap-1">
+                <ChatBubbleIcon className="w-3 h-3" />
+                <span>Insights</span>
+              </TabsTrigger>
+              <TabsTrigger value="ads" className="text-xs px-3 flex items-center gap-1">
+                <BarChartIcon className="w-3 h-3" />
+                <span>Ads</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardTitle>
+        <CardDescription>
+          AI-powered analysis and recommendations for campaign optimization
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="google">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="google">Google Ads</TabsTrigger>
-            <TabsTrigger value="meta">Instagram</TabsTrigger>
-            <TabsTrigger value="microsoft">Microsoft</TabsTrigger>
-          </TabsList>
-          <TabsContent value="google" className="pt-4">
-            <GoogleAdTab ad={mockGoogleAd} />
-          </TabsContent>
-          <TabsContent value="meta" className="pt-4">
-            <MetaAdTab ad={mockMetaAd} />
-          </TabsContent>
-          <TabsContent value="microsoft" className="pt-4">
-            <MicrosoftAdTab ad={mockMicrosoftAd} />
-          </TabsContent>
-        </Tabs>
+      <CardContent className="pt-0">
+        {selectedTab === 'insights' ? (
+          <AIInsightsSuggestions 
+            insights={insights} 
+            onAccept={handleAcceptSuggestion}
+            accepting={accepting}
+          />
+        ) : (
+          <div className="space-y-4">
+            <ControlsSection 
+              selectedPlatform={selectedPlatform} 
+              onPlatformChange={setSelectedPlatform}
+            />
+            
+            <div className="border rounded-md bg-slate-50 p-4">
+              {selectedPlatform === 'google' && (
+                <GoogleAdTab sitelinks={sitelinks} />
+              )}
+              {selectedPlatform === 'meta' && (
+                <MetaAdTab />
+              )}
+              {selectedPlatform === 'microsoft' && (
+                <MicrosoftAdTab />
+              )}
+            </div>
+            
+            <AdActions />
+          </div>
+        )}
+        
+        <div className="mt-4 text-xs text-gray-500">
+          Last updated: Today at 9:30 AM • Analyzing 30 days of data
+        </div>
       </CardContent>
     </Card>
   );

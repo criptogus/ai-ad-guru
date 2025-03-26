@@ -20,6 +20,7 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
+  // Add missing properties that are being used in the code
   format?: string;
   hashtags?: string[];
 }
@@ -30,7 +31,7 @@ export interface AdGenerationInput {
   targetAudience: string;
   brandTone?: string;
   keywords?: string[] | string;
-  callToAction?: string;
+  callToAction?: string[] | string; // Update to allow string[] type
   uniqueSellingPoints?: string[] | string;
   websiteUrl?: string;
   [key: string]: any;

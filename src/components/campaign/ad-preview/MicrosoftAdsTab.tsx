@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { getDomainFromUrl } from "@/lib/utils";
-import MicrosoftAdCard from "./MicrosoftAdCard";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -30,11 +30,14 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   return (
     <div className="space-y-6">
       {mindTrigger && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800 mb-4">
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            <span className="font-medium">Mind Trigger:</span> {mindTrigger}
-          </p>
-        </div>
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
       )}
       
       {microsoftAds.length === 0 ? (
@@ -53,19 +56,53 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
                 {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Generate Microsoft Ads
               </Button>
+              <div className="text-xs text-muted-foreground mt-2">
+                This will use 5 credits
+              </div>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium">Microsoft Ad Variations</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onGenerateAds}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                "Regenerate Ads"
+              )}
+            </Button>
+          </div>
+          
           {microsoftAds.map((ad, index) => (
-            <MicrosoftAdCard
-              key={`microsoft-ad-${index}`}
-              ad={ad}
-              index={index}
-              analysisResult={analysisResult}
-              onUpdate={(updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
-            />
+            <div key={`microsoft-ad-${index}`} className="border rounded-md p-4">
+              <div className="mb-2">
+                <div className="font-medium text-blue-600">{ad.headline1} | {ad.headline2} | {ad.headline3}</div>
+                <div className="text-green-700 text-sm">{domain}</div>
+                <div className="text-sm">{ad.description1}</div>
+                <div className="text-sm">{ad.description2}</div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => {
+                  const updatedAd = { ...ad };
+                  onUpdateMicrosoftAd(index, updatedAd);
+                }}
+              >
+                Edit
+              </Button>
+            </div>
           ))}
         </div>
       )}

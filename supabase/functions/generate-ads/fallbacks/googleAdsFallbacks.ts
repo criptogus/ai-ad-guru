@@ -1,124 +1,79 @@
 
-import { WebsiteAnalysisResult } from "../types.ts";
+import { GoogleAd } from "./types.ts";
 
 /**
  * Generates fallback Google Ads when the AI generation fails
+ * @param campaignData The campaign data used for generating the ads
+ * @returns An array of GoogleAd objects
  */
-export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
-  const companyName = campaignData.companyName;
-  const description = campaignData.businessDescription || `Quality services from ${companyName}`;
+export function generateFallbackGoogleAds(campaignData: any): GoogleAd[] {
+  const companyName = campaignData.companyName || "Our Company";
+  const description = campaignData.businessDescription || "Our services";
+  const callToAction = Array.isArray(campaignData.callToAction) 
+    ? campaignData.callToAction[0] 
+    : campaignData.callToAction || "Learn More";
   
-  // Extract keywords if available, otherwise use defaults
-  let keywords = ["service", "quality", "professional"];
-  if (campaignData.keywords) {
-    if (Array.isArray(campaignData.keywords)) {
-      keywords = campaignData.keywords.slice(0, 3);
-    } else {
-      keywords = campaignData.keywords.split(',').slice(0, 3).map(k => k.trim());
-    }
-  }
-  
-  // Extract call to actions if available
-  let ctas = ["Learn More", "Contact Us", "Visit Website"];
-  if (campaignData.callToAction) {
-    if (Array.isArray(campaignData.callToAction)) {
-      ctas = campaignData.callToAction.slice(0, 3);
-    } else {
-      ctas = campaignData.callToAction.split(',').slice(0, 3).map(cta => cta.trim());
-    }
-  }
-
-  // Create five fallback Google ad variations
+  // Generate 5 fallback Google ads
   return [
     {
-      headline1: `${companyName}`,
-      headline2: `${keywords[0] || 'Quality'} Services`,
-      headline3: `${ctas[0] || 'Learn More'}`,
-      description1: `Discover our professional solutions.`,
-      description2: `Get started with ${companyName} today.`,
-      headlines: [
-        `${companyName}`,
-        `${keywords[0] || 'Quality'} Services`,
-        `${ctas[0] || 'Learn More'}`
-      ],
-      descriptions: [
-        `Discover our professional solutions.`,
-        `Get started with ${companyName} today.`
-      ],
-      path1: "services",
-      path2: "quality"
-    },
-    {
-      headline1: `${keywords[0] || 'Professional'} Solutions`,
-      headline2: `By ${companyName}`,
-      headline3: `${ctas[1] || 'Contact Us'}`,
+      headline1: `${companyName} Services`,
+      headline2: "High Quality & Reliable",
+      headline3: "Contact Us Today",
       description1: `${description.substring(0, 80)}...`,
-      description2: `Get in touch with our team today.`,
-      headlines: [
-        `${keywords[0] || 'Professional'} Solutions`,
-        `By ${companyName}`,
-        `${ctas[1] || 'Contact Us'}`
-      ],
+      description2: `Visit our website to ${callToAction.toLowerCase()}. Call now!`,
+      headlines: [`${companyName} Services`, "High Quality & Reliable", "Contact Us Today"],
       descriptions: [
         `${description.substring(0, 80)}...`,
-        `Get in touch with our team today.`
-      ],
-      path1: "solutions",
-      path2: "experts"
+        `Visit our website to ${callToAction.toLowerCase()}. Call now!`
+      ]
     },
     {
-      headline1: `Top Rated ${keywords[1] || 'Service'}`,
-      headline2: `${companyName}`,
-      headline3: `${ctas[2] || 'Visit Website'}`,
-      description1: `Professional solutions for your needs.`,
-      description2: `Discover what ${companyName} can do for you.`,
-      headlines: [
-        `Top Rated ${keywords[1] || 'Service'}`,
-        `${companyName}`,
-        `${ctas[2] || 'Visit Website'}`
-      ],
+      headline1: `Top Rated ${companyName}`,
+      headline2: "Expert Service & Support",
+      headline3: "Free Quote Available",
+      description1: "Professional solutions tailored to your needs.",
+      description2: "100% satisfaction guaranteed. Contact us today!",
+      headlines: [`Top Rated ${companyName}`, "Expert Service & Support", "Free Quote Available"],
       descriptions: [
-        `Professional solutions for your needs.`,
-        `Discover what ${companyName} can do for you.`
-      ],
-      path1: "top-rated",
-      path2: "services"
+        "Professional solutions tailored to your needs.",
+        "100% satisfaction guaranteed. Contact us today!"
+      ]
     },
     {
-      headline1: `${keywords[2] || 'Expert'} Services`,
-      headline2: `${companyName}`,
-      headline3: `Learn More Today`,
-      description1: `Professional team ready to help you.`,
-      description2: `Quality results guaranteed.`,
-      headlines: [
-        `${keywords[2] || 'Expert'} Services`,
-        `${companyName}`,
-        `Learn More Today`
-      ],
+      headline1: `${companyName} - Best Choice`,
+      headline2: "Award-Winning Service",
+      headline3: "Book Now & Save",
+      description1: "Expert solutions for your business needs.",
+      description2: "Trusted by thousands. See why customers love us.",
+      headlines: [`${companyName} - Best Choice`, "Award-Winning Service", "Book Now & Save"],
       descriptions: [
-        `Professional team ready to help you.`,
-        `Quality results guaranteed.`
-      ],
-      path1: "expert",
-      path2: "services"
+        "Expert solutions for your business needs.",
+        "Trusted by thousands. See why customers love us."
+      ]
     },
     {
-      headline1: `${companyName}`,
-      headline2: `${keywords[0] || 'Professional'} Solutions`,
-      headline3: `Contact Us`,
-      description1: `Find the right solution for your needs.`,
-      description2: `Our team is ready to assist you.`,
-      headlines: [
-        `${companyName}`,
-        `${keywords[0] || 'Professional'} Solutions`,
-        `Contact Us`
-      ],
+      headline1: "Limited Time Offer",
+      headline2: `${companyName} Solutions`,
+      headline3: "Save 20% This Month",
+      description1: "Get the best service at competitive prices.",
+      description2: "Rated 4.8/5 by our clients. Satisfaction guaranteed!",
+      headlines: ["Limited Time Offer", `${companyName} Solutions`, "Save 20% This Month"],
       descriptions: [
-        `Find the right solution for your needs.`,
-        `Our team is ready to assist you.`
-      ],
-      path1: "contact",
-      path2: "solutions"
+        "Get the best service at competitive prices.",
+        "Rated 4.8/5 by our clients. Satisfaction guaranteed!"
+      ]
+    },
+    {
+      headline1: `${companyName} Official Site`,
+      headline2: "20+ Years Experience",
+      headline3: "Get Started Today",
+      description1: "Professional services with guaranteed results.",
+      description2: "24/7 customer support. Always here when you need us.",
+      headlines: [`${companyName} Official Site`, "20+ Years Experience", "Get Started Today"],
+      descriptions: [
+        "Professional services with guaranteed results.",
+        "24/7 customer support. Always here when you need us."
+      ]
     }
   ];
 }

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import LinkedInAdCard from "./linkedin/LinkedInAdCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -72,14 +71,6 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
     }
   };
 
-  const handleGenerateAds = async () => {
-    try {
-      await onGenerateAds();
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-    }
-  };
-
   return (
     <div className="space-y-4">
       {mindTrigger && (
@@ -102,7 +93,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
                 Generate LinkedIn ads based on your website analysis.
               </p>
               <Button 
-                onClick={handleGenerateAds} 
+                onClick={onGenerateAds} 
                 disabled={isGenerating}
                 className="mt-2"
               >
@@ -128,7 +119,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleGenerateAds}
+              onClick={onGenerateAds}
               disabled={isGenerating}
             >
               {isGenerating ? (
@@ -142,21 +133,54 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {localAds.map((ad, index) => (
-              <LinkedInAdCard
-                key={index}
-                index={index}
-                ad={ad}
-                analysisResult={analysisResult}
-                isEditing={editingAdIndex === index}
-                isGeneratingImage={loadingImageIndex === index}
-                onEdit={() => handleEditAd(index)}
-                onSave={(updatedAd) => handleSaveAd(index, updatedAd)}
-                onCancel={handleCancelEdit}
-                onCopy={() => handleCopyAd(ad)}
-                onGenerateImage={() => handleGenerateImage(ad, index)}
-              />
+              <div key={index} className="border rounded-md p-4">
+                <h3 className="font-medium text-lg">{ad.headline}</h3>
+                <p className="mt-2 text-sm">{ad.primaryText}</p>
+                {ad.imageUrl && (
+                  <div className="mt-3">
+                    <img 
+                      src={ad.imageUrl} 
+                      alt={ad.headline} 
+                      className="w-full h-auto rounded-md"
+                    />
+                  </div>
+                )}
+                <div className="mt-3 flex space-x-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleEditAd(index)}
+                  >
+                    Edit
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleCopyAd(ad)}
+                  >
+                    Copy Text
+                  </Button>
+                  {!ad.imageUrl && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleGenerateImage(ad, index)}
+                      disabled={loadingImageIndex === index}
+                    >
+                      {loadingImageIndex === index ? (
+                        <>
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        "Generate Image"
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </>

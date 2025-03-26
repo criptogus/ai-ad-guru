@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import GoogleAdsTab from "./ad-preview/google/GoogleAdsTab";
-import MetaAdsTab from "./ad-preview/meta/MetaAdsTab";
-import LinkedInAdsTab from "./ad-preview/linkedin/LinkedInAdsTab";
-import MicrosoftAdsTab from "./ad-preview/microsoft/MicrosoftAdsTab";
 import { getMindTrigger } from "@/hooks/campaignActions/getMindTrigger";
+
+// Import existing tab components
+import GoogleAdsTab from "@/components/campaign/ad-preview/GoogleAdsTab";
+import MetaAdsTab from "@/components/campaign/ad-preview/MetaAdsTab";
+import LinkedInAdsTab from "@/components/campaign/ad-preview/LinkedInAdsTab";
+import MicrosoftAdsTab from "@/components/campaign/ad-preview/MicrosoftAdsTab";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
@@ -81,6 +83,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               isGenerating={isGenerating}
               onGenerateAds={onGenerateGoogleAds}
               onUpdateGoogleAd={onUpdateGoogleAd}
+              analysisResult={analysisResult}
               mindTrigger={getCurrentMindTrigger("google")}
             />
           </TabsContent>
@@ -114,6 +117,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           <TabsContent value="microsoft" className="space-y-4">
             <MicrosoftAdsTab
               microsoftAds={microsoftAds}
+              analysisResult={analysisResult}
               isGenerating={isGenerating}
               onGenerateAds={onGenerateMicrosoftAds}
               onUpdateMicrosoftAd={onUpdateMicrosoftAd}

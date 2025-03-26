@@ -1,64 +1,40 @@
 
-import { WebsiteAnalysisResult } from "../types.ts";
+import { MetaAd } from "./types.ts";
 
 /**
  * Generates fallback LinkedIn Ads when the AI generation fails
+ * @param campaignData The campaign data used for generating the ads
+ * @returns An array of MetaAd objects (since LinkedIn ads follow a similar format)
  */
-export function generateFallbackLinkedInAds(campaignData: WebsiteAnalysisResult) {
-  const companyName = campaignData.companyName;
-  const description = campaignData.businessDescription || `Quality services from ${companyName}`;
+export function generateFallbackLinkedInAds(campaignData: any): MetaAd[] {
+  const companyName = campaignData.companyName || "Our Company";
+  const description = campaignData.businessDescription || "Our services";
+  const callToAction = Array.isArray(campaignData.callToAction) 
+    ? campaignData.callToAction[0] 
+    : campaignData.callToAction || "Learn More";
   
-  // Extract keywords if available, otherwise use defaults
-  let keywords = ["professional", "service", "expert"];
-  if (campaignData.keywords) {
-    if (Array.isArray(campaignData.keywords)) {
-      keywords = campaignData.keywords.slice(0, 3);
-    } else {
-      keywords = campaignData.keywords.split(',').slice(0, 3).map(k => k.trim());
-    }
-  }
-  
-  // Create five fallback LinkedIn ad variations
+  // Generate 3 fallback LinkedIn ads
   return [
     {
-      headline: `${companyName}: ${keywords[0] || 'Professional'} Solutions`,
-      primaryText: `Looking for ${keywords[0] || 'professional'} services? ${companyName} provides industry-leading solutions designed to help your business grow.`,
-      description: `Connect with our team today to learn more about our services.`,
-      imagePrompt: `Professional business image representing ${companyName} with clean, corporate aesthetic suitable for LinkedIn`,
-      format: "single-image",
-      hashtags: [companyName.replace(/\s+/g, ''), "Professional", "Business"]
+      headline: `Elevate Your Business with ${companyName}`,
+      primaryText: `In today's competitive marketplace, staying ahead requires the right solutions. ${description.substring(0, 100)}... Our expert team helps businesses like yours achieve exceptional results through customized strategies and professional support.`,
+      description: callToAction,
+      imagePrompt: `Professional business meeting with executives discussing solutions, corporate setting with ${companyName} branding`,
+      format: "square"
     },
     {
-      headline: `Discover ${companyName}'s ${keywords[1] || 'Expert'} Services`,
-      primaryText: `${description.substring(0, 100)}...`,
-      description: `Ready to take your business to the next level? Contact us today.`,
-      imagePrompt: `Professional team working together in a modern office environment, representing ${companyName}`,
-      format: "single-image",
-      hashtags: ["Business", "Growth", keywords[1] || "Expert"]
+      headline: `${companyName}: Industry-Leading Solutions`,
+      primaryText: `Looking to optimize your business operations and drive growth? Our comprehensive suite of services helps professionals and organizations streamline processes, reduce costs, and increase productivity. Join the thousands of satisfied clients who trust us for their business needs.`,
+      description: `Contact Us | ${callToAction}`,
+      imagePrompt: `Professional portrait of business executive using ${companyName} solutions, corporate office background`,
+      format: "square"
     },
     {
-      headline: `${keywords[2] || 'Quality'} Solutions by ${companyName}`,
-      primaryText: `At ${companyName}, we provide ${keywords[2] || 'quality'} solutions that help businesses achieve their goals. Our experienced team is ready to assist you.`,
-      description: `Schedule a consultation with our experts today.`,
-      imagePrompt: `Professional business meeting with potential clients discussing solutions, in a clean corporate setting`,
-      format: "single-image",
-      hashtags: ["Solutions", "Business", companyName.replace(/\s+/g, '')]
-    },
-    {
-      headline: `Partner with ${companyName} Today`,
-      primaryText: `Join the many businesses that trust ${companyName} for their ${keywords[0] || 'professional'} needs. Our dedicated team delivers exceptional results.`,
-      description: `Learn how we can help you succeed. Contact us now.`,
-      imagePrompt: `Professional handshake or partnership visualization in a corporate setting, representing ${companyName}`,
-      format: "single-image",
-      hashtags: ["Partnership", "Success", "Business"]
-    },
-    {
-      headline: `${companyName}: Industry Leaders`,
-      primaryText: `With years of experience and a commitment to excellence, ${companyName} has established itself as a leader in providing ${keywords[1] || 'expert'} solutions.`,
-      description: `Discover the difference our services can make for your business.`,
-      imagePrompt: `Professional image showing industry leadership with modern office or successful business people representing ${companyName}`,
-      format: "single-image",
-      hashtags: ["Leadership", "Excellence", keywords[2] || "Quality"]
+      headline: `Strategic Partnership with ${companyName}`,
+      primaryText: `Transform your business outcomes with our proven methodologies and expert consultation. We work closely with your team to identify opportunities, implement solutions, and measure results. Take your business to the next level with our specialized services.`,
+      description: `Schedule a Consultation | ${callToAction}`,
+      imagePrompt: `Business professionals shaking hands in modern office with ${companyName} logo visible`,
+      format: "square"
     }
   ];
 }

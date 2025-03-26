@@ -1,78 +1,78 @@
 
-import { WebsiteAnalysisResult } from "../types.ts";
+import { GoogleAd } from "./types.ts";
 
 /**
  * Generates fallback Microsoft Ads when the AI generation fails
+ * @param campaignData The campaign data used for generating the ads
+ * @returns An array of GoogleAd objects (since Microsoft ads follow the same format)
  */
-export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult) {
-  const companyName = campaignData.companyName;
-  const description = campaignData.businessDescription || `Quality services from ${companyName}`;
+export function generateFallbackMicrosoftAds(campaignData: any): GoogleAd[] {
+  const companyName = campaignData.companyName || "Our Company";
+  const description = campaignData.businessDescription || "Our services";
+  const callToAction = Array.isArray(campaignData.callToAction) 
+    ? campaignData.callToAction[0] 
+    : campaignData.callToAction || "Learn More";
   
-  // Extract keywords if available, otherwise use defaults
-  let keywords = ["quality", "professional", "service"];
-  if (campaignData.keywords) {
-    if (Array.isArray(campaignData.keywords)) {
-      keywords = campaignData.keywords.slice(0, 3);
-    } else {
-      keywords = campaignData.keywords.split(',').slice(0, 3).map(k => k.trim());
-    }
-  }
-  
-  // Create five fallback Microsoft ad variations
+  // Generate 5 fallback Microsoft ads
   return [
     {
-      headlines: [
-        `${companyName} Services`,
-        `${keywords[0] || 'Quality'} Solutions`,
-        `Get Results Today`
-      ],
+      headline1: `${companyName} Solutions`,
+      headline2: "Top-Rated Services",
+      headline3: "Get Started Today",
+      description1: `${description.substring(0, 80)}...`,
+      description2: `Visit our website to ${callToAction.toLowerCase()}. Contact us now!`,
+      headlines: [`${companyName} Solutions`, "Top-Rated Services", "Get Started Today"],
       descriptions: [
-        `Expert ${keywords[1] || 'professional'} services tailored to your needs. Contact us now.`,
-        `${companyName} delivers reliable results backed by years of experience.`
+        `${description.substring(0, 80)}...`,
+        `Visit our website to ${callToAction.toLowerCase()}. Contact us now!`
       ]
     },
     {
-      headlines: [
-        `Discover ${companyName}`,
-        `${keywords[0] || 'Quality'} Service`,
-        `Contact Us Today`
-      ],
+      headline1: `Best ${companyName} Services`,
+      headline2: "Professional & Reliable",
+      headline3: "Book Now & Save",
+      description1: "High-quality solutions tailored to your needs.",
+      description2: "Trusted by thousands. See why our customers choose us.",
+      headlines: [`Best ${companyName} Services`, "Professional & Reliable", "Book Now & Save"],
       descriptions: [
-        `Professional ${keywords[2] || 'service'} solutions for your business needs.`,
-        `${companyName}: Your trusted partner for ${keywords[1] || 'professional'} service.`
+        "High-quality solutions tailored to your needs.",
+        "Trusted by thousands. See why our customers choose us."
       ]
     },
     {
-      headlines: [
-        `${keywords[0] || 'Quality'} Guaranteed`,
-        `${companyName} Solutions`,
-        `Learn More Now`
-      ],
+      headline1: `${companyName} - #1 Rated`,
+      headline2: "Premium Services & Support",
+      headline3: "Free Consultation",
+      description1: "Expert solutions for your business needs.",
+      description2: "30-day satisfaction guarantee. Get started today!",
+      headlines: [`${companyName} - #1 Rated`, "Premium Services & Support", "Free Consultation"],
       descriptions: [
-        `${description.substring(0, 70)}...`,
-        `Contact us today to discuss your ${keywords[2] || 'service'} requirements.`
+        "Expert solutions for your business needs.",
+        "30-day satisfaction guarantee. Get started today!"
       ]
     },
     {
-      headlines: [
-        `${companyName} Experts`,
-        `${keywords[1] || 'Professional'} Service`,
-        `Schedule Now`
-      ],
+      headline1: "Special Limited Offer",
+      headline2: `${companyName} Expert Services`,
+      headline3: "Save 15% Today",
+      description1: "Professional solutions with guaranteed results.",
+      description2: "Rated 4.9/5 by our customers. Satisfaction guaranteed!",
+      headlines: ["Special Limited Offer", `${companyName} Expert Services`, "Save 15% Today"],
       descriptions: [
-        `We provide ${keywords[0] || 'quality'} solutions that deliver real results.`,
-        `${companyName} - The ${keywords[1] || 'professional'} choice for businesses.`
+        "Professional solutions with guaranteed results.",
+        "Rated 4.9/5 by our customers. Satisfaction guaranteed!"
       ]
     },
     {
-      headlines: [
-        `${keywords[2] || 'Service'} Specialists`,
-        `${companyName} Advantage`,
-        `Explore Options`
-      ],
+      headline1: `Official ${companyName} Site`,
+      headline2: "25+ Years Experience",
+      headline3: "Get Your Free Quote",
+      description1: "Industry leading solutions for your specific needs.",
+      description2: "24/7 customer support. Always available when you need us.",
+      headlines: [`Official ${companyName} Site`, "25+ Years Experience", "Get Your Free Quote"],
       descriptions: [
-        `Trusted by businesses for our ${keywords[0] || 'quality'} service and expertise.`,
-        `${companyName} offers solutions designed for your success.`
+        "Industry leading solutions for your specific needs.",
+        "24/7 customer support. Always available when you need us."
       ]
     }
   ];
