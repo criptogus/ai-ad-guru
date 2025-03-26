@@ -232,27 +232,19 @@ const CampaignContent: React.FC = () => {
   };
 
   // Handle ad updates
-  const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
-    const updatedAds = [...googleAds];
-    updatedAds[index] = updatedAd;
+  const handleUpdateGoogleAd = (updatedAds: GoogleAd[]) => {
     setGoogleAds(updatedAds);
   };
 
-  const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
-    const updatedAds = [...metaAds];
-    updatedAds[index] = updatedAd;
+  const handleUpdateMetaAd = (updatedAds: MetaAd[]) => {
     setMetaAds(updatedAds);
   };
 
-  const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
-    const updatedAds = [...microsoftAds];
-    updatedAds[index] = updatedAd;
+  const handleUpdateMicrosoftAd = (updatedAds: any[]) => {
     setMicrosoftAds(updatedAds);
   };
 
-  const handleUpdateLinkedInAd = (index: number, updatedAd: MetaAd) => {
-    const updatedAds = [...linkedInAds];
-    updatedAds[index] = updatedAd;
+  const handleUpdateLinkedInAd = (updatedAds: MetaAd[]) => {
     setLinkedInAds(updatedAds);
   };
 
