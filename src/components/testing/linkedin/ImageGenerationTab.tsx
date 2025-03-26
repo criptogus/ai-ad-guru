@@ -59,7 +59,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
         )}
         
         <p className="text-xs text-muted-foreground mt-1">
-          Keep prompts concise for better results. Focus on key elements like setting, style, and mood.
+          Keep prompts concise for better results. OpenAI has a 1000 character limit for prompts, and we add context automatically.
         </p>
       </div>
       

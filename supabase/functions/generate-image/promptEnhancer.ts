@@ -1,3 +1,4 @@
+
 interface PromptEnhancerConfig {
   prompt: string;
   companyName?: string;
@@ -23,49 +24,48 @@ export function enhancePrompt(config: PromptEnhancerConfig): string {
     imageFormat = "square"
   } = config;
 
-  // Start with a concise base prompt
-  let enhancedPrompt = `Generate a high-quality advertising image: ${prompt}`;
+  // Start with the base prompt
+  let enhancedPrompt = prompt;
   
-  // Keep prompt concise to avoid exceeding OpenAI's 1000 character limit
-  // Add only the most essential context
+  // Add only essential context in a concise manner
+  const contextParts = [];
+  
   if (companyName) {
-    enhancedPrompt += ` For ${companyName}.`;
+    contextParts.push(`For ${companyName}`);
   }
   
-  // Add brand tone in a concise way
-  enhancedPrompt += ` ${brandTone} style.`;
-  
-  // Add platform-specific brief instructions
-  if (platform === "instagram") {
-    enhancedPrompt += " For Instagram.";
-  } else if (platform === "linkedin") {
-    enhancedPrompt += " For LinkedIn.";
-  } else if (platform === "facebook") {
-    enhancedPrompt += " For Facebook.";
-  } else if (platform === "google") {
-    enhancedPrompt += " For Google ads.";
+  if (brandTone) {
+    contextParts.push(`${brandTone} style`);
   }
   
-  // Add format specification
-  if (imageFormat === "square") {
-    enhancedPrompt += " Square format.";
-  } else if (imageFormat === "portrait") {
-    enhancedPrompt += " Vertical format.";
-  } else if (imageFormat === "landscape") {
-    enhancedPrompt += " Horizontal format.";
+  if (platform) {
+    contextParts.push(`For ${platform}`);
   }
   
-  // Add only the most crucial industry/theme context
-  if (industry && adTheme) {
-    enhancedPrompt += ` ${industry} industry, ${adTheme} theme.`;
-  } else if (industry) {
-    enhancedPrompt += ` ${industry} industry.`;
-  } else if (adTheme) {
-    enhancedPrompt += ` ${adTheme} theme.`;
+  if (imageFormat) {
+    let formatDesc = "";
+    if (imageFormat === "square") formatDesc = "Square format";
+    else if (imageFormat === "portrait") formatDesc = "Vertical format";
+    else if (imageFormat === "landscape") formatDesc = "Horizontal format";
+    
+    if (formatDesc) contextParts.push(formatDesc);
   }
   
-  // Add final quality instructions in a concise manner
-  enhancedPrompt += " Professional quality, high detail.";
+  if (industry) {
+    contextParts.push(`${industry} industry`);
+  }
+  
+  if (adTheme) {
+    contextParts.push(`${adTheme} theme`);
+  }
+  
+  // Add quality instructions at the end
+  contextParts.push("Professional quality, high detail");
+  
+  // Combine everything in a space-efficient way
+  if (contextParts.length > 0) {
+    enhancedPrompt += ". " + contextParts.join(", ") + ".";
+  }
   
   return enhancedPrompt;
 }

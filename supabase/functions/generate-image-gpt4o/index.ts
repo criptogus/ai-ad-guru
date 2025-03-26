@@ -97,6 +97,13 @@ serve(async (req) => {
       finalPrompt += ".";
     }
     
+    // Ensure prompt doesn't exceed OpenAI's limit (truncate if needed)
+    const MAX_PROMPT_LENGTH = 1000;
+    if (finalPrompt.length > MAX_PROMPT_LENGTH) {
+      finalPrompt = finalPrompt.substring(0, MAX_PROMPT_LENGTH - 3) + "...";
+      console.log(`Prompt was truncated to ${MAX_PROMPT_LENGTH} characters`);
+    }
+    
     console.log("Sending prompt to GPT-4o:", finalPrompt);
     
     // Call OpenAI API with GPT-4o model and image generation tool
@@ -131,15 +138,23 @@ serve(async (req) => {
     const openAIData = await openAIResponse.json();
     console.log("OpenAI response:", JSON.stringify(openAIData));
     
-    // Extract image URL from OpenAI response
-    const toolCalls = openAIData.choices?.[0]?.message?.tool_calls;
+    // Extract image URL from OpenAI response - using the new format with tool_calls
+    const message = openAIData.choices?.[0]?.message;
+    const toolCalls = message?.tool_calls;
+    
     if (!toolCalls || toolCalls.length === 0) {
-      throw new Error("No image was generated");
+      throw new Error("No image was generated or no tool_calls in the response");
     }
     
-    const imageUrl = toolCalls[0]?.image?.url;
+    // Find the image generation tool call
+    const imageToolCall = toolCalls.find((call: any) => call.type === "image_generation");
+    if (!imageToolCall) {
+      throw new Error("No image generation tool call in the response");
+    }
+    
+    const imageUrl = imageToolCall.image?.url;
     if (!imageUrl) {
-      throw new Error("No image URL in the response");
+      throw new Error("No image URL in the tool_calls response");
     }
     
     // Store the generated image in database

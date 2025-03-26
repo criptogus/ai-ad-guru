@@ -25,7 +25,7 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
     ? prompt.substring(0, MAX_PROMPT_LENGTH - 3) + "..." 
     : prompt;
   
-  console.log("Enhanced GPT-4o prompt (truncated):", truncatedPrompt);
+  console.log("Enhanced prompt (truncated):", truncatedPrompt);
   console.log(`Image format: ${imageFormat}, size: ${size}`);
   console.log(`Original prompt length: ${prompt.length}, truncated to: ${truncatedPrompt.length}`);
   
