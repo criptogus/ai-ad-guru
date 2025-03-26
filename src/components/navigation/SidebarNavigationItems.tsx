@@ -15,6 +15,7 @@ import {
   Users,
   LayoutTemplate,
   SlidersHorizontal,
+  PlusCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -82,6 +83,12 @@ export const SidebarNavigationItems: React.FC = () => {
         active={isActiveRoute("/campaigns")}
         icon={<Megaphone />}
         label="Campaigns"
+      />
+      <NavigationItem
+        to="/create-campaign"
+        active={isActiveRoute("/create-campaign")}
+        icon={<PlusCircle />}
+        label="Create Campaign"
       />
       <NavigationItem
         to="/analytics"

@@ -12,6 +12,8 @@ import PromptTemplatePage from './pages/PromptTemplatePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import CampaignsPage from './pages/CampaignsPage';
+import CreateCampaignPage from './pages/CreateCampaignPage';
 
 // Define auth layout
 const AuthLayout = () => {
@@ -45,7 +47,7 @@ const router = createBrowserRouter([
         path: "campaigns",
         element: (
           <ProtectedRoute>
-            <div>Campaigns</div>
+            <CampaignsPage />
           </ProtectedRoute>
         ),
       },
@@ -53,7 +55,7 @@ const router = createBrowserRouter([
         path: "create-campaign",
         element: (
           <ProtectedRoute>
-            <div>Create Campaign</div>
+            <CreateCampaignPage />
           </ProtectedRoute>
         ),
       },
