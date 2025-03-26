@@ -97,6 +97,44 @@ export type Database = {
           },
         ]
       }
+      generated_images: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          prompt_used: string
+          template_id: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          prompt_used: string
+          template_id?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          prompt_used?: string
+          template_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_images_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar: string | null
@@ -124,6 +162,39 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prompt_templates: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          editable: boolean
+          id: string
+          prompt_text: string
+          title: string
+          visibility: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          editable?: boolean
+          id?: string
+          prompt_text: string
+          title: string
+          visibility?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          editable?: boolean
+          id?: string
+          prompt_text?: string
+          title?: string
+          visibility?: string
         }
         Relationships: []
       }
