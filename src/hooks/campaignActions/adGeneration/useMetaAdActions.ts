@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
+import { toast } from "sonner";
 
 export const useMetaAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -10,7 +11,6 @@ export const useMetaAdActions = (
   generateMetaAds: (campaignData: any, mindTrigger?: string) => Promise<MetaAd[] | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   
   const handleGenerateMetaAds = async () => {
@@ -31,7 +31,7 @@ export const useMetaAdActions = (
         description: "Creating Instagram/Meta ads based on your website analysis"
       });
       
-      // Get the campaign data from context
+      // Call the API with a simplified version of analysisResult
       const result = await generateMetaAds(analysisResult);
       
       if (result && result.length > 0) {

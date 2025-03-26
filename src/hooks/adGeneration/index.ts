@@ -15,9 +15,29 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   const { toast } = useToast();
   const { generateAdImage } = useImageGeneration();
 
-  // Utility function to clean object for JSON serialization
+  // Improved utility function to clean object for JSON serialization
+  // This version handles circular references
   const cleanObject = (obj: any) => {
-    return JSON.parse(JSON.stringify(obj));
+    const seen = new WeakSet();
+    return JSON.parse(JSON.stringify(obj, (key, value) => {
+      // Skip window/DOM nodes and any circular references
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          return '[Circular Reference]';
+        }
+        // Avoid processing DOM elements, window, etc.
+        if (
+          value instanceof Node || 
+          value instanceof Window || 
+          (typeof Window !== 'undefined' && value === Window) ||
+          (typeof document !== 'undefined' && value === document)
+        ) {
+          return '[Object]';
+        }
+        seen.add(value);
+      }
+      return value;
+    }));
   };
 
   // Generate Google Ads
@@ -28,13 +48,22 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Google Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
-      // Clean the input object to remove any circular references
-      const cleanInput = cleanObject(input);
+      // Only include necessary properties to prevent circular references
+      const simplifiedInput = {
+        companyName: input.companyName,
+        businessDescription: input.businessDescription,
+        targetAudience: input.targetAudience,
+        brandTone: input.brandTone,
+        keywords: input.keywords,
+        callToAction: input.callToAction,
+        uniqueSellingPoints: input.uniqueSellingPoints,
+        websiteUrl: input.websiteUrl
+      };
 
       const request = {
-        ...cleanInput,
+        campaignData: simplifiedInput,
         platform: "google",
-        mindTrigger // Include mind trigger in request
+        mindTrigger
       };
 
       const { data, error } = await supabase.functions.invoke('generate-ads', {
@@ -48,7 +77,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
       console.log("Google ads generated:", data);
       // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
-      const processedAds = data.ads.map((ad: any) => {
+      const processedAds = data.data.map((ad: any) => {
         const processedAd: GoogleAd = {
           headline1: '',
           headline2: '',
@@ -126,13 +155,22 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Meta Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
-      // Clean the input object to remove any circular references
-      const cleanInput = cleanObject(input);
+      // Only include necessary properties to prevent circular references
+      const simplifiedInput = {
+        companyName: input.companyName,
+        businessDescription: input.businessDescription,
+        targetAudience: input.targetAudience,
+        brandTone: input.brandTone,
+        keywords: input.keywords,
+        callToAction: input.callToAction,
+        uniqueSellingPoints: input.uniqueSellingPoints,
+        websiteUrl: input.websiteUrl
+      };
 
       const request = {
-        ...cleanInput,
+        campaignData: simplifiedInput,
         platform: "meta",
-        mindTrigger // Include mind trigger in request
+        mindTrigger
       };
 
       const { data, error } = await supabase.functions.invoke('generate-ads', {
@@ -145,7 +183,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       }
 
       console.log("Meta ads generated:", data);
-      return data.ads as MetaAd[];
+      return data.data as MetaAd[];
     } catch (error) {
       console.error("Error in generateMetaAds:", error);
       toast({
@@ -167,13 +205,22 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating LinkedIn Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
-      // Clean the input object to remove any circular references
-      const cleanInput = cleanObject(input);
+      // Only include necessary properties to prevent circular references
+      const simplifiedInput = {
+        companyName: input.companyName,
+        businessDescription: input.businessDescription,
+        targetAudience: input.targetAudience,
+        brandTone: input.brandTone,
+        keywords: input.keywords,
+        callToAction: input.callToAction,
+        uniqueSellingPoints: input.uniqueSellingPoints,
+        websiteUrl: input.websiteUrl
+      };
 
       const request = {
-        ...cleanInput,
+        campaignData: simplifiedInput,
         platform: "linkedin",
-        mindTrigger // Include mind trigger in request
+        mindTrigger
       };
 
       const { data, error } = await supabase.functions.invoke('generate-ads', {
@@ -186,7 +233,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       }
 
       console.log("LinkedIn ads generated:", data);
-      return data.ads as MetaAd[];
+      return data.data as MetaAd[];
     } catch (error) {
       console.error("Error in generateLinkedInAds:", error);
       toast({
@@ -208,13 +255,22 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Microsoft Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
-      // Clean the input object to remove any circular references
-      const cleanInput = cleanObject(input);
+      // Only include necessary properties to prevent circular references
+      const simplifiedInput = {
+        companyName: input.companyName,
+        businessDescription: input.businessDescription,
+        targetAudience: input.targetAudience,
+        brandTone: input.brandTone,
+        keywords: input.keywords,
+        callToAction: input.callToAction,
+        uniqueSellingPoints: input.uniqueSellingPoints,
+        websiteUrl: input.websiteUrl
+      };
 
       const request = {
-        ...cleanInput,
+        campaignData: simplifiedInput,
         platform: "microsoft",
-        mindTrigger // Include mind trigger in request
+        mindTrigger
       };
 
       const { data, error } = await supabase.functions.invoke('generate-ads', {
@@ -229,7 +285,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Microsoft ads generated:", data);
       
       // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
-      const processedAds = data.ads.map((ad: any) => {
+      const processedAds = data.data.map((ad: any) => {
         const processedAd: GoogleAd = {
           headline1: '',
           headline2: '',
