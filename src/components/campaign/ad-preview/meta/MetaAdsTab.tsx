@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Sparkles } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAdCard } from "./card";
@@ -72,16 +72,55 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
       throw error;
     }
   };
+  
+  // Beautify mind trigger display
+  const formatMindTrigger = (trigger: string) => {
+    if (!trigger) return "";
+    
+    // Handle custom triggers (prefixed with "custom:")
+    if (trigger.startsWith("custom:")) {
+      return trigger.substring(7); // Remove the "custom:" prefix
+    }
+    
+    // Format trigger_id to "Trigger Name"
+    const triggerMap: Record<string, string> = {
+      // Meta
+      "lifestyle": "Lifestyle Aspiration",
+      "before_after": "Before & After",
+      "user_generated": "User Generated Content",
+      "storytelling": "Storytelling",
+      "tutorial": "Tutorial/How-to",
+      
+      // Google
+      "urgency": "Urgency",
+      "social_proof": "Social Proof",
+      "problem_solution": "Problem-Solution",
+      "curiosity": "Curiosity",
+      "comparison": "Comparison",
+      
+      // LinkedIn
+      "thought_leadership": "Thought Leadership",
+      "data_insights": "Data & Insights",
+      "professional_growth": "Professional Growth",
+      "industry_trends": "Industry Trends",
+      "case_study": "Case Study"
+    };
+    
+    return triggerMap[trigger] || trigger.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
 
   return (
     <div className="space-y-4">
       {mindTrigger && (
         <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
             Active Mind Trigger
           </AlertTitle>
-          <AlertDescription className="text-blue-600 dark:text-blue-300">
-            {mindTrigger}
+          <AlertDescription className="text-blue-600 dark:text-blue-300 font-medium">
+            {formatMindTrigger(mindTrigger)}
           </AlertDescription>
         </Alert>
       )}

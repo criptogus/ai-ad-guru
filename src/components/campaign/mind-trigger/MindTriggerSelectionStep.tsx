@@ -27,8 +27,7 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
   const [customTrigger, setCustomTrigger] = React.useState("");
 
   const handleSelectTemplate = (template: string) => {
-    setCustomTrigger(template);
-    // If we want to automatically add it as a custom trigger
+    // When a template is selected, set it as a custom trigger for the active platform
     const updatedTriggers = { ...selectedTriggers };
     updatedTriggers[activeTab] = `custom:${template.trim()}`;
     onTriggersChange(updatedTriggers);

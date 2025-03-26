@@ -1,10 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Image, Sparkles } from "lucide-react";
 import { EditorSectionProps } from "./types";
 import { TriggerButtonInline } from "../../TriggerButtonInline";
-import TemplateGalleryButton from "../instagram-preview/TemplateGalleryButton";
+import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
 
 const AdEditorSection: React.FC<EditorSectionProps> = ({
   ad,
@@ -12,6 +14,8 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
   onUpdate,
   onSelectTrigger
 }) => {
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+
   const handleChange = (field: keyof typeof ad, value: string) => {
     onUpdate({
       ...ad,
@@ -25,9 +29,10 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
     }
   };
 
-  const handleTemplateSelect = (template: string) => {
+  const handleTemplateSelect = (template: AdTemplate) => {
     // Update the ad's image prompt with the selected template
-    handleChange("imagePrompt", template);
+    handleChange("imagePrompt", template.prompt);
+    setShowTemplateGallery(false);
   };
 
   return (
@@ -93,10 +98,36 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
               placeholder="Describe the image you want to generate"
               rows={3}
             />
-            <TemplateGalleryButton onSelectTemplate={handleTemplateSelect} />
+            <div className="mt-2 flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full"
+                onClick={() => setShowTemplateGallery(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                Ad Template Gallery
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full"
+                onClick={() => handleTriggerSelect("Create a professional Instagram ad that highlights our product benefits in a visually appealing way.")}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Quick Prompt
+              </Button>
+            </div>
           </div>
         </>
       )}
+
+      <TemplateGallery
+        isOpen={showTemplateGallery}
+        onClose={() => setShowTemplateGallery(false)}
+        onSelectTemplate={handleTemplateSelect}
+        platform="instagram"
+      />
     </div>
   );
 };
