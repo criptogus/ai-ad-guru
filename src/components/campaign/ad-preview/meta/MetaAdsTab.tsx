@@ -139,7 +139,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                 key={index}
                 index={index}
                 ad={ad}
-                companyName={analysisResult.companyName}
+                analysisResult={analysisResult}
                 isEditing={editingAdIndex === index}
                 isGeneratingImage={loadingImageIndex === index}
                 onEdit={() => handleEditAd(index)}
