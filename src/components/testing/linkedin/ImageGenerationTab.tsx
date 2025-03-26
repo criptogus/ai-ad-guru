@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, AlertCircle } from "lucide-react";
 import PromptTemplates from "./PromptTemplates";
+import { Progress } from "@/components/ui/progress";
 
 interface ImageGenerationTabProps {
   testAd: MetaAd;
@@ -29,8 +30,10 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
   onImageFormatChange,
   onGenerateImage
 }) => {
+  const MAX_PROMPT_LENGTH = 800; // Leave margin for additional context
   const promptLength = testAd.imagePrompt?.length || 0;
-  const isPromptTooLong = promptLength > 800; // Leave some room for additional context
+  const isPromptTooLong = promptLength > MAX_PROMPT_LENGTH;
+  const promptPercentage = Math.min((promptLength / MAX_PROMPT_LENGTH) * 100, 100);
   
   return (
     <div className="space-y-4">
@@ -38,7 +41,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
         <div className="flex items-center justify-between">
           <Label htmlFor="imagePrompt">Image Prompt</Label>
           <span className={`text-xs ${isPromptTooLong ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
-            {promptLength}/800 characters
+            {promptLength}/{MAX_PROMPT_LENGTH} characters
           </span>
         </div>
         
@@ -47,9 +50,13 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
           value={testAd.imagePrompt || ''}
           onChange={(e) => onAdChange('imagePrompt', e.target.value)}
           placeholder="Describe the image you want to generate..."
-          rows={5}
+          rows={4}
           className={isPromptTooLong ? 'border-red-500' : ''}
         />
+        
+        <div className="mt-1">
+          <Progress value={promptPercentage} className={`h-1 ${isPromptTooLong ? 'bg-red-200' : ''}`} />
+        </div>
         
         {isPromptTooLong && (
           <div className="flex gap-2 items-center mt-1 text-xs text-red-500">
@@ -59,7 +66,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
         )}
         
         <p className="text-xs text-muted-foreground mt-1">
-          Keep prompts concise for better results. OpenAI has a 1000 character limit for prompts, and we add context automatically.
+          Keep prompts concise and clear for best results. System will add context about format, platform, and quality automatically.
         </p>
       </div>
       
@@ -78,6 +85,8 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
               <SelectItem value="Growth">Growth</SelectItem>
               <SelectItem value="Collaboration">Collaboration</SelectItem>
               <SelectItem value="Success">Success</SelectItem>
+              <SelectItem value="Digital Transformation">Digital Transformation</SelectItem>
+              <SelectItem value="Professional Services">Professional Services</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -107,6 +116,10 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
           {isGenerating ? 'Generating Image...' : 'Generate LinkedIn Ad Image'}
         </span>
       </Button>
+      
+      <div className="text-xs text-center text-muted-foreground">
+        Using GPT-4o for high-quality ad imagery with text integration.
+      </div>
     </div>
   );
 };

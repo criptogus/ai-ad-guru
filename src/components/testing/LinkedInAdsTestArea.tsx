@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { MetaAd } from "@/hooks/useAdGeneration";
+import { MetaAd } from "@/hooks/adGeneration";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
 import LinkedInAdForm from "./linkedin/LinkedInAdForm";
 import LinkedInPreviewSection from "./linkedin/LinkedInPreviewSection";
@@ -47,20 +47,9 @@ const LinkedInAdsTestArea: React.FC = () => {
     });
 
     try {
-      // Enhanced LinkedIn-specific prompt with B2B focus
-      const enhancedPrompt = `
-${testAd.imagePrompt}
-
-This should be a high-quality, professional LinkedIn ad image optimized for B2B marketing with these specifications:
-- Industry: ${industry}
-- Ad Theme: ${adTheme}
-- Target Audience: ${companyInfo.targetAudience}
-- Setting: Modern corporate environment, professional context
-- Visual Style: Clean, well-lit, crisp, with a focus on credibility and professionalism
-- Mood: Trustworthy, authoritative, success-driven
-- Brand Elements: Subtle professional color palette
-      `.trim();
-
+      // Create a more concise LinkedIn-focused prompt
+      const basePrompt = testAd.imagePrompt;
+      
       // Pass additional context from companyInfo to enhance image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
@@ -73,10 +62,10 @@ This should be a high-quality, professional LinkedIn ad image optimized for B2B 
         platform: "linkedin" // Specify platform for image generation
       };
 
-      const imageUrl = await generateAdImage(enhancedPrompt, additionalInfo);
+      const imageUrl = await generateAdImage(basePrompt, additionalInfo);
       
       if (imageUrl) {
-        setTestAd(prev => ({ ...prev, imageUrl, imagePrompt: enhancedPrompt }));
+        setTestAd(prev => ({ ...prev, imageUrl }));
         toast.success("LinkedIn ad image generated successfully");
       }
     } catch (error) {

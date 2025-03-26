@@ -35,20 +35,26 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
   
   while (retries <= maxRetries) {
     try {
-      // Make direct fetch to OpenAI API for image generation (DALL-E)
-      const response = await fetch("https://api.openai.com/v1/images/generations", {
+      // Make request to OpenAI API using the Chat Completions endpoint with the image_generation tool
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          prompt: truncatedPrompt,
-          n: 1,
-          size: size,
-          quality: "hd", // Use HD quality for better results
-          style: "natural", // Natural style for more photorealistic results
-          response_format: "url"
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: truncatedPrompt
+            }
+          ],
+          tools: [
+            {
+              type: "image_generation"
+            }
+          ]
         })
       });
       
@@ -68,12 +74,22 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
       
       const data = await response.json();
       
-      if (!data.data || data.data.length === 0) {
-        throw new Error("No image was generated");
+      // Parse the tool_calls from the response
+      const toolCalls = data.choices?.[0]?.message?.tool_calls;
+      
+      if (!toolCalls || toolCalls.length === 0) {
+        throw new Error("No image generation tool calls found in response");
+      }
+      
+      // Find the image generation tool call
+      const imageToolCall = toolCalls.find((call: any) => call.type === "image_generation");
+      
+      if (!imageToolCall || !imageToolCall.image || !imageToolCall.image.url) {
+        throw new Error("No image URL found in the response");
       }
       
       return { 
-        url: data.data[0].url,
+        url: imageToolCall.image.url,
         revisedPrompt: truncatedPrompt !== prompt ? truncatedPrompt : undefined
       };
     } catch (error) {

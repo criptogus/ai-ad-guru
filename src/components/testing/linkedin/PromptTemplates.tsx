@@ -28,6 +28,18 @@ const PromptTemplates: React.FC<PromptTemplatesProps> = ({ onSelectPrompt }) => 
     {
       name: "Premium Service",
       prompt: "High-end representation of professional service with dramatic lighting and premium atmosphere"
+    },
+    {
+      name: "Data Visualization",
+      prompt: "Clean and modern data visualization with charts showing positive business results on sleek displays"
+    },
+    {
+      name: "Leadership Vision",
+      prompt: "A visionary leader looking ahead with confidence, symbolizing direction and strategic thinking"
+    },
+    {
+      name: "Digital Transformation",
+      prompt: "Visual representation of digital transformation with flowing data elements and modern technology integration"
     }
   ];
 
