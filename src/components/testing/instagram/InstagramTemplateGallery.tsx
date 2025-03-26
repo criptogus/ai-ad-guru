@@ -1,11 +1,9 @@
+
 import React, { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
-import { Tag, MessageSquare, Edit, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { TemplateCard } from "./TemplateCard";
 
 export interface InstagramTemplate {

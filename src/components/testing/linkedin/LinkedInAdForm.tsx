@@ -62,7 +62,46 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
     }
     
     onAdChange("imagePrompt", template.prompt_text);
+    
+    // Update ad details based on the template category
+    const templateCategory = template.category || "professional";
+    const adDetails = getCategoryAdDetails(templateCategory);
+    onAdChange("headline", adDetails.headline);
+    onAdChange("primaryText", adDetails.primaryText);
+    onAdChange("description", adDetails.description);
+    
     setActiveTab("form");
+  };
+
+  const getCategoryAdDetails = (category: string): { headline: string; primaryText: string; description: string } => {
+    const adDetailsMap: Record<string, { headline: string; primaryText: string; description: string }> = {
+      "professional": {
+        headline: "Take Your Career to the Next Level",
+        primaryText: "Join industry leaders who've transformed their professional trajectory with our solutions. Discover how our platform can enhance your skill set and open new opportunities.",
+        description: "Learn More"
+      },
+      "recruitment": {
+        headline: "We're Hiring Top Talent",
+        primaryText: "Join our growing team of professionals making an impact. We offer competitive benefits, flexible work arrangements, and career growth opportunities.",
+        description: "Apply Now"
+      },
+      "b2b": {
+        headline: "Streamline Your Business Operations",
+        primaryText: "Our enterprise solution helps businesses reduce costs by 30% while improving productivity. Join 500+ companies already seeing results.",
+        description: "Request Demo"
+      },
+      "event": {
+        headline: "Join Our Upcoming Webinar",
+        primaryText: "Don't miss this opportunity to learn from industry experts and network with professionals in your field. Limited spots available!",
+        description: "Register Now"
+      }
+    };
+    
+    return adDetailsMap[category] || {
+      headline: "Connect With Us on LinkedIn",
+      primaryText: "Discover how our solutions can help your business grow. Our team of experts is ready to answer your questions and provide personalized guidance.",
+      description: "Connect Now"
+    };
   };
 
   const handleGenerateWithTemplate = async () => {

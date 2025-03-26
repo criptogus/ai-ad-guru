@@ -55,7 +55,50 @@ const NewMetaAdForm: React.FC<NewMetaAdFormProps> = ({
     }
     
     onAdChange("imagePrompt", template.prompt);
+    
+    // Update ad details based on the template category
+    const categoryAdDetails = getCategoryAdDetails(template.category);
+    onAdChange("headline", categoryAdDetails.headline);
+    onAdChange("primaryText", categoryAdDetails.primaryText);
+    onAdChange("description", categoryAdDetails.description);
+    
     setActiveTab("form");
+  };
+
+  const getCategoryAdDetails = (category: string): { headline: string; primaryText: string; description: string } => {
+    const adDetailsMap: Record<string, { headline: string; primaryText: string; description: string }> = {
+      "urgency": {
+        headline: "Limited Time Offer Inside! 🔥",
+        primaryText: "Don't miss out on our exclusive deals! Only available for a short time. Act now before these amazing offers expire.",
+        description: "Shop Now"
+      },
+      "personal-branding": {
+        headline: "Elevate Your Personal Brand 👤",
+        primaryText: "Stand out from the crowd with our professional solutions designed to showcase your unique skills and talents.",
+        description: "Learn More"
+      },
+      "e-commerce": {
+        headline: "Discover Our New Collection 🛍️",
+        primaryText: "Explore our latest products, crafted with care and designed for style and functionality. Perfect for your everyday needs.",
+        description: "Shop Collection"
+      },
+      "education": {
+        headline: "Master New Skills Today 📚",
+        primaryText: "Unlock your potential with our expert-led courses. Learn at your own pace and transform your career prospects.",
+        description: "Enroll Now"
+      },
+      "social": {
+        headline: "Join Our Community 💬",
+        primaryText: "Connect with like-minded people and be part of something special. Share experiences and grow together.",
+        description: "Join Now"
+      }
+    };
+    
+    return adDetailsMap[category] || {
+      headline: "Discover Our New Product",
+      primaryText: "Transform your daily routine with our innovative solution. Designed for maximum efficiency and built to last.",
+      description: "Learn More"
+    };
   };
 
   const handleGenerateWithTemplate = async () => {

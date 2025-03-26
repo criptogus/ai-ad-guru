@@ -20,8 +20,8 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
   return (
     <div className="space-y-4 border p-4 rounded-md bg-muted/20">
       <div>
-        <Label className="text-sm font-semibold">Selected Template</Label>
-        <p className="text-xs text-muted-foreground">{selectedTemplate.title}</p>
+        <Label className="text-sm font-semibold">Selected Template: {selectedTemplate.title}</Label>
+        <p className="text-xs text-muted-foreground mt-1">{getCategoryName(selectedTemplate.category)}</p>
       </div>
       
       <div className="space-y-2">
@@ -32,9 +32,22 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
           onChange={(e) => setMainText(e.target.value)}
           placeholder="Enter main text for template"
         />
+        <p className="text-xs text-muted-foreground">This text will replace the variable in the prompt.</p>
       </div>
     </div>
   );
 };
+
+function getCategoryName(categoryId: string): string {
+  const categoryMap: Record<string, string> = {
+    "urgency": "Urgency & Scarcity",
+    "personal-branding": "Personal Branding",
+    "e-commerce": "E-commerce / Retail",
+    "education": "Education / EdTech",
+    "social": "Social & Engagement",
+  };
+  
+  return categoryMap[categoryId] || categoryId;
+}
 
 export default TemplateVariablesForm;
