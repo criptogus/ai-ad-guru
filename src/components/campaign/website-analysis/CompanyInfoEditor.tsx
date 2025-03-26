@@ -1,12 +1,12 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 export interface CompanyInfoEditorProps {
-  analysisResult: any;
-  onTextChange: (field: string, value: string) => void;
+  analysisResult: WebsiteAnalysisResult;
+  onTextChange: (field: keyof WebsiteAnalysisResult, value: string) => void;
 }
 
 const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
@@ -14,37 +14,42 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
   onTextChange
 }) => {
   return (
-    <div className="bg-card dark:bg-card p-4 rounded-md shadow-sm">
-      <h4 className="font-medium text-foreground mb-2">Company Information</h4>
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="companyName" className="text-sm font-medium text-muted-foreground">Company Name</Label>
-          <Input
-            id="companyName"
-            value={analysisResult.companyName}
-            onChange={(e) => onTextChange('companyName', e.target.value)}
-            className="mt-1 bg-background dark:bg-background"
-          />
-        </div>
-        <div>
-          <Label htmlFor="businessDescription" className="text-sm font-medium text-muted-foreground">Business Description</Label>
-          <Textarea
-            id="businessDescription"
-            value={analysisResult.businessDescription}
-            onChange={(e) => onTextChange('businessDescription', e.target.value)}
-            className="mt-1 bg-background dark:bg-background"
-            rows={3}
-          />
-        </div>
-        <div>
-          <Label htmlFor="brandTone" className="text-sm font-medium text-muted-foreground">Brand Tone</Label>
-          <Input
-            id="brandTone"
-            value={analysisResult.brandTone}
-            onChange={(e) => onTextChange('brandTone', e.target.value)}
-            className="mt-1 bg-background dark:bg-background"
-          />
-        </div>
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="company-name" className="block text-sm font-medium mb-1">
+          Company Name
+        </label>
+        <Input
+          id="company-name"
+          value={analysisResult.companyName}
+          onChange={(e) => onTextChange('companyName', e.target.value)}
+          className="w-full"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="business-description" className="block text-sm font-medium mb-1">
+          Business Description
+        </label>
+        <Textarea
+          id="business-description"
+          value={analysisResult.businessDescription}
+          onChange={(e) => onTextChange('businessDescription', e.target.value)}
+          className="w-full resize-none"
+          rows={3}
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="brand-tone" className="block text-sm font-medium mb-1">
+          Brand Tone
+        </label>
+        <Input
+          id="brand-tone"
+          value={analysisResult.brandTone}
+          onChange={(e) => onTextChange('brandTone', e.target.value)}
+          className="w-full"
+        />
       </div>
     </div>
   );

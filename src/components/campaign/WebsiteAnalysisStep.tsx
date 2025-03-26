@@ -84,11 +84,8 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
   const handleNext = () => {
     // Pass the edited result back through context or props
-    if (editedResult && onNext) {
-      // Update the analysis result with edited values
-      onAnalyzeWebsite(website).then(() => {
-        onNext();
-      });
+    if (editedResult) {
+      onNext();
     }
   };
 
