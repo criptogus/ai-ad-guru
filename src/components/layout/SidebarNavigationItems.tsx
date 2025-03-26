@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Home, LayoutDashboard, Users, Settings, PlusCircle, FileImageIcon } from "lucide-react";
+import { Home, LayoutDashboard, Users, Settings, PlusCircle, FileImageIcon, Beaker } from "lucide-react";
 import { NavigationItem } from "@/components/layout/NavigationItem";
 import { ImageIcon } from "lucide-react";
 
@@ -51,6 +51,13 @@ export const SidebarNavigationItems = () => {
         icon={<ImageIcon className="h-4 w-4" />}
         label="GPT-4o Image Generator"
         active={isActivePath("/prompt-templates")}
+      />
+      
+      <NavigationItem
+        to="/test-ads"
+        icon={<Beaker className="h-4 w-4" />}
+        label="Ad Testing Area"
+        active={isActivePath("/test-ads")}
       />
       
       <h2 className="mb-2 mt-6 px-4 text-lg font-semibold tracking-tight">

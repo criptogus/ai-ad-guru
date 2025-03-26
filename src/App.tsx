@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   createBrowserRouter,
@@ -14,6 +13,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import CampaignsPage from './pages/CampaignsPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
+import TestAdsPage from './pages/TestAdsPage';
 
 // Define auth layout
 const AuthLayout = () => {
@@ -56,6 +56,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CreateCampaignPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "test-ads",
+        element: (
+          <ProtectedRoute>
+            <TestAdsPage />
           </ProtectedRoute>
         ),
       },
@@ -147,7 +155,6 @@ const router = createBrowserRouter([
       }
     ]
   },
-  // Redirect old login/register routes to new ones
   {
     path: "/login",
     element: <Navigate to="/auth/login" replace />
