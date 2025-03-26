@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -12,18 +12,6 @@ import InstagramTemplateExamplePage from "./pages/InstagramTemplateExamplePage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Here you would check for a token in local storage or cookies
-    const token = localStorage.getItem("authToken"); // Example
-    if (token) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
-  }, []);
-
   return (
     <ThemeProvider>
       <div className="app">

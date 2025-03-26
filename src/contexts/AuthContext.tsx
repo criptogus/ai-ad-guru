@@ -14,7 +14,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { user, setUser, session, isAuthenticated, isLoading: authStateLoading } = useAuthState();
   
-  // Initialize auth actions without navigate function
+  // Initialize auth actions
   const { 
     login, 
     loginWithGoogle, 
