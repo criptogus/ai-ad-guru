@@ -15,6 +15,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
   const { toast } = useToast();
   const { generateAdImage } = useImageGeneration();
 
+  // Utility function to clean object for JSON serialization
+  const cleanObject = (obj: any) => {
+    return JSON.parse(JSON.stringify(obj));
+  };
+
   // Generate Google Ads
   const generateGoogleAds = async (input: AdGenerationInput, mindTrigger?: string): Promise<GoogleAd[] | null> => {
     setIsGenerating(true);
@@ -23,8 +28,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Google Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
+      // Clean the input object to remove any circular references
+      const cleanInput = cleanObject(input);
+
       const request = {
-        ...input,
+        ...cleanInput,
         platform: "google",
         mindTrigger // Include mind trigger in request
       };
@@ -118,8 +126,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Meta Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
+      // Clean the input object to remove any circular references
+      const cleanInput = cleanObject(input);
+
       const request = {
-        ...input,
+        ...cleanInput,
         platform: "meta",
         mindTrigger // Include mind trigger in request
       };
@@ -156,8 +167,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating LinkedIn Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
+      // Clean the input object to remove any circular references
+      const cleanInput = cleanObject(input);
+
       const request = {
-        ...input,
+        ...cleanInput,
         platform: "linkedin",
         mindTrigger // Include mind trigger in request
       };
@@ -194,8 +208,11 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       console.log("Generating Microsoft Ads with input:", input);
       console.log("Using mind trigger:", mindTrigger || "None specified");
 
+      // Clean the input object to remove any circular references
+      const cleanInput = cleanObject(input);
+
       const request = {
-        ...input,
+        ...cleanInput,
         platform: "microsoft",
         mindTrigger // Include mind trigger in request
       };

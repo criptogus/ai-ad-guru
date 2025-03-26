@@ -5,6 +5,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MicrosoftAdPreview } from "@/components/campaign/ad-preview/microsoft";
 import MicrosoftAdCardHeader from "./microsoft/MicrosoftAdCardHeader";
 import MicrosoftAdDetails from "./microsoft/MicrosoftAdDetails";
+import { getDomainFromUrl } from "@/lib/utils";
 
 interface MicrosoftAdCardProps {
   ad: any;
@@ -22,13 +23,7 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   
   // Extract domain from website URL
-  const getDomain = (url: string) => {
-    try {
-      return new URL(url).hostname.replace('www.', '');
-    } catch (e) {
-      return url;
-    }
-  };
+  const domain = getDomainFromUrl(analysisResult.websiteUrl || "example.com");
 
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
@@ -53,7 +48,7 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
         <div>
           <MicrosoftAdPreview 
             ad={ad} 
-            domain={getDomain(analysisResult.websiteUrl)} 
+            domain={domain} 
           />
         </div>
         <div>
