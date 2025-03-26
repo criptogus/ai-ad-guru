@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
 import PromptTemplates from "./PromptTemplates";
 
 interface ImageGenerationTabProps {
@@ -29,19 +29,37 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
   onImageFormatChange,
   onGenerateImage
 }) => {
+  const promptLength = testAd.imagePrompt?.length || 0;
+  const isPromptTooLong = promptLength > 800; // Leave some room for additional context
+  
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="imagePrompt">Image Prompt</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="imagePrompt">Image Prompt</Label>
+          <span className={`text-xs ${isPromptTooLong ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+            {promptLength}/800 characters
+          </span>
+        </div>
+        
         <Textarea 
           id="imagePrompt" 
           value={testAd.imagePrompt || ''}
           onChange={(e) => onAdChange('imagePrompt', e.target.value)}
           placeholder="Describe the image you want to generate..."
           rows={5}
+          className={isPromptTooLong ? 'border-red-500' : ''}
         />
+        
+        {isPromptTooLong && (
+          <div className="flex gap-2 items-center mt-1 text-xs text-red-500">
+            <AlertCircle size={14} />
+            <span>Prompt is too long. Please shorten it to avoid generation errors.</span>
+          </div>
+        )}
+        
         <p className="text-xs text-muted-foreground mt-1">
-          Detailed descriptions produce better results. Focus on setting, mood, colors, and style.
+          Keep prompts concise for better results. Focus on key elements like setting, style, and mood.
         </p>
       </div>
       
@@ -80,7 +98,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
       
       <Button 
         onClick={onGenerateImage} 
-        disabled={isGenerating || !testAd.imagePrompt}
+        disabled={isGenerating || !testAd.imagePrompt || isPromptTooLong}
         className="w-full group relative overflow-hidden"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>

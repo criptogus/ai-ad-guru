@@ -1,4 +1,3 @@
-
 interface PromptEnhancerConfig {
   prompt: string;
   companyName?: string;
@@ -24,59 +23,49 @@ export function enhancePrompt(config: PromptEnhancerConfig): string {
     imageFormat = "square"
   } = config;
 
-  // Build a comprehensive prompt for GPT-4o
-  let enhancedPrompt = `Generate a high-quality, photorealistic advertising image: ${prompt}`;
+  // Start with a concise base prompt
+  let enhancedPrompt = `Generate a high-quality advertising image: ${prompt}`;
   
-  // Add company context
+  // Keep prompt concise to avoid exceeding OpenAI's 1000 character limit
+  // Add only the most essential context
   if (companyName) {
-    enhancedPrompt += ` For company: ${companyName}.`;
+    enhancedPrompt += ` For ${companyName}.`;
   }
   
-  // Add brand tone guidance
-  enhancedPrompt += ` Use a ${brandTone} visual tone.`;
+  // Add brand tone in a concise way
+  enhancedPrompt += ` ${brandTone} style.`;
   
-  // Add platform-specific optimization
+  // Add platform-specific brief instructions
   if (platform === "instagram") {
-    enhancedPrompt += ` Optimize for Instagram ads with vibrant colors and engaging composition.`;
+    enhancedPrompt += " For Instagram.";
   } else if (platform === "linkedin") {
-    enhancedPrompt += ` Optimize for LinkedIn with professional aesthetics suitable for business audience.`;
+    enhancedPrompt += " For LinkedIn.";
   } else if (platform === "facebook") {
-    enhancedPrompt += ` Optimize for Facebook with social engagement-focused visuals.`;
+    enhancedPrompt += " For Facebook.";
   } else if (platform === "google") {
-    enhancedPrompt += ` Optimize for Google Display ads with clear focal points.`;
+    enhancedPrompt += " For Google ads.";
   }
   
-  // Add industry context
-  if (industry) {
-    enhancedPrompt += ` Industry context: ${industry}.`;
-  }
-  
-  // Add ad theme
-  if (adTheme) {
-    enhancedPrompt += ` Ad theme: ${adTheme}.`;
-  }
-  
-  // Add target audience
-  if (targetAudience) {
-    enhancedPrompt += ` Target audience: ${targetAudience}.`;
-  }
-  
-  // Add USPs
-  if (uniqueSellingPoints) {
-    enhancedPrompt += ` Highlight these unique selling points: ${uniqueSellingPoints}.`;
-  }
-  
-  // Add format-specific guidance
+  // Add format specification
   if (imageFormat === "square") {
-    enhancedPrompt += ` Create in square format with balanced composition.`;
+    enhancedPrompt += " Square format.";
   } else if (imageFormat === "portrait") {
-    enhancedPrompt += ` Create in portrait format with vertically stacked elements.`;
+    enhancedPrompt += " Vertical format.";
   } else if (imageFormat === "landscape") {
-    enhancedPrompt += ` Create in landscape format optimized for wider displays.`;
+    enhancedPrompt += " Horizontal format.";
   }
   
-  // Add final quality instructions for GPT-4o
-  enhancedPrompt += ` Create a highly realistic, professional advertising image with excellent lighting, composition, and detail. The image should be eye-catching and visually appealing, suitable for digital marketing.`;
+  // Add only the most crucial industry/theme context
+  if (industry && adTheme) {
+    enhancedPrompt += ` ${industry} industry, ${adTheme} theme.`;
+  } else if (industry) {
+    enhancedPrompt += ` ${industry} industry.`;
+  } else if (adTheme) {
+    enhancedPrompt += ` ${adTheme} theme.`;
+  }
+  
+  // Add final quality instructions in a concise manner
+  enhancedPrompt += " Professional quality, high detail.";
   
   return enhancedPrompt;
 }
