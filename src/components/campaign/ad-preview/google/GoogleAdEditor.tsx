@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GoogleAd } from "@/hooks/adGeneration";
 import MentalTriggersSection from "../MentalTriggersSection";
-import TriggerButtonInline from "../TriggerButtonInline";
+import { TriggerButtonInline } from "../TriggerButtonInline";
 
 interface GoogleAdEditorProps {
   ad: GoogleAd;

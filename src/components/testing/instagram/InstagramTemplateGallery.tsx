@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import TriggerButtonInline from "@/components/campaign/ad-preview/TriggerButtonInline";
+import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
 import CategoryFilter from "./CategoryFilter";
 import CategoryTemplateGrid from "./CategoryTemplateGrid";
 import FilteredTemplateGrid from "./FilteredTemplateGrid";
