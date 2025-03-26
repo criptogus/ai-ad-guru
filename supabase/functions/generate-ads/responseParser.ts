@@ -1,88 +1,63 @@
 
 import { WebsiteAnalysisResult } from "./types.ts";
-import { 
-  generateFallbackGoogleAds,
-  generateFallbackLinkedInAds,
-  generateFallbackMicrosoftAds,
-  generateFallbackMetaAds
-} from "./fallbacks/index.ts";
+import { generateFallbackGoogleAds } from "./fallbacks/googleAdsFallbacks.ts";
+import { generateFallbackLinkedInAds } from "./fallbacks/linkedInAdsFallbacks.ts";
+import { generateFallbackMicrosoftAds } from "./fallbacks/microsoftAdsFallbacks.ts";
+import { generateFallbackMetaAds } from "./fallbacks/metaAdsFallbacks.ts";
 
+/**
+ * Parses the OpenAI response for different ad platforms
+ */
 export function parseAdResponse(response: string, platform: string, campaignData: WebsiteAnalysisResult) {
-  console.log(`Parsing ${platform} response`);
-  
   try {
-    // Try to parse the response as JSON directly
-    try {
-      const directJson = JSON.parse(response);
-      if (Array.isArray(directJson)) {
-        console.log(`Successfully parsed ${platform} response as direct JSON array`);
-        return directJson;
-      } else if (directJson.ads && Array.isArray(directJson.ads)) {
-        console.log(`Successfully parsed ${platform} response with ads property`);
-        return directJson.ads;
-      }
-    } catch (error) {
-      // If direct JSON parsing fails, continue with string processing
-      console.log(`Response is not direct JSON, attempting to extract JSON from text`);
+    // Extract JSON from the response (handles cases where OpenAI wraps JSON in markdown code blocks)
+    const jsonStart = response.indexOf('{');
+    const jsonEnd = response.lastIndexOf('}') + 1;
+    
+    if (jsonStart === -1 || jsonEnd === 0) {
+      console.error("Invalid response format - no JSON object found");
+      throw new Error("Invalid response format");
     }
     
-    // Look for JSON block in the response
-    const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
-                     response.match(/```\s*([\s\S]*?)\s*```/) || 
-                     response.match(/\{[\s\S]*\}/);
+    let jsonString = response.substring(jsonStart, jsonEnd);
     
-    if (jsonMatch) {
-      const jsonStr = jsonMatch[1] || jsonMatch[0];
-      console.log(`Found JSON block in response: ${jsonStr.substring(0, 100)}...`);
-      
-      try {
-        const parsedData = JSON.parse(jsonStr);
-        
-        if (Array.isArray(parsedData)) {
-          console.log(`Successfully parsed ${platform} JSON block as array`);
-          return parsedData;
-        } else if (parsedData.ads && Array.isArray(parsedData.ads)) {
-          console.log(`Successfully parsed ${platform} JSON block with ads property`);
-          return parsedData.ads;
-        } else {
-          console.error(`${platform} JSON block doesn't contain expected format`);
-          // Use fallbacks
-          return getFallbackAds(platform, campaignData);
-        }
-      } catch (error) {
-        console.error(`Error parsing JSON block: ${error}`);
-        return getFallbackAds(platform, campaignData);
-      }
+    // Log the extracted JSON string for debugging
+    console.log(`Parsing ${platform} ad response from OpenAI`);
+    
+    // Parse the JSON
+    const data = JSON.parse(jsonString);
+    
+    // Validate the structure based on platform
+    if (data && (data.ads || data.ad)) {
+      const ads = data.ads || [data.ad];
+      console.log(`Successfully parsed ${platform} ad data:`, JSON.stringify(data, null, 2));
+      return ads;
     } else {
-      console.error(`No JSON block found in ${platform} response`);
-      return getFallbackAds(platform, campaignData);
+      console.error(`Invalid ${platform} ad structure:`, data);
+      throw new Error(`Generated ${platform} ads have invalid structure`);
     }
   } catch (error) {
     console.error(`Error parsing ${platform} ad response:`, error);
-    return getFallbackAds(platform, campaignData);
-  }
-}
-
-function getFallbackAds(platform: string, campaignData: WebsiteAnalysisResult) {
-  console.log(`Using fallback ${platform} ads`);
-  
-  switch(platform) {
-    case 'google':
+    
+    // Return fallback ads when parsing fails
+    if (platform === 'google') {
       return generateFallbackGoogleAds(campaignData);
-    case 'linkedin':
+    } else if (platform === 'linkedin') {
       return generateFallbackLinkedInAds(campaignData);
-    case 'microsoft':
+    } else if (platform === 'microsoft') {
       return generateFallbackMicrosoftAds(campaignData);
-    case 'meta':
+    } else if (platform === 'meta') {
       return generateFallbackMetaAds(campaignData);
-    default:
-      throw new Error(`Unsupported platform: ${platform}`);
+    }
+    
+    return [];
   }
 }
 
+// Export all the fallback generators for direct use
 export { 
-  generateFallbackGoogleAds,
+  generateFallbackGoogleAds, 
   generateFallbackLinkedInAds,
   generateFallbackMicrosoftAds,
-  generateFallbackMetaAds
+  generateFallbackMetaAds 
 };

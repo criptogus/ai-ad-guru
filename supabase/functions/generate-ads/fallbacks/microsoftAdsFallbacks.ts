@@ -2,9 +2,9 @@
 import { WebsiteAnalysisResult } from "../types.ts";
 
 /**
- * Generates fallback Google Ads when the AI generation fails
+ * Generates fallback Microsoft Ads when the AI generation fails
  */
-export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
+export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult) {
   const companyName = campaignData.companyName;
   const description = campaignData.businessDescription || `Quality services from ${companyName}`;
   
@@ -28,22 +28,22 @@ export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
     }
   }
 
-  // Create five fallback Google ad variations
+  // Create five fallback Microsoft ad variations
   return [
     {
       headline1: `${companyName}`,
-      headline2: `${keywords[0] || 'Quality'} Services`,
+      headline2: `Quality ${keywords[0] || 'Services'}`,
       headline3: `${ctas[0] || 'Learn More'}`,
-      description1: `Discover our professional solutions.`,
-      description2: `Get started with ${companyName} today.`,
+      description1: `Discover what ${companyName} offers.`,
+      description2: `Professional services you can trust.`,
       headlines: [
         `${companyName}`,
-        `${keywords[0] || 'Quality'} Services`,
+        `Quality ${keywords[0] || 'Services'}`,
         `${ctas[0] || 'Learn More'}`
       ],
       descriptions: [
-        `Discover our professional solutions.`,
-        `Get started with ${companyName} today.`
+        `Discover what ${companyName} offers.`,
+        `Professional services you can trust.`
       ],
       path1: "services",
       path2: "quality"
@@ -53,7 +53,7 @@ export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
       headline2: `By ${companyName}`,
       headline3: `${ctas[1] || 'Contact Us'}`,
       description1: `${description.substring(0, 80)}...`,
-      description2: `Get in touch with our team today.`,
+      description2: `Get started today with our expert team.`,
       headlines: [
         `${keywords[0] || 'Professional'} Solutions`,
         `By ${companyName}`,
@@ -61,39 +61,39 @@ export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
       ],
       descriptions: [
         `${description.substring(0, 80)}...`,
-        `Get in touch with our team today.`
+        `Get started today with our expert team.`
       ],
       path1: "solutions",
       path2: "experts"
     },
     {
-      headline1: `Top Rated ${keywords[1] || 'Service'}`,
-      headline2: `${companyName}`,
+      headline1: `Top Rated ${keywords[1] || 'Professional'}`,
+      headline2: `${companyName} Services`,
       headline3: `${ctas[2] || 'Visit Website'}`,
-      description1: `Professional solutions for your needs.`,
-      description2: `Discover what ${companyName} can do for you.`,
+      description1: `Reliable solutions for your needs.`,
+      description2: `Trusted by customers for years.`,
       headlines: [
-        `Top Rated ${keywords[1] || 'Service'}`,
-        `${companyName}`,
+        `Top Rated ${keywords[1] || 'Professional'}`,
+        `${companyName} Services`,
         `${ctas[2] || 'Visit Website'}`
       ],
       descriptions: [
-        `Professional solutions for your needs.`,
-        `Discover what ${companyName} can do for you.`
+        `Reliable solutions for your needs.`,
+        `Trusted by customers for years.`
       ],
-      path1: "top-rated",
-      path2: "services"
+      path1: "trusted",
+      path2: "reliable"
     },
     {
       headline1: `${keywords[2] || 'Expert'} Services`,
-      headline2: `${companyName}`,
-      headline3: `Learn More Today`,
+      headline2: `${companyName} Solutions`,
+      headline3: `Discover More Today`,
       description1: `Professional team ready to help you.`,
       description2: `Quality results guaranteed.`,
       headlines: [
         `${keywords[2] || 'Expert'} Services`,
-        `${companyName}`,
-        `Learn More Today`
+        `${companyName} Solutions`,
+        `Discover More Today`
       ],
       descriptions: [
         `Professional team ready to help you.`,
@@ -103,21 +103,21 @@ export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
       path2: "services"
     },
     {
-      headline1: `${companyName}`,
+      headline1: `${companyName} Specialists`,
       headline2: `${keywords[0] || 'Professional'} Solutions`,
-      headline3: `Contact Us`,
+      headline3: `Contact Us Today`,
       description1: `Find the right solution for your needs.`,
-      description2: `Our team is ready to assist you.`,
+      description2: `Expert team waiting to assist you.`,
       headlines: [
-        `${companyName}`,
+        `${companyName} Specialists`,
         `${keywords[0] || 'Professional'} Solutions`,
-        `Contact Us`
+        `Contact Us Today`
       ],
       descriptions: [
         `Find the right solution for your needs.`,
-        `Our team is ready to assist you.`
+        `Expert team waiting to assist you.`
       ],
-      path1: "contact",
+      path1: "specialist",
       path2: "solutions"
     }
   ];
