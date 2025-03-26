@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -132,46 +133,48 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
     : templates.filter(template => template.category === activeCategory);
   
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Instagram Ad Templates</h3>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-semibold">Instagram Ad Templates</h3>
         <TriggerButtonInline 
           onInsert={() => {}} 
           className="opacity-0 pointer-events-none" 
         />
       </div>
       
-      <ScrollArea className="pb-4 mb-8">
-        <div className="flex gap-2.5 pb-2">
-          <Button
-            variant={activeCategory === "all" ? "secondary" : "outline"}
-            size="sm"
-            className="text-xs whitespace-nowrap"
-            onClick={() => setActiveCategory("all")}
-          >
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            All Templates
-          </Button>
-          
-          {categories.map((category) => (
+      <div className="mb-8">
+        <ScrollArea className="w-full pb-4">
+          <div className="flex gap-3 pb-2">
             <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "secondary" : "outline"}
+              variant={activeCategory === "all" ? "secondary" : "outline"}
               size="sm"
               className="text-xs whitespace-nowrap"
-              onClick={() => setActiveCategory(category.id)}
+              onClick={() => setActiveCategory("all")}
             >
-              <span className="mr-1.5">{category.emoji}</span>
-              {category.name}
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              All Templates
             </Button>
-          ))}
-        </div>
-      </ScrollArea>
+            
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={activeCategory === category.id ? "secondary" : "outline"}
+                size="sm"
+                className="text-xs whitespace-nowrap"
+                onClick={() => setActiveCategory(category.id)}
+              >
+                <span className="mr-1.5">{category.emoji}</span>
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
       
       {filteredTemplates.length > 0 && (
-        <div className="space-y-8">
+        <div className="space-y-12">
           {activeCategory !== "all" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
               {filteredTemplates.map((template) => (
                 <TemplateCard 
                   key={template.id}
@@ -188,16 +191,16 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
                 if (categoryTemplates.length === 0) return null;
                 
                 return (
-                  <div key={category.id} className="space-y-4 mb-10">
+                  <div key={category.id} className="space-y-6 mb-10">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-base font-medium flex items-center">
+                      <h4 className="text-lg font-medium flex items-center">
                         <span className="mr-2">{category.emoji}</span>
                         {category.name}
                       </h4>
                       <div className="h-px flex-1 bg-border"></div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                       {categoryTemplates.map((template) => (
                         <TemplateCard 
                           key={template.id}

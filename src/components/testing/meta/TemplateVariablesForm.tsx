@@ -2,6 +2,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { InstagramTemplate } from "../instagram/InstagramTemplateGallery";
 
 interface TemplateVariablesFormProps {
@@ -18,26 +19,40 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
   if (!selectedTemplate) return null;
   
   return (
-    <div className="space-y-4 border p-4 rounded-md bg-muted/20">
-      <div className="flex items-center gap-2">
-        <span className="text-xl">{getCategoryEmoji(selectedTemplate.category)}</span>
-        <div>
-          <Label className="text-sm font-semibold">{selectedTemplate.title}</Label>
-          <p className="text-xs text-muted-foreground">{getCategoryName(selectedTemplate.category)}</p>
+    <Card className="overflow-hidden">
+      <CardHeader className="p-5 pb-3 bg-muted/20">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{getCategoryEmoji(selectedTemplate.category)}</span>
+          <div>
+            <h3 className="text-lg font-semibold">{selectedTemplate.title}</h3>
+            <p className="text-sm text-muted-foreground">{getCategoryName(selectedTemplate.category)}</p>
+          </div>
         </div>
-      </div>
+      </CardHeader>
       
-      <div className="space-y-2">
-        <Label htmlFor="mainText">Main Text</Label>
-        <Input
-          id="mainText"
-          value={mainText}
-          onChange={(e) => setMainText(e.target.value)}
-          placeholder="Enter main text for template"
-        />
-        <p className="text-xs text-muted-foreground">This text will replace the variable in the prompt.</p>
-      </div>
-    </div>
+      <CardContent className="p-5 space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="mainText" className="text-base">Main Text</Label>
+          <Input
+            id="mainText"
+            value={mainText}
+            onChange={(e) => setMainText(e.target.value)}
+            placeholder="Enter main text for template"
+            className="h-12"
+          />
+          <p className="text-sm text-muted-foreground mt-2">
+            This text will replace the variable in the prompt template.
+          </p>
+        </div>
+        
+        <div className="pt-2 pb-1">
+          <h4 className="text-sm font-medium mb-2">Template Preview</h4>
+          <div className="p-4 bg-muted/20 rounded-lg text-sm">
+            {selectedTemplate.prompt.replace(/\${mainText:[^}]*}/, `<span class="font-semibold text-primary">${mainText || "[Your text here]"}</span>`)}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
