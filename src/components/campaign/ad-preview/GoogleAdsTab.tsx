@@ -1,88 +1,146 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader } from "lucide-react";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Loader2 } from "lucide-react";
 import { GoogleAd } from "@/hooks/adGeneration";
-import EmptyAdsState from "./EmptyAdsState";
-import GoogleAdCard from "./GoogleAdCard";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import GoogleAdCard from "./google/GoogleAdCard";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
+  analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
-  onUpdateGoogleAd: (updatedAds: GoogleAd[]) => void;
-  analysisResult?: WebsiteAnalysisResult;
+  onUpdateGoogleAd: (ads: GoogleAd[]) => void;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   googleAds,
+  analysisResult,
   isGenerating,
   onGenerateAds,
   onUpdateGoogleAd,
-  analysisResult,
 }) => {
-  const handleUpdateAd = (index: number, updatedAd: GoogleAd) => {
-    const updatedAds = [...googleAds];
-    updatedAds[index] = updatedAd;
-    onUpdateGoogleAd(updatedAds);
+  const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
+  const [localAds, setLocalAds] = useState<GoogleAd[]>([]);
+
+  useEffect(() => {
+    setLocalAds(googleAds);
+  }, [googleAds]);
+
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname.replace('www.', '');
+    } catch (e) {
+      return url;
+    }
   };
 
-  if (!analysisResult) {
-    return (
-      <Card>
-        <CardContent>
-          Please analyze a website to generate ads.
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleEditAd = (index: number) => {
+    setEditingAdIndex(index);
+  };
+
+  const handleSaveAd = (index: number, updatedAd: GoogleAd) => {
+    const newAds = [...localAds];
+    newAds[index] = updatedAd;
+    setLocalAds(newAds);
+    onUpdateGoogleAd(newAds);
+    setEditingAdIndex(null);
+    
+    toast.success("Ad updated successfully");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAdIndex(null);
+    setLocalAds(googleAds);
+  };
+
+  const handleCopyAd = (ad: GoogleAd) => {
+    const text = `Headlines:\n${ad.headlines.join('\n')}\n\nDescriptions:\n${ad.descriptions.join('\n')}`;
+    
+    navigator.clipboard.writeText(text);
+    toast.success("Ad text copied to clipboard");
+  };
+
+  const handleGenerateAds = async () => {
+    try {
+      await onGenerateAds();
+    } catch (error) {
+      console.error("Error generating Google ads:", error);
+    }
+  };
+
+  const domain = analysisResult?.websiteUrl ? getDomain(analysisResult.websiteUrl) : "example.com";
 
   return (
-    <div className="grid gap-4">
+    <div className="space-y-4">
       {googleAds.length === 0 ? (
         <Card>
-          <CardContent>
-            <EmptyAdsState platform="Google" />
-            <Button 
-              onClick={onGenerateAds} 
-              className="mt-4 group relative overflow-hidden" 
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <span className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
-                  <span className="relative z-10 group-hover:text-white transition-colors duration-300">Generate Google Ads</span>
-                </>
-              )}
-            </Button>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4 py-6">
+              <h3 className="text-lg font-medium">No Google Ads Created Yet</h3>
+              <p className="text-muted-foreground">
+                Generate Google ads based on your website analysis.
+              </p>
+              <Button 
+                onClick={handleGenerateAds} 
+                disabled={isGenerating}
+                className="mt-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Ads...
+                  </>
+                ) : (
+                  "Generate Google Ads"
+                )}
+              </Button>
+              <div className="text-xs text-muted-foreground mt-2">
+                This will use 5 credits
+              </div>
+            </div>
           </CardContent>
         </Card>
       ) : (
         <>
-          {googleAds.map((ad, index) => (
-            <GoogleAdCard
-              key={index}
-              ad={ad}
-              index={index}
-              analysisResult={analysisResult}
-              onUpdate={(updatedAd) => handleUpdateAd(index, updatedAd)}
-            />
-          ))}
-          <Button onClick={onGenerateAds} disabled={isGenerating} className="mt-4">
-            {isGenerating ? (
-              <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : "Generate More Google Ads"}
-          </Button>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium">Google Ad Variations</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateAds}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                "Regenerate Ads"
+              )}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {localAds.map((ad, index) => (
+              <GoogleAdCard
+                key={index}
+                index={index}
+                ad={ad}
+                domain={domain}
+                isEditing={editingAdIndex === index}
+                onEdit={() => handleEditAd(index)}
+                onSave={(updatedAd) => handleSaveAd(index, updatedAd)}
+                onCancel={handleCancelEdit}
+                onCopy={() => handleCopyAd(ad)}
+              />
+            ))}
+          </div>
         </>
       )}
     </div>

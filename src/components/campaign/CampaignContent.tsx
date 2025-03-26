@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,7 +90,6 @@ const CampaignContent: React.FC = () => {
     handleGenerateImage
   });
 
-  // Ensure all ad generation wrappers have Promise<void> return type
   const { 
     wrappedHandleGenerateGoogleAds,
     wrappedHandleGenerateMetaAds,
@@ -143,7 +141,7 @@ const CampaignContent: React.FC = () => {
         completed={false} 
       />
       
-      <div className="bg-white rounded-lg border p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 shadow-sm">
         {getStepContent()}
       </div>
       

@@ -1,63 +1,81 @@
 
 import React from "react";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Pencil, Save, X } from "lucide-react";
+import { Edit2, Save, X, Copy } from "lucide-react";
 
-export interface MicrosoftAdCardHeaderProps {
+interface MicrosoftAdCardHeaderProps {
   adIndex: number;
-  ad: any; // Add the ad prop
-  isEditing?: boolean;
-  onEdit?: () => void;
-  onSave?: () => void;
-  onCancel?: () => void;
+  isEditing: boolean;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onCopy?: () => void;
 }
 
 const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   adIndex,
-  ad,
-  isEditing = false,
-  onEdit = () => {},
-  onSave = () => {},
-  onCancel = () => {}
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
+  onCopy
 }) => {
   return (
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="font-medium">Microsoft Ad Variation {adIndex + 1}</h3>
-      <div className="flex space-x-2">
+    <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+      <CardTitle className="text-lg flex items-center gap-2">
+        <img src="/microsoft-logo.png" alt="Microsoft" className="h-5 w-5" onError={(e) => {e.currentTarget.style.display = 'none'}} />
+        <span>Microsoft Ad {adIndex + 1}</span>
+      </CardTitle>
+      
+      <div className="flex items-center gap-2">
         {isEditing ? (
           <>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onCancel}
               className="text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4 mr-1" />
               Cancel
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onSave}
-              className="text-blue-500 hover:text-blue-700"
+              className="text-green-600 hover:text-green-700"
             >
               <Save className="h-4 w-4 mr-1" />
               Save
             </Button>
           </>
         ) : (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onEdit}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <Pencil className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
+          <>
+            {onCopy && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCopy}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <Edit2 className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+          </>
         )}
       </div>
-    </div>
+    </CardHeader>
   );
 };
 

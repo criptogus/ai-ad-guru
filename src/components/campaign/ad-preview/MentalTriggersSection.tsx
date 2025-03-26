@@ -11,17 +11,15 @@ const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
   onSelectTrigger,
 }) => {
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Mental Triggers</CardTitle>
-        <CardDescription>
-          Use psychological triggers to make your ad copy more engaging
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-2">
+      <CardTitle className="text-lg font-semibold">Mental Triggers</CardTitle>
+      <CardDescription>
+        Use psychological triggers to make your ad copy more engaging
+      </CardDescription>
+      <div className="mt-4">
         <InsertTriggerButton onSelectTrigger={onSelectTrigger} />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

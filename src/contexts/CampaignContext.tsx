@@ -23,8 +23,8 @@ export interface CampaignData {
 export interface CampaignContextType {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
-  campaignData: any;
-  setCampaignData: React.Dispatch<React.SetStateAction<any>>;
+  campaignData: CampaignData;
+  setCampaignData: React.Dispatch<React.SetStateAction<CampaignData>>;
   analysisResult: WebsiteAnalysisResult | null;
   setAnalysisResult: React.Dispatch<React.SetStateAction<WebsiteAnalysisResult | null>>;
   googleAds: GoogleAd[];
@@ -41,14 +41,17 @@ const CampaignContext = createContext<CampaignContextType | undefined>(undefined
 
 export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [campaignData, setCampaignData] = useState<any>({
-    platforms: [] // Initialize with empty platforms array
+  const [campaignData, setCampaignData] = useState<CampaignData>({
+    platforms: [],
+    name: "",
+    description: "",
+    targetAudience: "",
   });
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
+  const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
-  const [metaAds, setMetaAds] = useState<MetaAd[]>([]); 
 
   return (
     <CampaignContext.Provider
@@ -61,12 +64,12 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAnalysisResult,
         googleAds,
         setGoogleAds,
+        metaAds,
+        setMetaAds,
         linkedInAds,
         setLinkedInAds,
         microsoftAds,
         setMicrosoftAds,
-        metaAds,
-        setMetaAds
       }}
     >
       {children}
@@ -74,9 +77,9 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-export const useCampaign = (): CampaignContextType => {
+export const useCampaign = () => {
   const context = useContext(CampaignContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useCampaign must be used within a CampaignProvider");
   }
   return context;

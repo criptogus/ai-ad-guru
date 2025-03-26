@@ -9,6 +9,7 @@ import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 import MentalTriggersSection from "./ad-preview/MentalTriggersSection";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
@@ -66,17 +67,17 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-3">
+      <Card>
+        <CardContent className="p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full mb-6">
+            <TabsList className="w-full mb-6 grid grid-cols-4">
               <TabsTrigger value="google">Google Ads</TabsTrigger>
-              <TabsTrigger value="meta">Meta Ads</TabsTrigger>
+              <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
               <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
               <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="google" className="mt-0">
+            <TabsContent value="google" className="mt-4">
               <GoogleAdsTab
                 googleAds={googleAds}
                 isGenerating={isGenerating}
@@ -92,7 +93,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value="meta" className="mt-0">
+            <TabsContent value="meta" className="mt-4">
               <MetaAdsTab
                 metaAds={metaAds}
                 analysisResult={analysisResult}
@@ -110,7 +111,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value="linkedin" className="mt-0">
+            <TabsContent value="linkedin" className="mt-4">
               <LinkedInAdsTab
                 linkedInAds={linkedInAds}
                 analysisResult={analysisResult}
@@ -128,7 +129,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value="microsoft" className="mt-0">
+            <TabsContent value="microsoft" className="mt-4">
               <MicrosoftAdsTab
                 microsoftAds={microsoftAds}
                 analysisResult={analysisResult}
@@ -144,12 +145,14 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               />
             </TabsContent>
           </Tabs>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-6">
+      <Card>
+        <CardContent className="p-4">
           <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
