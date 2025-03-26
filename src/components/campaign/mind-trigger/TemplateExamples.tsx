@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useTriggerData } from "./useTriggerData";
+import { Button } from "@/components/ui/button";
 
 interface TemplateExamplesProps {
   platform: string;
@@ -18,9 +19,10 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
       <h3 className="text-md font-medium mb-2">Template Examples</h3>
       <div className="bg-muted p-3 rounded-md space-y-2">
         {getPlatformTemplates(platform).map((template, idx) => (
-          <div 
+          <Button 
             key={idx} 
-            className="p-2 bg-background rounded border cursor-pointer hover:border-primary transition-colors"
+            variant="ghost"
+            className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal"
             onClick={() => {
               if (onSelectTemplate) {
                 onSelectTemplate(template);
@@ -28,7 +30,7 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
             }}
           >
             {template}
-          </div>
+          </Button>
         ))}
       </div>
       <p className="text-xs text-muted-foreground mt-2">

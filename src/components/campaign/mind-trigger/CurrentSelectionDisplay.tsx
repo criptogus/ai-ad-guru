@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useTriggerData } from "./useTriggerData";
+import { Badge } from "@/components/ui/badge";
 
 interface CurrentSelectionDisplayProps {
   platform: string;
@@ -24,23 +25,39 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
     // Find the trigger in the platform's trigger list
     const triggerObj = getPlatformTriggers(platform).find(t => t.id === trigger);
     if (triggerObj) {
-      return `${triggerObj.name} - ${triggerObj.description}`;
+      return triggerObj;
     }
     
     // Fallback: format the trigger ID (convert snake_case to Title Case)
-    return trigger.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return {
+      name: trigger.split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' '),
+      description: ""
+    };
   };
+
+  const triggerObject = formatTrigger(selectedTrigger);
 
   return (
     <div className="mt-4">
       <h3 className="text-md font-medium mb-2">Current Selection</h3>
       {selectedTrigger ? (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-          <p className="text-blue-800 dark:text-blue-300">
-            {formatTrigger(selectedTrigger)}
-          </p>
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          {typeof triggerObject === 'string' ? (
+            <p className="text-blue-800 dark:text-blue-300">{triggerObject}</p>
+          ) : (
+            <div className="space-y-2">
+              <Badge variant="secondary" className="mb-2">
+                {triggerObject.name}
+              </Badge>
+              {triggerObject.description && (
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  {triggerObject.description}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="p-3 bg-muted rounded-md">

@@ -24,7 +24,6 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
   onNext,
 }) => {
   const [activeTab, setActiveTab] = React.useState(selectedPlatforms[0] || "google");
-  const [customTrigger, setCustomTrigger] = React.useState("");
 
   const handleSelectTemplate = (template: string) => {
     // When a template is selected, set it as a custom trigger for the active platform

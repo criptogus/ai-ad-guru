@@ -1,81 +1,81 @@
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
+
+// Types for platform triggers
+interface TriggerItem {
+  id: string;
+  name: string;
+  description: string;
+  category?: string;
+}
+
+// Example platform triggers - these would typically come from an API or static data
+const platformTriggers = {
+  google: [
+    { id: "social_proof", name: "Social Proof", description: "Show that others are using and enjoying your product" },
+    { id: "scarcity", name: "Scarcity", description: "Indicate limited availability to increase perceived value" },
+    { id: "urgency", name: "Urgency", description: "Create time pressure to drive immediate action" },
+    { id: "authority", name: "Authority", description: "Leverage expertise or credentials to build trust" },
+    { id: "reciprocity", name: "Reciprocity", description: "Offer something valuable to encourage action in return" }
+  ],
+  meta: [
+    { id: "user_generated", name: "User Generated Content", description: "Showcase authentic content from real users" },
+    { id: "before_after", name: "Before & After", description: "Demonstrate transformation or improvement" },
+    { id: "how_to", name: "How-To / Tutorial", description: "Provide educational value and establish expertise" },
+    { id: "behind_scenes", name: "Behind the Scenes", description: "Create connection by showing the human side of your brand" },
+    { id: "storytelling", name: "Storytelling", description: "Create emotional connection through narrative" }
+  ],
+  linkedin: [
+    { id: "professional_growth", name: "Professional Growth", description: "Focus on career advancement or skill development" },
+    { id: "industry_insights", name: "Industry Insights", description: "Share valuable market data or trends" },
+    { id: "testimonials", name: "Testimonials", description: "Showcase success stories from professionals" },
+    { id: "thought_leadership", name: "Thought Leadership", description: "Position your brand as an industry authority" },
+    { id: "networking", name: "Networking", description: "Highlight connection and community building" }
+  ],
+  microsoft: [
+    { id: "benefit_focused", name: "Benefit Focused", description: "Emphasize specific outcomes and advantages" },
+    { id: "rational_appeal", name: "Rational Appeal", description: "Use logic and facts to drive decision making" },
+    { id: "problem_solution", name: "Problem-Solution", description: "Address a pain point and offer your solution" },
+    { id: "comparison", name: "Comparison", description: "Highlight advantages over alternatives" },
+    { id: "statistics", name: "Statistics", description: "Use data points to build credibility" }
+  ]
+};
+
+// Example platform templates
+const platformTemplates = {
+  google: [
+    "Get [Specific Benefit] with our [Product/Service] - [Unique Feature]",
+    "Looking for [Solution]? Try [Product/Service] - [USP]",
+    "[X]% Results for [Customer Type] - [Call to Action] Today"
+  ],
+  meta: [
+    "Transform your [area] with our [product] - Join [X] satisfied customers",
+    "Introducing: [Product] - How it's changing the way people [activity]",
+    "The secret to [desired outcome]: [Your solution] - Learn how"
+  ],
+  linkedin: [
+    "Boost your [professional skill] by [percentage] - New [training/tool] available",
+    "[Industry] professionals trust [Product] for [benefit] - Here's why",
+    "Join [X] industry leaders using [Product] to [solve challenge]"
+  ],
+  microsoft: [
+    "Reduce [pain point] costs by [percentage] with [Product]",
+    "[Product]: Rated #1 for [category] by [authority]",
+    "Why [customer segment] choose [Product] for [use case]"
+  ]
+};
 
 export const useTriggerData = () => {
-  // Platform-specific template examples
-  const templates = {
-    google: [
-      "Discover [Benefit] | [Unique Feature] | [Call to Action]",
-      "[Problem]? Get [Solution] Today | [Timeframe] Results",
-      "[Discount]% Off [Product] | Limited Time | [USP]",
-      "Top-Rated [Product/Service] | [Social Proof] | [Guarantee]",
-      "[Question]? | [USP] | [Call to Action]",
-    ],
-    meta: [
-      "Transform your [pain point] with our [product] 🔥",
-      "How [customer name] achieved [result] using [product] ✨",
-      "The secret to [desired outcome] revealed! 👀",
-      "NEW DROP: [Product name] - [key benefit] is here! 🚀",
-      "Would you try this? [Unique feature/benefit] 👇",
-    ],
-    linkedin: [
-      "New Report: [Industry] Trends That Will Shape [Year]",
-      "How [Company] Increased [Metric] by [Percentage] in [Timeframe]",
-      "[Number]+ Professionals Trust Our [Solution] for [Benefit]",
-      "Join Us: [Job Title] | [Company Culture] | [Top Benefit]",
-      "[Problem Statement]? Discover how [Solution] can help.",
-    ],
-    microsoft: [
-      "Looking for [Solution]? | [USP] | [Guarantee]",
-      "[Question about Pain Point]? | [Solution] | [Social Proof]",
-      "[Location] [Service] | [USP] | Free [Bonus]",
-      "Best [Product] for [Audience] | [Price/Value Prop] | [Timeframe]",
-      "[Brand] Official Site | [Product] From $[Price] | Free Shipping",
-    ],
-  };
-
-  // Common mind triggers
-  const mindTriggers = {
-    google: [
-      { id: "urgency", name: "Urgency", description: "Create a sense of limited time or scarcity" },
-      { id: "social_proof", name: "Social Proof", description: "Highlight popularity or testimonials" },
-      { id: "problem_solution", name: "Problem-Solution", description: "Present a problem, then offer your solution" },
-      { id: "curiosity", name: "Curiosity", description: "Create intrigue with incomplete information" },
-      { id: "comparison", name: "Comparison", description: "Compare your offering to alternatives" },
-    ],
-    meta: [
-      { id: "lifestyle", name: "Lifestyle Aspiration", description: "Show the desired lifestyle your product enables" },
-      { id: "before_after", name: "Before & After", description: "Demonstrate transformation and results" },
-      { id: "user_generated", name: "User Generated Content", description: "Authentic content from real customers" },
-      { id: "storytelling", name: "Storytelling", description: "Narrative that connects emotionally" },
-      { id: "tutorial", name: "Tutorial/How-to", description: "Demonstrate product value through instruction" },
-    ],
-    linkedin: [
-      { id: "thought_leadership", name: "Thought Leadership", description: "Position as an industry expert" },
-      { id: "data_insights", name: "Data & Insights", description: "Share valuable business intelligence" },
-      { id: "professional_growth", name: "Professional Growth", description: "Help advance careers or businesses" },
-      { id: "industry_trends", name: "Industry Trends", description: "Highlight emerging opportunities" },
-      { id: "case_study", name: "Case Study", description: "Show real-world business results" },
-    ],
-    microsoft: [
-      { id: "specificity", name: "Specificity", description: "Use precise numbers and details" },
-      { id: "authority", name: "Authority", description: "Establish expertise and credibility" },
-      { id: "emotional", name: "Emotional Appeal", description: "Connect on an emotional level" },
-      { id: "question", name: "Question Format", description: "Pose a question to engage the reader" },
-      { id: "benefit_driven", name: "Benefit-Driven", description: "Focus on specific benefits to the user" },
-    ],
-  };
-
-  const getPlatformTemplates = useCallback((platformId: string) => {
-    return templates[platformId as keyof typeof templates] || templates.google;
+  const getPlatformTriggers = useCallback((platformId: string): TriggerItem[] => {
+    return platformTriggers[platformId as keyof typeof platformTriggers] || [];
   }, []);
 
-  const getPlatformTriggers = useCallback((platformId: string) => {
-    return mindTriggers[platformId as keyof typeof mindTriggers] || mindTriggers.google;
+  const getPlatformTemplates = useCallback((platformId: string): string[] => {
+    return platformTemplates[platformId as keyof typeof platformTemplates] || [];
   }, []);
 
   return {
-    getPlatformTemplates,
-    getPlatformTriggers
+    getPlatformTriggers,
+    getPlatformTemplates
   };
 };

@@ -49,8 +49,7 @@ const AdTemplateGallery: React.FC<AdTemplateGalleryProps> = ({
             onClick={() => onTemplateSelect(template)}
           >
             <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden mb-2">
-              {/* We'll just display a placeholder since the template doesn't have thumbnail property */}
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-semibold">
                 {template.name.charAt(0)}
               </div>
             </div>
