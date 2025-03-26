@@ -9,6 +9,7 @@ import {
   useImageGenerationActions,
   useMetaAdActions
 } from "./adGeneration";
+import { getMindTrigger } from "./getMindTrigger";
 
 // Helper to convert LinkedInAd to MetaAd format for compatibility
 const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
@@ -17,7 +18,9 @@ const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
     headline: ad.headline,
     description: ad.description,
     imagePrompt: ad.imagePrompt || '', // Ensure imagePrompt is never undefined
-    imageUrl: ad.imageUrl
+    imageUrl: ad.imageUrl,
+    format: ad.format,
+    hashtags: ad.hashtags
   }));
 };
 
@@ -32,25 +35,28 @@ export const useAdGenerationActions = (
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
+  // Get the campaign data to access mind triggers
+  const campaignData = (window as any).campaignContext?.campaignData || {};
+
   // Use the smaller, more focused hooks
   const { handleGenerateGoogleAds } = useGoogleAdActions(
     analysisResult,
     googleAds,
-    generateGoogleAds, 
+    (data) => generateGoogleAds(data, getMindTrigger(campaignData, "google")), 
     setCampaignData
   );
   
   const { handleGenerateLinkedInAds } = useLinkedInAdActions(
     analysisResult,
     linkedInAds,
-    generateLinkedInAds,
+    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "linkedin")),
     setCampaignData
   );
   
   const { handleGenerateMicrosoftAds } = useMicrosoftAdActions(
     analysisResult,
     microsoftAds,
-    generateMicrosoftAds,
+    (data) => generateMicrosoftAds(data, getMindTrigger(campaignData, "microsoft")),
     setCampaignData
   );
   
@@ -60,7 +66,7 @@ export const useAdGenerationActions = (
   const { handleGenerateMetaAds } = useMetaAdActions(
     analysisResult,
     metaAds,
-    generateLinkedInAds as any, // Reuse LinkedIn ad generator for Meta/Instagram
+    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "meta")) as any,
     setCampaignData
   );
   

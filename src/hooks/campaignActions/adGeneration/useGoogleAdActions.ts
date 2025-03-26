@@ -1,67 +1,66 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd } from "@/hooks/adGeneration";
+import { useToast } from "@/hooks/use-toast";
 
 export const useGoogleAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
-  generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>, 
+  generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  
+  const { toast } = useToast();
+
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) {
       toast({
-        title: "Analysis Required",
+        title: "Website analysis required",
         description: "Please analyze a website before generating ads",
         variant: "destructive",
       });
       return;
     }
-    
-    setIsGenerating(true);
-    
+
     try {
-      toast({
-        title: "Generating Ads",
-        description: "Creating Google search ads based on your website analysis"
-      });
+      setIsGenerating(true);
+
+      // Get the mind trigger from the campaign data
+      const mindTrigger = (window as any).campaignContext?.campaignData?.mindTriggers?.google || "";
       
-      // Get the campaign data from context
-      const result = await generateGoogleAds(analysisResult);
-      
-      if (result && result.length > 0) {
-        // Update the campaign data with the generated ads
-        setCampaignData((prev: any) => ({
-          ...prev,
-          googleAds: result
-        }));
-        
-        toast({
-          title: "Ads Generated",
-          description: `Successfully created ${result.length} Google search ads`
-        });
-      } else {
-        throw new Error("No ads were generated");
+      console.log("Generating Google ads with mind trigger:", mindTrigger);
+      const ads = await generateGoogleAds(analysisResult, mindTrigger);
+
+      if (!ads || ads.length === 0) {
+        throw new Error("Failed to generate Google ads");
       }
+
+      // Update campaign data with the generated ads
+      setCampaignData((prev: any) => ({
+        ...prev,
+        googleAds: ads,
+      }));
+
+      toast({
+        title: "Google Ads Generated",
+        description: `${ads.length} ad variations created`,
+      });
+
     } catch (error) {
       console.error("Error generating Google ads:", error);
       toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Google ads",
+        title: "Ad Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate Google Ads",
         variant: "destructive",
       });
     } finally {
       setIsGenerating(false);
     }
   };
-  
+
   return {
     handleGenerateGoogleAds,
-    isGenerating
+    isGenerating,
   };
 };

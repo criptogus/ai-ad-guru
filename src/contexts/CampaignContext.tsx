@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
@@ -54,6 +54,28 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
+
+  // Make the campaign context available globally for direct access
+  // This allows hooks and components to access the context without having to drill props
+  useEffect(() => {
+    const contextValue = {
+      currentStep,
+      campaignData,
+      analysisResult,
+      googleAds,
+      metaAds,
+      linkedInAds,
+      microsoftAds
+    };
+    
+    // Add the context to the window object for global access
+    (window as any).campaignContext = contextValue;
+    
+    // Clean up when the component unmounts
+    return () => {
+      delete (window as any).campaignContext;
+    };
+  }, [currentStep, campaignData, analysisResult, googleAds, metaAds, linkedInAds, microsoftAds]);
 
   return (
     <CampaignContext.Provider

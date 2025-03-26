@@ -1,3 +1,4 @@
+
 import { WebsiteAnalysisResult } from "./types.ts";
 
 export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
@@ -20,7 +21,7 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
   Format your response as a JSON array of ad objects with properties: headlines (array of 3 strings) and descriptions (array of 2 strings).`;
   
   if (mindTrigger) {
-    return `${basePrompt}\n\nIMPORTANT: Apply the "${mindTrigger}" psychological trigger to make these ads more compelling.`;
+    return `${basePrompt}\n\nIMPORTANT: Apply the psychological trigger "${mindTrigger}" to make these ads more persuasive and compelling. Focus on creating copy that triggers this specific psychological response in the audience.`;
   }
   
   return basePrompt;
@@ -44,11 +45,13 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
   - Primary text (main post content, 1-2 paragraphs)
   - A description (max 70 characters)
   - An image prompt that would generate a relevant image for the ad
+  - Format (string, always use "single-image")
+  - Hashtags (array of 3 relevant hashtags without # symbol)
   
-  Format your response as a JSON array of ad objects with properties: headline, primaryText, description, and imagePrompt.`;
+  Format your response as a JSON array of ad objects with properties: headline, primaryText, description, imagePrompt, format, and hashtags.`;
   
   if (mindTrigger) {
-    return `${basePrompt}\n\nIMPORTANT: Apply the "${mindTrigger}" psychological trigger to make these ads more compelling.`;
+    return `${basePrompt}\n\nIMPORTANT: Apply the psychological trigger "${mindTrigger}" to make these ads more persuasive and compelling. Focus on creating copy that triggers this specific psychological response in the audience.`;
   }
   
   return basePrompt;
@@ -74,7 +77,7 @@ export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mi
   Format your response as a JSON array of ad objects with properties: headlines (array of 3 strings) and descriptions (array of 2 strings).`;
   
   if (mindTrigger) {
-    return `${basePrompt}\n\nIMPORTANT: Apply the "${mindTrigger}" psychological trigger to make these ads more compelling.`;
+    return `${basePrompt}\n\nIMPORTANT: Apply the psychological trigger "${mindTrigger}" to make these ads more persuasive and compelling. Focus on creating copy that triggers this specific psychological response in the audience.`;
   }
   
   return basePrompt;
@@ -98,11 +101,13 @@ export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTri
   - Primary text (main post content, 1-2 paragraphs)
   - A description (max 30 characters)
   - An image prompt that would generate a relevant image for the ad
+  - Format (string, always use "square")
+  - Hashtags (array of 3 relevant hashtags without # symbol)
   
-  Format your response as a JSON array of ad objects with properties: headline, primaryText, description, and imagePrompt.`;
+  Format your response as a JSON array of ad objects with properties: headline, primaryText, description, imagePrompt, format, and hashtags.`;
   
   if (mindTrigger) {
-    return `${basePrompt}\n\nIMPORTANT: Apply the "${mindTrigger}" psychological trigger to make these ads more compelling.`;
+    return `${basePrompt}\n\nIMPORTANT: Apply the psychological trigger "${mindTrigger}" to make these ads more persuasive and compelling. Focus on creating copy that triggers this specific psychological response in the audience.`;
   }
   
   return basePrompt;
