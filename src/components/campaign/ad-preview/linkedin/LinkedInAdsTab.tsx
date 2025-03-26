@@ -31,8 +31,8 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
     onUpdateLinkedInAd(index, updatedAd);
   };
 
-  const handleGenerateImage = (ad: MetaAd, index: number) => {
-    onGenerateImage(ad, index);
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    return onGenerateImage(ad, index);
   };
 
   return (

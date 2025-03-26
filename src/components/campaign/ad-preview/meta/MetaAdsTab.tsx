@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import MetaAdCard from "./meta/MetaAdCard";
+import MetaAdCard from "@/components/campaign/ad-preview/meta/card/MetaAdCard";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 

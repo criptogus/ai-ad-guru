@@ -7,6 +7,7 @@ import TemplateGalleryButton from "../template-gallery/TemplateGalleryButton";
 export interface LinkedInImagePlaceholderProps {
   isLoading: boolean;
   isUploading?: boolean;
+  isGenerating?: boolean;
   imageError?: boolean;
   onGenerate?: () => Promise<void>;
   triggerFileUpload?: () => void;
@@ -17,6 +18,7 @@ export interface LinkedInImagePlaceholderProps {
 const LinkedInImagePlaceholder: React.FC<LinkedInImagePlaceholderProps> = ({
   isLoading,
   isUploading = false,
+  isGenerating = false,
   imageError = false,
   onGenerate,
   triggerFileUpload,
