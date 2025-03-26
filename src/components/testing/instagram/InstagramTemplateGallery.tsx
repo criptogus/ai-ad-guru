@@ -5,6 +5,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
 import { Sparkles } from "lucide-react";
 import { TemplateCard } from "./TemplateCard";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export interface InstagramTemplate {
   id: string;
@@ -142,11 +149,11 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
         />
       </div>
       
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex overflow-x-auto no-scrollbar pb-2 mb-6 gap-2">
         <Button
           variant={activeCategory === "all" ? "secondary" : "outline"}
           size="sm"
-          className="text-xs"
+          className="text-xs whitespace-nowrap"
           onClick={() => setActiveCategory("all")}
         >
           <Sparkles className="h-3.5 w-3.5 mr-1.5" />
@@ -158,7 +165,7 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
             key={category.id}
             variant={activeCategory === category.id ? "secondary" : "outline"}
             size="sm"
-            className="text-xs"
+            className="text-xs whitespace-nowrap"
             onClick={() => setActiveCategory(category.id)}
           >
             <span className="mr-1.5">{category.emoji}</span>
@@ -167,17 +174,74 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
         ))}
       </div>
       
-      <ScrollArea className="h-[400px]">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredTemplates.map((template) => (
-            <TemplateCard 
-              key={template.id}
-              template={template}
-              onSelect={onSelectTemplate}
-            />
-          ))}
+      {filteredTemplates.length > 0 && (
+        <div className="space-y-6">
+          {activeCategory !== "all" ? (
+            <Carousel
+              opts={{
+                align: "start",
+                loop: false,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {filteredTemplates.map((template) => (
+                  <CarouselItem key={template.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <TemplateCard 
+                      template={template}
+                      onSelect={onSelectTemplate}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="flex justify-end gap-2 mt-4">
+                <CarouselPrevious className="relative inset-auto h-8 w-8" />
+                <CarouselNext className="relative inset-auto h-8 w-8" />
+              </div>
+            </Carousel>
+          ) : (
+            <>
+              {categories.map((category) => {
+                const categoryTemplates = templates.filter(t => t.category === category.id);
+                
+                if (categoryTemplates.length === 0) return null;
+                
+                return (
+                  <div key={category.id} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-semibold">{category.emoji} {category.name}</h4>
+                      <div className="h-px flex-1 bg-border"></div>
+                    </div>
+                    
+                    <Carousel
+                      opts={{
+                        align: "start",
+                        loop: false,
+                      }}
+                      className="w-full"
+                    >
+                      <CarouselContent className="-ml-2 md:-ml-4">
+                        {categoryTemplates.map((template) => (
+                          <CarouselItem key={template.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                            <TemplateCard 
+                              template={template}
+                              onSelect={onSelectTemplate}
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <div className="flex justify-end gap-2 mt-2">
+                        <CarouselPrevious className="relative inset-auto h-8 w-8" />
+                        <CarouselNext className="relative inset-auto h-8 w-8" />
+                      </div>
+                    </Carousel>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
-      </ScrollArea>
+      )}
     </div>
   );
 };

@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tag, MessageSquare, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { InstagramTemplate } from './InstagramTemplateGallery';
 
 interface TemplateCardProps {
@@ -26,22 +25,24 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect }
   };
   
   return (
-    <Card className="cursor-pointer hover:border-primary/50 transition-colors h-full flex flex-col overflow-hidden">
-      <CardHeader className="p-3 pb-2 flex-shrink-0 border-b">
-        <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-sm line-clamp-1 flex items-center">
-            <span className="mr-1.5">{getCategoryEmoji(template.category)}</span>
-            {template.title}
-          </CardTitle>
+    <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow border-border/80">
+      <CardHeader className="p-3 pb-2 border-b">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{getCategoryEmoji(template.category)}</span>
+            <h4 className="text-sm font-medium line-clamp-1">{template.title}</h4>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 pt-2 flex-grow">
-        <p className="text-xs line-clamp-2 text-muted-foreground">
+      
+      <CardContent className="p-3 flex-grow">
+        <p className="text-xs text-muted-foreground line-clamp-2">
           {template.prompt.substring(0, 100)}
           {template.prompt.length > 100 && '...'}
         </p>
       </CardContent>
-      <CardFooter className="p-3 pt-2 flex-shrink-0 bg-muted/30">
+      
+      <CardFooter className="p-3 pt-2 bg-muted/10">
         <Button 
           size="sm" 
           variant="secondary" 

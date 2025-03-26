@@ -19,9 +19,12 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
   
   return (
     <div className="space-y-4 border p-4 rounded-md bg-muted/20">
-      <div>
-        <Label className="text-sm font-semibold">Selected Template: {selectedTemplate.title}</Label>
-        <p className="text-xs text-muted-foreground mt-1">{getCategoryName(selectedTemplate.category)}</p>
+      <div className="flex items-center gap-2">
+        <span className="text-xl">{getCategoryEmoji(selectedTemplate.category)}</span>
+        <div>
+          <Label className="text-sm font-semibold">{selectedTemplate.title}</Label>
+          <p className="text-xs text-muted-foreground">{getCategoryName(selectedTemplate.category)}</p>
+        </div>
       </div>
       
       <div className="space-y-2">
@@ -37,6 +40,18 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
     </div>
   );
 };
+
+function getCategoryEmoji(categoryId: string): string {
+  const emojiMap: Record<string, string> = {
+    "urgency": "🔥",
+    "personal-branding": "👤",
+    "e-commerce": "🛍️",
+    "education": "📚",
+    "social": "💬"
+  };
+  
+  return emojiMap[categoryId] || "✨";
+}
 
 function getCategoryName(categoryId: string): string {
   const categoryMap: Record<string, string> = {
