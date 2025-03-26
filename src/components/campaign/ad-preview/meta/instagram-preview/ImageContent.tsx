@@ -46,11 +46,11 @@ const ImageContent: React.FC<ImageContentProps> = ({
 
   const getLoadingItem = () => {
     if (isLoading) {
-      return <ImageLoader />;
+      return <ImageLoader viewType={format === "story" ? "story" : format === "reel" ? "reel" : "feed"} text="Generating..." />;
     }
     
     if (isUploading) {
-      return <ImageLoader text="Uploading..." />;
+      return <ImageLoader viewType={format === "story" ? "story" : format === "reel" ? "reel" : "feed"} text="Uploading..." />;
     }
     
     return null;
@@ -69,7 +69,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
     <div className={`relative bg-gray-100 dark:bg-gray-800 overflow-hidden ${getClassName()}`}>
       {ad.imageUrl ? (
         <ImageDisplay
-          src={ad.imageUrl}
+          imageUrl={ad.imageUrl}
           alt={`Ad image ${imageKey}`}
           onGenerateImage={onGenerateImage}
           isLoading={isLoading}
@@ -80,7 +80,10 @@ const ImageContent: React.FC<ImageContentProps> = ({
         <ImagePlaceholder
           onGenerateImage={onGenerateImage}
           triggerFileUpload={triggerFileUpload}
-          isGenerating={isLoading}
+          isLoading={isLoading}
+          isUploading={isUploading}
+          imageError={false}
+          format={format}
         />
       )}
       

@@ -10,6 +10,7 @@ export interface LinkedInImagePlaceholderProps {
   onGenerate?: () => Promise<void>;
   triggerFileUpload?: () => void;
   format?: string;
+  isGenerating?: boolean; // Added missing prop
 }
 
 const LinkedInImagePlaceholder: React.FC<LinkedInImagePlaceholderProps> = ({
@@ -18,7 +19,8 @@ const LinkedInImagePlaceholder: React.FC<LinkedInImagePlaceholderProps> = ({
   imageError = false,
   onGenerate,
   triggerFileUpload,
-  format = "landscape"
+  format = "landscape",
+  isGenerating = false, // Added with default value
 }) => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-4">

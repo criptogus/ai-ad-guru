@@ -63,8 +63,9 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
           </div>
         ) : (
           <LinkedInImagePlaceholder
+            isLoading={isGeneratingImage}
             isGenerating={isGeneratingImage}
-            onGenerateImage={onGenerateImage}
+            onGenerate={onGenerateImage}
           />
         )}
         

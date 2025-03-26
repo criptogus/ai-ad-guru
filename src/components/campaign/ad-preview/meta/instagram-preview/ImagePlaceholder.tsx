@@ -4,21 +4,23 @@ import { Loader2, Upload, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ImagePlaceholderProps {
-  isLoading: boolean;
-  isUploading: boolean;
-  imageError: boolean;
+  isLoading?: boolean;
+  isUploading?: boolean;
+  imageError?: boolean;
   onGenerateImage?: () => Promise<void>;
-  triggerFileUpload: () => void;
+  triggerFileUpload?: () => void;
   format?: string;
+  isGenerating?: boolean; // Added missing prop
 }
 
 const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
-  isLoading,
-  isUploading,
-  imageError,
+  isLoading = false,
+  isUploading = false,
+  imageError = false,
   onGenerateImage,
-  triggerFileUpload,
-  format = "feed"
+  triggerFileUpload = () => {},
+  format = "feed",
+  isGenerating = false // Added with default value
 }) => {
   // Get format-specific styles
   const getFormatClasses = () => {
@@ -30,7 +32,7 @@ const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
 
   const formatText = format === "story" ? "Story" : format === "reel" ? "Reel" : "Feed";
 
-  if (isLoading) {
+  if (isLoading || isGenerating) {
     return (
       <div className={`${getFormatClasses()} flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500`}>
         <Loader2 className="h-8 w-8 animate-spin mb-2" />
