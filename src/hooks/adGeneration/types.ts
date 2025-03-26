@@ -8,6 +8,9 @@ export interface GoogleAd {
   finalUrl?: string;
   path1?: string;
   path2?: string;
+  // Adding these properties to maintain compatibility with existing code
+  headlines?: string[];
+  descriptions?: string[];
 }
 
 export interface MetaAd {
@@ -17,6 +20,7 @@ export interface MetaAd {
   imagePrompt?: string;
   imageUrl?: string;
   format?: string;
+  hashtags?: string[];
 }
 
 export interface AdGenerationInput {

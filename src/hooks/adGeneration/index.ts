@@ -13,7 +13,7 @@ import { useImageGeneration } from './useImageGeneration';
 export const useAdGeneration = (): UseAdGenerationReturn => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-  const { generateImage } = useImageGeneration();
+  const { generateAdImage } = useImageGeneration();
 
   // Generate Google Ads
   const generateGoogleAds = async (input: AdGenerationInput, mindTrigger?: string): Promise<GoogleAd[] | null> => {
@@ -167,25 +167,6 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     }
   };
 
-  const generateAdImage = async (prompt: string, options?: any): Promise<string | null> => {
-    try {
-      console.log("Generating ad image with prompt:", prompt);
-      
-      // Call the image generation function
-      const imageUrl = await generateImage(prompt, options);
-      
-      return imageUrl;
-    } catch (error) {
-      console.error("Error generating ad image:", error);
-      toast({
-        title: "Image Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate image",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
   return {
     generateGoogleAds,
     generateMetaAds,
@@ -195,3 +176,5 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     isGenerating
   };
 };
+
+export * from './types';
