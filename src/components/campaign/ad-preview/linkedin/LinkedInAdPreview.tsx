@@ -1,8 +1,9 @@
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Clock, Briefcase, Users, ThumbsUp, MessageSquare, Repeat2 } from "lucide-react";
+import LinkedInImageContent from "./LinkedInImageContent";
 
 interface LinkedInAdPreviewProps {
   ad: MetaAd;
@@ -24,27 +25,28 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   deviceView = "desktop"
 }) => {
   const companyName = analysisResult.companyName || "Company Name";
-  const imagePlaceholder = "https://placehold.co/600x400/e4e4e7/a1a1aa?text=Generate+Image";
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const handleFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
   
   // Handle sidebar view (different layout)
   if (previewType === "sidebar") {
     return (
       <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm overflow-hidden text-left ${deviceView === "mobile" ? "w-full max-w-xs mx-auto" : "w-full max-w-xs"}`}>
         <div className="relative">
-          <img 
-            src={ad.imageUrl || imagePlaceholder} 
-            alt={ad.headline || "Ad image"} 
-            className="w-full h-32 object-cover"
+          <LinkedInImageContent
+            ad={ad}
+            isLoading={isGeneratingImage}
+            isUploading={isUploading}
+            onGenerateImage={onGenerateImage}
+            triggerFileUpload={handleFileSelect}
+            imageFormat="landscape"
           />
-          {!ad.imageUrl && onGenerateImage && (
-            <button 
-              onClick={onGenerateImage}
-              disabled={isGeneratingImage}
-              className="absolute inset-0 bg-black/30 text-white flex items-center justify-center text-sm font-medium"
-            >
-              {isGeneratingImage ? "Generating..." : "Generate Image"}
-            </button>
-          )}
         </div>
         
         <div className="p-3">
@@ -77,15 +79,16 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
         <div className="p-3">
           <p className="text-sm mb-3">{ad.primaryText || "Your message text here"}</p>
           
-          {ad.imageUrl && (
-            <div className="mb-3">
-              <img 
-                src={ad.imageUrl} 
-                alt={ad.headline || "Ad image"} 
-                className="w-full h-auto rounded-md object-cover"
-              />
-            </div>
-          )}
+          <div className="mb-3">
+            <LinkedInImageContent
+              ad={ad}
+              isLoading={isGeneratingImage}
+              isUploading={isUploading}
+              onGenerateImage={onGenerateImage}
+              triggerFileUpload={handleFileSelect}
+              imageFormat="landscape"
+            />
+          </div>
           
           <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
             <h3 className="font-semibold">{ad.headline || "Your headline here"}</h3>
@@ -130,20 +133,14 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
       
       {/* Ad image */}
       <div className="relative">
-        <img 
-          src={ad.imageUrl || imagePlaceholder} 
-          alt={ad.headline || "Ad"} 
-          className={`w-full object-cover ${imageFormat === "landscape" ? "h-64" : "aspect-square"}`}
+        <LinkedInImageContent
+          ad={ad}
+          isLoading={isGeneratingImage}
+          isUploading={isUploading}
+          onGenerateImage={onGenerateImage}
+          triggerFileUpload={handleFileSelect}
+          imageFormat={imageFormat}
         />
-        {!ad.imageUrl && onGenerateImage && (
-          <button 
-            onClick={onGenerateImage}
-            disabled={isGeneratingImage}
-            className="absolute inset-0 bg-black/30 text-white flex items-center justify-center font-medium"
-          >
-            {isGeneratingImage ? "Generating..." : "Generate Image"}
-          </button>
-        )}
       </div>
       
       {/* Ad headline and CTA */}
@@ -183,6 +180,14 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
           <span>Share</span>
         </button>
       </div>
+      
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/jpeg, image/png"
+        onChange={() => {/* Handle file change here if needed */}}
+      />
     </div>
   );
 };
