@@ -1,14 +1,12 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
 
-export const useTestAccountAction = (setUser: (user: CustomUser | null) => void) => {
+export const useTestAccountAction = (setUser: (user: CustomUser | null) => void, navigate?: (path: string) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const createTestAccount = async () => {
     try {
@@ -44,7 +42,9 @@ export const useTestAccountAction = (setUser: (user: CustomUser | null) => void)
           avatar: '',
         };
         setUser(customUser);
-        navigate('/dashboard');
+        if (navigate) {
+          navigate('/dashboard');
+        }
         
         toast({
           title: "Test Account Created",

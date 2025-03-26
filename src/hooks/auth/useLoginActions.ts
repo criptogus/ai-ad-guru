@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/middleware/securityMiddleware';
 import { loginAttemptTracker } from '@/utils/auth/loginAttemptTracker';
 
-export const useLoginActions = () => {
+export const useLoginActions = (navigate?: (path: string) => void) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -94,13 +94,16 @@ export const useLoginActions = () => {
         });
       }
       
-      // Navigate to dashboard on success
+      // Navigate to dashboard on success if navigate function is provided
+      if (navigate) {
+        navigate('/dashboard');
+      }
+      
       toast({
         title: 'Welcome back!',
         description: 'You have successfully logged in.',
       });
       
-      // We'll handle navigation in the auth components
       return data;
     } catch (generalError: any) {
       console.error('Unexpected error during login:', generalError);

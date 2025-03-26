@@ -25,7 +25,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ collapsed }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   if (!user) return null;
