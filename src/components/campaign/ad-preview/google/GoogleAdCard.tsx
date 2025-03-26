@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Copy, Save, X } from "lucide-react";
@@ -13,28 +13,42 @@ interface GoogleAdCardProps {
   index: number;
   ad: GoogleAd;
   domain: string;
-  isEditing: boolean;
-  onEdit: () => void;
-  onSave: (updatedAd: GoogleAd) => void;
-  onCancel: () => void;
-  onCopy: () => void;
+  analysisResult: any;
+  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
 const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   index,
   ad,
   domain,
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-  onCopy,
+  analysisResult,
+  onUpdate
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setEditedAd(ad);
   }, [ad]);
+
+  const handleEdit = () => setIsEditing(true);
+  
+  const handleSave = () => {
+    setIsEditing(false);
+    if (onUpdate) {
+      onUpdate(editedAd);
+    }
+  };
+  
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedAd(ad);
+  };
+  
+  const handleCopy = () => {
+    const textToCopy = `Headlines:\n${editedAd.headlines.join('\n')}\n\nDescriptions:\n${editedAd.descriptions.join('\n')}`;
+    navigator.clipboard.writeText(textToCopy);
+  };
 
   const handleHeadlineChange = (index: number, value: string) => {
     const newHeadlines = [...editedAd.headlines];
@@ -87,7 +101,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={onCancel}
+                  onClick={handleCancel}
                 >
                   <X className="h-4 w-4 mr-1" />
                   Cancel
@@ -95,7 +109,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
                 <Button 
                   variant="default" 
                   size="sm" 
-                  onClick={() => onSave(editedAd)}
+                  onClick={handleSave}
                 >
                   <Save className="h-4 w-4 mr-1" />
                   Save
@@ -106,7 +120,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={onCopy}
+                  onClick={handleCopy}
                 >
                   <Copy className="h-4 w-4 mr-1" />
                   Copy
@@ -114,7 +128,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={onEdit}
+                  onClick={handleEdit}
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit

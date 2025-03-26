@@ -16,7 +16,7 @@ interface LinkedInAdsTabProps {
   loadingImageIndex: number | null;
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
-  onUpdateLinkedInAd: (ads: MetaAd[]) => void;
+  onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   mindTrigger?: string;
 }
 
@@ -45,7 +45,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
     const newAds = [...localAds];
     newAds[index] = updatedAd;
     setLocalAds(newAds);
-    onUpdateLinkedInAd(newAds);
+    onUpdateLinkedInAd(index, updatedAd);
     setEditingAdIndex(null);
     
     toast.success("LinkedIn ad updated successfully");

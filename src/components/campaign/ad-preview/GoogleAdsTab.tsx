@@ -4,8 +4,8 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import GoogleAdCard from "./google/GoogleAdCard";
 import { getDomainFromUrl } from "@/lib/utils";
+import GoogleAdCard from "./google/GoogleAdCard";
 
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
@@ -48,7 +48,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               key={`google-ad-${index}`}
               ad={ad}
               index={index}
-              domain={domain}
+              analysisResult={analysisResult}
               onUpdate={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
             />
           ))}

@@ -225,7 +225,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 googleAds={googleAds}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={(index, updatedAd) => onUpdateGoogleAd(index, updatedAd)}
+                onUpdateGoogleAd={onUpdateGoogleAd}
                 analysisResult={analysisResult}
               />
             </TabsContent>
@@ -238,7 +238,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
-                onUpdateMetaAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
+                onUpdateMetaAd={onUpdateMetaAd}
+                mindTrigger={mindTriggers?.meta}
               />
             </TabsContent>
 
@@ -249,8 +250,9 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 isGenerating={isGenerating}
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateLinkedInAds}
-                onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
-                onUpdateLinkedInAd={(index, updatedAd) => onUpdateLinkedInAd(index, updatedAd)}
+                onGenerateImage={onGenerateImage}
+                onUpdateLinkedInAd={onUpdateLinkedInAd}
+                mindTrigger={mindTriggers?.linkedin}
               />
             </TabsContent>
 
@@ -260,7 +262,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 analysisResult={analysisResult}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateMicrosoftAds}
-                onUpdateMicrosoftAd={(index, updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
+                onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+                mindTrigger={mindTriggers?.microsoft}
               />
             </TabsContent>
           </Tabs>

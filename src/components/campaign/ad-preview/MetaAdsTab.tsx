@@ -16,7 +16,7 @@ interface MetaAdsTabProps {
   loadingImageIndex: number | null;
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
-  onUpdateMetaAd: (ads: MetaAd[]) => void;
+  onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
   mindTrigger?: string;
 }
 
@@ -45,7 +45,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     const newAds = [...localAds];
     newAds[index] = updatedAd;
     setLocalAds(newAds);
-    onUpdateMetaAd(newAds);
+    onUpdateMetaAd(index, updatedAd);
     setEditingAdIndex(null);
   };
 

@@ -14,7 +14,7 @@ interface MicrosoftAdsTabProps {
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
-  onUpdateMicrosoftAd: (ads: GoogleAd[]) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   mindTrigger?: string;
 }
 
@@ -49,7 +49,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
     const newAds = [...localAds];
     newAds[index] = updatedAd;
     setLocalAds(newAds);
-    onUpdateMicrosoftAd(newAds);
+    onUpdateMicrosoftAd(index, updatedAd);
     setEditingAdIndex(null);
     
     toast.success("Microsoft ad updated successfully");
