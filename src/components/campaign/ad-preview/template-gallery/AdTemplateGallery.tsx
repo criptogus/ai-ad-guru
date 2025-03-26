@@ -1,7 +1,9 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { AdTemplate } from "./TemplateGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
 
 interface AdTemplateGalleryProps {
   templates: AdTemplate[];
@@ -14,7 +16,7 @@ const AdTemplateGallery: React.FC<AdTemplateGalleryProps> = ({
   onTemplateSelect,
   className = ""
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeCategory, setActiveCategory] = React.useState<string>("all");
   
   // Get unique categories from templates
   const categories = Array.from(
@@ -47,17 +49,10 @@ const AdTemplateGallery: React.FC<AdTemplateGalleryProps> = ({
             onClick={() => onTemplateSelect(template)}
           >
             <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden mb-2">
-              {template.thumbnail ? (
-                <img
-                  src={template.thumbnail}
-                  alt={template.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  {template.name.charAt(0)}
-                </div>
-              )}
+              {/* We'll just display a placeholder since the template doesn't have thumbnail property */}
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                {template.name.charAt(0)}
+              </div>
             </div>
             <span className="text-sm font-medium group-hover:text-blue-500">{template.name}</span>
           </button>

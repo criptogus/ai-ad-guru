@@ -15,6 +15,7 @@ export interface AdTemplate {
     width: number;
     height: number;
   };
+  // We're not using thumbnail now, but could add it in the future
 }
 
 export const templateCategories: TemplateCategory[] = [
