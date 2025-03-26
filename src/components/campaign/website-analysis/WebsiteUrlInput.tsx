@@ -2,7 +2,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SearchIcon } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface WebsiteUrlInputProps {
   website: string;
@@ -49,7 +49,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
             "Analyzing..."
           ) : (
             <>
-              <SearchIcon className="h-4 w-4 mr-2" />
+              <Search className="h-4 w-4 mr-2" />
               Analyze
             </>
           )}

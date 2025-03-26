@@ -19,7 +19,7 @@ export const useWebsiteAnalysis = () => {
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const { toast } = useToast();
 
-  const analyzeWebsite = async (url: string) => {
+  const analyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
     if (!url) {
       toast({
         title: "Error",
@@ -67,7 +67,7 @@ export const useWebsiteAnalysis = () => {
       });
       
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calling analyze-website function:', error);
       toast({
         title: "Analysis Failed",
@@ -91,5 +91,6 @@ export const useWebsiteAnalysis = () => {
     updateAnalysisResult,
     isAnalyzing,
     analysisResult,
+    setAnalysisResult
   };
 };

@@ -1,6 +1,8 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface KeywordsEditorProps {
   keywords: string[];
