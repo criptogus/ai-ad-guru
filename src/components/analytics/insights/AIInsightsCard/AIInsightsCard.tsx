@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIInsightsSuggestions } from './AIInsightsSuggestions';
 import { AdActions } from './AdActions';
 import { ControlsSection } from './ControlsSection';
-import { ChatBubbleIcon, BarChartIcon } from 'lucide-react';
+import { MessageCircle, BarChart } from 'lucide-react';
 import { GoogleAdTab } from './tabs/GoogleAdTab';
 import { MetaAdTab } from './tabs/MetaAdTab';
 import { MicrosoftAdTab } from './tabs/MicrosoftAdTab';
@@ -49,11 +49,11 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId = "campaign-
           >
             <TabsList className="grid grid-cols-2 h-8">
               <TabsTrigger value="insights" className="text-xs px-3 flex items-center gap-1">
-                <ChatBubbleIcon className="w-3 h-3" />
+                <MessageCircle className="w-3 h-3" />
                 <span>Insights</span>
               </TabsTrigger>
               <TabsTrigger value="ads" className="text-xs px-3 flex items-center gap-1">
-                <BarChartIcon className="w-3 h-3" />
+                <BarChart className="w-3 h-3" />
                 <span>Ads</span>
               </TabsTrigger>
             </TabsList>

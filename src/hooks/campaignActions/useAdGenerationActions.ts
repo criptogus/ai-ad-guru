@@ -78,8 +78,7 @@ export const useAdGenerationActions = (
     analysisResult,
     metaAds,
     generateAdImage,
-    setCampaignData,
-    2 // Adding missing argument (index parameter)
+    setCampaignData
   );
 
   return {
