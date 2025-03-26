@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 interface WebsiteUrlInputProps {
   website: string;
@@ -28,6 +28,20 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
     // Basic validation - just ensure there's some content
     if (!website.trim()) {
       setError("Please enter a website URL");
+      return;
+    }
+
+    // Validate URL format
+    try {
+      // Check if URL has protocol, if not add a temporary one for validation
+      const urlToValidate = website.trim().startsWith('http') 
+        ? website.trim() 
+        : `https://${website.trim().startsWith('www.') ? '' : 'www.'}${website.trim()}`;
+      
+      // This will throw an error if URL is invalid
+      new URL(urlToValidate);
+    } catch (err) {
+      setError("Please enter a valid website URL (e.g., example.com)");
       return;
     }
     
@@ -57,6 +71,8 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
             required
             className={`pr-10 bg-background ${error ? 'border-red-500' : ''}`}
             disabled={isAnalyzing}
+            aria-invalid={!!error}
+            aria-describedby={error ? "url-error" : undefined}
           />
         </div>
         <Button 
@@ -65,7 +81,10 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
           className="min-w-[100px]"
         >
           {isAnalyzing ? (
-            "Analyzing..."
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
           ) : (
             <>
               <Search className="h-4 w-4 mr-2" />
@@ -75,7 +94,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
         </Button>
       </div>
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p id="url-error" className="text-xs text-red-500 mt-1">{error}</p>
       )}
       <p className="text-xs text-muted-foreground mt-1">
         Enter your website URL (with or without http://) so we can analyze it and suggest optimal ad campaign settings

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, Bug } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Bug, RefreshCw } from "lucide-react";
 import { Nav } from "@/components/landing/Nav";
 import { Footer } from "@/components/landing/Footer";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 
 export interface PaymentVerificationProps {
   sessionId?: string | null;
@@ -58,6 +60,7 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
 
   const handleTryAgain = () => {
     // Reload the page to retry verification
+    setVerificationTimeout(false);
     window.location.reload();
   };
 
@@ -79,7 +82,9 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
               <Loader2 className="h-12 w-12 animate-spin text-brand-600 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifying Your Payment</h1>
               <p className="text-gray-600 mb-4">Please wait while we confirm your subscription...</p>
-              <p className="text-xs text-gray-400">Session ID: {sessionId.substring(0, 10)}...</p>
+              <p className="text-xs text-gray-400">
+                Session ID: {sessionId.substring(0, 10)}...
+              </p>
             </>
           )}
           
@@ -106,6 +111,7 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
               </p>
               <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 justify-center">
                 <Button onClick={handleTryAgain} variant="outline" className="mt-4">
+                  <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
                 </Button>
                 <Button onClick={handleReturnToBilling} className="mt-4">
@@ -124,10 +130,11 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
               </p>
               <Alert variant="destructive" className="mb-4 text-left">
                 <AlertTitle>Error details</AlertTitle>
-                <AlertDescription className="text-sm font-mono">{error}</AlertDescription>
+                <AlertDescription className="text-sm font-mono break-words">{error}</AlertDescription>
               </Alert>
               <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 justify-center">
                 <Button onClick={handleTryAgain} variant="outline" className="mt-4">
+                  <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
                 </Button>
                 <Button onClick={handleReturnToBilling} className="mt-4">
@@ -155,7 +162,7 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
                   {debug && (
                     <>
                       <p className="font-semibold mt-2">Debug info:</p>
-                      <pre>{JSON.stringify(debug, null, 2)}</pre>
+                      <pre className="whitespace-pre-wrap break-words">{JSON.stringify(debug, null, 2)}</pre>
                     </>
                   )}
                 </div>
@@ -164,15 +171,17 @@ const PaymentVerification: React.FC<PaymentVerificationProps> = ({
           )}
         </div>
         
-        <div className="mt-4">
-          <button 
-            onClick={toggleDebug}
-            className="text-xs text-gray-400 hover:text-gray-600 flex items-center"
-          >
-            <Bug className="h-3 w-3 mr-1" />
-            {showDebug ? "Hide Technical Info" : "Show Technical Info"}
-          </button>
-        </div>
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="mt-4">
+            <button 
+              onClick={toggleDebug}
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center"
+            >
+              <Bug className="h-3 w-3 mr-1" />
+              {showDebug ? "Hide Technical Info" : "Show Technical Info"}
+            </button>
+          </div>
+        )}
       </div>
       <Footer />
     </>

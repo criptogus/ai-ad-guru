@@ -37,11 +37,11 @@ Deno.serve(async (req) => {
       return securityCheck.response as Response;
     }
 
-    // Get the session ID from the request body
-    const bodyText = await req.text();
-    let body;
+    // Parse request body
+    let bodyText, body;
     
     try {
+      bodyText = await req.text();
       body = JSON.parse(bodyText);
     } catch (parseError) {
       console.error('Error parsing request body:', parseError, 'Raw body:', bodyText);
@@ -70,7 +70,10 @@ Deno.serve(async (req) => {
     const { sessionId, direct = false } = sanitizedBody;
 
     if (!sessionId) {
-      throw new Error("Session ID is required");
+      return createSecureResponse(
+        { error: "Session ID is required" },
+        400
+      );
     }
 
     console.log('Verifying payment for session:', sessionId, 'Direct mode:', direct);
@@ -90,6 +93,7 @@ Deno.serve(async (req) => {
     // Extract authentication token for user verification
     const authHeader = req.headers.get('authorization');
     let userId = null;
+    let validAuthToken = false;
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
@@ -101,6 +105,7 @@ Deno.serve(async (req) => {
           // This is just a basic placeholder
           const payload = JSON.parse(atob(token.split('.')[1]));
           userId = payload.sub;
+          validAuthToken = true;
           
           console.log('Authenticated user ID from token:', userId);
         } catch (e) {
@@ -115,57 +120,98 @@ Deno.serve(async (req) => {
       return createMockResponse(sessionId, corsHeaders);
     }
 
-    // Retrieve and verify the Stripe session
-    const { session, success: paymentSuccessful, userId: sessionUserId } = await verifyStripePayment(sessionId);
-    
-    // Verify that the authenticated user matches the user from the session
-    const userIdFromSession = sessionUserId || '';
-    
-    if (userId && userIdFromSession && userId !== userIdFromSession) {
-      // Potential payment hijacking attempt - log this as a severe security issue
-      console.error('User ID mismatch! Auth token user:', userId, 'Session user:', userIdFromSession);
-      
+    // Initialize Stripe client
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      console.error('STRIPE_SECRET_KEY is not configured');
       return createSecureResponse(
-        { error: 'User authentication mismatch' },
-        403
+        { error: "Payment system configuration error" },
+        500
       );
     }
-    
-    // Use the userId from the session if not available from auth
-    userId = userIdFromSession || userId;
-    
-    if (!userId) {
-      console.error('User ID not found in session:', session);
+
+    // Retrieve and verify the Stripe session
+    try {
+      const { session, success: paymentSuccessful, userId: sessionUserId } = await verifyStripePayment(sessionId);
       
-      // For debugging in direct mode, create a mock success
-      if (direct) {
-        console.log('Direct mode, returning mock success despite missing user ID');
-        return createMockResponse(sessionId, corsHeaders, 'No user ID found');
+      // Verify that the authenticated user matches the user from the session
+      const userIdFromSession = sessionUserId || '';
+      
+      if (validAuthToken && userId && userIdFromSession && userId !== userIdFromSession) {
+        // Potential payment hijacking attempt - log this as a severe security issue
+        console.error('User ID mismatch! Auth token user:', userId, 'Session user:', userIdFromSession);
+        
+        return createSecureResponse(
+          { error: 'User authentication mismatch' },
+          403
+        );
       }
       
-      throw new Error('Unable to determine user from payment session');
-    }
-
-    console.log('User ID from session:', userId);
-
-    // If payment was successful, update the user's subscription status
-    if (paymentSuccessful) {
-      await updateUserSubscription(userId);
-      console.log(`Payment verified and profile updated for user: ${userId}`);
-    } else {
-      console.log(`Payment not completed. Status: ${session.status}, Payment status: ${session.payment_status}`);
-    }
-
-    // Return the session status with limited information for security
-    return createSecureResponse({ 
-      verified: paymentSuccessful,
-      session: {
-        id: session.id,
-        status: session.status,
-        payment_status: session.payment_status,
-        userId: userId
+      // Use the userId from the session if not available from auth
+      userId = userIdFromSession || userId;
+      
+      if (!userId) {
+        console.error('User ID not found in session:', session);
+        
+        // For debugging in direct mode, create a mock success
+        if (direct) {
+          console.log('Direct mode, returning mock success despite missing user ID');
+          return createMockResponse(sessionId, corsHeaders, 'No user ID found');
+        }
+        
+        return createSecureResponse(
+          { error: 'Unable to determine user from payment session' },
+          400
+        );
       }
-    });
+
+      console.log('User ID from session:', userId);
+
+      // If payment was successful, update the user's subscription status
+      if (paymentSuccessful) {
+        try {
+          await updateUserSubscription(userId);
+          console.log(`Payment verified and profile updated for user: ${userId}`);
+        } catch (updateError) {
+          console.error('Error updating user subscription:', updateError);
+          
+          // Still return successful verification but with a warning
+          return createSecureResponse({ 
+            verified: true,
+            warning: "Payment was successful but failed to update user profile. Please contact support.",
+            session: {
+              id: session.id,
+              status: session.status,
+              payment_status: session.payment_status,
+              userId: userId
+            }
+          });
+        }
+      } else {
+        console.log(`Payment not completed. Status: ${session.status}, Payment status: ${session.payment_status}`);
+      }
+
+      // Return the session status with limited information for security
+      return createSecureResponse({ 
+        verified: paymentSuccessful,
+        session: {
+          id: session.id,
+          status: session.status,
+          payment_status: session.payment_status,
+          userId: userId
+        }
+      });
+    } catch (stripeError) {
+      console.error('Stripe error during payment verification:', stripeError);
+      
+      return createSecureResponse(
+        { 
+          error: stripeError.message || 'Error verifying payment with payment provider',
+          code: stripeError.code || 'unknown_error'
+        },
+        400
+      );
+    }
   } catch (error) {
     // Log the error
     console.error('Error verifying payment:', error);
@@ -173,7 +219,7 @@ Deno.serve(async (req) => {
     // Return a secure error response
     return createSecureResponse(
       { error: error.message || 'An error occurred processing the payment verification' },
-      400
+      500
     );
   }
 });

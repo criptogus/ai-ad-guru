@@ -29,13 +29,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Combine isLoading states
   const isLoading = authStateLoading || actionsLoading;
 
-  // For debugging - to understand authentication state
-  console.log('Auth context state:', { 
-    isAuthenticated, 
-    isLoading, 
-    user: user ? 'User exists' : 'No user', 
-    session: session ? 'Session exists' : 'No session' 
-  });
+  // For debugging - to understand authentication state - only log in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Auth context state:', { 
+      isAuthenticated, 
+      isLoading, 
+      user: user ? 'User exists' : 'No user', 
+      session: session ? 'Session exists' : 'No session' 
+    });
+  }
 
   const value: AuthContextType = {
     user,

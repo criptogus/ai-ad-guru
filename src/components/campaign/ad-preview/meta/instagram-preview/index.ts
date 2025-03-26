@@ -12,5 +12,5 @@ export { default as HeaderContent } from './HeaderContent';
 export { default as TextContent } from './TextContent';
 export { default as ActionBar } from './ActionBar';
 
-// There's no need for a composite component here since we're using the individual components
-// and we already have InstagramPreview.tsx in another directory
+// This file serves as an index for all Instagram preview components.
+// Import them individually as needed in your components.

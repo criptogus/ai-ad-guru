@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,22 @@ export const usePaymentVerification = (sessionId: string | null) => {
   const [retries, setRetries] = useState(0);
   const [debug, setDebug] = useState<any>(null);
   const MAX_RETRIES = 3;
+  
+  // Use a ref to track if the component is mounted
+  const isMounted = useRef(true);
+  
+  // Clear timeout on unmount
+  const timeoutRef = useRef<number | null>(null);
+
+  // Cleanup function for useEffect
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -23,6 +39,8 @@ export const usePaymentVerification = (sessionId: string | null) => {
     
     const verifyPayment = async () => {
       try {
+        if (!isMounted.current) return;
+        
         setVerifying(true);
         console.log('Calling verify-payment function with session ID:', sessionId);
         
@@ -38,6 +56,9 @@ export const usePaymentVerification = (sessionId: string | null) => {
           });
           
           console.log('Direct verification result:', directResult);
+          
+          if (!isMounted.current) return;
+          
           setDebug(directResult);
           
           if (directResult.data?.verified) {
@@ -49,7 +70,11 @@ export const usePaymentVerification = (sessionId: string | null) => {
               description: "Your subscription has been activated.",
             });
             window.history.replaceState({}, document.title, "/billing");
-            setTimeout(() => navigate("/dashboard"), 1500);
+            timeoutRef.current = window.setTimeout(() => {
+              if (isMounted.current) {
+                navigate("/dashboard");
+              }
+            }, 1500);
             return;
           } else {
             console.log('Direct verification not successful, falling back to standard verification');
@@ -62,6 +87,9 @@ export const usePaymentVerification = (sessionId: string | null) => {
         });
 
         console.log('Verification response:', { data, error: functionError });
+        
+        if (!isMounted.current) return;
+        
         setDebug({ data, error: functionError });
 
         if (functionError) {
@@ -72,10 +100,14 @@ export const usePaymentVerification = (sessionId: string | null) => {
             console.log(`Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
             setRetries(prev => prev + 1);
             
-            // Wait before retrying
-            setTimeout(() => {
-              verifyPayment();
-            }, 3000);
+            // Wait before retrying with exponential backoff
+            const retryDelay = Math.min(3000 * Math.pow(1.5, retries), 10000);
+            
+            timeoutRef.current = window.setTimeout(() => {
+              if (isMounted.current) {
+                verifyPayment();
+              }
+            }, retryDelay);
             return;
           }
           
@@ -96,7 +128,11 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL to prevent re-verification on page refresh
           window.history.replaceState({}, document.title, "/billing");
           // Navigate after a short delay to ensure state updates are processed
-          setTimeout(() => navigate("/dashboard"), 1500);
+          timeoutRef.current = window.setTimeout(() => {
+            if (isMounted.current) {
+              navigate("/dashboard");
+            }
+          }, 1500);
         } else if (data?.session?.payment_status === 'unpaid' || data?.session?.status === 'open') {
           console.log('Payment pending or incomplete:', data);
           
@@ -105,10 +141,14 @@ export const usePaymentVerification = (sessionId: string | null) => {
             console.log(`Payment not yet confirmed. Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
             setRetries(prev => prev + 1);
             
-            // Wait before retrying
-            setTimeout(() => {
-              verifyPayment();
-            }, 5000); // Longer wait for payment processing
+            // Wait before retrying with exponential backoff
+            const retryDelay = Math.min(5000 * Math.pow(1.5, retries), 15000);
+            
+            timeoutRef.current = window.setTimeout(() => {
+              if (isMounted.current) {
+                verifyPayment();
+              }
+            }, retryDelay);
             return;
           }
           
@@ -120,17 +160,25 @@ export const usePaymentVerification = (sessionId: string | null) => {
           // Clear the session ID from the URL
           window.history.replaceState({}, document.title, "/billing");
           // Navigate to billing after a delay
-          setTimeout(() => navigate("/billing"), 1500);
+          timeoutRef.current = window.setTimeout(() => {
+            if (isMounted.current) {
+              navigate("/billing");
+            }
+          }, 1500);
         } else {
           // If we haven't exceeded max retries, try again
           if (retries < MAX_RETRIES) {
             console.log(`Payment not yet confirmed. Retry attempt ${retries + 1} of ${MAX_RETRIES}`);
             setRetries(prev => prev + 1);
             
-            // Wait before retrying
-            setTimeout(() => {
-              verifyPayment();
-            }, 3000);
+            // Wait before retrying with exponential backoff
+            const retryDelay = Math.min(3000 * Math.pow(1.5, retries), 10000);
+            
+            timeoutRef.current = window.setTimeout(() => {
+              if (isMounted.current) {
+                verifyPayment();
+              }
+            }, retryDelay);
             return;
           }
           
@@ -138,6 +186,9 @@ export const usePaymentVerification = (sessionId: string | null) => {
         }
       } catch (error: any) {
         console.error("Error verifying payment:", error);
+        
+        if (!isMounted.current) return;
+        
         setError(error.message || "There was a problem verifying your payment");
         setDebug({ error: error.message, stack: error.stack });
         toast({
@@ -146,7 +197,9 @@ export const usePaymentVerification = (sessionId: string | null) => {
           variant: "destructive",
         });
       } finally {
-        setVerifying(false);
+        if (isMounted.current) {
+          setVerifying(false);
+        }
       }
     };
 

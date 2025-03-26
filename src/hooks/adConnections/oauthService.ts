@@ -7,6 +7,14 @@ const OAUTH_STORAGE_KEY = 'adPlatformAuth';
 export const initiateOAuth = async (params: OAuthParams) => {
   const { platform, userId, redirectUri } = params;
   
+  if (!userId) {
+    throw new Error('User must be authenticated to connect ad accounts');
+  }
+  
+  if (!redirectUri) {
+    throw new Error('Redirect URI is required for the OAuth flow');
+  }
+  
   console.log(`Using redirect URI: ${redirectUri}`);
   
   try {
@@ -62,11 +70,18 @@ export const initiateOAuth = async (params: OAuthParams) => {
     }
     
     // Store that we're in the middle of an OAuth flow
-    sessionStorage.setItem(OAUTH_STORAGE_KEY, JSON.stringify({
-      platform,
-      inProgress: true,
-      userId
-    }));
+    try {
+      sessionStorage.setItem(OAUTH_STORAGE_KEY, JSON.stringify({
+        platform,
+        inProgress: true,
+        userId,
+        startTime: Date.now(),
+        redirectUri // Store the redirect URI to use it in the callback
+      }));
+    } catch (storageError) {
+      console.warn('Could not store OAuth state in session storage:', storageError);
+      // Continue even if storage fails, as it might be due to private browsing
+    }
     
     // Return the OAuth URL for redirection
     return data.authUrl;
@@ -82,31 +97,60 @@ export const handleOAuthCallback = async (redirectUri: string) => {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const error = url.searchParams.get('error');
+  const errorDescription = url.searchParams.get('error_description');
   
-  // Clean up the URL
-  if (code || error) {
-    window.history.replaceState({}, document.title, window.location.pathname);
+  // Clean up the URL parameters regardless of the outcome
+  try {
+    if (code || error) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  } catch (historyError) {
+    console.warn('Failed to clean URL:', historyError);
   }
   
-  // Check for OAuth errors
+  // Check for OAuth errors from the provider
   if (error) {
-    console.error('OAuth error:', error);
-    throw new Error(`Authorization denied or cancelled: ${error}`);
+    console.error('OAuth error:', error, errorDescription);
+    throw new Error(`Authorization denied or cancelled: ${errorDescription || error}`);
   }
   
   // Retrieve stored OAuth flow data
-  const storedAuthData = sessionStorage.getItem(OAUTH_STORAGE_KEY);
-  if (!code || !state || !storedAuthData) {
-    return null; // Not a callback or missing data
+  let authData;
+  try {
+    const storedAuthData = sessionStorage.getItem(OAUTH_STORAGE_KEY);
+    if (!code || !state || !storedAuthData) {
+      return null; // Not a callback or missing data
+    }
+    
+    authData = JSON.parse(storedAuthData);
+  } catch (storageError) {
+    console.error('Failed to retrieve OAuth state from session storage:', storageError);
+    throw new Error('OAuth state could not be retrieved. Please try again.');
   }
   
-  const authData = JSON.parse(storedAuthData);
-  const { platform, userId } = authData;
+  const { platform, userId, startTime } = authData;
+  
+  // Check for timeout (more than 10 minutes)
+  if (startTime && Date.now() - startTime > 10 * 60 * 1000) {
+    // Clear the stored OAuth data
+    try {
+      sessionStorage.removeItem(OAUTH_STORAGE_KEY);
+    } catch (storageError) {
+      console.warn('Could not clear OAuth state from session storage:', storageError);
+    }
+    throw new Error('OAuth flow timed out. Please try again.');
+  }
   
   // Clear the stored OAuth data
-  sessionStorage.removeItem(OAUTH_STORAGE_KEY);
+  try {
+    sessionStorage.removeItem(OAUTH_STORAGE_KEY);
+  } catch (storageError) {
+    console.warn('Could not clear OAuth state from session storage:', storageError);
+  }
   
-  console.log(`Using callback redirect URI: ${redirectUri}`);
+  // Use the stored redirectUri or fall back to the provided one
+  const effectiveRedirectUri = authData.redirectUri || redirectUri;
+  console.log(`Using callback redirect URI: ${effectiveRedirectUri}`);
   
   try {
     // Exchange the code for tokens
@@ -116,7 +160,7 @@ export const handleOAuthCallback = async (redirectUri: string) => {
         code,
         state,
         platform,
-        redirectUri,
+        redirectUri: effectiveRedirectUri,
         userId
       }
     });
@@ -138,7 +182,7 @@ export const handleOAuthCallback = async (redirectUri: string) => {
       throw new Error(data?.error || `Failed to complete ${platform} connection`);
     }
     
-    return { platform };
+    return { platform, userId, success: true };
   } catch (error) {
     console.error(`Error in handleOAuthCallback:`, error);
     throw error;
@@ -148,7 +192,26 @@ export const handleOAuthCallback = async (redirectUri: string) => {
 export const isOAuthCallback = () => {
   const url = new URL(window.location.href);
   const code = url.searchParams.get('code');
-  const storedAuthData = sessionStorage.getItem(OAUTH_STORAGE_KEY);
   
-  return Boolean(code && storedAuthData);
+  // Check session storage for OAuth state
+  let hasStoredOAuthState = false;
+  try {
+    const storedAuthData = sessionStorage.getItem(OAUTH_STORAGE_KEY);
+    hasStoredOAuthState = Boolean(storedAuthData);
+  } catch (error) {
+    console.warn('Could not access session storage:', error);
+  }
+  
+  return Boolean(code && hasStoredOAuthState);
+};
+
+// Helper function to clear OAuth state (for cleanup or error states)
+export const clearOAuthState = () => {
+  try {
+    sessionStorage.removeItem(OAUTH_STORAGE_KEY);
+    return true;
+  } catch (error) {
+    console.warn('Could not clear OAuth state:', error);
+    return false;
+  }
 };
