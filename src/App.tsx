@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import DashboardPage from "./pages/DashboardPage";
@@ -24,23 +24,20 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <div className="app">
-          <Toaster />
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/campaigns" element={<CampaignsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/test-ads" element={<TestAdsPage />} />
-            <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
-          </Routes>
-        </div>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <div className="app">
+        <Toaster />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/test-ads" element={<TestAdsPage />} />
+          <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
+        </Routes>
+      </div>
+    </ThemeProvider>
   );
 }
 
 export default App;
-
