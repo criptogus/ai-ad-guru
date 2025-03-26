@@ -24,7 +24,7 @@ export const useAuthActions = (
   
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
-  // Login with Google OAuth
+  // Login with credentials
   const login = async (email: string, password: string) => {
     return handleLogin(email, password);
   };

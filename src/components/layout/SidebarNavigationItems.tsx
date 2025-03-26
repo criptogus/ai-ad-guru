@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { Home, LayoutDashboard, Users, Settings, PlusCircle, FileImageIcon } from "lucide-react";
@@ -11,10 +12,10 @@ export const SidebarNavigationItems = () => {
   return (
     <div className="space-y-1">
       <NavigationItem
-        to="/"
+        to="/dashboard"
         icon={<Home className="h-4 w-4" />}
         label="Home"
-        active={isActivePath("/")}
+        active={isActivePath("/dashboard")}
       />
       <NavigationItem
         to="/campaigns"
@@ -64,3 +65,5 @@ export const SidebarNavigationItems = () => {
     </div>
   );
 };
+
+export default SidebarNavigationItems;

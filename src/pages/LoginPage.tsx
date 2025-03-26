@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,9 +47,11 @@ const LoginPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       console.log('LoginPage: Attempting login with email:', email);
-      await login(email, password);
-      // Login will update the auth context state
-      console.log('LoginPage: Login successful');
+      const result = await login(email, password);
+      if (result) {
+        // Login successful, navigation will be handled by useEffect
+        console.log('LoginPage: Login successful');
+      }
     } catch (error: any) {
       console.error('LoginPage: Login error:', error);
       

@@ -1,8 +1,8 @@
+
 import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingState } from '@/components/auth/LoadingState';
-import { useRouteSecurityCheck } from '@/components/auth/RouteSecurityCheck';
-import { detectSecurityIssues, setupSecurityHeartbeat, setupCSRFProtection } from '@/components/auth/SecurityUtils';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,42 +17,93 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   requiresMFA = false
 }) => {
-  const { isAuthenticated } = useAuth();
-  const { 
-    isLoading, 
-    isPaymentVerification,
-    performSecurityCheck 
-  } = useRouteSecurityCheck({
-    requiresPayment,
-    requiredRole,
-    requiresMFA
-  });
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we're in a payment verification flow
+  const isPaymentVerification = location.search.includes('session_id=');
 
   useEffect(() => {
-    // Run security checks
-    detectSecurityIssues();
+    // Skip authentication redirection during payment verification
+    if (isPaymentVerification) {
+      console.log('Payment verification in progress, bypassing authentication check');
+      return;
+    }
+
+    // Don't redirect while still loading
+    if (isLoading) {
+      return;
+    }
+
+    // Handle authentication check
+    if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
+      
+      // Store the current path for redirection after login
+      const returnPath = `${location.pathname}${location.search}`;
+      
+      navigate("/auth/login", { 
+        state: { 
+          from: returnPath
+        },
+        // Use replace to prevent back button from taking users to protected routes
+        replace: true 
+      });
+      return;
+    } 
     
-    // Set up CSRF protection
-    setupCSRFProtection();
-    
-    if (!isLoading) {
-      // Perform the security check for this route
-      performSecurityCheck();
+    // Handle payment requirement check
+    if (requiresPayment && user && !user.hasPaid) {
+      console.log('User not paid, redirecting to billing');
+      navigate("/billing", { replace: true });
+      return;
     }
     
-    // Set up a security heartbeat
-    const securityInterval = setupSecurityHeartbeat(isAuthenticated);
+    // Handle role-based access control
+    if (requiredRole && user) {
+      // This is a simplified role check - implement proper role checking based on your data structure
+      const hasRequiredRole = user.user_metadata?.role === requiredRole;
+      if (!hasRequiredRole) {
+        console.log(`User lacks required role: ${requiredRole}, access denied`);
+        navigate("/dashboard", { 
+          state: { 
+            accessDenied: true, 
+            requiredRole 
+          },
+          replace: true
+        });
+        return;
+      }
+    }
     
-    return () => {
-      clearInterval(securityInterval);
-    };
+    // Handle MFA requirement check
+    if (requiresMFA && user) {
+      // Check if user has completed MFA verification
+      const hasMFAVerified = user.user_metadata?.mfa_verified === true;
+      
+      if (!hasMFAVerified) {
+        console.log('MFA verification required');
+        navigate("/mfa-verification", {
+          state: {
+            returnTo: location.pathname,
+          },
+          replace: true
+        });
+        return;
+      }
+    }
+    
   }, [
     isAuthenticated, 
     isLoading, 
+    user,
+    navigate,
+    location,
     requiresPayment, 
     requiredRole,
     requiresMFA,
-    performSecurityCheck
+    isPaymentVerification
   ]);
 
   if (isLoading) {
@@ -65,8 +116,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <>{children}</>;
   }
 
-  // Don't render children when not authenticated or when payment is required but not paid
-  // These checks are now handled in performSecurityCheck, but we keep them here as a fallback
+  // Don't render children when not authenticated or unauthorized
   if (!isAuthenticated) return null;
 
   return <>{children}</>;

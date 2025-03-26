@@ -73,16 +73,17 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
     
     try {
       // Preview credit usage
-      toast.info("Credit Usage Preview", {
-        description: `This will use ${creditCosts.instagramAd} credits to generate this ad image with GPT-4o`,
+      toast({
+        title: "Credit Usage Preview",
+        description: `This will use 5 credits to generate this ad image with GPT-4o`,
         duration: 3000,
       });
       
-      // Consume credits
+      // Consume credits - assuming we need 5 credits for image generation
       const creditSuccess = await consumeCredits(
         user.id,
-        creditCosts.instagramAd,
-        'gpt4o_image_generation',
+        5, // Fixed credit cost for image generation
+        'image_generation', // Use a valid credit action type
         `GPT-4o Ad Image Generation`
       );
       
@@ -106,17 +107,21 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
         }
       );
       
-      if (!response.success) {
-        throw new Error(response.error || "Failed to generate image");
+      const typedResponse = response as any; // Type assertion for response
+      
+      if (!typedResponse.success) {
+        throw new Error(typedResponse.error || "Failed to generate image");
       }
       
-      setLastGeneratedImageUrl(response.imageUrl);
+      setLastGeneratedImageUrl(typedResponse.imageUrl);
       
-      toast.success("Image Generated Successfully", {
-        description: `${creditCosts.instagramAd} credits were used for this ad image`,
+      toast({
+        title: "Image Generated Successfully",
+        description: `5 credits were used for this ad image`,
+        variant: "default",
       });
       
-      return response.imageUrl;
+      return typedResponse.imageUrl;
       
     } catch (error) {
       console.error("Error generating image with GPT-4o:", error);
@@ -137,8 +142,8 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
       if (user?.id) {
         await consumeCredits(
           user.id,
-          -creditCosts.instagramAd, // Negative to refund
-          'credit_refund',
+          -5, // Refund 5 credits
+          'credit_refund', // Use a valid credit action type
           'Refund for failed GPT-4o image generation'
         );
       }

@@ -2,14 +2,11 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import { securityMonitor } from '@/middleware/securityMiddleware';
 import { loginAttemptTracker } from '@/utils/auth/loginAttemptTracker';
-import { loginWithEmail } from '@/services/auth/loginService';
 
 export const useLoginActions = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleLogin = async (email: string, password: string) => {
@@ -103,7 +100,8 @@ export const useLoginActions = () => {
         description: 'You have successfully logged in.',
       });
       
-      navigate('/dashboard');
+      // We'll handle navigation in the auth components
+      return data;
     } catch (generalError: any) {
       console.error('Unexpected error during login:', generalError);
       
