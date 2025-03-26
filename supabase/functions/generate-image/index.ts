@@ -11,7 +11,7 @@ serve(async (req) => {
   if (corsResponse) return corsResponse;
   
   try {
-    console.log("Starting image generation process with GPT-4o...");
+    console.log("Starting image generation process with DALL-E...");
     
     // Get API keys from environment variables
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -46,11 +46,11 @@ serve(async (req) => {
       throw new Error('Image prompt is required');
     }
     
-    console.log(`Generating image with GPT-4o prompt: ${prompt}`);
+    console.log(`Generating image with DALL-E prompt: ${prompt}`);
     console.log(`Company: ${companyName}, Brand Tone: ${brandTone}`);
     console.log(`Platform: ${platform}, Image format: ${imageFormat}`);
     
-    // Create enhanced prompt for GPT-4o
+    // Create enhanced prompt for the image generation
     const enhancedPrompt = enhancePrompt({
       prompt,
       companyName,
@@ -63,9 +63,9 @@ serve(async (req) => {
       imageFormat
     });
     
-    console.log("Enhanced prompt for GPT-4o:", enhancedPrompt);
+    console.log("Enhanced prompt for DALL-E:", enhancedPrompt);
     
-    // Generate image with GPT-4o
+    // Generate image with DALL-E
     const { url: temporaryImageUrl, revisedPrompt } = await generateImageWithGPT4o({
       prompt: enhancedPrompt,
       imageFormat,
@@ -81,13 +81,13 @@ serve(async (req) => {
       supabaseServiceKey
     });
 
-    console.log("Image generation process with GPT-4o completed successfully");
+    console.log("Image generation process completed successfully");
     console.log("Persistent image URL:", persistentImageUrl);
     
     // Add cache-busting timestamp to the URL
     const cacheBustedUrl = `${persistentImageUrl}?t=${Date.now()}`;
 
-    // Return the persistent image URL and the revised prompt used by GPT-4o
+    // Return the persistent image URL and the revised prompt used by DALL-E
     return new Response(
       JSON.stringify({ 
         success: true, 

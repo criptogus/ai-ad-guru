@@ -1,3 +1,4 @@
+
 import { corsHeaders } from "./utils.ts";
 
 interface ImageGenerationConfig {
@@ -10,16 +11,16 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
   const { prompt, imageFormat, openaiApiKey } = config;
   
   // Determine image size based on requested format
-  let imageSize = "1024x1024"; // Default square format
+  let size = "1024x1024"; // Default square format
   
   if (imageFormat === "portrait") {
-    imageSize = "1024x1792"; // Portrait format
+    size = "1024x1792"; // Portrait format
   } else if (imageFormat === "landscape") {
-    imageSize = "1792x1024"; // Landscape format for LinkedIn (approximating 1200x627 ratio)
+    size = "1792x1024"; // Landscape format for LinkedIn (approximating 1200x627 ratio)
   }
   
   console.log("Enhanced GPT-4o prompt:", prompt);
-  console.log(`Image format: ${imageFormat}, size: ${imageSize}`);
+  console.log(`Image format: ${imageFormat}, size: ${size}`);
   
   // Retry mechanism for OpenAI API
   let retries = 0;
@@ -27,7 +28,8 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
   
   while (retries <= maxRetries) {
     try {
-      // Make direct fetch to OpenAI API using gpt-4o for image generation
+      // Make direct fetch to OpenAI API for image generation (DALL-E)
+      // Note: The issue was using 'gpt-4o' as a model parameter for image generation
       const response = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
@@ -35,10 +37,10 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
           "Authorization": `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: "gpt-4o", // Use GPT-4o model instead of DALL-E
+          // Remove 'model: "gpt-4o"' as it's invalid for image generation
           prompt: prompt,
           n: 1,
-          size: imageSize,
+          size: size,
           quality: "hd", // Use HD quality for better results
           style: "natural", // Natural style for more photorealistic results
           response_format: "url"
@@ -60,109 +62,33 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
       }
       
       const data = await response.json();
-      console.log("OpenAI API response:", JSON.stringify(data, null, 2));
       
       if (!data.data || data.data.length === 0) {
-        console.error("OpenAI API response has no data:", JSON.stringify(data, null, 2));
-        throw new Error(data.error?.message || "No image was generated");
-      }
-
-      const temporaryImageUrl = data.data[0].url;
-      
-      if (!temporaryImageUrl) {
-        console.error("Empty image URL in response:", JSON.stringify(data, null, 2));
-        throw new Error("Generated image URL is empty");
+        throw new Error("No image was generated");
       }
       
-      console.log("OpenAI image generation completed successfully");
-      console.log("Temporary image URL (first 50 chars):", temporaryImageUrl.substring(0, 50) + "...");
-      
-      return { 
-        url: temporaryImageUrl, 
-        revisedPrompt: data.data[0].revised_prompt 
-      };
+      return { url: data.data[0].url };
     } catch (error) {
+      console.error("Error occurred, retrying...", error);
+      
       if (retries < maxRetries) {
         retries++;
-        console.log(`Error occurred, retrying (${retries}/${maxRetries})...`, error);
-        await new Promise(resolve => setTimeout(resolve, 1000 * retries)); // Exponential backoff
-      } else {
-        console.error("Max retries reached, giving up on OpenAI API call", error);
-        throw error;
-      }
-    }
-  }
-  
-  // This should never be reached due to throw in the loop, but TypeScript wants it
-  throw new Error("Failed to generate image after multiple retries");
-}
-
-export async function downloadImage(imageUrl: string): Promise<Blob> {
-  console.log("Downloading image from OpenAI:", imageUrl.substring(0, 50) + "...");
-  
-  try {
-    // Add a timeout to the fetch request
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-    
-    const imageResponse = await fetch(imageUrl, { 
-      signal: controller.signal,
-      headers: {
-        'Accept': 'image/png,image/*',
-      }
-    });
-    clearTimeout(timeoutId);
-    
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`);
-    }
-    
-    const contentType = imageResponse.headers.get('content-type');
-    console.log(`Image response content type: ${contentType}`);
-    
-    const blob = await imageResponse.blob();
-    console.log(`Image downloaded successfully. Size: ${blob.size} bytes, Type: ${blob.type}`);
-    
-    // Verify the blob is valid
-    if (blob.size === 0) {
-      throw new Error("Downloaded image has zero size");
-    }
-    
-    // Convert non-png images to png if needed
-    if (blob.type !== 'image/png') {
-      console.log("Converting image to PNG format...");
-      return await convertToPng(blob);
-    }
-    
-    return blob;
-  } catch (error) {
-    console.error("Error downloading image:", error);
-    throw error;
-  }
-}
-
-// Helper function to convert any image to PNG format
-async function convertToPng(blob: Blob): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = new OffscreenCanvas(img.width, img.height);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error("Could not get canvas context"));
-        return;
+        await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+        continue;
       }
       
-      ctx.drawImage(img, 0, 0);
-      canvas.convertToBlob({ type: 'image/png' })
-        .then(pngBlob => {
-          console.log(`Image converted to PNG. New size: ${pngBlob.size} bytes`);
-          resolve(pngBlob);
-        })
-        .catch(reject);
-    };
-    
-    img.onerror = () => reject(new Error("Failed to load image for conversion"));
-    img.src = URL.createObjectURL(blob);
-  });
+      console.error("Max retries reached, giving up on OpenAI API call", error);
+      throw error;
+    }
+  }
+  
+  throw new Error("Failed to generate image after maximum retries");
+}
+
+export async function downloadImage(url: string): Promise<Blob> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+  }
+  return await response.blob();
 }
