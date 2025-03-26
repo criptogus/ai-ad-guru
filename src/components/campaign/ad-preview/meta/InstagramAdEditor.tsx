@@ -19,7 +19,6 @@ const InstagramAdEditor: React.FC<InstagramAdEditorProps> = ({ ad, onChange }) =
   };
 
   const handleInsertTrigger = (field: keyof MetaAd, text: string) => {
-    // Insert the trigger text into the specified field
     const currentText = ad[field] as string || '';
     handleChange(field, currentText ? `${currentText}\n\n${text}` : text);
   };

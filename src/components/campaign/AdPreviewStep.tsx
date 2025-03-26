@@ -9,7 +9,7 @@ import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 import MentalTriggersSection from "./ad-preview/MentalTriggersSection";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;

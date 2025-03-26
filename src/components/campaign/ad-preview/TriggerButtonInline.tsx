@@ -47,6 +47,6 @@ const triggers = [
   { id: "exclusivity", text: "Exclusive Access" }
 ];
 
-// Export both as default and named export
+// Export both as named export and default export
 export { TriggerButtonInline };
 export default TriggerButtonInline;
