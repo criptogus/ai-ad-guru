@@ -31,7 +31,9 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
             className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal"
             onClick={() => handleTemplateClick(template)}
           >
-            {template}
+            {template.length > 100 ? 
+              template.substring(0, 100) + "..." : 
+              template}
           </Button>
         ))}
       </div>

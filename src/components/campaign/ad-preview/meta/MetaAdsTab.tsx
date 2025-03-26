@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     }
   };
   
-  // Beautify mind trigger display
+  // Format mind trigger display with better formatting
   const formatMindTrigger = (trigger: string) => {
     if (!trigger) return "";
     
