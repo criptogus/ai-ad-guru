@@ -1,31 +1,33 @@
 
 import React from "react";
-import { MetaAd } from "@/hooks/adGeneration";
 
-interface TextContentProps {
-  ad: MetaAd;
+export interface TextContentProps {
+  headline?: string;
+  primaryText?: string;
+  companyName: string;
 }
 
-const TextContent: React.FC<TextContentProps> = ({ ad }) => {
+const TextContent: React.FC<TextContentProps> = ({
+  headline,
+  primaryText,
+  companyName
+}) => {
   return (
-    <div className="p-3">
-      <div className="text-sm">
-        <span className="font-semibold mr-1">Caption:</span>
-        <span>{ad.primaryText || "Your engaging caption here..."}</span>
+    <div className="mt-2 mb-3">
+      <div className="flex items-center">
+        <span className="font-semibold text-sm text-black dark:text-white">
+          {companyName}
+        </span>
+        {headline && (
+          <span className="ml-1 text-sm text-black dark:text-white">
+            {headline}
+          </span>
+        )}
       </div>
-      {ad.hashtags && ad.hashtags.length > 0 && (
-        <div className="text-sm text-blue-500 mt-1">
-          {ad.hashtags.map((tag, index) => (
-            <span key={index}>#{tag} </span>
-          ))}
-        </div>
-      )}
-      {ad.callToAction && (
-        <div className="mt-2 text-sm">
-          <button className="font-semibold text-blue-900">
-            {ad.callToAction}
-          </button>
-        </div>
+      {primaryText && (
+        <p className="text-sm mt-1 text-black dark:text-white">
+          {primaryText}
+        </p>
       )}
     </div>
   );

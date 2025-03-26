@@ -26,6 +26,23 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   onArrayItemChange,
   onNext,
 }) => {
+  // Helper functions to adapt to component-specific props
+  const handleTargetAudienceChange = (value: string) => {
+    onTextChange('targetAudience', value);
+  };
+
+  const handleKeywordChange = (index: number, value: string) => {
+    onArrayItemChange('keywords', index, value);
+  };
+
+  const handleUspChange = (index: number, value: string) => {
+    onArrayItemChange('uniqueSellingPoints', index, value);
+  };
+
+  const handleCtaChange = (index: number, value: string) => {
+    onArrayItemChange('callToAction', index, value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="p-5 rounded-lg border bg-card text-card-foreground">
@@ -37,30 +54,28 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
         <ScrollArea className="h-[420px] pr-4">
           <div className="space-y-6">
             <CompanyInfoEditor 
-              companyName={analysisResult.companyName}
-              businessDescription={analysisResult.businessDescription}
-              brandTone={analysisResult.brandTone}
+              analysisResult={analysisResult}
               onTextChange={onTextChange}
             />
             
             <TargetAudienceEditor 
               targetAudience={analysisResult.targetAudience}
-              onTextChange={onTextChange}
+              onChange={handleTargetAudienceChange}
             />
             
             <KeywordsEditor 
               keywords={analysisResult.keywords}
-              onArrayItemChange={onArrayItemChange}
+              onKeywordChange={handleKeywordChange}
             />
             
             <UspEditor 
               uniqueSellingPoints={analysisResult.uniqueSellingPoints}
-              onArrayItemChange={onArrayItemChange}
+              onUspChange={handleUspChange}
             />
             
             <CtaEditor 
-              callToAction={analysisResult.callToAction}
-              onArrayItemChange={onArrayItemChange}
+              callToActions={analysisResult.callToAction}
+              onCtaChange={handleCtaChange}
             />
           </div>
         </ScrollArea>

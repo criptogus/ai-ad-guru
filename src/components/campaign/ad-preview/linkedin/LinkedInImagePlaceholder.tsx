@@ -1,97 +1,49 @@
 
 import React from "react";
-import { Loader, ImagePlus, AlertCircle } from "lucide-react";
+import { Loader2, Image, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface LinkedInImagePlaceholderProps {
+export interface LinkedInImagePlaceholderProps {
   isLoading: boolean;
-  isUploading?: boolean;
-  imageError?: boolean;
-  onGenerateImage?: () => Promise<void>;
-  triggerFileUpload?: () => void;
+  onGenerate?: () => Promise<void>;
   format?: string;
 }
 
 const LinkedInImagePlaceholder: React.FC<LinkedInImagePlaceholderProps> = ({
   isLoading,
-  isUploading = false,
-  imageError = false,
-  onGenerateImage,
-  triggerFileUpload,
+  onGenerate,
   format = "landscape"
 }) => {
-  // Determine dimensions hint based on format
-  const getDimensionsHint = () => {
-    if (format === "portrait") {
-      return "4:5 ratio";
-    } else if (format === "landscape") {
-      return "1.91:1 ratio";
-    }
-    return "1:1 ratio";
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-full">
-        <Loader className="w-10 h-10 text-blue-500 animate-spin mb-3" />
-        <p className="text-sm text-gray-500 font-medium">Generating image...</p>
-        <p className="text-xs text-gray-400 mt-1">This may take a moment</p>
-      </div>
-    );
-  }
-
-  if (isUploading) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-full">
-        <Loader className="w-10 h-10 text-blue-500 animate-spin mb-3" />
-        <p className="text-sm text-gray-500 font-medium">Uploading image...</p>
-      </div>
-    );
-  }
-
-  if (imageError) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-full p-4 text-center">
-        <AlertCircle className="w-10 h-10 text-orange-500 mb-3" />
-        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Image failed to load</p>
-        <div className="flex gap-2 mt-3">
-          {onGenerateImage && (
-            <Button size="sm" variant="outline" onClick={onGenerateImage}>
-              Regenerate
-            </Button>
-          )}
-          {triggerFileUpload && (
-            <Button size="sm" variant="outline" onClick={triggerFileUpload}>
-              Upload
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-4">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Generating professional LinkedIn image...</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="rounded-full bg-gray-200 dark:bg-gray-700 p-3 mb-3">
+            <Image className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+          </div>
+          <p className="text-sm font-medium mb-1">No image available</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Generate an AI image for your LinkedIn ad
+          </p>
+          {onGenerate && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={onGenerate}
+              className="gap-1"
+              disabled={isLoading}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Generate Image
             </Button>
           )}
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-4 text-center">
-      <ImagePlus className="w-12 h-12 text-gray-400 mb-3" />
-      <p className="text-sm text-gray-500 font-medium">No image available</p>
-      <p className="text-xs text-gray-400 mt-1">{getDimensionsHint()}</p>
-      <div className="flex gap-2 mt-3">
-        {onGenerateImage && (
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={onGenerateImage}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-0"
-          >
-            Generate AI Image
-          </Button>
-        )}
-        {triggerFileUpload && (
-          <Button size="sm" variant="outline" onClick={triggerFileUpload}>
-            Upload Image
-          </Button>
-        )}
-      </div>
+      )}
     </div>
   );
 };

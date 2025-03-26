@@ -21,6 +21,7 @@ const TargetAudienceEditor: React.FC<TargetAudienceEditorProps> = ({
         onChange={(e) => onChange(e.target.value)}
         rows={4}
         placeholder="Describe your target audience (demographics, interests, behaviors)"
+        className="bg-background dark:bg-background"
       />
     </div>
   );

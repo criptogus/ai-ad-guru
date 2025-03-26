@@ -60,9 +60,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain }) => {
       </div>
       
       {/* Site links (optional) */}
-      {ad.sitelinks && ad.sitelinks.length > 0 && (
+      {ad.siteLinks && ad.siteLinks.length > 0 && (
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-          {ad.sitelinks.slice(0, 4).map((sitelink, index) => (
+          {ad.siteLinks.slice(0, 4).map((sitelink, index) => (
             <div key={index} className="text-[#1a0dab] text-sm hover:underline cursor-pointer">
               {sitelink}
             </div>

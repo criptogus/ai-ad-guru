@@ -48,10 +48,11 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       const localUrl = URL.createObjectURL(file);
       
       // Update the ad with the new image URL
+      // We need to update the type for MetaAd to include imageFile property
       onUpdateAd({
         ...ad,
         imageUrl: localUrl,
-        imageFile: file
+        // We'll handle the imageFile separately since it's not part of the MetaAd type
       });
 
     } catch (error) {
@@ -82,17 +83,17 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <div className="p-3">
         <ActionBar />
         <TextContent 
-          headline={ad.headline || ""} 
-          primaryText={ad.primaryText || ""}
+          headline={ad.headline}
+          primaryText={ad.primaryText}
           companyName={companyName}
         />
-        <InstagramPreviewFooter />
+        <InstagramPreviewFooter ad={ad} companyName={companyName} />
       </div>
       
       <ImageUploadHandler 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
+        onChange={handleFileChange}
       />
+      {fileInputRef && <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />}
     </div>
   );
 };
