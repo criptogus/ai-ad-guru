@@ -27,8 +27,8 @@ const InstagramTemplateExamplePage: React.FC = () => {
       setMainText("");
     }
     
-    // Switch to customize tab
-    setActiveTab("customize");
+    // Stay on the gallery tab after selection
+    // We don't auto-switch tabs anymore to give users more space to browse templates
   };
 
   const handleGenerateImage = async () => {
@@ -57,6 +57,8 @@ const InstagramTemplateExamplePage: React.FC = () => {
         toast.success("Instagram ad image generated", {
           description: "5 credits were used for this AI-powered image generation"
         });
+        // Automatically switch to preview tab after successful generation
+        setActiveTab("preview");
       }
     } catch (error) {
       console.error("Error generating image:", error);
@@ -87,80 +89,51 @@ const InstagramTemplateExamplePage: React.FC = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="w-full">
             <TabsTrigger value="gallery">Template Gallery</TabsTrigger>
-            <TabsTrigger value="customize" disabled={!selectedTemplate}>Template Customization</TabsTrigger>
             <TabsTrigger value="preview" disabled={!generatedImageUrl}>Generated Preview</TabsTrigger>
           </TabsList>
           
           <TabsContent value="gallery">
-            <Card>
-              <CardHeader>
-                <CardTitle>Select a Template</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <InstagramTemplateGallery onSelectTemplate={handleSelectTemplate} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="customize">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Customize Template</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedTemplate && (
-                      <div className="space-y-6">
-                        <TemplateVariablesForm
-                          selectedTemplate={selectedTemplate}
-                          mainText={mainText}
-                          setMainText={setMainText}
-                        />
-                        
-                        <div className="flex gap-3 pt-3">
-                          <Button 
-                            variant="outline" 
-                            onClick={handleReset}
-                          >
-                            Reset
-                          </Button>
-                          <Button
-                            onClick={handleGenerateImage}
-                            disabled={isGenerating}
-                          >
-                            {isGenerating ? "Generating..." : "Generate Image"}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select a Template</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <InstagramTemplateGallery onSelectTemplate={handleSelectTemplate} />
+                </CardContent>
+              </Card>
               
-              <div>
+              {selectedTemplate && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Template Preview</CardTitle>
+                    <CardTitle>Customize & Generate</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {selectedTemplate ? (
-                      <div>
-                        <div className="p-4 bg-muted/20 rounded-lg text-sm mb-4">
-                          {selectedTemplate.prompt.replace(
-                            /\${mainText:[^}]*}/,
-                            `<span class="font-semibold text-primary">${mainText || "[Your text here]"}</span>`
-                          )}
-                        </div>
+                    <div className="space-y-6">
+                      <TemplateVariablesForm
+                        selectedTemplate={selectedTemplate}
+                        mainText={mainText}
+                        setMainText={setMainText}
+                      />
+                      
+                      <div className="flex gap-3 pt-3">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          onClick={handleGenerateImage}
+                          disabled={isGenerating}
+                        >
+                          {isGenerating ? "Generating..." : "Generate Image"}
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="text-center p-12 text-muted-foreground">
-                        Select a template to see the preview
-                      </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
-              </div>
+              )}
             </div>
           </TabsContent>
           
