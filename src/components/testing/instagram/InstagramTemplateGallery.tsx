@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -177,28 +176,15 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
       {filteredTemplates.length > 0 && (
         <div className="space-y-6">
           {activeCategory !== "all" ? (
-            <Carousel
-              opts={{
-                align: "start",
-                loop: false,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {filteredTemplates.map((template) => (
-                  <CarouselItem key={template.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <TemplateCard 
-                      template={template}
-                      onSelect={onSelectTemplate}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="flex justify-end gap-2 mt-4">
-                <CarouselPrevious className="relative inset-auto h-8 w-8" />
-                <CarouselNext className="relative inset-auto h-8 w-8" />
-              </div>
-            </Carousel>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredTemplates.map((template) => (
+                <TemplateCard 
+                  key={template.id}
+                  template={template}
+                  onSelect={onSelectTemplate}
+                />
+              ))}
+            </div>
           ) : (
             <>
               {categories.map((category) => {
@@ -213,28 +199,15 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
                       <div className="h-px flex-1 bg-border"></div>
                     </div>
                     
-                    <Carousel
-                      opts={{
-                        align: "start",
-                        loop: false,
-                      }}
-                      className="w-full"
-                    >
-                      <CarouselContent className="-ml-2 md:-ml-4">
-                        {categoryTemplates.map((template) => (
-                          <CarouselItem key={template.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                            <TemplateCard 
-                              template={template}
-                              onSelect={onSelectTemplate}
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <div className="flex justify-end gap-2 mt-2">
-                        <CarouselPrevious className="relative inset-auto h-8 w-8" />
-                        <CarouselNext className="relative inset-auto h-8 w-8" />
-                      </div>
-                    </Carousel>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {categoryTemplates.map((template) => (
+                        <TemplateCard 
+                          key={template.id}
+                          template={template}
+                          onSelect={onSelectTemplate}
+                        />
+                      ))}
+                    </div>
                   </div>
                 );
               })}
