@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +51,6 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
   const handleSelectTemplate = (template: PromptTemplate) => {
     setSelectedTemplate(template);
     
-    // Extract default values for mainText and subText from template
     const mainTextMatch = template.prompt_text.match(/\${mainText:([^}]*)}/);
     const subTextMatch = template.prompt_text.match(/\${subText:([^}]*)}/);
     
@@ -64,19 +62,14 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
       setSubText(subTextMatch[1]);
     }
     
-    // Set the prompt to the template text
     onAdChange("imagePrompt", template.prompt_text);
-    
-    // Switch back to form tab
     setActiveTab("form");
   };
 
   const handleGenerateWithTemplate = async () => {
     if (selectedTemplate) {
-      // Update the template variables with user input
       let processedPrompt = selectedTemplate.prompt_text;
       
-      // Replace the template variables with actual text
       if (mainText) {
         processedPrompt = processedPrompt.replace(/\${mainText:[^}]*}/g, mainText);
       }
@@ -85,13 +78,9 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
         processedPrompt = processedPrompt.replace(/\${subText:[^}]*}/g, subText);
       }
       
-      // Set the processed prompt
       onAdChange("imagePrompt", processedPrompt);
-      
-      // Then generate the image
       await onGenerateImage();
     } else {
-      // If no template is selected, just generate with the current prompt
       await onGenerateImage();
     }
   };
@@ -257,7 +246,10 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
       <TabsContent value="templates">
         <Card>
           <CardContent className="p-4">
-            <PromptTemplateGallery onSelectTemplate={handleSelectTemplate} />
+            <PromptTemplates onSelectPrompt={(prompt) => {
+              onAdChange("imagePrompt", prompt);
+              setActiveTab("form");
+            }} />
           </CardContent>
         </Card>
       </TabsContent>

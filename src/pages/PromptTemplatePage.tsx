@@ -9,6 +9,8 @@ import PromptTemplateGallery from '@/components/templates/PromptTemplateGallery'
 import PromptTemplateForm from '@/components/templates/PromptTemplateForm';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { ImageIcon } from 'lucide-react';
 
 const PromptTemplatePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('gallery');
@@ -33,14 +35,18 @@ const PromptTemplatePage: React.FC = () => {
     <SafeAppLayout activePage="tools">
       <div className="container mx-auto py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">GPT-4o Ad Image Generator</h1>
+          <h1 className="text-2xl font-bold flex items-center">
+            <ImageIcon className="mr-2 h-6 w-6" />
+            GPT-4o Ad Image Generator
+          </h1>
           <p className="text-muted-foreground">
             Create professional ad images with text using prompt templates and GPT-4o
           </p>
+          <Separator className="mt-4" />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="md:col-span-1">
+          <Card className="md:col-span-1 h-fit">
             <CardHeader>
               <CardTitle>Brand Details</CardTitle>
               <CardDescription>
