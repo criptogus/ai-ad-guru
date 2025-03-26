@@ -16,6 +16,7 @@ export interface AdTemplate {
   prompt: string;
   category: string;
   platform: string;
+  dimensions?: { width: number; height: number };
 }
 
 interface TemplateGalleryProps {

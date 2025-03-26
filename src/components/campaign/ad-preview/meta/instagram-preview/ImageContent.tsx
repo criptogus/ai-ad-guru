@@ -5,8 +5,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import ImageDisplay from "./ImageDisplay";
 import ImageLoader from "./ImageLoader";
 import ImagePlaceholder from "./ImagePlaceholder";
-import TemplateGalleryButton from "./TemplateGalleryButton";
-import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
+import { AdTemplate } from "../../template-gallery/TemplateGallery";
 
 interface ImageContentProps {
   ad: MetaAd;
@@ -108,12 +107,39 @@ const ImageContent: React.FC<ImageContentProps> = ({
         </div>
       )}
       
-      <TemplateGallery
-        isOpen={showTemplateGallery}
-        onClose={() => setShowTemplateGallery(false)}
-        onSelectTemplate={handleTemplateSelect}
-        platform="instagram"
-      />
+      {showTemplateGallery && (
+        <div className="absolute inset-0 z-10">
+          <div className="w-full h-full bg-black/50 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg w-3/4 h-3/4 overflow-auto">
+              <h3 className="text-lg font-medium mb-4">Select Template</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {/* Template thumbnails would go here */}
+                <button
+                  className="border p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => handleTemplateSelect({
+                    id: "custom-template",
+                    name: "Custom Template",
+                    description: "A custom template",
+                    prompt: "Create a professional Instagram ad image with bold text overlay",
+                    category: "custom",
+                    platform: "instagram"
+                  })}
+                >
+                  Custom Template
+                </button>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setShowTemplateGallery(false)}
+                  className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -3,10 +3,12 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Image, Sparkles } from "lucide-react";
+import { Image, Sparkles, BookOpen } from "lucide-react";
 import { EditorSectionProps } from "./types";
 import { TriggerButtonInline } from "../../TriggerButtonInline";
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
+import AdvancedPromptTemplates from "../../ad-prompts/AdvancedPromptTemplates";
 
 const AdEditorSection: React.FC<EditorSectionProps> = ({
   ad,
@@ -15,6 +17,7 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
   onSelectTrigger
 }) => {
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [showPromptTemplates, setShowPromptTemplates] = useState(false);
 
   const handleChange = (field: keyof typeof ad, value: string) => {
     onUpdate({
@@ -33,6 +36,11 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
     // Update the ad's image prompt with the selected template
     handleChange("imagePrompt", template.prompt);
     setShowTemplateGallery(false);
+  };
+
+  const handlePromptTemplateSelect = (prompt: string) => {
+    handleChange("imagePrompt", prompt);
+    setShowPromptTemplates(false);
   };
 
   return (
@@ -106,16 +114,16 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
                 onClick={() => setShowTemplateGallery(true)}
               >
                 <Image className="h-4 w-4 mr-2" />
-                Ad Template Gallery
+                Image Templates
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 className="w-full"
-                onClick={() => handleTriggerSelect("Create a professional Instagram ad that highlights our product benefits in a visually appealing way.")}
+                onClick={() => setShowPromptTemplates(true)}
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Quick Prompt
+                <BookOpen className="h-4 w-4 mr-2" />
+                Ad Prompt Library
               </Button>
             </div>
           </div>
@@ -128,6 +136,21 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
         onSelectTemplate={handleTemplateSelect}
         platform="instagram"
       />
+      
+      <Dialog open={showPromptTemplates} onOpenChange={setShowPromptTemplates}>
+        <DialogContent className="max-w-4xl h-[80vh] max-h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-2">
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-blue-500" />
+              Ad Prompt Library
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-auto p-6">
+            <AdvancedPromptTemplates onSelectPrompt={handlePromptTemplateSelect} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

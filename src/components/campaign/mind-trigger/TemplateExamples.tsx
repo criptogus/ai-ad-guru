@@ -28,8 +28,9 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
           <Button 
             key={idx} 
             variant="ghost"
-            className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal"
+            className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal hover:bg-muted-foreground/10"
             onClick={() => handleTemplateClick(template)}
+            type="button"
           >
             {template.length > 100 ? 
               template.substring(0, 100) + "..." : 

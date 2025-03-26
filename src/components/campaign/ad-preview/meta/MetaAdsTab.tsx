@@ -85,23 +85,23 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
       return firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
     }
     
-    // Format trigger_id to "Trigger Name"
+    // Format trigger_id to readable format
     const triggerMap: Record<string, string> = {
-      // Meta
+      // Meta/Instagram triggers
       "lifestyle": "Lifestyle Aspiration",
       "before_after": "Before & After",
       "user_generated": "User Generated Content",
       "storytelling": "Storytelling",
       "tutorial": "Tutorial/How-to",
       
-      // Google
+      // Google/Microsoft triggers
       "urgency": "Urgency",
       "social_proof": "Social Proof",
       "problem_solution": "Problem-Solution",
       "curiosity": "Curiosity",
       "comparison": "Comparison",
       
-      // LinkedIn
+      // LinkedIn triggers
       "thought_leadership": "Thought Leadership",
       "data_insights": "Data & Insights",
       "professional_growth": "Professional Growth",
@@ -109,9 +109,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
       "case_study": "Case Study"
     };
     
-    return triggerMap[trigger] || trigger.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return triggerMap[trigger] || 
+      trigger.split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
   };
 
   return (
