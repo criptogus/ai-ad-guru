@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
@@ -6,6 +7,7 @@ import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import MetaAdsTab from "./ad-preview/MetaAdsTab";
 import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
+import MentalTriggersSection from "./ad-preview/MentalTriggersSection";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
