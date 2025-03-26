@@ -1,90 +1,121 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import { MetaAd } from "@/hooks/adGeneration";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import NewMetaAdForm from "./meta/NewMetaAdForm";
-import ImageLoadingTest from "./meta/ImageLoadingTest";
-import TestMetaAdsList from "./meta/TestMetaAdsList";
+import { useAuth } from "@/contexts/AuthContext";
 
-const defaultAnalysisResult: WebsiteAnalysisResult = {
-  companyName: "Test Company",
-  businessDescription: "A test company for debugging purposes",
-  websiteUrl: "https://example.com",
-  brandTone: "Professional",
-  targetAudience: "Developers and testers",
-  uniqueSellingPoints: ["Easy debugging", "Fast testing", "Reliable results"],
-  callToAction: ["Test Now"],
-  keywords: ["test", "debug", "development"]
+const defaultMetaAd: MetaAd = {
+  headline: "Discover Our New Product",
+  primaryText: "Transform your daily routine with our innovative solution. Designed for maximum efficiency and built to last.",
+  description: "Shop Now",
+  imagePrompt: "A professional lifestyle product image with clean background and modern aesthetic",
 };
 
 const MetaAdsTestArea: React.FC = () => {
-  const { generateAdImage, isGenerating, lastError } = useImageGeneration();
-  const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-  const [newAd, setNewAd] = useState<MetaAd>({
-    primaryText: "Discover how our service can transform your business! 🚀",
-    headline: "Innovate and Lead the Future",
-    description: "Curious about how we can help? Click to learn more!",
-    imagePrompt: "A professional team collaborating in a modern office with digital displays showing success metrics and growth charts"
+  const [testAds, setTestAds] = useState<MetaAd[]>([]);
+  const [testAd, setTestAd] = useState<MetaAd>(defaultMetaAd);
+  const { generateAdImage, isGenerating } = useImageGeneration();
+  const { user } = useAuth();
+  
+  // Company info state from website analysis, replaced with default data
+  const [companyInfo, setCompanyInfo] = useState({
+    companyName: "Sample Company",
+    brandTone: "Professional & Modern",
+    targetAudience: "Business professionals, 30-45 years old",
+    uniqueSellingPoints: "Quality, Innovation, Reliability",
+    primaryKeywords: ["efficiency", "professional", "innovation"],
+    secondaryKeywords: ["time-saving", "productivity", "modern solution"]
   });
-
-  // Debug image loading
-  const [debugImageUrl, setDebugImageUrl] = useState("");
-  const [debugImageLoaded, setDebugImageLoaded] = useState(false);
-  const [debugImageError, setDebugImageError] = useState(false);
-
-  const handleAddTestAd = () => {
-    const updatedAds = [...metaAds, { ...newAd }];
-    setMetaAds(updatedAds);
-    toast.success("Test ad added");
+  
+  // Meta-specific image generation parameters
+  const [industry, setIndustry] = useState("Technology");
+  const [adTheme, setAdTheme] = useState("Innovation & Technology");
+  const [imageFormat, setImageFormat] = useState("square"); // square (1:1) or portrait (4:5)
+  
+  const handleCompanyNameChange = (value: string) => {
+    setCompanyInfo({ ...companyInfo, companyName: value });
   };
 
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+  const handleAdChange = (field: keyof MetaAd, value: string) => {
+    setTestAd({ ...testAd, [field]: value });
+  };
+
+  const handleReset = () => {
+    setTestAd(defaultMetaAd);
+    setCompanyInfo({
+      companyName: "Sample Company",
+      brandTone: "Professional & Modern",
+      targetAudience: "Business professionals, 30-45 years old",
+      uniqueSellingPoints: "Quality, Innovation, Reliability",
+      primaryKeywords: ["efficiency", "professional", "innovation"],
+      secondaryKeywords: ["time-saving", "productivity", "modern solution"]
+    });
+    toast.info("Test ad reset to default values");
+  };
+
+  const handleGenerateImage = async (): Promise<void> => {
+    if (!testAd.imagePrompt) {
+      toast.error("Please provide an image prompt first");
+      return;
+    }
+
     try {
-      setLoadingImageIndex(index);
-      
-      console.log("Generating image with prompt:", ad.imagePrompt);
-      
-      // Add platform-specific context
+      // Pass additional context to enhance image generation
       const additionalInfo = {
+        companyName: companyInfo.companyName,
+        brandTone: companyInfo.brandTone,
+        targetAudience: companyInfo.targetAudience,
+        uniqueSellingPoints: companyInfo.uniqueSellingPoints,
+        industry: industry,
+        adTheme: adTheme,
+        imageFormat: imageFormat,
         platform: "instagram",
-        imageFormat: ad.format || "square", // Use ad format if available or default to square
+        userId: user?.id
       };
-      
-      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
+
+      const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
       
       if (imageUrl) {
-        console.log("Image generated successfully:", imageUrl);
+        setTestAd(prev => ({ ...prev, imageUrl }));
         
-        // Create a new array with the updated ad
-        const updatedAds = [...metaAds];
-        updatedAds[index] = { ...ad, imageUrl };
-        setMetaAds(updatedAds);
-      } else {
-        console.error("Failed to generate image - null response");
+        // Show credit usage toast
+        toast.success("Instagram ad image generated", {
+          description: "5 credits were used for this AI-powered image generation"
+        });
       }
     } catch (error) {
-      console.error("Error generating image:", error);
-    } finally {
-      setLoadingImageIndex(null);
+      console.error("Error generating Instagram ad image:", error);
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
+      });
     }
   };
-
-  const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
-    console.log(`Updating ad at index ${index}:`, updatedAd);
-    const newAds = [...metaAds];
-    newAds[index] = updatedAd;
-    setMetaAds(newAds);
-  };
-
-  const handleTestImageLoad = (url: string) => {
-    setDebugImageUrl(url);
-    setDebugImageLoaded(false);
-    setDebugImageError(false);
+  
+  const handleAddTestAd = () => {
+    if (!testAd.imageUrl) {
+      toast.error("Please generate an image first");
+      return;
+    }
+    
+    // Add the current test ad to the list
+    setTestAds(prev => [...prev, { ...testAd }]);
+    
+    // Reset the form for a new ad
+    setTestAd({
+      headline: "",
+      primaryText: "",
+      description: "",
+      imagePrompt: "",
+      imageUrl: undefined
+    });
+    
+    toast.success("Test ad added to the list");
   };
 
   return (
@@ -93,46 +124,67 @@ const MetaAdsTestArea: React.FC = () => {
         <CardHeader>
           <CardTitle>Meta/Instagram Ads Test</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <NewMetaAdForm 
-            newAd={newAd}
-            setNewAd={setNewAd}
-            onAddTestAd={handleAddTestAd}
-          />
-        </CardContent>
-      </Card>
-      
-      {/* Test area for direct image loading */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Image Loading Test</CardTitle>
-        </CardHeader>
         <CardContent>
-          <ImageLoadingTest 
-            debugImageUrl={debugImageUrl}
-            setDebugImageUrl={setDebugImageUrl}
-            handleTestImageLoad={handleTestImageLoad}
-            debugImageLoaded={debugImageLoaded}
-            debugImageError={debugImageError}
-            setDebugImageLoaded={setDebugImageLoaded}
-            setDebugImageError={setDebugImageError}
-          />
+          <div className="grid md:grid-cols-2 gap-6">
+            <NewMetaAdForm
+              testAd={testAd}
+              companyInfo={companyInfo}
+              industry={industry}
+              adTheme={adTheme}
+              imageFormat={imageFormat}
+              isGenerating={isGenerating}
+              onCompanyNameChange={handleCompanyNameChange}
+              onAdChange={handleAdChange}
+              onIndustryChange={setIndustry}
+              onAdThemeChange={setAdTheme}
+              onImageFormatChange={setImageFormat}
+              onGenerateImage={handleGenerateImage}
+              onReset={handleReset}
+            />
+            
+            {/* Display preview and rest of component */}
+            <div className="space-y-4">
+              <div className="border rounded-md overflow-hidden">
+                {testAd.imageUrl ? (
+                  <img src={testAd.imageUrl} alt="Generated Ad" className="w-full h-auto" />
+                ) : (
+                  <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+                    No Image Generated
+                  </div>
+                )}
+              </div>
+              
+              <Button onClick={handleGenerateImage} disabled={isGenerating || !testAd.imagePrompt}>
+                {isGenerating ? "Generating..." : "Generate Image"}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
-      
-      <Separator />
-      
-      {/* Display generated ads */}
-      <TestMetaAdsList 
-        metaAds={metaAds}
-        defaultAnalysisResult={defaultAnalysisResult}
-        loadingImageIndex={loadingImageIndex}
-        handleGenerateImage={handleGenerateImage}
-        handleUpdateAd={handleUpdateAd}
-      />
-      
-      {lastError && (
-        <p className="text-sm text-red-500 mt-2">{lastError}</p>
+
+      {/* Display test ads list */}
+      {testAds.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Ads List</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {testAds.map((ad, index) => (
+                <div key={index} className="border rounded-md p-4">
+                  <h4 className="text-sm font-semibold mb-2">{ad.headline}</h4>
+                  <p className="text-xs text-gray-500">{ad.primaryText}</p>
+                  {ad.imageUrl && (
+                    <img src={ad.imageUrl} alt={`Ad ${index + 1}`} className="w-full h-auto mt-2" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" onClick={handleAddTestAd} className="mt-4">
+              Add Ad to List
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
