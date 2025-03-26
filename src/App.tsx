@@ -24,20 +24,23 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <div className="app">
-        <Toaster />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/campaigns" element={<CampaignsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/test-ads" element={<TestAdsPage />} />
-          <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
-        </Routes>
-      </div>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <div className="app">
+          <Toaster />
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/campaigns" element={<CampaignsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/test-ads" element={<TestAdsPage />} />
+            <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
+          </Routes>
+        </div>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
 export default App;
+
