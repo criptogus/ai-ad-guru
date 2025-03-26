@@ -7,6 +7,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -25,7 +26,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <HelmetProvider>
         <AuthProvider>
           <LanguageProvider>
-            <App />
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
           </LanguageProvider>
         </AuthProvider>
       </HelmetProvider>
