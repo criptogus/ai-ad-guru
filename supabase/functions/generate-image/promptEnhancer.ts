@@ -1,71 +1,82 @@
 
-import { getBrandToneStyle, enhanceLinkedInPrompt } from "./utils.ts";
-
-interface PromptData {
+interface PromptEnhancerConfig {
   prompt: string;
   companyName?: string;
   brandTone?: string;
   targetAudience?: string;
-  uniqueSellingPoints?: string[] | string;
+  uniqueSellingPoints?: string;
   platform?: string;
   industry?: string;
   adTheme?: string;
   imageFormat?: string;
 }
 
-export function enhancePrompt(data: PromptData): string {
-  // If this is specifically for LinkedIn, use LinkedIn-specific enhancer
-  if (data.platform === "linkedin") {
-    return enhanceLinkedInPrompt(data);
-  }
-  
-  // Otherwise, use the Instagram/Meta enhancer (default)
+export function enhancePrompt(config: PromptEnhancerConfig): string {
   const {
     prompt,
     companyName,
-    brandTone,
+    brandTone = "professional",
     targetAudience,
     uniqueSellingPoints,
-    platform
-  } = data;
-  
-  // Format unique selling points if they exist
-  const formattedUSPs = Array.isArray(uniqueSellingPoints) 
-    ? uniqueSellingPoints.join(', ') 
-    : uniqueSellingPoints || 'High quality, reliable service';
-  
-  // Get brand tone style from utility function
-  const brandToneStyle = getBrandToneStyle(brandTone);
-  
-  // Determine if we're creating for Instagram specifically
-  const isInstagram = platform === 'instagram' || platform === 'meta';
-  
-  // Create enhanced prompt for DALL-E 3 with optimized structure for advertising images
-  return `
-Generate a high-end, photorealistic advertising image designed for ${isInstagram ? 'an Instagram ad campaign' : 'digital advertising'}.
+    platform = "instagram",
+    industry,
+    adTheme,
+    imageFormat = "square"
+  } = config;
 
-📌 Core Focus: ${prompt}
-📌 Brand Context: ${companyName || 'the company'}
-📌 Target Audience: ${targetAudience || 'General consumers'}
-📌 Unique Selling Points: ${formattedUSPs}
-📌 Visual Style: ${brandToneStyle}
-
-Technical Specifications:
-- Professional product/service showcase with balanced framing and cinematic lighting
-- Realistic, high-end commercial setting matching the brand tone
-- Engaging, aspirational, eye-catching mood
-- Vibrant, high contrast color palette optimized for social media engagement
-- Commercial studio-grade quality with natural shadows and crisp details
-- NO text overlays or logos
-- Clean composition with space for later text addition
-
-Concept Options (choose most appropriate):
-1. Lifestyle Elevation: Confident individual in vibrant environment showing product/service benefits
-2. Product Spotlight: High-end product in dramatic setting with premium lighting
-3. Abstract Impact: Dynamic visuals symbolizing the core benefit or emotion
-4. Modern Context: Contemporary setting showing the product/service in real-world use
-5. Tech-Forward: Sleek, innovative presentation with modern aesthetic
-
-This MUST be a PHOTOREALISTIC commercial photograph, NOT digital art or illustration, using professional studio-quality photography techniques.
-`.trim();
+  // Build a comprehensive prompt for GPT-4o
+  let enhancedPrompt = `Generate a high-quality, photorealistic advertising image: ${prompt}`;
+  
+  // Add company context
+  if (companyName) {
+    enhancedPrompt += ` For company: ${companyName}.`;
+  }
+  
+  // Add brand tone guidance
+  enhancedPrompt += ` Use a ${brandTone} visual tone.`;
+  
+  // Add platform-specific optimization
+  if (platform === "instagram") {
+    enhancedPrompt += ` Optimize for Instagram ads with vibrant colors and engaging composition.`;
+  } else if (platform === "linkedin") {
+    enhancedPrompt += ` Optimize for LinkedIn with professional aesthetics suitable for business audience.`;
+  } else if (platform === "facebook") {
+    enhancedPrompt += ` Optimize for Facebook with social engagement-focused visuals.`;
+  } else if (platform === "google") {
+    enhancedPrompt += ` Optimize for Google Display ads with clear focal points.`;
+  }
+  
+  // Add industry context
+  if (industry) {
+    enhancedPrompt += ` Industry context: ${industry}.`;
+  }
+  
+  // Add ad theme
+  if (adTheme) {
+    enhancedPrompt += ` Ad theme: ${adTheme}.`;
+  }
+  
+  // Add target audience
+  if (targetAudience) {
+    enhancedPrompt += ` Target audience: ${targetAudience}.`;
+  }
+  
+  // Add USPs
+  if (uniqueSellingPoints) {
+    enhancedPrompt += ` Highlight these unique selling points: ${uniqueSellingPoints}.`;
+  }
+  
+  // Add format-specific guidance
+  if (imageFormat === "square") {
+    enhancedPrompt += ` Create in square format with balanced composition.`;
+  } else if (imageFormat === "portrait") {
+    enhancedPrompt += ` Create in portrait format with vertically stacked elements.`;
+  } else if (imageFormat === "landscape") {
+    enhancedPrompt += ` Create in landscape format optimized for wider displays.`;
+  }
+  
+  // Add final quality instructions for GPT-4o
+  enhancedPrompt += ` Create a highly realistic, professional advertising image with excellent lighting, composition, and detail. The image should be eye-catching and visually appealing, suitable for digital marketing.`;
+  
+  return enhancedPrompt;
 }

@@ -1,4 +1,3 @@
-
 import { corsHeaders } from "./utils.ts";
 
 interface ImageGenerationConfig {
@@ -7,7 +6,7 @@ interface ImageGenerationConfig {
   openaiApiKey: string;
 }
 
-export async function generateImageWithDallE(config: ImageGenerationConfig): Promise<{ url: string, revisedPrompt?: string }> {
+export async function generateImageWithGPT4o(config: ImageGenerationConfig): Promise<{ url: string, revisedPrompt?: string }> {
   const { prompt, imageFormat, openaiApiKey } = config;
   
   // Determine image size based on requested format
@@ -19,7 +18,7 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
     imageSize = "1792x1024"; // Landscape format for LinkedIn (approximating 1200x627 ratio)
   }
   
-  console.log("Enhanced DALL-E 3 prompt:", prompt);
+  console.log("Enhanced GPT-4o prompt:", prompt);
   console.log(`Image format: ${imageFormat}, size: ${imageSize}`);
   
   // Retry mechanism for OpenAI API
@@ -28,7 +27,7 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
   
   while (retries <= maxRetries) {
     try {
-      // Make direct fetch to OpenAI API to ensure proper parameters
+      // Make direct fetch to OpenAI API using gpt-4o for image generation
       const response = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
@@ -36,7 +35,7 @@ export async function generateImageWithDallE(config: ImageGenerationConfig): Pro
           "Authorization": `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: "dall-e-3",
+          model: "gpt-4o", // Use GPT-4o model instead of DALL-E
           prompt: prompt,
           n: 1,
           size: imageSize,

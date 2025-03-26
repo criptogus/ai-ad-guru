@@ -102,7 +102,7 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
         <div className="flex items-center justify-between">
           <Label htmlFor="image-prompt" className="flex items-center gap-2">
             <ImageIcon size={16} />
-            Image Generation
+            GPT-4o Image Generation
           </Label>
           <div className="text-xs text-muted-foreground">
             8 credits
@@ -126,7 +126,7 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
         
         <Textarea
           id="image-prompt"
-          placeholder="Describe the image you want to generate..."
+          placeholder="Describe the image you want to generate with GPT-4o..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={5}
@@ -135,7 +135,7 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
         
         <div className="text-xs text-muted-foreground">
           <p>Prompt should describe the visual elements, style, and mood you want in your banner.</p>
-          <p className="mt-1">For best results, be specific about products, colors, and composition.</p>
+          <p className="mt-1">For best results with GPT-4o, be specific about products, colors, and composition.</p>
         </div>
       </div>
       
@@ -150,12 +150,12 @@ const ImagePromptForm: React.FC<ImagePromptFormProps> = ({
         {isGenerating ? (
           <>
             <RefreshCw size={16} className="animate-spin relative" />
-            <span className="relative">Generating...</span>
+            <span className="relative">Generating with GPT-4o...</span>
           </>
         ) : (
           <>
             <Sparkles size={16} className="relative animate-pulse" />
-            <span className="relative">Generate AI Image</span>
+            <span className="relative">Generate GPT-4o Image</span>
           </>
         )}
       </Button>
