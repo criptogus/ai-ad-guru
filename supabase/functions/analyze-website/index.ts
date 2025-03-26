@@ -45,7 +45,7 @@ serve(async (req) => {
       console.error("Error fetching website data:", error);
       return handleResponse({
         success: false,
-        error: `Failed to fetch website data: ${error.message}`
+        error: `Failed to fetch website data: ${error.message || "Unknown error"}`
       }, 500);
     }
 
@@ -60,7 +60,7 @@ serve(async (req) => {
       console.error("OpenAI API error:", openAiError);
       return handleResponse({ 
         success: false, 
-        error: `Error communicating with AI service: ${openAiError.message}`,
+        error: `Error communicating with AI service: ${openAiError.message || "Unknown error"}`,
         details: JSON.stringify(openAiError)
       }, 500);
     }

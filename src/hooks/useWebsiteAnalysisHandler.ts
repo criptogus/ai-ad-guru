@@ -14,7 +14,20 @@ export const useWebsiteAnalysisHandler = ({
   
   const handleWebsiteAnalysis = useCallback(async (url: string): Promise<WebsiteAnalysisResult | null> => {
     try {
-      const result = await handleAnalyzeWebsite(url);
+      // Format URL if needed
+      let formattedUrl = url.trim();
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        // If the URL doesn't start with www, add it
+        if (!formattedUrl.startsWith('www.')) {
+          formattedUrl = 'www.' + formattedUrl;
+        }
+        // Add https protocol
+        formattedUrl = 'https://' + formattedUrl;
+      }
+      
+      console.log("Analyzing website with formatted URL:", formattedUrl);
+      
+      const result = await handleAnalyzeWebsite(formattedUrl);
       if (result) {
         setAnalysisResult(result);
       }

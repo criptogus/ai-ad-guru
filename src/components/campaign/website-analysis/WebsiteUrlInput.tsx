@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -17,9 +17,28 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
   onAnalyze,
   isAnalyzing,
 }) => {
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear any previous errors
+    setError(null);
+    
+    // Basic validation - just ensure there's some content
+    if (!website.trim()) {
+      setError("Please enter a website URL");
+      return;
+    }
+    
     onAnalyze();
+  };
+
+  // Helper function to format user input
+  const handleUrlChange = (value: string) => {
+    // Remove error when user starts typing
+    if (error) setError(null);
+    setWebsite(value);
   };
 
   return (
@@ -31,18 +50,18 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
         <div className="relative flex-grow">
           <Input
             id="website-url"
-            type="url"
-            placeholder="https://your-website.com"
+            type="text"
+            placeholder="www.your-website.com"
             value={website}
-            onChange={(e) => setWebsite(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             required
-            className="pr-10 bg-background"
+            className={`pr-10 bg-background ${error ? 'border-red-500' : ''}`}
             disabled={isAnalyzing}
           />
         </div>
         <Button 
           type="submit" 
-          disabled={!website || isAnalyzing}
+          disabled={!website.trim() || isAnalyzing}
           className="min-w-[100px]"
         >
           {isAnalyzing ? (
@@ -55,8 +74,11 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
           )}
         </Button>
       </div>
+      {error && (
+        <p className="text-xs text-red-500 mt-1">{error}</p>
+      )}
       <p className="text-xs text-muted-foreground mt-1">
-        Enter your website URL so we can analyze it and suggest optimal ad campaign settings
+        Enter your website URL (with or without http://) so we can analyze it and suggest optimal ad campaign settings
       </p>
     </form>
   );

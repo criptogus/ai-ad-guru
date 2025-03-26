@@ -7,14 +7,20 @@ import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts
 export async function fetchWebsiteData(url: string) {
   try {
     // Ensure URL has protocol
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
+    let formattedUrl = url.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      // If the URL doesn't start with www, add it
+      if (!formattedUrl.startsWith('www.')) {
+        formattedUrl = 'www.' + formattedUrl;
+      }
+      // Add https protocol
+      formattedUrl = 'https://' + formattedUrl;
     }
     
-    console.log(`Fetching website: ${url}`);
+    console.log(`Fetching website: ${formattedUrl}`);
     
     // Fetch the website content
-    const response = await fetch(url, {
+    const response = await fetch(formattedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }

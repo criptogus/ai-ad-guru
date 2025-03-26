@@ -10,7 +10,7 @@ export const useWebsiteAnalysisActions = () => {
   
   // Properly implement the website analysis function
   const handleAnalyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
-    if (!url) {
+    if (!url || !url.trim()) {
       toast({
         title: "Error",
         description: "Please enter a website URL",
@@ -22,10 +22,17 @@ export const useWebsiteAnalysisActions = () => {
     setIsAnalyzing(true);
     
     try {
-      // Ensure URL has a protocol
-      let formattedUrl = url;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        formattedUrl = 'https://' + url;
+      // Format URL - ensure it has a protocol
+      let formattedUrl = url.trim();
+      
+      // If URL doesn't have a protocol and doesn't start with www, add www
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        // If the URL doesn't start with www, add it
+        if (!formattedUrl.startsWith('www.')) {
+          formattedUrl = 'www.' + formattedUrl;
+        }
+        // Add https protocol
+        formattedUrl = 'https://' + formattedUrl;
       }
       
       console.log('Calling analyze-website function with URL:', formattedUrl);
@@ -56,11 +63,11 @@ export const useWebsiteAnalysisActions = () => {
       });
       
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calling analyze-website function:', error);
       toast({
         title: "Analysis Failed",
-        description: "Failed to analyze website. Please try again.",
+        description: error.message || "Failed to analyze website. Please try again.",
         variant: "destructive",
       });
       return null;
