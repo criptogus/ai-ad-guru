@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MetaAdCard from "./meta/MetaAdCard";
-import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
+import { useState } from "react";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -28,9 +28,9 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   onUpdateMetaAd,
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
-  const [localAds, setLocalAds] = useState<MetaAd[]>([]);
+  const [localAds, setLocalAds] = useState<MetaAd[]>(metaAds);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setLocalAds(metaAds);
   }, [metaAds]);
 
@@ -44,8 +44,6 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     setLocalAds(newAds);
     onUpdateMetaAd(newAds);
     setEditingAdIndex(null);
-    
-    toast.success("Meta ad updated successfully");
   };
 
   const handleCancelEdit = () => {
@@ -55,9 +53,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
 
   const handleCopyAd = (ad: MetaAd) => {
     const text = `Headline: ${ad.headline}\n\nPrimary Text: ${ad.primaryText}\n\nDescription: ${ad.description}`;
-    
     navigator.clipboard.writeText(text);
-    toast.success("Meta ad text copied to clipboard");
   };
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
@@ -65,14 +61,6 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
       await onGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
-    }
-  };
-
-  const handleGenerateAds = async () => {
-    try {
-      await onGenerateAds();
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
     }
   };
 
@@ -87,7 +75,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                 Generate Instagram ads based on your website analysis.
               </p>
               <Button 
-                onClick={handleGenerateAds} 
+                onClick={onGenerateAds} 
                 disabled={isGenerating}
                 className="mt-2"
               >
@@ -97,7 +85,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                     Generating Ads...
                   </>
                 ) : (
-                  "Generate Instagram Ads"
+                  <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Generate Instagram Ads
+                  </>
                 )}
               </Button>
               <div className="text-xs text-muted-foreground mt-2">
@@ -113,7 +104,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleGenerateAds}
+              onClick={onGenerateAds}
               disabled={isGenerating}
             >
               {isGenerating ? (
@@ -127,7 +118,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {localAds.map((ad, index) => (
               <MetaAdCard
                 key={index}

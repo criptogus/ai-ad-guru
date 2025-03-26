@@ -9,7 +9,7 @@ import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
 import MentalTriggersSection from "./ad-preview/MentalTriggersSection";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
@@ -148,11 +148,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-4">
-          <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
-        </CardContent>
-      </Card>
+      <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
     </div>
   );
 };

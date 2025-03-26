@@ -1,18 +1,16 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import CompanyInfoEditor from "./CompanyInfoEditor";
-import TargetAudienceEditor from "./TargetAudienceEditor";
-import KeywordsEditor from "./KeywordsEditor";
-import CtaEditor from "./CtaEditor";
-import UspEditor from "./UspEditor";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface AnalysisResultsProps {
   analysisResult: WebsiteAnalysisResult;
   onTextChange: (field: keyof WebsiteAnalysisResult, value: string) => void;
-  onArrayItemChange: (field: 'keywords' | 'callToAction' | 'uniqueSellingPoints', index: number, value: string) => void;
+  onArrayItemChange: (field: "keywords" | "callToAction" | "uniqueSellingPoints", index: number, value: string) => void;
   onNext: () => void;
 }
 
@@ -20,50 +18,111 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   analysisResult,
   onTextChange,
   onArrayItemChange,
-  onNext
+  onNext,
 }) => {
   return (
-    <div className="mt-6 space-y-6 rounded-lg border border-green-200 bg-green-50 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-green-700">
-          <CheckCircle size={20} />
-          <h3 className="font-medium text-lg">Analysis Complete</h3>
-        </div>
-        <Button 
-          onClick={onNext}
-          variant="default"
-          className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-        >
-          Next Step
-          <ArrowRight size={16} />
-        </Button>
+    <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="bg-card border-border">
+          <CardContent className="p-4 space-y-4">
+            <div>
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input
+                id="companyName"
+                value={analysisResult.companyName}
+                onChange={(e) => onTextChange("companyName", e.target.value)}
+                className="bg-background border-input"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="brandTone">Brand Tone</Label>
+              <Input
+                id="brandTone"
+                value={analysisResult.brandTone}
+                onChange={(e) => onTextChange("brandTone", e.target.value)}
+                className="bg-background border-input"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="targetAudience">Target Audience</Label>
+              <Textarea
+                id="targetAudience"
+                value={analysisResult.targetAudience}
+                onChange={(e) => onTextChange("targetAudience", e.target.value)}
+                className="bg-background border-input"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="businessDescription">Business Description</Label>
+              <Textarea
+                id="businessDescription"
+                value={analysisResult.businessDescription}
+                onChange={(e) => onTextChange("businessDescription", e.target.value)}
+                className="bg-background border-input"
+                rows={4}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4 space-y-4">
+            <div>
+              <Label>Keywords</Label>
+              <div className="space-y-2 mt-2">
+                {analysisResult.keywords.map((keyword, index) => (
+                  <div key={`keyword-${index}`} className="flex items-center gap-2">
+                    <Input
+                      value={keyword}
+                      onChange={(e) => onArrayItemChange("keywords", index, e.target.value)}
+                      className="bg-background border-input"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label>Unique Selling Points</Label>
+              <div className="space-y-2 mt-2">
+                {analysisResult.uniqueSellingPoints.map((usp, index) => (
+                  <div key={`usp-${index}`} className="flex items-center gap-2">
+                    <Input
+                      value={usp}
+                      onChange={(e) => onArrayItemChange("uniqueSellingPoints", index, e.target.value)}
+                      className="bg-background border-input"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label>Call To Action</Label>
+              <div className="space-y-2 mt-2">
+                {analysisResult.callToAction.map((cta, index) => (
+                  <div key={`cta-${index}`} className="flex items-center gap-2">
+                    <Input
+                      value={cta}
+                      onChange={(e) => onArrayItemChange("callToAction", index, e.target.value)}
+                      className="bg-background border-input"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CompanyInfoEditor 
-          analysisResult={analysisResult} 
-          onTextChange={onTextChange} 
-        />
-        
-        <TargetAudienceEditor 
-          targetAudience={analysisResult.targetAudience} 
-          onChange={(value) => onTextChange('targetAudience', value)} 
-        />
-        
-        <KeywordsEditor 
-          keywords={analysisResult.keywords} 
-          onKeywordChange={(index, value) => onArrayItemChange('keywords', index, value)} 
-        />
-        
-        <CtaEditor 
-          callToActions={analysisResult.callToAction} 
-          onCtaChange={(index, value) => onArrayItemChange('callToAction', index, value)} 
-        />
-        
-        <UspEditor 
-          uniqueSellingPoints={analysisResult.uniqueSellingPoints} 
-          onUspChange={(index, value) => onArrayItemChange('uniqueSellingPoints', index, value)} 
-        />
+
+      <div className="flex justify-end">
+        <Button onClick={onNext} className="mt-4">
+          Continue to Next Step
+        </Button>
       </div>
     </div>
   );
