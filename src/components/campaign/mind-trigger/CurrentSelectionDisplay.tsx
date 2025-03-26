@@ -15,11 +15,14 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
   const { getPlatformTriggers } = useTriggerData();
   
   const formatTrigger = (trigger: string) => {
-    if (!trigger) return "";
+    if (!trigger) return { name: "", description: "" };
     
     // Handle custom triggers (prefixed with "custom:")
     if (trigger.startsWith("custom:")) {
-      return trigger.substring(7); // Remove the "custom:" prefix
+      return { 
+        name: "Custom Template", 
+        description: trigger.substring(7) // Remove the "custom:" prefix
+      };
     }
     
     // Find the trigger in the platform's trigger list
@@ -44,19 +47,13 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
       <h3 className="text-md font-medium mb-2">Current Selection</h3>
       {selectedTrigger ? (
         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-          {typeof triggerObject === 'string' ? (
-            <p className="text-blue-800 dark:text-blue-300">{triggerObject}</p>
-          ) : (
-            <div className="space-y-2">
-              <Badge variant="secondary" className="mb-2">
-                {triggerObject.name}
-              </Badge>
-              {triggerObject.description && (
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  {triggerObject.description}
-                </p>
-              )}
-            </div>
+          <Badge variant="secondary" className="mb-2">
+            {triggerObject.name}
+          </Badge>
+          {triggerObject.description && (
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              {triggerObject.description}
+            </p>
           )}
         </div>
       ) : (

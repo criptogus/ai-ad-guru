@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     
     // Handle custom triggers (prefixed with "custom:")
     if (trigger.startsWith("custom:")) {
-      return trigger.substring(7); // Remove the "custom:" prefix
+      // Return just the first line of the custom trigger for display
+      const content = trigger.substring(7);
+      const firstLine = content.split('\n')[0];
+      return firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
     }
     
     // Format trigger_id to "Trigger Name"
@@ -119,8 +121,8 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
             <Sparkles className="h-4 w-4" />
             Active Mind Trigger
           </AlertTitle>
-          <AlertDescription className="text-blue-600 dark:text-blue-300 font-medium">
-            {formatMindTrigger(mindTrigger)}
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            <span className="font-medium">{formatMindTrigger(mindTrigger)}</span>
           </AlertDescription>
         </Alert>
       )}

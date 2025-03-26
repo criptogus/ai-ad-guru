@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 interface TemplateExamplesProps {
   platform: string;
-  onSelectTemplate?: (template: string) => void; // Add callback prop
+  onSelectTemplate?: (template: string) => void;
 }
 
 const TemplateExamples: React.FC<TemplateExamplesProps> = ({ 
@@ -13,6 +13,12 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
   onSelectTemplate
 }) => {
   const { getPlatformTemplates } = useTriggerData();
+  
+  const handleTemplateClick = (template: string) => {
+    if (onSelectTemplate) {
+      onSelectTemplate(template);
+    }
+  };
   
   return (
     <div className="mt-4">
@@ -23,11 +29,7 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({
             key={idx} 
             variant="ghost"
             className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal"
-            onClick={() => {
-              if (onSelectTemplate) {
-                onSelectTemplate(template);
-              }
-            }}
+            onClick={() => handleTemplateClick(template)}
           >
             {template}
           </Button>
