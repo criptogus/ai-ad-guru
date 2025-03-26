@@ -2,8 +2,9 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { InstagramTemplate } from "../instagram/InstagramTemplateGallery";
+import { categories } from "../instagram/templateData";
 
 interface TemplateVariablesFormProps {
   selectedTemplate: InstagramTemplate | null;
@@ -57,27 +58,13 @@ const TemplateVariablesForm: React.FC<TemplateVariablesFormProps> = ({
 };
 
 function getCategoryEmoji(categoryId: string): string {
-  const emojiMap: Record<string, string> = {
-    "urgency": "🔥",
-    "personal-branding": "👤",
-    "e-commerce": "🛍️",
-    "education": "📚",
-    "social": "💬"
-  };
-  
-  return emojiMap[categoryId] || "✨";
+  const category = categories.find(c => c.id === categoryId);
+  return category ? category.emoji : "✨";
 }
 
 function getCategoryName(categoryId: string): string {
-  const categoryMap: Record<string, string> = {
-    "urgency": "Urgency & Scarcity",
-    "personal-branding": "Personal Branding",
-    "e-commerce": "E-commerce / Retail",
-    "education": "Education / EdTech",
-    "social": "Social & Engagement",
-  };
-  
-  return categoryMap[categoryId] || categoryId;
+  const category = categories.find(c => c.id === categoryId);
+  return category ? category.name : categoryId;
 }
 
 export default TemplateVariablesForm;
