@@ -8,7 +8,7 @@ export interface MetaAdCardProps {
   analysisResult: WebsiteAnalysisResult;
   isEditing: boolean;
   isGeneratingImage: boolean;
-  loadingImageIndex?: number | null;
+  loadingImageIndex: number | null;
   onEdit: () => void;
   onSave: (updatedAd: MetaAd) => void;
   onCancel: () => void;
@@ -17,19 +17,19 @@ export interface MetaAdCardProps {
   onUpdate?: (updatedAd: MetaAd) => void;
 }
 
-export interface PreviewSectionProps {
-  ad: MetaAd;
-  companyName: string;
-  isGeneratingImage: boolean;
-  index: number;
-  loadingImageIndex?: number | null;
-  onGenerateImage: () => Promise<void>;
-  onUpdateAd?: (updatedAd: MetaAd) => void;
-}
-
 export interface EditorSectionProps {
   ad: MetaAd;
   isEditing: boolean;
   onUpdate: (updatedAd: MetaAd) => void;
   onSelectTrigger?: (trigger: string) => void;
+}
+
+export interface PreviewSectionProps {
+  ad: MetaAd;
+  companyName: string;
+  isGeneratingImage: boolean;
+  index: number;
+  loadingImageIndex: number | null;
+  onGenerateImage: () => Promise<void>;
+  onUpdateAd?: (updatedAd: MetaAd) => void;
 }

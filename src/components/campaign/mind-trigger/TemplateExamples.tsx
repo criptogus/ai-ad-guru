@@ -4,10 +4,13 @@ import { useTriggerData } from "./useTriggerData";
 
 interface TemplateExamplesProps {
   platform: string;
+  onSelectTemplate?: (template: string) => void; // Add callback prop
 }
 
-const TemplateExamples: React.FC<TemplateExamplesProps> = ({ platform }) => {
-  const [customTrigger, setCustomTrigger] = React.useState("");
+const TemplateExamples: React.FC<TemplateExamplesProps> = ({ 
+  platform,
+  onSelectTemplate
+}) => {
   const { getPlatformTemplates } = useTriggerData();
   
   return (
@@ -19,7 +22,9 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({ platform }) => {
             key={idx} 
             className="p-2 bg-background rounded border cursor-pointer hover:border-primary transition-colors"
             onClick={() => {
-              setCustomTrigger(template);
+              if (onSelectTemplate) {
+                onSelectTemplate(template);
+              }
             }}
           >
             {template}

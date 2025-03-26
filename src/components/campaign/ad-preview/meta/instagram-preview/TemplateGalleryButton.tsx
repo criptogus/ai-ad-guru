@@ -1,20 +1,36 @@
 
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
+import InstagramTemplateGallery from "../instagram-templates/InstagramTemplateGallery";
 
 interface TemplateGalleryButtonProps {
-  onClick: () => void;
+  onSelectTemplate: (template: string) => void;
 }
 
-const TemplateGalleryButton: React.FC<TemplateGalleryButtonProps> = ({ onClick }) => {
+const TemplateGalleryButton: React.FC<TemplateGalleryButtonProps> = ({
+  onSelectTemplate
+}) => {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
   return (
-    <button 
-      onClick={onClick}
-      className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded-md flex items-center gap-1 hover:bg-white dark:hover:bg-gray-700 transition-colors"
-    >
-      <ImageIcon className="h-3 w-3" />
-      Template
-    </button>
+    <>
+      <Button 
+        variant="outline" 
+        size="sm"
+        className="w-full mt-2"
+        onClick={() => setIsGalleryOpen(true)}
+      >
+        <ImageIcon className="h-4 w-4 mr-2" />
+        AI Template Gallery
+      </Button>
+      
+      <InstagramTemplateGallery 
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onSelectTemplate={onSelectTemplate}
+      />
+    </>
   );
 };
 

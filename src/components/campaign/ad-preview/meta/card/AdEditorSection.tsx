@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EditorSectionProps } from "./types";
 import { TriggerButtonInline } from "../../TriggerButtonInline";
+import TemplateGalleryButton from "../instagram-preview/TemplateGalleryButton";
 
 const AdEditorSection: React.FC<EditorSectionProps> = ({
   ad,
@@ -22,6 +23,11 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
     if (onSelectTrigger) {
       onSelectTrigger(trigger);
     }
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    // Update the ad's image prompt with the selected template
+    handleChange("imagePrompt", template);
   };
 
   return (
@@ -76,15 +82,20 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
       </div>
 
       {isEditing && (
-        <div>
-          <p className="text-sm font-medium mb-1">Image Prompt</p>
-          <Textarea 
-            value={ad.imagePrompt || ""} 
-            onChange={(e) => handleChange("imagePrompt", e.target.value)}
-            placeholder="Describe the image you want to generate"
-            rows={3}
-          />
-        </div>
+        <>
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-sm font-medium">Image Prompt</p>
+            </div>
+            <Textarea 
+              value={ad.imagePrompt || ""} 
+              onChange={(e) => handleChange("imagePrompt", e.target.value)}
+              placeholder="Describe the image you want to generate"
+              rows={3}
+            />
+            <TemplateGalleryButton onSelectTemplate={handleTemplateSelect} />
+          </div>
+        </>
       )}
     </div>
   );

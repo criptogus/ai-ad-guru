@@ -24,6 +24,15 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
   onNext,
 }) => {
   const [activeTab, setActiveTab] = React.useState(selectedPlatforms[0] || "google");
+  const [customTrigger, setCustomTrigger] = React.useState("");
+
+  const handleSelectTemplate = (template: string) => {
+    setCustomTrigger(template);
+    // If we want to automatically add it as a custom trigger
+    const updatedTriggers = { ...selectedTriggers };
+    updatedTriggers[activeTab] = `custom:${template.trim()}`;
+    onTriggersChange(updatedTriggers);
+  };
 
   return (
     <Card>
@@ -61,6 +70,7 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
 
               <TemplateExamples 
                 platform={platform} 
+                onSelectTemplate={handleSelectTemplate}
               />
 
               <CurrentSelectionDisplay 
