@@ -3,7 +3,7 @@ import React from "react";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import PlatformSelectionStep from "@/components/campaign/PlatformSelectionStep";
-import MindTriggerSelectionStep from "@/components/campaign/MindTriggerSelectionStep";
+import { MindTriggerSelectionStep } from "@/components/campaign/mind-trigger";
 import AdPreviewStep from "@/components/campaign/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
