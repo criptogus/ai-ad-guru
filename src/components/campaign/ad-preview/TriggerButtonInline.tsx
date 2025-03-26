@@ -14,7 +14,7 @@ interface TriggerButtonInlineProps {
   className?: string;
 }
 
-const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert, className = "" }) => {
+export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert, className = "" }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -47,6 +47,6 @@ const triggers = [
   { id: "exclusivity", text: "Exclusive Access" }
 ];
 
-// Export both as named export and default export
-export { TriggerButtonInline };
-export default TriggerButtonInline;
+// Create a named constant to export as default to ensure proper TypeScript compatibility
+const TriggerButtonInlineComponent = TriggerButtonInline;
+export default TriggerButtonInlineComponent;

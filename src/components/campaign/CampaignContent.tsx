@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -131,7 +132,7 @@ const CampaignContent: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="py-6 space-y-6">
       <CampaignContentHeader onBack={handleBack} currentStep={currentStep} />
       
       <StepIndicator 
@@ -141,7 +142,7 @@ const CampaignContent: React.FC = () => {
         completed={false} 
       />
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 shadow-sm">
+      <div className="bg-card dark:bg-card rounded-xl border p-4 sm:p-6 shadow-sm">
         {getStepContent()}
       </div>
       

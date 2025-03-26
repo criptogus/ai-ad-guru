@@ -7,9 +7,11 @@ import CampaignContent from "@/components/campaign/CampaignContent";
 const CreateCampaignPage: React.FC = () => {
   return (
     <AppLayout activePage="create-campaign">
-      <CampaignProvider>
-        <CampaignContent />
-      </CampaignProvider>
+      <div className="max-w-6xl mx-auto">
+        <CampaignProvider>
+          <CampaignContent />
+        </CampaignProvider>
+      </div>
     </AppLayout>
   );
 };
