@@ -27,10 +27,12 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
     descriptions: [
       "Create high-converting ads with our AI-powered platform. Save time and money.",
       "Get more leads and sales with automated ad generation and optimization."
-    ]
+    ],
+    displayPath: "ai-advertising/solutions",
+    siteLinks: ["Features", "Pricing", "Case Studies", "Support"]
   };
   
-  const mockMicrosoftAd = mockGoogleAd;
+  const mockMicrosoftAd = {...mockGoogleAd};
   
   // Create a mock MetaAd for use in the MetaAdTab
   const mockMetaAd: MetaAd = {
@@ -68,5 +70,4 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) =>
   );
 };
 
-// Add explicit default export
 export default AIInsightsCard;

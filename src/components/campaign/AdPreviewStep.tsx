@@ -17,7 +17,7 @@ interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  microsoftAds: any[];
+  microsoftAds: GoogleAd[];
   linkedInAds: MetaAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
@@ -28,7 +28,7 @@ interface AdPreviewStepProps {
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
-  onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   onNext: () => void;
   onBack: () => void;
@@ -225,13 +225,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 googleAds={googleAds}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={(updatedAds) => {
-                  googleAds.forEach((_, index) => {
-                    if (updatedAds[index]) {
-                      onUpdateGoogleAd(index, updatedAds[index]);
-                    }
-                  });
-                }}
+                onUpdateGoogleAd={(index, updatedAd) => onUpdateGoogleAd(index, updatedAd)}
                 analysisResult={analysisResult}
               />
             </TabsContent>
@@ -244,13 +238,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateMetaAds}
                 onGenerateImage={onGenerateImage}
-                onUpdateMetaAd={(updatedAds) => {
-                  metaAds.forEach((_, index) => {
-                    if (updatedAds[index]) {
-                      onUpdateMetaAd(index, updatedAds[index]);
-                    }
-                  });
-                }}
+                onUpdateMetaAd={(index, updatedAd) => onUpdateMetaAd(index, updatedAd)}
               />
             </TabsContent>
 
@@ -262,13 +250,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 loadingImageIndex={loadingImageIndex}
                 onGenerateAds={onGenerateLinkedInAds}
                 onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
-                onUpdateLinkedInAd={(updatedAds) => {
-                  linkedInAds.forEach((_, index) => {
-                    if (updatedAds[index]) {
-                      onUpdateLinkedInAd(index, updatedAds[index]);
-                    }
-                  });
-                }}
+                onUpdateLinkedInAd={(index, updatedAd) => onUpdateLinkedInAd(index, updatedAd)}
               />
             </TabsContent>
 
@@ -278,13 +260,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
                 analysisResult={analysisResult}
                 isGenerating={isGenerating}
                 onGenerateAds={onGenerateMicrosoftAds}
-                onUpdateMicrosoftAd={(updatedAds) => {
-                  microsoftAds.forEach((_, index) => {
-                    if (updatedAds[index]) {
-                      onUpdateMicrosoftAd(index, updatedAds[index]);
-                    }
-                  });
-                }}
+                onUpdateMicrosoftAd={(index, updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
               />
             </TabsContent>
           </Tabs>

@@ -1,4 +1,3 @@
-
 export interface GoogleAd {
   headline1: string;
   headline2: string;
@@ -8,9 +7,8 @@ export interface GoogleAd {
   finalUrl?: string;
   path1?: string;
   path2?: string;
-  // Add properties that are used in various components
-  headlines?: string[];
-  descriptions?: string[];
+  headlines: string[];
+  descriptions: string[];
   displayPath?: string;
   siteLinks?: string[];
 }
