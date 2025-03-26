@@ -4,13 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
 import { Sparkles } from "lucide-react";
 import { TemplateCard } from "./TemplateCard";
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 export interface InstagramTemplate {
   id: string;
@@ -148,35 +141,37 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
         />
       </div>
       
-      <div className="flex overflow-x-auto no-scrollbar pb-2 mb-6 gap-2">
-        <Button
-          variant={activeCategory === "all" ? "secondary" : "outline"}
-          size="sm"
-          className="text-xs whitespace-nowrap"
-          onClick={() => setActiveCategory("all")}
-        >
-          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-          All Templates
-        </Button>
-        
-        {categories.map((category) => (
+      <ScrollArea className="pb-4 mb-8">
+        <div className="flex gap-2.5 pb-2">
           <Button
-            key={category.id}
-            variant={activeCategory === category.id ? "secondary" : "outline"}
+            variant={activeCategory === "all" ? "secondary" : "outline"}
             size="sm"
             className="text-xs whitespace-nowrap"
-            onClick={() => setActiveCategory(category.id)}
+            onClick={() => setActiveCategory("all")}
           >
-            <span className="mr-1.5">{category.emoji}</span>
-            {category.name}
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            All Templates
           </Button>
-        ))}
-      </div>
+          
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={activeCategory === category.id ? "secondary" : "outline"}
+              size="sm"
+              className="text-xs whitespace-nowrap"
+              onClick={() => setActiveCategory(category.id)}
+            >
+              <span className="mr-1.5">{category.emoji}</span>
+              {category.name}
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
       
       {filteredTemplates.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {activeCategory !== "all" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTemplates.map((template) => (
                 <TemplateCard 
                   key={template.id}
@@ -193,13 +188,16 @@ const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({ onS
                 if (categoryTemplates.length === 0) return null;
                 
                 return (
-                  <div key={category.id} className="space-y-3">
+                  <div key={category.id} className="space-y-4 mb-10">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-semibold">{category.emoji} {category.name}</h4>
+                      <h4 className="text-base font-medium flex items-center">
+                        <span className="mr-2">{category.emoji}</span>
+                        {category.name}
+                      </h4>
                       <div className="h-px flex-1 bg-border"></div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {categoryTemplates.map((template) => (
                         <TemplateCard 
                           key={template.id}
