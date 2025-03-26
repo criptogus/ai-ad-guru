@@ -63,10 +63,11 @@ export const useAdGenerationActions = (
   // Convert LinkedInAds to MetaAds for compatibility
   const metaAds = convertToMetaAds(linkedInAds);
   
-  const { handleGenerateMetaAds } = useMetaAdActions(
+  const { handleGenerateMetaAds, handleGenerateImage: handleGenerateMetaImage } = useMetaAdActions(
     analysisResult,
     metaAds,
     (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "meta")),
+    generateAdImage,
     setCampaignData
   );
   
