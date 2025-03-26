@@ -100,6 +100,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
             <SelectContent>
               <SelectItem value="square">Square (1:1)</SelectItem>
               <SelectItem value="landscape">Landscape (1.91:1)</SelectItem>
+              <SelectItem value="portrait">Portrait (9:16)</SelectItem>
             </SelectContent>
           </Select>
         </div>

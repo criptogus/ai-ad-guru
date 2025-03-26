@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PromptTemplatesProps {
   onSelectPrompt: (prompt: string) => void;
@@ -44,27 +45,29 @@ const PromptTemplates: React.FC<PromptTemplatesProps> = ({ onSelectPrompt }) => 
   ];
 
   return (
-    <div className="space-y-2">
-      <Label className="text-sm">Quick Prompt Templates</Label>
-      <div className="grid grid-cols-1 gap-2">
-        {promptTemplates.map((template, idx) => (
-          <Button 
-            key={idx} 
-            variant="outline" 
-            size="sm" 
-            className="justify-start h-auto py-2 px-3 text-left w-full"
-            onClick={() => onSelectPrompt(template.prompt)}
-          >
-            <div className="w-full">
-              <p className="font-medium truncate">{template.name}</p>
-              <p className="text-xs text-muted-foreground break-words line-clamp-2">
-                {template.prompt}
-              </p>
-            </div>
-          </Button>
-        ))}
-      </div>
-    </div>
+    <Card className="border">
+      <CardContent className="p-4">
+        <Label className="text-sm font-medium mb-2 block">Quick Prompt Templates</Label>
+        <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
+          {promptTemplates.map((template, idx) => (
+            <Button 
+              key={idx} 
+              variant="outline" 
+              size="sm" 
+              className="justify-start h-auto py-2 px-3 text-left w-full"
+              onClick={() => onSelectPrompt(template.prompt)}
+            >
+              <div className="w-full">
+                <p className="font-medium truncate">{template.name}</p>
+                <p className="text-xs text-muted-foreground break-words line-clamp-2">
+                  {template.prompt}
+                </p>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

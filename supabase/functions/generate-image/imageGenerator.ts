@@ -10,15 +10,6 @@ interface ImageGenerationConfig {
 export async function generateImageWithGPT4o(config: ImageGenerationConfig): Promise<{ url: string, revisedPrompt?: string }> {
   const { prompt, imageFormat, openaiApiKey } = config;
   
-  // Determine image size based on requested format
-  let size = "1024x1024"; // Default square format
-  
-  if (imageFormat === "portrait") {
-    size = "1024x1792"; // Portrait format
-  } else if (imageFormat === "landscape") {
-    size = "1792x1024"; // Landscape format for LinkedIn (approximating 1200x627 ratio)
-  }
-  
   // Limit prompt length to 1000 characters as required by OpenAI API
   const MAX_PROMPT_LENGTH = 1000;
   const truncatedPrompt = prompt.length > MAX_PROMPT_LENGTH 
@@ -26,7 +17,7 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
     : prompt;
   
   console.log("Enhanced prompt (truncated):", truncatedPrompt);
-  console.log(`Image format: ${imageFormat}, size: ${size}`);
+  console.log(`Image format: ${imageFormat}`);
   console.log(`Original prompt length: ${prompt.length}, truncated to: ${truncatedPrompt.length}`);
   
   // Retry mechanism for OpenAI API
@@ -47,7 +38,7 @@ export async function generateImageWithGPT4o(config: ImageGenerationConfig): Pro
           messages: [
             {
               role: "user",
-              content: truncatedPrompt
+              content: `Generate an image for a ${imageFormat} format LinkedIn ad: ${truncatedPrompt}`
             }
           ],
           tools: [
