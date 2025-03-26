@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import MetaAdCard from "@/components/campaign/ad-preview/meta/card/MetaAdCard";
+import { MetaAdCard } from "./card";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -142,6 +142,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                 analysisResult={analysisResult}
                 isEditing={editingAdIndex === index}
                 isGeneratingImage={loadingImageIndex === index}
+                loadingImageIndex={loadingImageIndex}
                 onEdit={() => handleEditAd(index)}
                 onSave={(updatedAd) => handleSaveAd(index, updatedAd)}
                 onCancel={handleCancelEdit}
