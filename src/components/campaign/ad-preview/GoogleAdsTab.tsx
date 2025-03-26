@@ -48,6 +48,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               key={`google-ad-${index}`}
               ad={ad}
               index={index}
+              domain={domain}
               analysisResult={analysisResult}
               onUpdate={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
             />
