@@ -39,7 +39,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({ campaigns }) 
       
       {/* AI Insights in a full width row */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
-        <AIInsightsCard />
+        <AIInsightsCard campaignId="dashboard-insights" />
       </div>
     </div>
   );

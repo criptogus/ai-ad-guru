@@ -1,3 +1,3 @@
 
-export { AIInsightsCard } from './AIInsightsCard';
-export { default as default } from './AIInsightsCard';
+import AIInsightsCard from './AIInsightsCard';
+export default AIInsightsCard;

@@ -2,7 +2,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface AdActionsProps {
   onCreateABTest: () => void;

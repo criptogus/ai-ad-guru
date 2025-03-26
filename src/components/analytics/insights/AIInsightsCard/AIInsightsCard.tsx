@@ -2,32 +2,27 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import AIInsightsSuggestions from './AIInsightsSuggestions';
-import AdActions from './AdActions';
-import ControlsSection from './ControlsSection';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChatBubbleIcon, BarChartIcon } from '@radix-ui/react-icons';
-import GoogleAdTab from './tabs/GoogleAdTab';
-import MetaAdTab from './tabs/MetaAdTab';
-import MicrosoftAdTab from './tabs/MicrosoftAdTab';
+import { AIInsightsSuggestions } from './AIInsightsSuggestions';
+import { AdActions } from './AdActions';
+import { ControlsSection } from './ControlsSection';
+import { ChatBubbleIcon, BarChartIcon } from 'lucide-react';
+import { GoogleAdTab } from './tabs/GoogleAdTab';
+import { MetaAdTab } from './tabs/MetaAdTab';
+import { MicrosoftAdTab } from './tabs/MicrosoftAdTab';
 
 interface AIInsightsCardProps {
-  campaignId: string;
+  campaignId?: string; // Making campaignId optional to fix related errors
 }
 
-export interface SiteLink {
-  title: string;
-  link: string;
-}
-
-const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
+const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId = "campaign-1" }) => {
   const [selectedTab, setSelectedTab] = useState('insights');
   const [selectedPlatform, setSelectedPlatform] = useState('google');
   const [accepting, setAccepting] = useState(false);
   const [insights, setInsights] = useState(['Performance is below average compared to similar campaigns', 'CTR is 30% lower than the industry standard', 'Consider revising ad copy to highlight unique value propositions', 'Test different call-to-action phrases to improve engagement']);
 
   // Example sitelinks - corrected to match interface
-  const sitelinks: SiteLink[] = [
+  const sitelinks = [
     { title: "Our Services", link: "/services" },
     { title: "Pricing Plans", link: "/pricing" },
     { title: "Success Stories", link: "/testimonials" },
@@ -94,7 +89,10 @@ const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
               )}
             </div>
             
-            <AdActions />
+            <AdActions 
+              onCreateABTest={() => {}} 
+              onCopyAd={() => {}}
+            />
           </div>
         )}
         

@@ -159,7 +159,7 @@ const AIInsightsPage: React.FC = () => {
             </div>
             
             <div className="w-full">
-              <AIInsightsCard />
+              <AIInsightsCard campaignId="main-insights-page" />
             </div>
           </TabsContent>
           

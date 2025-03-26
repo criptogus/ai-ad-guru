@@ -66,7 +66,7 @@ export const useAdGenerationActions = (
   const { handleGenerateMetaAds } = useMetaAdActions(
     analysisResult,
     metaAds,
-    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "meta")) as any,
+    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "meta")),
     setCampaignData
   );
   
@@ -78,7 +78,8 @@ export const useAdGenerationActions = (
     analysisResult,
     metaAds,
     generateAdImage,
-    setCampaignData
+    setCampaignData,
+    2 // Adding missing argument (index parameter)
   );
 
   return {

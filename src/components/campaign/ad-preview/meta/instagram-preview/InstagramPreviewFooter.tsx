@@ -5,9 +5,10 @@ import { MetaAd } from '@/hooks/adGeneration';
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
+  companyName?: string;
 }
 
-const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad }) => {
+const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName = "yourcompany" }) => {
   return (
     <div className="px-3 pt-2">
       <div className="flex justify-between mb-2">
@@ -21,7 +22,7 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad }) =
       <div className="font-medium mb-1">1,234 likes</div>
       <div className="text-sm">
         <div className="mb-1">
-          <span className="font-medium mr-1">yourcompany</span>
+          <span className="font-medium mr-1">{companyName}</span>
           {ad.primaryText}
         </div>
         {ad.hashtags && ad.hashtags.length > 0 && (
