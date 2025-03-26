@@ -8,9 +8,11 @@ export interface GoogleAd {
   finalUrl?: string;
   path1?: string;
   path2?: string;
-  // Adding these properties to maintain compatibility with existing code
+  // Add properties that are used in various components
   headlines?: string[];
   descriptions?: string[];
+  displayPath?: string;
+  siteLinks?: string[];
 }
 
 export interface MetaAd {

@@ -39,7 +39,64 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       }
 
       console.log("Google ads generated:", data);
-      return data.ads as GoogleAd[];
+      // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
+      const processedAds = data.ads.map((ad: any) => {
+        const processedAd: GoogleAd = {
+          headline1: '',
+          headline2: '',
+          headline3: '',
+          description1: '',
+          description2: '',
+          headlines: [],
+          descriptions: []
+        };
+        
+        // Handle the case when we get headlines array
+        if (ad.headlines && Array.isArray(ad.headlines)) {
+          processedAd.headlines = [...ad.headlines];
+          processedAd.headline1 = ad.headlines[0] || '';
+          processedAd.headline2 = ad.headlines[1] || '';
+          processedAd.headline3 = ad.headlines[2] || '';
+        } 
+        // Handle the case when we get individual headline properties
+        else {
+          processedAd.headline1 = ad.headline1 || '';
+          processedAd.headline2 = ad.headline2 || '';
+          processedAd.headline3 = ad.headline3 || '';
+          processedAd.headlines = [
+            processedAd.headline1,
+            processedAd.headline2,
+            processedAd.headline3
+          ].filter(Boolean);
+        }
+        
+        // Handle the case when we get descriptions array
+        if (ad.descriptions && Array.isArray(ad.descriptions)) {
+          processedAd.descriptions = [...ad.descriptions];
+          processedAd.description1 = ad.descriptions[0] || '';
+          processedAd.description2 = ad.descriptions[1] || '';
+        } 
+        // Handle the case when we get individual description properties
+        else {
+          processedAd.description1 = ad.description1 || '';
+          processedAd.description2 = ad.description2 || '';
+          processedAd.descriptions = [
+            processedAd.description1,
+            processedAd.description2
+          ].filter(Boolean);
+        }
+        
+        // Copy other properties
+        if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
+        if (ad.path1) processedAd.path1 = ad.path1;
+        if (ad.path2) processedAd.path2 = ad.path2;
+        if (ad.displayPath) processedAd.displayPath = ad.displayPath;
+        if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
+        
+        return processedAd;
+      });
+      
+      return processedAds;
     } catch (error) {
       console.error("Error in generateGoogleAds:", error);
       toast({
@@ -153,7 +210,65 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
       }
 
       console.log("Microsoft ads generated:", data);
-      return data.ads as GoogleAd[];
+      
+      // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
+      const processedAds = data.ads.map((ad: any) => {
+        const processedAd: GoogleAd = {
+          headline1: '',
+          headline2: '',
+          headline3: '',
+          description1: '',
+          description2: '',
+          headlines: [],
+          descriptions: []
+        };
+        
+        // Handle the case when we get headlines array
+        if (ad.headlines && Array.isArray(ad.headlines)) {
+          processedAd.headlines = [...ad.headlines];
+          processedAd.headline1 = ad.headlines[0] || '';
+          processedAd.headline2 = ad.headlines[1] || '';
+          processedAd.headline3 = ad.headlines[2] || '';
+        } 
+        // Handle the case when we get individual headline properties
+        else {
+          processedAd.headline1 = ad.headline1 || '';
+          processedAd.headline2 = ad.headline2 || '';
+          processedAd.headline3 = ad.headline3 || '';
+          processedAd.headlines = [
+            processedAd.headline1,
+            processedAd.headline2,
+            processedAd.headline3
+          ].filter(Boolean);
+        }
+        
+        // Handle the case when we get descriptions array
+        if (ad.descriptions && Array.isArray(ad.descriptions)) {
+          processedAd.descriptions = [...ad.descriptions];
+          processedAd.description1 = ad.descriptions[0] || '';
+          processedAd.description2 = ad.descriptions[1] || '';
+        } 
+        // Handle the case when we get individual description properties
+        else {
+          processedAd.description1 = ad.description1 || '';
+          processedAd.description2 = ad.description2 || '';
+          processedAd.descriptions = [
+            processedAd.description1,
+            processedAd.description2
+          ].filter(Boolean);
+        }
+        
+        // Copy other properties
+        if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
+        if (ad.path1) processedAd.path1 = ad.path1;
+        if (ad.path2) processedAd.path2 = ad.path2;
+        if (ad.displayPath) processedAd.displayPath = ad.displayPath;
+        if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
+        
+        return processedAd;
+      });
+      
+      return processedAds;
     } catch (error) {
       console.error("Error in generateMicrosoftAds:", error);
       toast({

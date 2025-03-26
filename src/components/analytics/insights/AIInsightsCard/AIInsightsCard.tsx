@@ -14,6 +14,11 @@ interface AIInsightsCardProps {
 export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({ campaignId }) => {
   // This would normally come from an API call
   const mockGoogleAd: GoogleAd = {
+    headline1: "Boost Your Business Today",
+    headline2: "Professional AI Solutions",
+    headline3: "Smart Advertising Platform",
+    description1: "Create high-converting ads with our AI-powered platform. Save time and money.",
+    description2: "Get more leads and sales with automated ad generation and optimization.",
     headlines: [
       "Boost Your Business Today",
       "Professional AI Solutions",
