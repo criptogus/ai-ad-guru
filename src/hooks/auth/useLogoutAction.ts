@@ -2,28 +2,28 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CustomUser } from '@/types/auth';
 
-export const useLogoutAction = (setUser: (user: CustomUser | null) => void, navigate?: (path: string) => void) => {
+export const useLogoutAction = (
+  setUser: (user: any | null) => void, 
+  navigate?: (path: string) => void
+) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const logout = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        console.error('Logout error:', error);
-        throw error;
-      }
-
-      console.log('User logged out successfully');
+      await supabase.auth.signOut();
       setUser(null);
       
-      // Only navigate if the navigate function is provided
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+      
+      // Only navigate if navigate function is provided
       if (navigate) {
-        navigate('/login');
+        navigate('/auth/login');
       }
     } catch (error: any) {
       toast({
@@ -31,7 +31,6 @@ export const useLogoutAction = (setUser: (user: CustomUser | null) => void, navi
         description: error.message || "There was a problem logging out",
         variant: "destructive",
       });
-      throw error;
     } finally {
       setIsLoading(false);
     }

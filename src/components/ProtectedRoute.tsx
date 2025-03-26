@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingState } from '@/components/auth/LoadingState';
@@ -24,7 +24,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check if we're in a payment verification flow
   const isPaymentVerification = location.search.includes('session_id=');
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Skip authentication redirection during payment verification
     if (isPaymentVerification) {
       console.log('Payment verification in progress, bypassing authentication check');

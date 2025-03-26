@@ -6,13 +6,12 @@ import {
   Navigate,
   Outlet
 } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "@/components/ui/toaster";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PromptTemplatePage from './pages/PromptTemplatePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
 
 // Define auth layout
 const AuthLayout = () => {
@@ -38,7 +37,7 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: (
           <ProtectedRoute>
-            <div>Dashboard</div>
+            <DashboardPage />
           </ProtectedRoute>
         ),
       },
@@ -114,6 +113,22 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "billing",
+        element: (
+          <ProtectedRoute>
+            <div>Billing</div>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <div>Profile</div>
+          </ProtectedRoute>
+        ),
+      },
     ]
   },
   {
@@ -143,12 +158,10 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </LanguageProvider>
-    </AuthProvider>
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
   );
 }
 
