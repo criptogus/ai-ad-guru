@@ -26,9 +26,9 @@ export const useAdGenerationActions = (
   googleAds: GoogleAd[],
   linkedInAds: LinkedInAd[],
   microsoftAds: MicrosoftAd[],
-  generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>,
-  generateLinkedInAds: (campaignData: any) => Promise<LinkedInAd[] | null>,
-  generateMicrosoftAds: (campaignData: any) => Promise<MicrosoftAd[] | null>,
+  generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
+  generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<LinkedInAd[] | null>,
+  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<MicrosoftAd[] | null>,
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
@@ -60,7 +60,7 @@ export const useAdGenerationActions = (
   const { handleGenerateMetaAds } = useMetaAdActions(
     analysisResult,
     metaAds,
-    generateLinkedInAds, // Reuse LinkedIn ad generator for Meta/Instagram
+    generateLinkedInAds as any, // Reuse LinkedIn ad generator for Meta/Instagram
     setCampaignData
   );
   
