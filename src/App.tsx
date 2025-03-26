@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
@@ -37,14 +38,14 @@ function App() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       navigate('/login');
     }
-  }, [user, loading, navigate]);
+  }, [user, isLoading, navigate]);
 
   return user ? <>{children}</> : null;
 };
