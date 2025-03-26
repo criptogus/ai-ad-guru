@@ -9,6 +9,7 @@ import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import TestAdsPage from "./pages/TestAdsPage";
 import InstagramTemplateExamplePage from "./pages/InstagramTemplateExamplePage";
+import CreateCampaignPage from "./pages/CreateCampaignPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -30,7 +31,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/create-campaign" element={<CreateCampaignPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/test-ads" element={<TestAdsPage />} />
           <Route path="/template-example" element={<InstagramTemplateExamplePage />} />

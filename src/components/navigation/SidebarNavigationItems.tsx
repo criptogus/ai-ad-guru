@@ -74,7 +74,7 @@ export const SidebarNavigationItems: React.FC = () => {
     <div className="space-y-1 py-2">
       <NavigationItem
         to="/dashboard"
-        active={isActiveRoute("/dashboard")}
+        active={isActiveRoute("/dashboard") || pathname === "/"}
         icon={<Home />}
         label="Dashboard"
       />
