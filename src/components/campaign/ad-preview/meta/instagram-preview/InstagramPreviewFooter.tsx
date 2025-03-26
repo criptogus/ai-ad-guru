@@ -14,7 +14,7 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({
   return (
     <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
       <p className="line-clamp-1">
-        {ad.hashtags && ad.hashtags.map((tag, i) => (
+        {ad.hashtags && ad.hashtags.length > 0 && ad.hashtags.map((tag, i) => (
           <span key={i} className="text-blue-500 mr-1">#{tag}</span>
         ))}
       </p>

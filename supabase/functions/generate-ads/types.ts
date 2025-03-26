@@ -21,6 +21,7 @@ export interface LinkedInAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
+  format?: string;
 }
 
 export interface MetaAd {
@@ -29,6 +30,8 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
+  format?: string;
+  hashtags?: string[];
 }
 
 export interface MicrosoftAd {

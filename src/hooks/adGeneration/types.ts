@@ -22,6 +22,8 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
+  format?: string;
+  hashtags?: string[];
 }
 
 // Ad Generation Input

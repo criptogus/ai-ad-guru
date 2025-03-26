@@ -15,10 +15,8 @@ export const useMetaAdActions = (
   
   const handleGenerateMetaAds = async () => {
     if (!analysisResult) {
-      toast({
-        title: "Analysis Required",
-        description: "Please analyze a website before generating ads",
-        variant: "destructive",
+      toast.error("Analysis Required", {
+        description: "Please analyze a website before generating ads"
       });
       return;
     }
@@ -26,8 +24,7 @@ export const useMetaAdActions = (
     setIsGenerating(true);
     
     try {
-      toast({
-        title: "Generating Ads",
+      toast.info("Generating Ads", {
         description: "Creating Instagram/Meta ads based on your website analysis"
       });
       
@@ -41,8 +38,7 @@ export const useMetaAdActions = (
           metaAds: result
         }));
         
-        toast({
-          title: "Ads Generated",
+        toast.success("Ads Generated", {
           description: `Successfully created ${result.length} Instagram/Meta ads`
         });
       } else {
@@ -50,10 +46,8 @@ export const useMetaAdActions = (
       }
     } catch (error) {
       console.error("Error generating Meta ads:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Instagram/Meta ads",
-        variant: "destructive",
+      toast.error("Generation Failed", {
+        description: error instanceof Error ? error.message : "Failed to generate Instagram/Meta ads"
       });
     } finally {
       setIsGenerating(false);
