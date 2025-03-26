@@ -25,10 +25,11 @@ const LinkedInPreviewSection: React.FC<LinkedInPreviewSectionProps> = ({
         <div className="border border-gray-200 rounded-md overflow-hidden">
           <LinkedInAdPreview 
             ad={testAd}
-            company={companyInfo.companyName} 
-            followersCount="5,234"
+            analysisResult={companyInfo} 
             isGeneratingImage={isGenerating}
             onGenerateImage={onGenerateImage}
+            previewType="feed"
+            deviceView="desktop"
           />
         </div>
         <div className="mt-4 text-xs text-gray-500">
