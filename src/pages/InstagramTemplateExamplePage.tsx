@@ -1,19 +1,17 @@
 
 import React, { useState } from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import InstagramTemplateGallery, { InstagramTemplate } from "@/components/testing/instagram/InstagramTemplateGallery";
-import TemplateVariablesForm from "@/components/testing/meta/TemplateVariablesForm";
+import { InstagramTemplate } from "@/components/testing/instagram/InstagramTemplateGallery";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
+import TemplateGallerySection from "@/components/instagram/templates/TemplateGallerySection";
+import TemplateCustomizationForm from "@/components/instagram/templates/TemplateCustomizationForm";
+import GeneratedImagePreview from "@/components/instagram/templates/GeneratedImagePreview";
 
 const InstagramTemplateExamplePage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<InstagramTemplate | null>(null);
   const [mainText, setMainText] = useState("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("gallery");
   const { generateAdImage, isGenerating } = useImageGeneration();
 
   const handleSelectTemplate = (template: InstagramTemplate) => {
@@ -26,9 +24,6 @@ const InstagramTemplateExamplePage: React.FC = () => {
     } else {
       setMainText("");
     }
-    
-    // Stay on the gallery tab after selection
-    // We don't auto-switch tabs anymore to give users more space to browse templates
   };
 
   const handleGenerateImage = async () => {
@@ -57,8 +52,6 @@ const InstagramTemplateExamplePage: React.FC = () => {
         toast.success("Instagram ad image generated", {
           description: "5 credits were used for this AI-powered image generation"
         });
-        // Automatically switch to preview tab after successful generation
-        setActiveTab("preview");
       }
     } catch (error) {
       console.error("Error generating image:", error);
@@ -72,7 +65,6 @@ const InstagramTemplateExamplePage: React.FC = () => {
     setSelectedTemplate(null);
     setMainText("");
     setGeneratedImageUrl(null);
-    setActiveTab("gallery");
     toast.info("Selection reset");
   };
 
@@ -86,109 +78,32 @@ const InstagramTemplateExamplePage: React.FC = () => {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full">
-            <TabsTrigger value="gallery">Template Gallery</TabsTrigger>
-            <TabsTrigger value="preview" disabled={!generatedImageUrl}>Generated Preview</TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
+          {/* Template Gallery Section */}
+          <TemplateGallerySection onSelectTemplate={handleSelectTemplate} />
           
-          <TabsContent value="gallery">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select a Template</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InstagramTemplateGallery onSelectTemplate={handleSelectTemplate} />
-                </CardContent>
-              </Card>
-              
-              {selectedTemplate && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Customize & Generate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <TemplateVariablesForm
-                        selectedTemplate={selectedTemplate}
-                        mainText={mainText}
-                        setMainText={setMainText}
-                      />
-                      
-                      <div className="flex gap-3 pt-3">
-                        <Button 
-                          variant="outline" 
-                          onClick={handleReset}
-                        >
-                          Reset
-                        </Button>
-                        <Button
-                          onClick={handleGenerateImage}
-                          disabled={isGenerating}
-                        >
-                          {isGenerating ? "Generating..." : "Generate Image"}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
+          {/* Customization Form - Only shown when a template is selected */}
+          {selectedTemplate && (
+            <TemplateCustomizationForm
+              selectedTemplate={selectedTemplate}
+              mainText={mainText}
+              setMainText={setMainText}
+              isGenerating={isGenerating}
+              onGenerateImage={handleGenerateImage}
+              onReset={handleReset}
+            />
+          )}
           
-          <TabsContent value="preview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Generated Image</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    {generatedImageUrl ? (
-                      <div className="border rounded-md overflow-hidden">
-                        <img
-                          src={generatedImageUrl}
-                          alt="Generated Instagram Ad"
-                          className="w-full h-auto"
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-80 bg-muted/20 flex items-center justify-center text-muted-foreground rounded-md">
-                        No image generated yet
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2">Template Information</h3>
-                        {selectedTemplate && (
-                          <div className="space-y-4">
-                            <div>
-                              <p className="text-sm font-medium">Template</p>
-                              <p className="text-sm text-muted-foreground">{selectedTemplate.title}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">Customization</p>
-                              <p className="text-sm text-muted-foreground">{mainText || "[None]"}</p>
-                            </div>
-                            <div className="flex gap-3 pt-3">
-                              <Button variant="outline" onClick={handleReset}>
-                                Start Over
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          {/* Generated Image Preview - Only shown when an image has been generated */}
+          {generatedImageUrl && (
+            <GeneratedImagePreview
+              generatedImageUrl={generatedImageUrl}
+              selectedTemplate={selectedTemplate}
+              mainText={mainText}
+              onReset={handleReset}
+            />
+          )}
+        </div>
       </div>
     </SafeAppLayout>
   );
