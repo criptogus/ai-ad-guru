@@ -9,7 +9,7 @@ interface TriggerButtonInlineProps {
   className?: string;
 }
 
-const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
+export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   onInsert,
   className = "",
 }) => {

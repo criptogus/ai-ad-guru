@@ -1,33 +1,41 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Lightbulb } from "lucide-react";
-import TriggerGallery from "./TriggerGallery";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
+import TriggerGallery from './TriggerGallery';
 
 interface InsertTriggerButtonProps {
   onSelectTrigger: (trigger: string) => void;
+  buttonVariant?: 'default' | 'outline' | 'secondary';
+  buttonSize?: 'default' | 'sm' | 'lg';
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const InsertTriggerButton: React.FC<InsertTriggerButtonProps> = ({
   onSelectTrigger,
+  buttonVariant = 'default',
+  buttonSize = 'default',
+  className = '',
+  children
 }) => {
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(false);
+  
   return (
     <>
       <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5"
-        onClick={() => setIsGalleryOpen(true)}
+        variant={buttonVariant}
+        size={buttonSize}
+        className={className}
+        onClick={() => setIsOpen(true)}
       >
-        <Lightbulb className="h-4 w-4" />
-        Browse Mental Triggers
+        <Sparkles className="h-4 w-4 mr-2" />
+        {children || "Mental Triggers"}
       </Button>
       
-      <TriggerGallery
-        open={isGalleryOpen}
-        onOpenChange={setIsGalleryOpen}
+      <TriggerGallery 
+        open={isOpen}
+        onOpenChange={setIsOpen}
         onSelectTrigger={onSelectTrigger}
       />
     </>
