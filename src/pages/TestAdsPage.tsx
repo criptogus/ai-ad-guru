@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Goal, Globe } from "lucide-react";
+import { AlertCircle, Goal, Globe, ArrowRight } from "lucide-react";
 import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import ConnectionTestCard from "@/components/testing/ConnectionTestCard";
 import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
@@ -25,6 +26,12 @@ const TestAdsPage = () => {
             <h1 className="text-2xl font-bold">Ad Testing Area</h1>
             <p className="text-muted-foreground">Test API connections and ad generation</p>
           </div>
+          <Link 
+            to="/template-example" 
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            Template Examples <ArrowRight className="h-4 w-4 ml-1" />
+          </Link>
         </div>
 
         <Alert className="mb-6">
