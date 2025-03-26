@@ -61,7 +61,7 @@ const CampaignContent: React.FC = () => {
     try {
       setIsAnalyzing(true);
       const { data, error } = await supabase.functions.invoke("analyze-website", {
-        body: { websiteUrl },
+        body: { url: websiteUrl },
       });
 
       if (error) {
@@ -74,9 +74,19 @@ const CampaignContent: React.FC = () => {
         return null;
       }
 
+      if (!data.success) {
+        console.error("Analysis failed:", data.error);
+        toast({
+          title: "Analysis Failed",
+          description: data.error || "Failed to analyze website. Please check the URL and try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       // Add the website URL to the result
-      const result: WebsiteAnalysisResult = {
-        ...data,
+      const result = {
+        ...data.data,
         websiteUrl,
       };
 
