@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import { useWebsiteAnalysis, WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import { MetaAd } from "@/hooks/adGeneration";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
@@ -24,17 +24,16 @@ const MetaAdsTestArea: React.FC = () => {
   const { generateAdImage, isGenerating } = useImageGeneration();
   const { user } = useAuth();
   
-  // Company info state from website analysis, replaced with default data
-  const [companyInfo, setCompanyInfo] = useState({
+  // Company info state from website analysis, replaced with default data that matches WebsiteAnalysisResult type
+  const [companyInfo, setCompanyInfo] = useState<WebsiteAnalysisResult>({
     companyName: "Sample Company",
     brandTone: "Professional & Modern",
     targetAudience: "Business professionals, 30-45 years old",
-    uniqueSellingPoints: "Quality, Innovation, Reliability",
-    primaryKeywords: ["efficiency", "professional", "innovation"],
-    secondaryKeywords: ["time-saving", "productivity", "modern solution"],
-    businessDescription: "A leading provider of technology solutions", // Added missing properties
-    keywords: ["technology", "innovation", "solutions"], // Added missing properties
-    callToAction: ["Contact us today", "Learn more"] // Added missing properties
+    uniqueSellingPoints: ["Quality", "Innovation", "Reliability"], // Changed to array
+    keywords: ["efficiency", "professional", "innovation", "time-saving", "productivity", "modern solution"],
+    callToAction: ["Contact us today", "Learn more"],
+    businessDescription: "A leading provider of technology solutions",
+    websiteUrl: "https://example.com"
   });
   
   // Meta-specific image generation parameters
@@ -52,13 +51,16 @@ const MetaAdsTestArea: React.FC = () => {
 
   const handleReset = () => {
     setTestAd(defaultMetaAd);
+    // Reset with all required properties matching WebsiteAnalysisResult type
     setCompanyInfo({
       companyName: "Sample Company",
       brandTone: "Professional & Modern",
       targetAudience: "Business professionals, 30-45 years old",
-      uniqueSellingPoints: "Quality, Innovation, Reliability",
-      primaryKeywords: ["efficiency", "professional", "innovation"],
-      secondaryKeywords: ["time-saving", "productivity", "modern solution"]
+      uniqueSellingPoints: ["Quality", "Innovation", "Reliability"], // Array format
+      keywords: ["efficiency", "professional", "innovation", "time-saving", "productivity", "modern solution"],
+      callToAction: ["Contact us today", "Learn more"],
+      businessDescription: "A leading provider of technology solutions",
+      websiteUrl: "https://example.com"
     });
     toast.info("Test ad reset to default values");
   };
