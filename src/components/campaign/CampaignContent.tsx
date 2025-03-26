@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCampaign } from "@/contexts/CampaignContext";
@@ -114,7 +113,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateGoogleAds({
         ...analysisResult,
         ...campaignData,
-      });
+      }, mindTrigger);
       
       if (result) {
         setGoogleAds(result);
@@ -138,7 +137,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateMetaAds({
         ...analysisResult,
         ...campaignData,
-      });
+      }, mindTrigger);
       
       if (result) {
         setMetaAds(result);
@@ -162,7 +161,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateMicrosoftAds({
         ...analysisResult,
         ...campaignData,
-      });
+      }, mindTrigger);
       
       if (result) {
         setMicrosoftAds(result);
@@ -186,7 +185,7 @@ const CampaignContent: React.FC = () => {
       const result = await generateLinkedInAds({
         ...analysisResult,
         ...campaignData,
-      });
+      }, mindTrigger);
       
       if (result) {
         setLinkedInAds(result);
@@ -241,7 +240,7 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Handle ad updates - Changed to match the expected function signatures
+  // Update handlers to match the expected function signatures
   const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd): void => {
     const updatedAds = [...googleAds];
     updatedAds[index] = updatedAd;

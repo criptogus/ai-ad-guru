@@ -89,7 +89,8 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
   const handleAddCustomTrigger = () => {
     if (customTrigger.trim()) {
       const updatedTriggers = { ...selectedTriggers };
-      updatedTriggers[activeTab] = customTrigger.trim();
+      // Add a prefix to mark this as a custom trigger
+      updatedTriggers[activeTab] = `custom:${customTrigger.trim()}`;
       onTriggersChange(updatedTriggers);
       setCustomTrigger("");
     }
@@ -111,6 +112,19 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
 
   const getPlatformTemplates = (platformId: string) => {
     return templates[platformId as keyof typeof templates] || templates.google;
+  };
+
+  const getTriggerDescription = (platformId: string, triggerId: string) => {
+    if (!triggerId) return "";
+    
+    // Handle custom triggers
+    if (triggerId.startsWith("custom:")) {
+      return triggerId.substring(7);
+    }
+    
+    // Find the trigger in the platform's trigger list
+    const trigger = getPlatformTriggers(platformId).find(t => t.id === triggerId);
+    return trigger ? trigger.description : triggerId;
   };
 
   return (
@@ -135,7 +149,10 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
             <TabsContent key={platform} value={platform} className="space-y-4">
               <div>
                 <h3 className="text-md font-medium mb-2">Select a Mind Trigger</h3>
-                <Select value={selectedTriggers[platform] || ""} onValueChange={handleSelectTrigger}>
+                <Select 
+                  value={selectedTriggers[platform] || ""} 
+                  onValueChange={handleSelectTrigger}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a psychological trigger" />
                   </SelectTrigger>
@@ -188,9 +205,7 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
                 {selectedTriggers[platform] ? (
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
                     <p className="text-blue-800 dark:text-blue-300">
-                      {selectedTriggers[platform].startsWith("custom:") 
-                        ? selectedTriggers[platform].substring(7) 
-                        : getPlatformTriggers(platform).find(t => t.id === selectedTriggers[platform])?.description || selectedTriggers[platform]}
+                      {getTriggerDescription(platform, selectedTriggers[platform])}
                     </p>
                   </div>
                 ) : (
