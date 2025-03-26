@@ -1,14 +1,14 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdsTab from "./ad-preview/GoogleAdsTab";
 import MetaAdsTab from "./ad-preview/MetaAdsTab";
 import MicrosoftAdsTab from "./ad-preview/MicrosoftAdsTab";
 import LinkedInAdsTab from "./ad-preview/LinkedInAdsTab";
+import MentalTriggersSection from "./ad-preview/MentalTriggersSection";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
@@ -18,7 +18,6 @@ interface AdPreviewStepProps {
   linkedInAds: MetaAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
-  // Updated return types to Promise<void> for consistency
   onGenerateGoogleAds: () => Promise<void>;
   onGenerateMetaAds: () => Promise<void>;
   onGenerateMicrosoftAds: () => Promise<void>;
@@ -37,7 +36,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   googleAds,
   metaAds,
   microsoftAds,
-  linkedInAds = [], // Default to empty array
+  linkedInAds,
   isGenerating,
   loadingImageIndex,
   onGenerateGoogleAds,
@@ -52,104 +51,80 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onNext,
   onBack,
 }) => {
-  const [currentTab, setCurrentTab] = useState<string>("google");
-  
-  // Check which platforms have ads or need to be generated
-  const hasGoogleAds = googleAds.length > 0;
-  const hasMetaAds = metaAds.length > 0;
-  const hasMicrosoftAds = microsoftAds.length > 0;
-  const hasLinkedInAds = linkedInAds.length > 0;
-  
-  const hasAnyAds = hasGoogleAds || hasMetaAds || hasMicrosoftAds || hasLinkedInAds;
+  const [activeTab, setActiveTab] = useState("google");
+  const { toast } = useToast();
+
+  const handleSelectTrigger = (trigger: string) => {
+    // Copy to clipboard
+    navigator.clipboard.writeText(trigger);
+    
+    toast({
+      title: "Trigger copied to clipboard",
+      description: "Paste it into any ad text field to use it",
+    });
+  };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Ad Previews</CardTitle>
-        <CardDescription>
-          Generate and preview your ads across different platforms
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="google">Google Ads</TabsTrigger>
-            <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
-            <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
-            <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="google">
-            <GoogleAdsTab
-              googleAds={googleAds}
-              isGenerating={isGenerating}
-              onGenerateAds={onGenerateGoogleAds}
-              onUpdateGoogleAd={(updatedAds) => {
-                updatedAds.forEach((ad, index) => {
-                  onUpdateGoogleAd(index, ad);
-                });
-              }}
-              analysisResult={analysisResult}
-            />
-          </TabsContent>
-          
-          <TabsContent value="meta">
-            <MetaAdsTab
-              metaAds={metaAds}
-              isGenerating={isGenerating}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateAds={onGenerateMetaAds}
-              onGenerateImage={onGenerateImage}
-              onUpdateMetaAd={(updatedAds) => {
-                updatedAds.forEach((ad, index) => {
-                  onUpdateMetaAd(index, ad);
-                });
-              }}
-              analysisResult={analysisResult}
-            />
-          </TabsContent>
-          
-          <TabsContent value="linkedin">
-            <LinkedInAdsTab
-              linkedInAds={linkedInAds}
-              analysisResult={analysisResult}
-              isGenerating={isGenerating}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateAds={onGenerateLinkedInAds}
-              onGenerateImage={onGenerateImage}
-              onUpdateLinkedInAd={(updatedAds) => {
-                updatedAds.forEach((ad, index) => {
-                  onUpdateLinkedInAd(index, ad);
-                });
-              }}
-            />
-          </TabsContent>
-          
-          <TabsContent value="microsoft">
-            <MicrosoftAdsTab
-              microsoftAds={microsoftAds}
-              isGenerating={isGenerating}
-              onGenerateAds={onGenerateMicrosoftAds}
-              onUpdateMicrosoftAd={(updatedAds) => {
-                updatedAds.forEach((ad, index) => {
-                  onUpdateMicrosoftAd(index, ad);
-                });
-              }}
-              analysisResult={analysisResult}
-            />
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full mb-6">
+              <TabsTrigger value="google">Google Ads</TabsTrigger>
+              <TabsTrigger value="meta">Meta Ads</TabsTrigger>
+              <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
+              <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
+            </TabsList>
 
-        <div className="flex justify-between pt-4 border-t">
-          <Button variant="outline" onClick={onBack}>
-            Back
-          </Button>
-          <Button onClick={onNext} disabled={!hasAnyAds}>
-            Next Step
-          </Button>
+            <TabsContent value="google" className="mt-0">
+              <GoogleAdsTab
+                googleAds={googleAds}
+                isGenerating={isGenerating}
+                onGenerateAds={onGenerateGoogleAds}
+                onUpdateAd={onUpdateGoogleAd}
+              />
+            </TabsContent>
+
+            <TabsContent value="meta" className="mt-0">
+              <MetaAdsTab
+                metaAds={metaAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                loadingImageIndex={loadingImageIndex}
+                onGenerateAds={onGenerateMetaAds}
+                onGenerateImage={onGenerateImage}
+                onUpdateAd={onUpdateMetaAd}
+              />
+            </TabsContent>
+
+            <TabsContent value="linkedin" className="mt-0">
+              <LinkedInAdsTab
+                linkedInAds={linkedInAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                loadingImageIndex={loadingImageIndex}
+                onGenerateAds={onGenerateLinkedInAds}
+                onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
+                onUpdateAd={onUpdateLinkedInAd}
+              />
+            </TabsContent>
+
+            <TabsContent value="microsoft" className="mt-0">
+              <MicrosoftAdsTab
+                microsoftAds={microsoftAds}
+                isGenerating={isGenerating}
+                onGenerateAds={onGenerateMicrosoftAds}
+                onUpdateAd={onUpdateMicrosoftAd}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="space-y-6">
+          <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
+        </div>
+      </div>
+    </div>
   );
 };
 
