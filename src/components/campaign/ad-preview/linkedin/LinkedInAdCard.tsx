@@ -110,7 +110,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
         />
         
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 p-4 rounded-md">
+          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md">
             <LinkedInAdPreview 
               ad={isEditing ? localAd : ad}
               analysisResult={analysisResult}
@@ -119,6 +119,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
               imageFormat={imageFormat}
               previewType={previewType}
               deviceView={deviceView}
+              onUpdateAd={handleUpdateAd}
             />
           </div>
           

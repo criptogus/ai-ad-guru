@@ -4,6 +4,8 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInImageDisplay from "./LinkedInImageDisplay";
 import { ThumbsUp, MessageSquare, Repeat2, Send } from "lucide-react";
+import { AdTemplate } from "../template-gallery/TemplateGallery";
+import { toast } from "sonner";
 
 interface LinkedInAdPreviewProps {
   ad: MetaAd;
@@ -13,6 +15,7 @@ interface LinkedInAdPreviewProps {
   imageFormat?: string;
   previewType?: "feed" | "sidebar" | "message";
   deviceView?: "desktop" | "mobile";
+  onUpdateAd?: (updatedAd: MetaAd) => void;
 }
 
 const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
@@ -23,6 +26,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   imageFormat = "landscape",
   previewType = "feed",
   deviceView = "desktop",
+  onUpdateAd
 }) => {
   const companyName = analysisResult.companyName || "Your Company";
   
@@ -39,6 +43,23 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   
   const getDeviceClass = () => {
     return deviceView === "mobile" ? "text-sm" : "text-base";
+  };
+  
+  const handleTemplateSelect = (template: AdTemplate) => {
+    if (!onUpdateAd) return;
+    
+    // Update the ad with the template information
+    onUpdateAd({
+      ...ad,
+      imagePrompt: template.prompt,
+      format: template.dimensions.width > template.dimensions.height ? "landscape" : "square"
+    });
+    
+    // Generate new image based on the template
+    if (onGenerateImage) {
+      toast.info(`Generating image using "${template.name}" template`);
+      onGenerateImage();
+    }
   };
   
   return (
@@ -69,6 +90,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
         isGeneratingImage={isGeneratingImage}
         onGenerateImage={onGenerateImage}
         format={imageFormat}
+        onTemplateSelect={handleTemplateSelect}
       />
       
       {/* Headline and description */}

@@ -1,12 +1,14 @@
 
 import React, { useState, useRef } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
+import { AdTemplate } from "../template-gallery/TemplateGallery";
 import InstagramPreviewHeader from "./instagram-preview/InstagramPreviewHeader";
 import ImageContent from "./instagram-preview/ImageContent";
 import TextContent from "./instagram-preview/TextContent";
 import ActionBar from "./instagram-preview/ActionBar";
 import InstagramPreviewFooter from "./instagram-preview/InstagramPreviewFooter";
 import ImageUploadHandler from "./instagram-preview/ImageUploadHandler";
+import { toast } from "sonner";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
@@ -48,11 +50,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       const localUrl = URL.createObjectURL(file);
       
       // Update the ad with the new image URL
-      // We need to update the type for MetaAd to include imageFile property
       onUpdateAd({
         ...ad,
         imageUrl: localUrl,
-        // We'll handle the imageFile separately since it's not part of the MetaAd type
       });
 
     } catch (error) {
@@ -63,6 +63,24 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       if (event.target) {
         event.target.value = '';
       }
+    }
+  };
+
+  const handleTemplateSelect = (template: AdTemplate) => {
+    if (!onUpdateAd) return;
+    
+    // Update the ad with the template information
+    onUpdateAd({
+      ...ad,
+      imagePrompt: template.prompt,
+      format: template.dimensions.width === template.dimensions.height ? "square" : 
+              template.dimensions.width > template.dimensions.height ? "landscape" : "portrait"
+    });
+    
+    // Generate new image based on the template
+    if (onGenerateImage) {
+      toast.info(`Generating image using "${template.name}" template`);
+      onGenerateImage();
     }
   };
 
@@ -78,6 +96,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}
         format={ad.format || "feed"}
+        onTemplateSelect={handleTemplateSelect}
       />
       
       <div className="p-3">
