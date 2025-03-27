@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -66,79 +65,90 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         mindTrigger
       };
 
-      const { data, error } = await supabase.functions.invoke('generate-ads', {
-        body: request
-      });
+      // Using try-catch to better handle edge function errors
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-ads', {
+          body: request
+        });
 
-      if (error) {
-        console.error("Error generating Google ads:", error);
-        throw error;
+        if (error) {
+          console.error("Error calling Edge Function generate-ads:", error);
+          throw error;
+        }
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || "Failed to generate ads");
+        }
+
+        console.log("Google ads generated:", data);
+        
+        // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
+        const processedAds = data.data.map((ad: any) => {
+          const processedAd: GoogleAd = {
+            headline1: '',
+            headline2: '',
+            headline3: '',
+            description1: '',
+            description2: '',
+            headlines: [],
+            descriptions: []
+          };
+          
+          // Handle the case when we get headlines array
+          if (ad.headlines && Array.isArray(ad.headlines)) {
+            processedAd.headlines = [...ad.headlines];
+            processedAd.headline1 = ad.headlines[0] || '';
+            processedAd.headline2 = ad.headlines[1] || '';
+            processedAd.headline3 = ad.headlines[2] || '';
+          } 
+          // Handle the case when we get individual headline properties
+          else {
+            processedAd.headline1 = ad.headline1 || '';
+            processedAd.headline2 = ad.headline2 || '';
+            processedAd.headline3 = ad.headline3 || '';
+            processedAd.headlines = [
+              processedAd.headline1,
+              processedAd.headline2,
+              processedAd.headline3
+            ].filter(Boolean);
+          }
+          
+          // Handle the case when we get descriptions array
+          if (ad.descriptions && Array.isArray(ad.descriptions)) {
+            processedAd.descriptions = [...ad.descriptions];
+            processedAd.description1 = ad.descriptions[0] || '';
+            processedAd.description2 = ad.descriptions[1] || '';
+          } 
+          // Handle the case when we get individual description properties
+          else {
+            processedAd.description1 = ad.description1 || '';
+            processedAd.description2 = ad.description2 || '';
+            processedAd.descriptions = [
+              processedAd.description1,
+              processedAd.description2
+            ].filter(Boolean);
+          }
+          
+          // Copy other properties
+          if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
+          if (ad.path1) processedAd.path1 = ad.path1;
+          if (ad.path2) processedAd.path2 = ad.path2;
+          if (ad.displayPath) processedAd.displayPath = ad.displayPath;
+          if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
+          
+          return processedAd;
+        });
+        
+        return processedAds;
+      } catch (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
       }
-
-      console.log("Google ads generated:", data);
-      // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
-      const processedAds = data.data.map((ad: any) => {
-        const processedAd: GoogleAd = {
-          headline1: '',
-          headline2: '',
-          headline3: '',
-          description1: '',
-          description2: '',
-          headlines: [],
-          descriptions: []
-        };
-        
-        // Handle the case when we get headlines array
-        if (ad.headlines && Array.isArray(ad.headlines)) {
-          processedAd.headlines = [...ad.headlines];
-          processedAd.headline1 = ad.headlines[0] || '';
-          processedAd.headline2 = ad.headlines[1] || '';
-          processedAd.headline3 = ad.headlines[2] || '';
-        } 
-        // Handle the case when we get individual headline properties
-        else {
-          processedAd.headline1 = ad.headline1 || '';
-          processedAd.headline2 = ad.headline2 || '';
-          processedAd.headline3 = ad.headline3 || '';
-          processedAd.headlines = [
-            processedAd.headline1,
-            processedAd.headline2,
-            processedAd.headline3
-          ].filter(Boolean);
-        }
-        
-        // Handle the case when we get descriptions array
-        if (ad.descriptions && Array.isArray(ad.descriptions)) {
-          processedAd.descriptions = [...ad.descriptions];
-          processedAd.description1 = ad.descriptions[0] || '';
-          processedAd.description2 = ad.descriptions[1] || '';
-        } 
-        // Handle the case when we get individual description properties
-        else {
-          processedAd.description1 = ad.description1 || '';
-          processedAd.description2 = ad.description2 || '';
-          processedAd.descriptions = [
-            processedAd.description1,
-            processedAd.description2
-          ].filter(Boolean);
-        }
-        
-        // Copy other properties
-        if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
-        if (ad.path1) processedAd.path1 = ad.path1;
-        if (ad.path2) processedAd.path2 = ad.path2;
-        if (ad.displayPath) processedAd.displayPath = ad.displayPath;
-        if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
-        
-        return processedAd;
-      });
-      
-      return processedAds;
     } catch (error) {
       console.error("Error in generateGoogleAds:", error);
       toast({
         title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Google Ads",
+        description: error instanceof Error ? error.message : "Failed to generate Google Ads. Please try again.",
         variant: "destructive",
       });
       return null;
@@ -173,22 +183,32 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         mindTrigger
       };
 
-      const { data, error } = await supabase.functions.invoke('generate-ads', {
-        body: request
-      });
+      // Using try-catch to better handle edge function errors
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-ads', {
+          body: request
+        });
 
-      if (error) {
-        console.error("Error generating Meta ads:", error);
-        throw error;
+        if (error) {
+          console.error("Error calling Edge Function generate-ads:", error);
+          throw error;
+        }
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || "Failed to generate Meta ads");
+        }
+
+        console.log("Meta ads generated:", data);
+        return data.data as MetaAd[];
+      } catch (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
       }
-
-      console.log("Meta ads generated:", data);
-      return data.data as MetaAd[];
     } catch (error) {
       console.error("Error in generateMetaAds:", error);
       toast({
         title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Instagram/Meta Ads",
+        description: error instanceof Error ? error.message : "Failed to generate Instagram/Meta Ads. Please try again.",
         variant: "destructive",
       });
       return null;
@@ -223,22 +243,32 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         mindTrigger
       };
 
-      const { data, error } = await supabase.functions.invoke('generate-ads', {
-        body: request
-      });
+      // Using try-catch to better handle edge function errors
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-ads', {
+          body: request
+        });
 
-      if (error) {
-        console.error("Error generating LinkedIn ads:", error);
-        throw error;
+        if (error) {
+          console.error("Error calling Edge Function generate-ads:", error);
+          throw error;
+        }
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || "Failed to generate LinkedIn ads");
+        }
+
+        console.log("LinkedIn ads generated:", data);
+        return data.data as MetaAd[];
+      } catch (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
       }
-
-      console.log("LinkedIn ads generated:", data);
-      return data.data as MetaAd[];
     } catch (error) {
       console.error("Error in generateLinkedInAds:", error);
       toast({
         title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate LinkedIn Ads",
+        description: error instanceof Error ? error.message : "Failed to generate LinkedIn Ads. Please try again.",
         variant: "destructive",
       });
       return null;
@@ -273,80 +303,90 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         mindTrigger
       };
 
-      const { data, error } = await supabase.functions.invoke('generate-ads', {
-        body: request
-      });
+      // Using try-catch to better handle edge function errors
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-ads', {
+          body: request
+        });
 
-      if (error) {
-        console.error("Error generating Microsoft ads:", error);
-        throw error;
+        if (error) {
+          console.error("Error calling Edge Function generate-ads:", error);
+          throw error;
+        }
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || "Failed to generate Microsoft ads");
+        }
+
+        console.log("Microsoft ads generated:", data);
+        
+        // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
+        const processedAds = data.data.map((ad: any) => {
+          const processedAd: GoogleAd = {
+            headline1: '',
+            headline2: '',
+            headline3: '',
+            description1: '',
+            description2: '',
+            headlines: [],
+            descriptions: []
+          };
+          
+          // Handle the case when we get headlines array
+          if (ad.headlines && Array.isArray(ad.headlines)) {
+            processedAd.headlines = [...ad.headlines];
+            processedAd.headline1 = ad.headlines[0] || '';
+            processedAd.headline2 = ad.headlines[1] || '';
+            processedAd.headline3 = ad.headlines[2] || '';
+          } 
+          // Handle the case when we get individual headline properties
+          else {
+            processedAd.headline1 = ad.headline1 || '';
+            processedAd.headline2 = ad.headline2 || '';
+            processedAd.headline3 = ad.headline3 || '';
+            processedAd.headlines = [
+              processedAd.headline1,
+              processedAd.headline2,
+              processedAd.headline3
+            ].filter(Boolean);
+          }
+          
+          // Handle the case when we get descriptions array
+          if (ad.descriptions && Array.isArray(ad.descriptions)) {
+            processedAd.descriptions = [...ad.descriptions];
+            processedAd.description1 = ad.descriptions[0] || '';
+            processedAd.description2 = ad.descriptions[1] || '';
+          } 
+          // Handle the case when we get individual description properties
+          else {
+            processedAd.description1 = ad.description1 || '';
+            processedAd.description2 = ad.description2 || '';
+            processedAd.descriptions = [
+              processedAd.description1,
+              processedAd.description2
+            ].filter(Boolean);
+          }
+          
+          // Copy other properties
+          if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
+          if (ad.path1) processedAd.path1 = ad.path1;
+          if (ad.path2) processedAd.path2 = ad.path2;
+          if (ad.displayPath) processedAd.displayPath = ad.displayPath;
+          if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
+          
+          return processedAd;
+        });
+        
+        return processedAds;
+      } catch (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
       }
-
-      console.log("Microsoft ads generated:", data);
-      
-      // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
-      const processedAds = data.data.map((ad: any) => {
-        const processedAd: GoogleAd = {
-          headline1: '',
-          headline2: '',
-          headline3: '',
-          description1: '',
-          description2: '',
-          headlines: [],
-          descriptions: []
-        };
-        
-        // Handle the case when we get headlines array
-        if (ad.headlines && Array.isArray(ad.headlines)) {
-          processedAd.headlines = [...ad.headlines];
-          processedAd.headline1 = ad.headlines[0] || '';
-          processedAd.headline2 = ad.headlines[1] || '';
-          processedAd.headline3 = ad.headlines[2] || '';
-        } 
-        // Handle the case when we get individual headline properties
-        else {
-          processedAd.headline1 = ad.headline1 || '';
-          processedAd.headline2 = ad.headline2 || '';
-          processedAd.headline3 = ad.headline3 || '';
-          processedAd.headlines = [
-            processedAd.headline1,
-            processedAd.headline2,
-            processedAd.headline3
-          ].filter(Boolean);
-        }
-        
-        // Handle the case when we get descriptions array
-        if (ad.descriptions && Array.isArray(ad.descriptions)) {
-          processedAd.descriptions = [...ad.descriptions];
-          processedAd.description1 = ad.descriptions[0] || '';
-          processedAd.description2 = ad.descriptions[1] || '';
-        } 
-        // Handle the case when we get individual description properties
-        else {
-          processedAd.description1 = ad.description1 || '';
-          processedAd.description2 = ad.description2 || '';
-          processedAd.descriptions = [
-            processedAd.description1,
-            processedAd.description2
-          ].filter(Boolean);
-        }
-        
-        // Copy other properties
-        if (ad.finalUrl) processedAd.finalUrl = ad.finalUrl;
-        if (ad.path1) processedAd.path1 = ad.path1;
-        if (ad.path2) processedAd.path2 = ad.path2;
-        if (ad.displayPath) processedAd.displayPath = ad.displayPath;
-        if (ad.siteLinks) processedAd.siteLinks = ad.siteLinks;
-        
-        return processedAd;
-      });
-      
-      return processedAds;
     } catch (error) {
       console.error("Error in generateMicrosoftAds:", error);
       toast({
         title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Microsoft Ads",
+        description: error instanceof Error ? error.message : "Failed to generate Microsoft Ads. Please try again.",
         variant: "destructive",
       });
       return null;

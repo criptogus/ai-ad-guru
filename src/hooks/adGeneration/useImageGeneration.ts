@@ -27,18 +27,28 @@ export const useImageGeneration = () => {
       // Add style guidance
       enhancedPrompt += ` The image should be high-quality, well-composed, and visually appealing with good lighting and composition. No text overlay needed.`;
 
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: enhancedPrompt }
-      });
+      // Add error handling for edge function call
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-image', {
+          body: { prompt: enhancedPrompt }
+        });
 
-      if (error) {
-        console.error("Error generating image:", error);
-        setLastError(error.message || "Error generating image");
-        throw error;
+        if (error) {
+          console.error("Error invoking generate-image function:", error);
+          setLastError(error.message || "Error generating image");
+          throw error;
+        }
+
+        if (!data || !data.imageUrl) {
+          throw new Error("No image URL returned from image generation");
+        }
+
+        // Return the URL of the generated image
+        return data.imageUrl;
+      } catch (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
       }
-
-      // Return the URL of the generated image
-      return data.imageUrl;
     } catch (error) {
       console.error("Image generation error:", error);
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";

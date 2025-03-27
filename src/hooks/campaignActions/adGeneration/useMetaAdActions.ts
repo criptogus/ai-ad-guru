@@ -48,7 +48,7 @@ export const useMetaAdActions = (
     } catch (error) {
       console.error("Error generating Meta ads:", error);
       toast("Ad Generation Failed", {
-        description: error instanceof Error ? error.message : "Failed to generate Instagram Ads"
+        description: error instanceof Error ? error.message : "Failed to generate Instagram Ads. Please check network connection and try again."
       });
     } finally {
       setIsGenerating(false);
@@ -73,6 +73,7 @@ export const useMetaAdActions = (
         platform: "instagram"
       };
       
+      console.log("Generating image with prompt:", ad.imagePrompt);
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (!imageUrl) {
@@ -95,7 +96,7 @@ export const useMetaAdActions = (
     } catch (error) {
       console.error("Error generating image:", error);
       toast("Image Generation Failed", {
-        description: error instanceof Error ? error.message : "Failed to generate image"
+        description: error instanceof Error ? error.message : "Failed to generate image. Please check network connection and try again."
       });
     } finally {
       setLoadingImageIndex(null);

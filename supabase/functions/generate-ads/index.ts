@@ -17,7 +17,39 @@ serve(async (req) => {
   }
 
   try {
-    const { platform, campaignData, mindTrigger } = await req.json();
+    // Parse the request body
+    let reqBody;
+    try {
+      reqBody = await req.json();
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Invalid request body format",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { platform, campaignData, mindTrigger } = reqBody;
+    
+    if (!platform || !campaignData) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Missing required parameters: platform and campaignData",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    
     console.log(`Generating ads for platform: ${platform}`);
     console.log(`With mind trigger: ${mindTrigger || "None"}`);
     console.log(`Campaign data: ${JSON.stringify(campaignData).substring(0, 200)}...`);
@@ -58,7 +90,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
+        error: error.message || "Unknown error occurred",
       }),
       {
         status: 500,
