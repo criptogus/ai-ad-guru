@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,7 +24,6 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
           Start Date <span className="text-red-500 ml-1">*</span>
         </Label>
         <DatePicker
-          id="startDate"
           date={campaignData.startDate ? new Date(campaignData.startDate) : null}
           onSelect={(date) => handleDateChange("startDate", date)}
           className={errors.startDate ? "border-red-500" : ""}
@@ -38,7 +36,6 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
           End Date (Optional)
         </Label>
         <DatePicker
-          id="endDate"
           date={campaignData.endDate ? new Date(campaignData.endDate) : null}
           onSelect={(date) => handleDateChange("endDate", date)}
         />

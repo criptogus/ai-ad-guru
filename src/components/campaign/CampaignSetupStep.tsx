@@ -1,16 +1,20 @@
-
 import React, { useState, useEffect } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoCircle } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 
 import BasicInfoTab from "./setup/BasicInfoTab";
 import AudienceTab from "./setup/AudienceTab";
 import ScheduleTab from "./setup/ScheduleTab";
-import { ScheduleData } from "@/types/campaign";
+
+interface ScheduleData {
+  startDate?: Date | null;
+  endDate?: Date | null;
+  optimizationFrequency?: string;
+}
 
 const requiredFields = {
   basic: ["name", "description", "targetUrl", "budget", "objective"],
@@ -42,14 +46,12 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
-  // Initialize with website URL if available
   useEffect(() => {
     if (analysisResult?.websiteUrl && !campaignData.targetUrl) {
       handleUpdateCampaignData({ targetUrl: analysisResult.websiteUrl });
     }
   }, [analysisResult]);
 
-  // Validate fields whenever campaignData changes
   useEffect(() => {
     validateFields();
   }, [campaignData, touchedFields]);
@@ -62,7 +64,6 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
       schedule: true
     };
 
-    // Validate all required fields
     Object.entries(requiredFields).forEach(([tab, fields]) => {
       fields.forEach(field => {
         const value = campaignData[field];
@@ -77,7 +78,6 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
       });
     });
 
-    // Additional budget validation
     if (campaignData.budget && Number(campaignData.budget) <= 0) {
       newErrors.budget = "Budget must be greater than 0";
       newIsValid.basic = false;
@@ -181,7 +181,7 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
 
         {!isFormValid && Object.values(touchedFields).some(Boolean) && (
           <Alert variant="destructive" className="mt-4">
-            <InfoCircle className="h-4 w-4" />
+            <InfoIcon className="h-4 w-4" />
             <AlertDescription>
               Please fill in all required fields to proceed
             </AlertDescription>

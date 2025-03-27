@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InfoCircle } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { FormError } from "./FormError";
 
 interface BasicInfoTabProps {
@@ -26,7 +26,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
         <Label htmlFor="name" className="flex items-center">
           Campaign Name <span className="text-red-500 ml-1">*</span>
           <div className="ml-2 text-muted-foreground hover:text-foreground cursor-help">
-            <InfoCircle className="h-4 w-4" />
+            <InfoIcon className="h-4 w-4" />
           </div>
         </Label>
         <Input
