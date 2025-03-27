@@ -77,3 +77,88 @@ export const checkCreditsForAction = async (
     return { hasEnoughCredits: false, currentCredits: 0, requiredCredits: 0 };
   }
 };
+
+// New function to check user credits (simplified version)
+export const checkUserCredits = async (userId: string, requiredCredits: number): Promise<boolean> => {
+  try {
+    // Get current user credits
+    const { data: user, error } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error("Error checking user credits:", error);
+      return false;
+    }
+    
+    const currentCredits = user?.credits || 0;
+    return currentCredits >= requiredCredits;
+    
+  } catch (error) {
+    console.error("Error in checkUserCredits:", error);
+    return false;
+  }
+};
+
+// New function to deduct credits from user
+export const deductUserCredits = async (
+  userId: string, 
+  amount: number, 
+  action: CreditAction | string,
+  description: string
+): Promise<boolean> => {
+  try {
+    // Get current user credits
+    const { data: user, error } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error("Error getting user credits:", error);
+      return false;
+    }
+    
+    const currentCredits = user?.credits || 0;
+    
+    if (currentCredits < amount) {
+      console.error("Not enough credits");
+      return false;
+    }
+    
+    // Update user credits
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ credits: currentCredits - amount })
+      .eq('id', userId);
+    
+    if (updateError) {
+      console.error("Error updating credits:", updateError);
+      return false;
+    }
+    
+    // Log credit usage
+    try {
+      // Try to log the credit usage to a credit_usage table if it exists
+      await supabase
+        .from('credit_usage')
+        .insert({
+          user_id: userId,
+          amount: amount,
+          action: action,
+          description: description,
+        });
+    } catch (logError) {
+      // If the table doesn't exist, just log to console
+      console.log("Credit usage logging not available:", logError);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in deductUserCredits:", error);
+    return false;
+  }
+};

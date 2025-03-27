@@ -1,75 +1,88 @@
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { addCredits } from "@/services/credits";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCreditsVerification = () => {
-  const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const { user, refreshUser } = useAuth();
   
   useEffect(() => {
-    // Check if there's a pending credit purchase in localStorage
     const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
-    if (!storedPurchaseIntent) return;
     
-    const processPurchase = async () => {
-      try {
-        setProcessing(true);
-        
-        // Parse the stored purchase intent
-        const purchaseIntent = JSON.parse(storedPurchaseIntent);
-        
-        // Call Supabase edge function to verify the payment
-        const { data, error } = await supabase.functions.invoke("verify-credit-purchase", {
-          body: { 
-            userId: purchaseIntent.userId,
-            timestamp: purchaseIntent.timestamp,
-            amount: purchaseIntent.amount,
-            price: purchaseIntent.price,
-            stripeLink: purchaseIntent.stripeLink
-          }
-        });
-        
-        if (error) {
-          throw new Error(`Payment verification failed: ${error.message}`);
-        }
-        
-        if (data?.verified) {
-          // Add the credits to the user's account
-          const success = await addCredits(
-            purchaseIntent.userId, 
-            purchaseIntent.amount, 
-            `Purchased ${purchaseIntent.amount} credits for $${purchaseIntent.price}`
-          );
+    if (storedPurchaseIntent && user) {
+      const verifyPurchase = async () => {
+        try {
+          setProcessing(true);
           
-          if (success) {
-            toast({
-              title: "Credits Purchase Successful!",
-              description: `${purchaseIntent.amount} credits have been added to your account.`,
-            });
+          // Get the stored purchase intent
+          const purchaseIntent = JSON.parse(storedPurchaseIntent);
+          const { amount, timestamp, sessionId } = purchaseIntent;
+          
+          // Check if the purchase is recent (within 24 hours)
+          const now = Date.now();
+          const isRecent = now - timestamp < 24 * 60 * 60 * 1000;
+          
+          if (!isRecent) {
+            console.log("Purchase intent is too old - ignoring");
+            localStorage.removeItem('credit_purchase_intent');
+            setProcessing(false);
+            return;
           }
-        } else {
-          console.log("Payment not verified:", data);
-          // Don't show an error message here - the payment might still be processing
+          
+          // Verify the purchase with the server
+          const { data, error } = await supabase.functions.invoke('verify-checkout-session', {
+            body: { sessionId }
+          });
+          
+          if (error) {
+            console.error("Error verifying checkout session:", error);
+            setProcessing(false);
+            return;
+          }
+          
+          if (data?.status === 'complete') {
+            console.log(`Adding ${amount} credits to user ${user.id}`);
+            
+            // Add credits to the user
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ 
+                credits: (user.credits || 0) + amount 
+              })
+              .eq('id', user.id);
+            
+            if (updateError) {
+              console.error("Error updating user credits:", updateError);
+            } else {
+              // Add credit usage record
+              await supabase.from('credit_usage').insert({
+                user_id: user.id,
+                amount: -amount, // Negative means credits added
+                action: 'credit_purchase',
+                description: `Purchased ${amount} credits`,
+              }).catch(err => console.error("Error logging credit purchase:", err));
+              
+              setVerified(true);
+              
+              // Clear the purchase intent
+              localStorage.removeItem('credit_purchase_intent');
+              
+              // Refresh the user data to show updated credits
+              refreshUser();
+            }
+          }
+        } catch (error) {
+          console.error("Error processing credit verification:", error);
+        } finally {
+          setProcessing(false);
         }
-        
-        // Clear the stored purchase intent regardless of outcome to prevent multiple processing
-        localStorage.removeItem('credit_purchase_intent');
-      } catch (error) {
-        console.error("Error processing credit purchase:", error);
-        toast({
-          title: "Error Processing Purchase",
-          description: "There was an error processing your credit purchase. Please contact support.",
-          variant: "destructive",
-        });
-      } finally {
-        setProcessing(false);
-      }
-    };
-    
-    processPurchase();
-  }, [toast]);
+      };
+      
+      verifyPurchase();
+    }
+  }, [user, refreshUser]);
   
-  return { processing };
+  return { processing, verified };
 };

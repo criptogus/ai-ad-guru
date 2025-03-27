@@ -1,184 +1,197 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CreditCard, Check } from "lucide-react";
+import { getCreditCosts } from "@/services/credits/creditCosts";
 
-interface PlanOption {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  credits: number;
-  popular?: boolean;
+interface CreditsPurchaseCardProps {
+  userId?: string;
+  currentCredits: number;
 }
 
-const planOptions: PlanOption[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    description: "Perfect for trying out the platform",
-    price: 49,
-    credits: 100
-  },
-  {
-    id: "pro",
-    name: "Professional",
-    description: "Most popular for small businesses",
-    price: 99,
-    credits: 250,
-    popular: true
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    description: "For agencies or multiple campaigns",
-    price: 249,
-    credits: 700
-  }
-];
-
-const CreditsPurchaseCard: React.FC = () => {
-  const { user } = useAuth();
+const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, currentCredits }) => {
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<string>("pro");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  const handlePurchase = async (planId: string) => {
-    if (!user) {
+  const handlePurchaseClick = async (amount: number, price: number) => {
+    if (!userId) {
       toast({
-        title: "Authentication required",
-        description: "Please log in to purchase credits.",
+        title: "Error",
+        description: "You need to be logged in to purchase credits",
         variant: "destructive",
       });
       return;
     }
     
-    setIsLoading(true);
-    
     try {
-      const response = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          userId: user.id,
-          planId: planId,
-          returnUrl: window.location.origin + "/billing"
-        }
+      setIsProcessing(true);
+      
+      // Create a checkout session
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          amount,
+          price,
+          productName: `${amount} Credits`,
+          successUrl: `${window.location.origin}/billing?success=true`,
+          cancelUrl: `${window.location.origin}/billing?canceled=true`,
+        }),
       });
       
-      if (response.error) {
-        throw new Error(response.error.message || "Failed to create checkout session");
+      const session = await response.json();
+      
+      if (session.error) {
+        throw new Error(session.error);
       }
       
-      if (!response.data?.url) {
-        throw new Error("No checkout URL returned");
-      }
+      // Store purchase intent in localStorage (to be used for verification later)
+      localStorage.setItem('credit_purchase_intent', JSON.stringify({
+        amount,
+        timestamp: Date.now(),
+        sessionId: session.id,
+      }));
       
-      // Redirect to Stripe Checkout
-      window.location.href = response.data.url;
+      // Redirect to Stripe checkout
+      window.location.href = session.url;
       
-    } catch (error: any) {
-      console.error("Checkout error:", error);
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
       toast({
-        title: "Error creating checkout",
-        description: error.message || "Could not create checkout session. Please try again.",
+        title: "Purchase Failed",
+        description: error instanceof Error ? error.message : "Failed to create checkout session",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
-  
-  const getPlan = (id: string) => planOptions.find(plan => plan.id === id);
-  const selectedPlanDetails = getPlan(selectedPlan);
   
   return (
     <Card>
       <CardHeader>
         <CardTitle>Purchase Credits</CardTitle>
         <CardDescription>
-          Choose a credit package to power your AI ad campaigns
+          Buy credits to use for AI-generated ad campaigns, image generation, and more
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {planOptions.map((plan) => (
-            <div 
-              key={plan.id}
-              className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                selectedPlan === plan.id 
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                  : 'hover:border-gray-300 dark:hover:border-gray-600'
-              } ${plan.popular ? 'relative' : ''}`}
-              onClick={() => setSelectedPlan(plan.id)}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                  Popular
+        <Tabs defaultValue="credits">
+          <TabsList className="grid w-full grid-cols-1">
+            <TabsTrigger value="credits">Credit Packs</TabsTrigger>
+          </TabsList>
+          <TabsContent value="credits" className="mt-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* Starter Pack */}
+              <Card className="relative border-2 hover:border-primary/50">
+                <CardHeader>
+                  <CardTitle>100 Credits</CardTitle>
+                  <CardDescription>Starter pack</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="text-3xl font-bold">$15</div>
+                  <div className="text-sm text-muted-foreground">15¢ per credit</div>
+                  <ul className="space-y-2 mt-4 text-sm">
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Create ~20 Google ads</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Generate ~20 Instagram images</span>
+                    </li>
+                  </ul>
+                  <Button 
+                    className="w-full mt-4" 
+                    onClick={() => handlePurchaseClick(100, 15)}
+                    disabled={isProcessing}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buy Credits
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Popular Pack */}
+              <Card className="relative border-2 border-primary">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full">
+                  MOST POPULAR
                 </div>
-              )}
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium">{plan.name}</h3>
-                  <div className="mt-1 text-2xl font-bold">${plan.price}</div>
-                </div>
-                {selectedPlan === plan.id && (
-                  <div className="h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
-                    <Check className="h-3 w-3 text-white" />
-                  </div>
-                )}
-              </div>
-              <div className="mt-1 text-sm text-muted-foreground">{plan.description}</div>
-              <div className="mt-2 flex items-center gap-1">
-                <span className="font-medium">{plan.credits}</span>
-                <span className="text-sm text-muted-foreground">credits</span>
-              </div>
+                <CardHeader>
+                  <CardTitle>500 Credits</CardTitle>
+                  <CardDescription>Popular pack</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="text-3xl font-bold">$50</div>
+                  <div className="text-sm text-muted-foreground">10¢ per credit</div>
+                  <ul className="space-y-2 mt-4 text-sm">
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Create ~100 Google ads</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Generate ~100 Instagram images</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>33% discount vs starter pack</span>
+                    </li>
+                  </ul>
+                  <Button 
+                    className="w-full mt-4" 
+                    onClick={() => handlePurchaseClick(500, 50)}
+                    disabled={isProcessing}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buy Credits
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Pro Pack */}
+              <Card className="relative border-2 hover:border-primary/50">
+                <CardHeader>
+                  <CardTitle>2000 Credits</CardTitle>
+                  <CardDescription>Professional pack</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="text-3xl font-bold">$150</div>
+                  <div className="text-sm text-muted-foreground">7.5¢ per credit</div>
+                  <ul className="space-y-2 mt-4 text-sm">
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Create ~400 Google ads</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>Generate ~400 Instagram images</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                      <span>50% discount vs starter pack</span>
+                    </li>
+                  </ul>
+                  <Button 
+                    className="w-full mt-4" 
+                    onClick={() => handlePurchaseClick(2000, 150)}
+                    disabled={isProcessing}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buy Credits
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
-          ))}
-        </div>
-        
-        {selectedPlanDetails && (
-          <div className="border rounded-lg p-4 mb-4">
-            <h3 className="font-medium">Plan Summary</h3>
-            <div className="mt-2 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan</span>
-                <span>{selectedPlanDetails.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Credits</span>
-                <span>{selectedPlanDetails.credits}</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 mt-2">
-                <span className="font-medium">Total</span>
-                <span className="font-medium">${selectedPlanDetails.price}.00</span>
-              </div>
-            </div>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      <CardFooter>
-        <Button 
-          className="w-full" 
-          size="lg"
-          disabled={isLoading || !selectedPlanDetails}
-          onClick={() => handlePurchase(selectedPlan)}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <CreditCard className="mr-2 h-4 w-4" />
-              Proceed to Checkout
-            </>
-          )}
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

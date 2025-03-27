@@ -31,11 +31,11 @@ export interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Editor" | "Viewer" | "Analyst";
+  role: UserRole;
   lastActive: string;
 }
 
-// User role type
+// User role type - Updated to match the enum in InviteUserModal
 export type UserRole = "Admin" | "Editor" | "Viewer" | "Analyst";
 
 // Role permissions type
