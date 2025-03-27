@@ -26,15 +26,7 @@ export const useCampaignSteps = (
   const handleNext = (data?: any) => {
     // Update data if provided but NEVER navigate automatically from data updates
     if (data) {
-      // Explicitly return false to prevent any navigation attempts
-      // EXCEPT for the platform selection step which needs special handling
-      if (currentStep === 2) {
-        // For platform selection, we WILL allow navigation to continue
-        // This is handled in the handleNextWrapper in CampaignContent
-        return false;
-      }
-      
-      // For all other steps, strictly prevent navigation when updating data
+      // This explicitly prevents navigation when updating data
       return false;
     }
     

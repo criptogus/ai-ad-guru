@@ -166,10 +166,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             Back
           </Button>
           <Button 
-            onClick={() => {
-              // Explicitly force navigation only from button click
-              onNext();
-            }}
+            onClick={onNext}
           >
             Next Step 
             <MoveRight className="ml-2 h-4 w-4" />

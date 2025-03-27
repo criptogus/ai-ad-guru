@@ -159,7 +159,15 @@ function parseAnalysisResponse(responseText: string, platform?: string): any {
         success: true,
         platform: platform || 'all',
         analysisText: responseText,
-        ...parsedData
+        demographics: parsedData.demographics || {
+          ageGroups: ["25-34", "35-44"],
+          gender: ["All"],
+          educationLevel: ["College", "Graduate"],
+          incomeLevel: ["Middle", "Upper-middle"]
+        },
+        interests: parsedData.interests || ["Digital Marketing", "Technology", "Business"],
+        painPoints: parsedData.painPoints || ["Time management", "ROI tracking", "Ad performance"],
+        decisionFactors: parsedData.decisionFactors || ["Cost effectiveness", "Ease of use", "Support"]
       };
     }
     

@@ -5,17 +5,17 @@ import { MentalTrigger } from './types';
 
 interface TriggerItemProps {
   trigger: MentalTrigger;
-  onSelect: (e: React.MouseEvent) => void;
+  onSelect: (e: React.MouseEvent, template: string) => void;
 }
 
 export const TriggerItem: React.FC<TriggerItemProps> = ({ trigger, onSelect }) => {
   const handleSelectClick = (e: React.MouseEvent) => {
-    // Prevent default browser behavior
+    // Prevent default browser behavior and bubbling
     e.preventDefault();
     e.stopPropagation();
     
-    // Call the onSelect callback
-    onSelect(e);
+    // Call the onSelect callback with the trigger template
+    onSelect(e, trigger.promptTemplate);
   };
   
   return (

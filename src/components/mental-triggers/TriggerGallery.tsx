@@ -51,7 +51,7 @@ const TriggerGallery: React.FC<TriggerGalleryProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    // Call the onSelectTrigger callback
+    // Call the onSelectTrigger callback with the prompt template
     onSelectTrigger(promptTemplate);
     
     // Close the dialog
@@ -59,7 +59,10 @@ const TriggerGallery: React.FC<TriggerGalleryProps> = ({
   };
   
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={onOpenChange}
+    >
       <DialogContent 
         className="sm:max-w-2xl max-h-[80vh] flex flex-col" 
         onPointerDownOutside={(e) => {
@@ -69,7 +72,7 @@ const TriggerGallery: React.FC<TriggerGalleryProps> = ({
           e.preventDefault();
         }}
         onEscapeKeyDown={(e) => {
-          e.preventDefault();
+          // We still want Escape to close the dialog
           onOpenChange(false);
         }}
       >
