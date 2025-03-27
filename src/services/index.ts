@@ -4,9 +4,14 @@ export * from './auth';
 export * from './billing';
 export * from './campaign';
 export * from './analytics';
-export * from './ads';
-export * from './media';
 export * from './credits';
+
+// Ads and media services (with explicit exports to avoid ambiguity)
+import * as adsService from './ads';
+export { adsService };
+
+import * as mediaService from './media';
+export { mediaService };
 
 // Shared libraries exports
 export * from './libs/supabase-client';
@@ -35,3 +40,9 @@ export {
   resendInvitation,
   revokeInvitation
 } from './team/invitations';
+
+// Export CreditUsage type to avoid import errors
+export type { CreditUsage } from './credits/creditHistory';
+
+// Export credit usage history function
+export { getCreditUsageHistory } from './credits/creditHistory';

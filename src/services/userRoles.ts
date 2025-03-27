@@ -1,8 +1,13 @@
 
-// Re-export from credits with different name to avoid ambiguity
-import { OptimizationCosts } from './credits/creditCosts';
+// Import types from creditCosts
+import { creditCosts } from './credits/creditCosts';
 
-export type { OptimizationCosts as CreditOptimizationCosts };
+// Define OptimizationCosts type explicitly
+export interface CreditOptimizationCosts {
+  daily: number;
+  every3Days: number;
+  weekly: number;
+}
 
 // Define user roles
 export type UserRole = 'admin' | 'editor' | 'viewer';

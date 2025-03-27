@@ -22,6 +22,7 @@ export const creditCosts = {
   // Smart banner costs
   'banner_generation': 5,      // Create AI-generated banner
   'banner_image': 3,           // Generate image for banner
+  'smart_banner': 5,           // Save smart banner to campaign
   
   // Campaign creation costs
   'campaign_creation': 5,      // Create and publish campaign
@@ -41,6 +42,48 @@ export type CreditAction = keyof typeof creditCosts;
  */
 export const getCreditCost = (action: CreditAction): number => {
   return creditCosts[action] || 0;
+};
+
+/**
+ * Optimization costs structure for the different frequencies
+ */
+export interface OptimizationCosts {
+  daily: number;
+  every3Days: number;
+  weekly: number;
+}
+
+/**
+ * Get all credit costs formatted for UI display
+ */
+export const getAllCreditCosts = () => {
+  return {
+    // Ad creation
+    googleAds: creditCosts.google_ads_generation,
+    metaAds: creditCosts.meta_ads_generation,
+    linkedInAds: creditCosts.linkedin_ads_generation,
+    microsoftAds: creditCosts.microsoft_ads_generation,
+    imageGeneration: creditCosts.image_generation,
+    
+    // Campaign costs
+    campaignCreation: creditCosts.campaign_creation,
+    websiteAnalysis: creditCosts.website_analysis,
+    
+    // Optimization costs
+    adOptimization: {
+      daily: creditCosts.daily_optimization,
+      every3Days: creditCosts.three_day_optimization,
+      weekly: creditCosts.weekly_optimization
+    },
+    
+    // Smart banner costs
+    smartBanner: creditCosts.banner_generation,
+    bannerImage: creditCosts.banner_image,
+    
+    // Others
+    advancedTargeting: creditCosts.advanced_targeting,
+    aiInsightsReport: creditCosts.performance_insights * 10 // Comprehensive report
+  };
 };
 
 /**

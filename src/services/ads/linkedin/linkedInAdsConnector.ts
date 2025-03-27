@@ -1,77 +1,80 @@
 
 /**
  * LinkedIn Ads Connector Service
- * Manages OAuth connection to LinkedIn Ads platform
+ * Handles OAuth and connection to LinkedIn Ads accounts
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
 
-export interface LinkedInOAuthCredentials {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
+export interface LinkedInOAuthConfig {
+  clientId: string;
+  redirectUri: string;
+  scope: string[];
 }
 
-export interface LinkedInConnectionStatus {
-  connected: boolean;
+export interface LinkedInConnectionResult {
+  success: boolean;
   accountId?: string;
-  accountName?: string;
-  expiresAt?: number;
   error?: string;
 }
 
 /**
- * Initiate LinkedIn OAuth connection flow
+ * Build OAuth URL for LinkedIn Ads authorization
  */
-export const initiateLinkedInConnection = (): string => {
+export const buildLinkedInOAuthUrl = (config: LinkedInOAuthConfig): string => {
   try {
-    // This is a placeholder for actual LinkedIn OAuth connection logic
-    console.log('Initiating LinkedIn connection');
-    return 'https://api.linkedin.com/oauth/placeholder-url';
+    const baseUrl = 'https://www.linkedin.com/oauth/v2/authorization';
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: config.clientId,
+      redirect_uri: config.redirectUri,
+      scope: config.scope.join(' '),
+      state: Math.random().toString(36).substring(2)
+    });
+    
+    return `${baseUrl}?${params.toString()}`;
   } catch (error) {
-    errorLogger.logError(error, 'initiateLinkedInConnection');
+    errorLogger.logError(error, 'buildLinkedInOAuthUrl');
     return '';
   }
 };
 
 /**
- * Handle LinkedIn OAuth callback and complete connection
+ * Handle OAuth callback and establish LinkedIn Ads connection
  */
-export const handleLinkedInCallback = async (code: string): Promise<LinkedInOAuthCredentials | null> => {
+export const handleLinkedInOAuthCallback = async (
+  code: string, 
+  redirectUri: string
+): Promise<LinkedInConnectionResult> => {
   try {
-    // This is a placeholder for actual LinkedIn OAuth callback logic
-    console.log('Handling LinkedIn callback with code', code);
-    return null;
+    // Placeholder for actual OAuth token exchange
+    console.log('Processing LinkedIn OAuth callback, code:', code);
+    
+    // Return mock success response
+    return {
+      success: true,
+      accountId: 'linkedin-' + Math.random().toString(36).substring(2)
+    };
   } catch (error) {
-    errorLogger.logError(error, 'handleLinkedInCallback');
-    return null;
+    errorLogger.logError(error, 'handleLinkedInOAuthCallback');
+    
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during LinkedIn authentication'
+    };
   }
 };
 
 /**
- * Get LinkedIn connection status
+ * Disconnect from LinkedIn Ads
  */
-export const getLinkedInConnectionStatus = async (userId: string): Promise<LinkedInConnectionStatus> => {
+export const disconnectLinkedInAds = async (userId: string): Promise<boolean> => {
   try {
-    // This is a placeholder for actual LinkedIn connection status check
-    console.log('Getting LinkedIn connection status for user', userId);
-    return { connected: false };
-  } catch (error) {
-    errorLogger.logError(error, 'getLinkedInConnectionStatus');
-    return { connected: false, error: error.message };
-  }
-};
-
-/**
- * Disconnect LinkedIn account
- */
-export const disconnectLinkedIn = async (userId: string): Promise<boolean> => {
-  try {
-    // This is a placeholder for actual LinkedIn disconnect logic
-    console.log('Disconnecting LinkedIn for user', userId);
+    // Placeholder for actual disconnection logic
+    console.log('Disconnecting LinkedIn Ads for user:', userId);
     return true;
   } catch (error) {
-    errorLogger.logError(error, 'disconnectLinkedIn');
+    errorLogger.logError(error, 'disconnectLinkedInAds');
     return false;
   }
 };

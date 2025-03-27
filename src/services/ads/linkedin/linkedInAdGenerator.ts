@@ -1,66 +1,76 @@
 
 /**
  * LinkedIn Ad Generator Service
- * Generates LinkedIn ad content and creative
+ * Handles generation of LinkedIn ads
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
 
 export interface LinkedInAdGenerationParams {
   companyName: string;
-  industry: string;
-  targetAudience: string;
-  productDescription: string;
-  keywords: string[];
+  headline: string;
+  description: string;
   callToAction: string;
-  mindTrigger?: string;
+  websiteUrl: string;
+  targetAudience: string;
+  imagePrompt?: string;
 }
 
-export interface LinkedInAd {
+export interface LinkedInAdVariation {
   headline: string;
-  primaryText: string;
   description: string;
-  imagePrompt?: string;
+  callToAction: string;
   imageUrl?: string;
 }
 
 /**
- * Generate LinkedIn ad content based on input parameters
+ * Generate LinkedIn ad variations using AI
  */
-export const generateLinkedInAds = async (params: LinkedInAdGenerationParams): Promise<LinkedInAd[]> => {
+export const generateLinkedInAdVariations = async (
+  params: LinkedInAdGenerationParams
+): Promise<LinkedInAdVariation[]> => {
   try {
-    // This is a placeholder for actual ad generation logic
-    console.log('Generating LinkedIn ads with params', params);
+    // Placeholder for AI integration - will be replaced with actual AI calls
+    console.log('Generating LinkedIn ads with params:', params);
     
-    // Return placeholder ads
+    // Return placeholder variations
     return [
       {
-        headline: "Boost Your Professional Growth",
-        primaryText: `${params.companyName} helps ${params.industry} professionals achieve more with less effort. Join industry leaders who trust our solutions.`,
-        description: "Learn More"
+        headline: `${params.headline} - Professional Growth`,
+        description: `${params.description} Join industry leaders who have already benefited.`,
+        callToAction: params.callToAction,
       },
       {
-        headline: "Connect With Industry Leaders",
-        primaryText: `${params.companyName} is transforming how ${params.industry} professionals work. Discover our proven solutions.`,
-        description: "Contact Us"
+        headline: `${params.headline} - Industry Insights`,
+        description: `${params.description} Stay ahead of the competition with our proven solutions.`,
+        callToAction: params.callToAction,
       }
     ];
   } catch (error) {
-    errorLogger.logError(error, 'generateLinkedInAds');
+    errorLogger.logError(error, 'generateLinkedInAdVariations');
     return [];
   }
 };
 
 /**
- * Generate an image for a LinkedIn ad
+ * Process feedback for LinkedIn ad improvement
  */
-export const generateLinkedInAdImage = async (ad: LinkedInAd): Promise<string | null> => {
+export const improveLinkedInAd = async (
+  adVariation: LinkedInAdVariation,
+  feedback: string
+): Promise<LinkedInAdVariation | null> => {
   try {
-    // This is a placeholder for actual image generation logic
-    console.log('Generating LinkedIn ad image', ad);
-    return null;
+    // Placeholder for AI-based improvement - will be replaced with actual AI calls
+    console.log('Improving LinkedIn ad with feedback:', feedback);
+    
+    // Return slightly modified version
+    return {
+      ...adVariation,
+      headline: `Improved: ${adVariation.headline}`,
+      description: `Enhanced: ${adVariation.description}`,
+    };
   } catch (error) {
-    errorLogger.logError(error, 'generateLinkedInAdImage');
+    errorLogger.logError(error, 'improveLinkedInAd');
     return null;
   }
 };

@@ -91,3 +91,21 @@ export const hasEnoughCreditsForActions = async (userId: string, actions: Credit
     return false;
   }
 };
+
+/**
+ * Consume credits for a given action (alias for useCredits with simpler interface)
+ * This function is used by components that expect a simpler API
+ */
+export const consumeCredits = async (
+  userId: string,
+  amount: number,
+  action: CreditAction,
+  description: string
+): Promise<boolean> => {
+  try {
+    return await useCredits(userId, action, description);
+  } catch (error) {
+    errorLogger.logError(error, 'consumeCredits');
+    return false;
+  }
+};

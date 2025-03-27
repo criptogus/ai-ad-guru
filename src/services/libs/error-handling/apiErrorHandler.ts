@@ -1,88 +1,77 @@
 
 /**
  * API Error Handler
- * Functions for handling API errors
+ * Handles error responses from API calls
  */
 
-import { errorLogger } from './errorLogger';
+import { toast } from 'sonner';
 
 export interface ApiError {
-  message: string;
-  code: string;
   status?: number;
-  details?: any;
+  code?: string;
+  message: string;
+  details?: unknown;
 }
 
 /**
- * Handle API error and return a standardized error object
+ * Handle API errors with appropriate user feedback
  */
-export const handleApiError = (error: any, context: string): ApiError => {
-  // Log the error
-  errorLogger.logError(error, context);
-  
-  // Extract error information
+export const handleApiError = (error: any, context?: string): ApiError => {
   const apiError: ApiError = {
-    message: error.message || 'An error occurred',
-    code: 'unknown_error',
+    message: 'An unknown error occurred'
   };
   
-  // Handle Axios/fetch errors
+  // Extract useful information from error object
   if (error.response) {
+    // HTTP error response
     apiError.status = error.response.status;
+    apiError.message = error.response.data?.message || `Error ${error.response.status}`;
     apiError.details = error.response.data;
     
-    // Set appropriate error code based on status
-    if (error.response.status === 401) {
-      apiError.code = 'unauthorized';
-      apiError.message = 'Authentication required';
-    } else if (error.response.status === 403) {
-      apiError.code = 'forbidden';
-      apiError.message = 'Permission denied';
-    } else if (error.response.status === 404) {
-      apiError.code = 'not_found';
-      apiError.message = 'Resource not found';
-    } else if (error.response.status >= 500) {
-      apiError.code = 'server_error';
-      apiError.message = 'Server error';
+    // Special handling for common status codes
+    switch (error.response.status) {
+      case 401:
+        apiError.message = 'Authentication required. Please log in again.';
+        break;
+      case 403:
+        apiError.message = 'You do not have permission to perform this action.';
+        break;
+      case 429:
+        apiError.message = 'Too many requests. Please try again later.';
+        break;
     }
   } else if (error.request) {
     // Request was made but no response received
-    apiError.code = 'network_error';
-    apiError.message = 'Network error. Please check your connection.';
+    apiError.message = 'No response from server. Please check your connection.';
+  } else if (error.message) {
+    // Error setting up the request
+    apiError.message = error.message;
   }
+  
+  // Add context to the error message if provided
+  const contextMessage = context ? `[${context}] ${apiError.message}` : apiError.message;
+  
+  // Show toast notification for user feedback
+  toast.error('Error', {
+    description: contextMessage,
+  });
+  
+  // Log error to console for debugging
+  console.error(contextMessage, error);
   
   return apiError;
 };
 
 /**
- * Check if an error should be retried
+ * Check if an error is a network connectivity issue
  */
-export const shouldRetryRequest = (error: any, retryCount: number, maxRetries: number = 3): boolean => {
-  if (retryCount >= maxRetries) {
-    return false;
-  }
-  
-  // Retry for network errors
-  if (!error.response && error.request) {
-    return true;
-  }
-  
-  // Retry for server errors (5xx)
-  if (error.response && error.response.status >= 500) {
-    return true;
-  }
-  
-  // Retry for 429 (Too Many Requests)
-  if (error.response && error.response.status === 429) {
-    return true;
-  }
-  
-  return false;
+export const isNetworkError = (error: any): boolean => {
+  return !error.response && error.request;
 };
 
 /**
- * Calculate retry delay with exponential backoff
+ * Check if an error is due to authentication issues
  */
-export const calculateRetryDelay = (retryCount: number, baseDelay: number = 1000): number => {
-  return Math.min(baseDelay * Math.pow(2, retryCount), 30000); // Max 30 seconds
+export const isAuthError = (error: any): boolean => {
+  return error.response?.status === 401;
 };
