@@ -7,6 +7,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Urgency & Scarcity',
     description: 'Push users to act quickly with time constraints or limited availability',
     emoji: '🧨',
+    icon: 'clock',
     color: 'bg-red-100 text-red-800'
   },
   {
@@ -14,6 +15,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Social Proof',
     description: 'Show popularity, reviews, testimonials to build credibility',
     emoji: '💬',
+    icon: 'users',
     color: 'bg-blue-100 text-blue-800'
   },
   {
@@ -21,6 +23,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Value Proposition',
     description: 'Highlight clear benefits, ROI, and why your offer matters',
     emoji: '🚀',
+    icon: 'trending-up',
     color: 'bg-green-100 text-green-800'
   },
   {
@@ -28,6 +31,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Authority & Expertise',
     description: 'Establish trust through credentials, experience, or certifications',
     emoji: '🧠',
+    icon: 'award',
     color: 'bg-purple-100 text-purple-800'
   },
   {
@@ -35,6 +39,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Curiosity & Intrigue',
     description: 'Create information gaps that spark interest and questions',
     emoji: '🪄',
+    icon: 'search',
     color: 'bg-amber-100 text-amber-800'
   },
   {
@@ -42,6 +47,7 @@ export const triggerCategories: TriggerCategoryInfo[] = [
     name: 'Emotional Appeal',
     description: 'Connect with feelings, aspirations, or pain points of your audience',
     emoji: '❤️',
+    icon: 'heart',
     color: 'bg-pink-100 text-pink-800'
   }
 ];
@@ -53,6 +59,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Limited Time Offer',
     description: 'Create time pressure to drive immediate action',
     category: 'urgency',
+    emoji: '⏱️',
     examples: ['Last chance', 'Ends soon', 'Only today', "Don't miss out"],
     promptTemplate: 'Create 3 variations of high-converting [PLATFORM] Ads using urgency and time limits. Format with appropriate headlines and descriptions. The offer is: [PRODUCT/SERVICE].'
   },
@@ -61,6 +68,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Limited Quantity',
     description: 'Emphasize scarcity of product availability',
     category: 'urgency',
+    emoji: '📉',
     examples: ['Only 5 left', 'Limited stock', 'While supplies last'],
     promptTemplate: 'Generate 3 [PLATFORM] Ads that emphasize scarcity and limited availability. Show that users need to act now before stock runs out. The product is: [PRODUCT/SERVICE].'
   },
@@ -71,6 +79,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Customer Count',
     description: 'Highlight large number of customers or users',
     category: 'social-proof',
+    emoji: '👥',
     examples: ['Join 10,000+ customers', 'Trusted by millions', 'Industry leading'],
     promptTemplate: 'Create 3 [PLATFORM] Ads that showcase popularity and widespread usage. Emphasize customer count and mass adoption. The product/service is: [PRODUCT/SERVICE].'
   },
@@ -79,6 +88,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Testimonials & Reviews',
     description: 'Feature positive feedback from satisfied customers',
     category: 'social-proof',
+    emoji: '⭐',
     examples: ['5-star reviews', 'See what others say', 'Rated 4.8/5'],
     promptTemplate: 'Write 3 [PLATFORM] Ads based on social validation through reviews and testimonials. Focus on what others think and positive experiences. For: [PRODUCT/SERVICE].'
   },
@@ -89,6 +99,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Clear Benefit',
     description: 'State the primary benefit clearly and directly',
     category: 'value-proposition',
+    emoji: '✅',
     examples: ['Save time', 'Boost sales', 'Double your reach'],
     promptTemplate: 'Generate 3 benefit-driven [PLATFORM] Ads that focus on clear outcomes and results. Each ad should communicate a tangible value. For: [PRODUCT/SERVICE].'
   },
@@ -97,6 +108,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'ROI Focused',
     description: 'Emphasize return on investment or savings',
     category: 'value-proposition',
+    emoji: '💰',
     examples: ['Save $100 monthly', '10x your investment', 'Costs less than coffee'],
     promptTemplate: 'Create 3 ROI-focused [PLATFORM] Ads that highlight cost savings, financial benefits, or investment return. For: [PRODUCT/SERVICE].'
   },
@@ -107,6 +119,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Industry Expert',
     description: 'Position as an authority or expert in the field',
     category: 'authority',
+    emoji: '🏆',
     examples: ['Certified experts', 'Since 2004', 'Industry leader'],
     promptTemplate: 'Write 3 [PLATFORM] Ads that establish credibility and authority. Emphasize expertise, credentials, or industry leadership. For: [PRODUCT/SERVICE].'
   },
@@ -115,6 +128,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Proven System/Method',
     description: 'Highlight proven methods or proprietary systems',
     category: 'authority',
+    emoji: '📊',
     examples: ['Proven results', 'Patent-pending', 'Research-backed'],
     promptTemplate: 'Create 3 [PLATFORM] Ads focusing on proven methods, systems, or research-backed approaches. Show certainty of results. For: [PRODUCT/SERVICE].'
   },
@@ -125,6 +139,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Secret Reveal',
     description: 'Tease exclusive information or a "secret" approach',
     category: 'curiosity',
+    emoji: '🔍',
     examples: ['The secret to...', 'What experts don\'t tell you', 'Hidden method'],
     promptTemplate: 'Generate 3 curiosity-based [PLATFORM] Ads that tease exclusive information or secrets. Create information gaps that make users want to learn more. For: [PRODUCT/SERVICE].'
   },
@@ -133,6 +148,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Surprising Fact/Statistic',
     description: 'Lead with an unexpected fact or statistic',
     category: 'curiosity',
+    emoji: '❗',
     examples: ['Surprising fact:', '90% of people don\'t know', 'You won\'t believe'],
     promptTemplate: 'Write 3 [PLATFORM] Ads that use surprising facts, statistics, or counter-intuitive statements to grab attention. For: [PRODUCT/SERVICE].'
   },
@@ -143,6 +159,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Pain Point Focus',
     description: 'Address a specific pain point or frustration',
     category: 'emotional',
+    emoji: '😣',
     examples: ['Tired of...', 'Frustrated with...', 'Say goodbye to...'],
     promptTemplate: 'Create 3 empathetic [PLATFORM] Ads that address specific pain points or frustrations. Show understanding of challenges and offer relief. For: [PRODUCT/SERVICE].'
   },
@@ -151,6 +168,7 @@ export const mentalTriggers: MentalTrigger[] = [
     name: 'Aspirational Appeal',
     description: 'Connect to aspirations, dreams, or ideal outcomes',
     category: 'emotional',
+    emoji: '✨',
     examples: ['Achieve your dreams', 'Be your best self', 'Transform your life'],
     promptTemplate: 'Generate 3 aspirational [PLATFORM] Ads that connect with the dreams, goals, or ideal future state of your audience. For: [PRODUCT/SERVICE].'
   }

@@ -28,5 +28,5 @@ export interface TriggerCategoryInfo {
   description: string;
   icon: string;
   emoji: string;
-  color?: string; // Add color property as optional
+  color?: string;
 }
