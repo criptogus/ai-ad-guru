@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import TriggerSelector from './TriggerSelector';
-import TemplateExamples from './TemplateExamples';
-import CurrentSelectionDisplay from './CurrentSelectionDisplay';
+import TriggerSelectorSection from './TriggerSelectorSection';
 import PlatformTabs from './PlatformTabs';
 
 interface PlatformTriggersProps {
@@ -26,19 +24,6 @@ const PlatformTriggers: React.FC<PlatformTriggersProps> = ({
     }
   }, [selectedPlatforms, activeTab]);
 
-  // Handle custom trigger addition without navigation
-  const handleAddCustomTrigger = (value: string) => {
-    if (value.trim() && activeTab) {
-      // Add a prefix to mark this as a custom trigger
-      onTriggerChange(activeTab, `custom:${value.trim()}`);
-    }
-  };
-
-  // Handle template click without navigation
-  const handleTemplateClick = (template: string) => {
-    handleAddCustomTrigger(template);
-  };
-
   if (!activeTab) return null;
 
   return (
@@ -51,27 +36,33 @@ const PlatformTriggers: React.FC<PlatformTriggersProps> = ({
         
         {selectedPlatforms.map(platform => (
           <TabsContent key={platform} value={platform} className="space-y-6">
-            <TriggerSelector 
+            <TriggerSelectorSection 
               platform={platform}
-              selectedTrigger={selectedTriggers[platform] || ''}
-              onSelectTrigger={(trigger) => onTriggerChange(platform, trigger)}
-              onAddCustomTrigger={(value) => onTriggerChange(platform, `custom:${value.trim()}`)}
-            />
-            
-            <TemplateExamples 
-              platform={platform}
-              onSelectTemplate={handleTemplateClick}
-            />
-            
-            <CurrentSelectionDisplay 
-              platform={platform}
-              selectedTrigger={selectedTriggers[platform] || ''}
+              title={getPlatformDisplayName(platform)}
+              selected={selectedTriggers[platform] || ''}
+              onSelect={(trigger) => onTriggerChange(platform, trigger)}
             />
           </TabsContent>
         ))}
       </Tabs>
     </div>
   );
+};
+
+// Helper function to get platform display name
+const getPlatformDisplayName = (platform: string): string => {
+  switch (platform) {
+    case 'google':
+      return 'Google Ads';
+    case 'meta':
+      return 'Instagram/Meta Ads';
+    case 'linkedin':
+      return 'LinkedIn Ads';
+    case 'microsoft':
+      return 'Microsoft Ads';
+    default:
+      return platform.charAt(0).toUpperCase() + platform.slice(1);
+  }
 };
 
 export default PlatformTriggers;
