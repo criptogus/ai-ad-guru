@@ -62,7 +62,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const { toast } = useToast();
 
   const handleSelectTrigger = (trigger: string, platform: string) => {
-    // Update mind triggers for the current platform without navigating
+    // Only update the state, do not call onNext or any navigation
     const updatedMindTriggers = {
       ...campaignData.mindTriggers || {},
       [platform]: trigger
@@ -77,8 +77,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       title: "Mind Trigger Updated",
       description: `Mind trigger for ${platform} ads has been updated.`,
     });
-    
-    // No navigation happens here
   };
 
   if (!analysisResult) {

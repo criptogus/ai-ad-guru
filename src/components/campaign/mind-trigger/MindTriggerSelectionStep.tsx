@@ -71,20 +71,23 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
   };
 
   const handleTriggerSelect = (platform: string, triggerId: string) => {
+    // Update local state only, do not call any navigation functions
     const updatedTriggers = {
       ...triggers,
       [platform]: triggerId
     };
     
     setTriggers(updatedTriggers);
-    onTriggersChange(updatedTriggers);
-    setValidationError(null);
     
-    // We've removed any code that would automatically advance to the next step
+    // Just update the parent component's state, but don't navigate
+    onTriggersChange(updatedTriggers);
+    
+    // Clear any validation errors
+    setValidationError(null);
   };
 
   const handleNext = () => {
-    // Validate that all selected platforms have a mind trigger
+    // Only when the user explicitly clicks Next, we validate and potentially navigate
     const missingTriggers = selectedPlatforms.filter(platform => !triggers[platform as keyof MindTriggersData]);
     
     if (missingTriggers.length > 0) {
@@ -92,6 +95,7 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
       return;
     }
     
+    // Explicitly call the next function with the triggers data
     onNext({ mindTriggers: triggers });
   };
 

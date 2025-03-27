@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
@@ -89,7 +90,8 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   });
 
   // Unified handler that works with either onSelectTrigger or onInsert
-  const handleCopyTrigger = (trigger: string) => {
+  // but does not perform any navigation
+  const handleSelectTrigger = (trigger: string) => {
     if (onSelectTrigger) {
       onSelectTrigger(trigger);
     }
@@ -156,7 +158,7 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => handleCopyTrigger(trigger.text)}
+                      onClick={() => handleSelectTrigger(trigger.text)}
                       className="whitespace-nowrap"
                     >
                       Insert

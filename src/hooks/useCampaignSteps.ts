@@ -23,7 +23,13 @@ export const useCampaignSteps = (
     }
   };
 
-  const handleNext = () => {
+  const handleNext = (data?: any) => {
+    // Update data if provided but only navigate when explicitly called
+    if (data) {
+      // This is intentionally not using any navigation logic
+      return false; // Signal not to create campaign yet
+    }
+    
     // Validate current step
     if (currentStep === 1 && !analysisResult) {
       toast({
@@ -31,7 +37,7 @@ export const useCampaignSteps = (
         description: "Please analyze a website before proceeding",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     // Validate platform selection
@@ -42,7 +48,7 @@ export const useCampaignSteps = (
           description: "Please select at least one platform before proceeding",
           variant: "destructive",
         });
-        return;
+        return false;
       }
     }
 
@@ -59,7 +65,7 @@ export const useCampaignSteps = (
           description: `Please select mind triggers for ${missingTriggers.join(", ")}`,
           variant: "destructive",
         });
-        return;
+        return false;
       }
     }
 
@@ -71,7 +77,7 @@ export const useCampaignSteps = (
           description: "Please fill in all required fields",
           variant: "destructive",
         });
-        return;
+        return false;
       }
     }
 
@@ -97,7 +103,7 @@ export const useCampaignSteps = (
           description: "Please generate ads for at least one selected platform before proceeding",
           variant: "destructive",
         });
-        return;
+        return false;
       }
     }
 
@@ -109,12 +115,13 @@ export const useCampaignSteps = (
           description: "You need at least 5 credits to create a campaign",
           variant: "destructive",
         });
-        return;
+        return false;
       }
       
       return true; // Signal to create campaign
     }
 
+    // Only advance to the next step when explicitly called
     setCurrentStep(currentStep + 1);
     return false;
   };
