@@ -71,17 +71,16 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
   };
 
   const handleTriggerSelect = (platform: string, triggerId: string) => {
-    setTriggers(prev => ({
-      ...prev,
-      [platform]: triggerId
-    }));
-    
-    onTriggersChange({
+    const updatedTriggers = {
       ...triggers,
       [platform]: triggerId
-    });
+    };
     
+    setTriggers(updatedTriggers);
+    onTriggersChange(updatedTriggers);
     setValidationError(null);
+    
+    // We've removed any code that would automatically advance to the next step
   };
 
   const handleNext = () => {

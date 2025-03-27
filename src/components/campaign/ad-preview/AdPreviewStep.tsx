@@ -77,6 +77,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       title: "Mind Trigger Updated",
       description: `Mind trigger for ${platform} ads has been updated.`,
     });
+    
+    // No navigation happens here
   };
 
   if (!analysisResult) {
