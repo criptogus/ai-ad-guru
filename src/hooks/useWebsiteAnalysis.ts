@@ -14,9 +14,15 @@ export interface WebsiteAnalysisResult {
   websiteUrl?: string;
 }
 
+export interface AnalysisCache {
+  fromCache: boolean;
+  cachedAt?: string;
+}
+
 export const useWebsiteAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
+  const [cacheInfo, setCacheInfo] = useState<AnalysisCache | null>(null);
   const { toast } = useToast();
 
   const analyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
@@ -68,10 +74,27 @@ export const useWebsiteAnalysis = () => {
       result.websiteUrl = formattedUrl;
       setAnalysisResult(result);
       
-      toast({
-        title: "Website Analyzed",
-        description: "Successfully analyzed website content",
-      });
+      // Set cache info if available
+      if (data.fromCache) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: data.cachedAt
+        });
+        
+        toast({
+          title: "Using Cached Analysis",
+          description: "Using previously analyzed data for this website",
+        });
+      } else {
+        setCacheInfo({
+          fromCache: false
+        });
+        
+        toast({
+          title: "Website Analyzed",
+          description: "Successfully analyzed website content",
+        });
+      }
       
       return result;
     } catch (error: any) {
@@ -98,6 +121,7 @@ export const useWebsiteAnalysis = () => {
     updateAnalysisResult,
     isAnalyzing,
     analysisResult,
-    setAnalysisResult
+    setAnalysisResult,
+    cacheInfo
   };
 };

@@ -2,16 +2,20 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
 import WebsiteUrlInput from "./website-analysis/WebsiteUrlInput";
 import AnalysisInfoBox from "./website-analysis/AnalysisInfoBox";
 import AnalysisResults from "./website-analysis/AnalysisResults";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "lucide-react";
+import { format } from "date-fns";
 
 interface WebsiteAnalysisStepProps {
   isAnalyzing: boolean;
   analysisResult: WebsiteAnalysisResult | null;
   onAnalyzeWebsite: (url: string) => Promise<WebsiteAnalysisResult | null>;
   onNext: () => void;
+  cacheInfo?: AnalysisCache | null;
 }
 
 const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
@@ -19,6 +23,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   analysisResult,
   onAnalyzeWebsite,
   onNext,
+  cacheInfo
 }) => {
   const [website, setWebsite] = useState("");
   const [progress, setProgress] = useState(0);
@@ -89,13 +94,29 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     }
   };
 
+  const formatCacheDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
+  };
+
   return (
     <Card className="shadow-md border border-accent/20 overflow-hidden">
       <CardHeader className="bg-card pb-4">
-        <CardTitle className="text-xl text-foreground">Website Analysis</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Enter your website URL so our AI can analyze it and suggest campaign settings
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-xl text-foreground">Website Analysis</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Enter your website URL so our AI can analyze it and suggest campaign settings
+            </CardDescription>
+          </div>
+          
+          {cacheInfo?.fromCache && cacheInfo.cachedAt && (
+            <Badge variant="outline" className="flex items-center gap-1 bg-amber-100/10">
+              <Calendar className="h-3 w-3" />
+              <span className="text-xs">Cached {formatCacheDate(cacheInfo.cachedAt)}</span>
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="space-y-6">
@@ -121,6 +142,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
               onTextChange={handleTextChange}
               onArrayItemChange={handleArrayItemChange}
               onNext={handleNext}
+              cacheInfo={cacheInfo}
             />
           )}
 

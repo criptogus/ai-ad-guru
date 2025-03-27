@@ -18,6 +18,7 @@ const CampaignContent: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [cacheInfo, setCacheInfo] = useState<{ fromCache: boolean; cachedAt?: string } | null>(null);
 
   const {
     currentStep,
@@ -45,7 +46,6 @@ const CampaignContent: React.FC = () => {
     isGenerating,
   } = useAdGeneration();
 
-  // Get step titles based on our updated flow
   const getStepTitles = () => [
     "Website Analysis",
     "Platform Selection",
@@ -55,7 +55,6 @@ const CampaignContent: React.FC = () => {
     "Review & Create",
   ];
 
-  // Handle analyzing a website and extracting information
   const handleWebsiteAnalysis = async (websiteUrl: string): Promise<WebsiteAnalysisResult | null> => {
     try {
       setIsAnalyzing(true);
@@ -83,7 +82,27 @@ const CampaignContent: React.FC = () => {
         return null;
       }
 
-      // Add the website URL to the result
+      if (data.fromCache) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: data.cachedAt
+        });
+        
+        toast({
+          title: "Using Cached Analysis",
+          description: "Using previously analyzed data for this website",
+        });
+      } else {
+        setCacheInfo({
+          fromCache: false
+        });
+        
+        toast({
+          title: "Website Analyzed",
+          description: "Successfully analyzed website content",
+        });
+      }
+
       const result = {
         ...data.data,
         websiteUrl,
@@ -104,7 +123,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Generate Google Ads based on analysis
   const handleGenerateGoogleAds = async (): Promise<void> => {
     if (!analysisResult) return;
     
@@ -128,7 +146,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Generate Meta Ads based on analysis
   const handleGenerateMetaAds = async (): Promise<void> => {
     if (!analysisResult) return;
     
@@ -152,7 +169,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Generate Microsoft Ads based on analysis
   const handleGenerateMicrosoftAds = async (): Promise<void> => {
     if (!analysisResult) return;
     
@@ -176,7 +192,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Generate LinkedIn Ads based on analysis
   const handleGenerateLinkedInAds = async (): Promise<void> => {
     if (!analysisResult) return;
     
@@ -200,7 +215,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Generate image for Meta Ads
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     if (!ad.imagePrompt) {
       toast({
@@ -222,7 +236,6 @@ const CampaignContent: React.FC = () => {
       });
 
       if (imageUrl) {
-        // Update the ad with the new image URL
         const updatedAd = { ...ad, imageUrl };
         const updatedAds = [...metaAds];
         updatedAds[index] = updatedAd;
@@ -240,7 +253,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Update handlers to match the expected function signatures
   const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd): void => {
     const updatedAds = [...googleAds];
     updatedAds[index] = updatedAd;
@@ -265,7 +277,6 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds(updatedAds);
   };
 
-  // Navigation functions
   const handleNext = () => {
     setCurrentStep(currentStep + 1);
   };
@@ -284,7 +295,6 @@ const CampaignContent: React.FC = () => {
     handleNext();
   };
 
-  // Create a new campaign
   const createCampaign = async (): Promise<void> => {
     if (!user) {
       toast({
@@ -298,7 +308,6 @@ const CampaignContent: React.FC = () => {
     setIsCreating(true);
 
     try {
-      // Prepare ad data for storage
       const adData = {
         googleAds,
         metaAds,
@@ -306,7 +315,6 @@ const CampaignContent: React.FC = () => {
         linkedInAds,
       };
 
-      // Create campaign record
       const { data, error } = await supabase
         .from("campaigns")
         .insert({
@@ -337,7 +345,6 @@ const CampaignContent: React.FC = () => {
         description: "Your campaign has been created successfully",
       });
 
-      // Navigate to the campaign details page
       navigate(`/campaigns/${data.id}`);
     } catch (error) {
       console.error("Error creating campaign:", error);
@@ -351,7 +358,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Render step content using custom hook
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -378,6 +384,7 @@ const CampaignContent: React.FC = () => {
     handleBack,
     handleNextWrapper,
     createCampaign,
+    cacheInfo,
   });
 
   const stepTitles = getStepTitles();
@@ -389,7 +396,6 @@ const CampaignContent: React.FC = () => {
         steps={stepTitles} 
         currentStepIndex={currentStep} 
         onStepClick={(step) => {
-          // Only allow going back to previous steps
           if (step < currentStep) {
             setCurrentStep(step);
           }

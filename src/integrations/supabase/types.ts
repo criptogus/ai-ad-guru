@@ -294,6 +294,30 @@ export type Database = {
         }
         Relationships: []
       }
+      website_analysis_cache: {
+        Row: {
+          analysis_result: Json
+          created_at: string | null
+          id: string
+          language: string | null
+          url: string
+        }
+        Insert: {
+          analysis_result: Json
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          url: string
+        }
+        Update: {
+          analysis_result?: Json
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       "Zero Digital Agency LLC": {
         Row: {
           created_at: string
