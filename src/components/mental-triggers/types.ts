@@ -19,7 +19,7 @@ export interface MentalTrigger {
   category: TriggerCategory;
   emoji: string;
   promptTemplate: string;
-  examples: string[]; // Add examples property
+  examples: string[];
 }
 
 export interface TriggerCategoryInfo {
@@ -27,4 +27,5 @@ export interface TriggerCategoryInfo {
   name: string;
   description: string;
   icon: string;
+  emoji: string; // Added emoji property to fix the errors
 }

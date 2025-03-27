@@ -1,56 +1,86 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { consumeCredits } from "./creditUsage";
-import { CreditAction, getCreditCost } from "./creditCosts";
+import { toast } from "sonner";
+import { getCreditCost, CreditAction } from "./creditCosts";
 
-// Check if user has enough credits for an action
-export const checkUserCredits = async (userId: string, requiredCredits: number): Promise<boolean> => {
+// Function to check if user has enough credits
+export const checkUserCredits = async (userId: string, amount: number): Promise<boolean> => {
   try {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
+      .from("profiles")
+      .select("credits")
+      .eq("id", userId)
       .single();
-    
+
     if (error) {
-      console.error('Error checking user credits:', error);
+      console.error("Error fetching user credits:", error);
       return false;
     }
-    
-    return data.credits >= requiredCredits;
+
+    if (!data) {
+      console.warn("User not found");
+      return false;
+    }
+
+    const userCredits = data.credits;
+    return userCredits >= amount;
   } catch (error) {
-    console.error('Error checking user credits:', error);
+    console.error("Error checking user credits:", error);
     return false;
   }
 };
 
-// Deduct user credits for an action
+// Function to deduct credits from user
 export const deductUserCredits = async (
-  userId: string, 
-  amount: number, 
+  userId: string,
+  amount: number,
   action: CreditAction,
-  details?: string
+  description?: string
 ): Promise<boolean> => {
   try {
-    return await consumeCredits(userId, amount, action, details || '');
+    // Ensure amount is not negative
+    if (amount < 0) {
+      console.warn("Attempted to deduct a negative amount of credits.");
+      return false;
+    }
+
+    // Get the actual cost from the creditCosts configuration
+    const creditCost = getCreditCost(action);
+
+    // Verify that the amount to deduct matches the expected cost
+    if (amount !== creditCost) {
+      console.warn(`Deduct amount (${amount}) does not match expected cost (${creditCost}) for action ${action}`);
+    }
+
+    // Optimistic update: Deduct credits first and revert if there's an error
+    const { error: updateError } = await supabase.rpc('deduct_credits', {
+      user_id: userId,
+      credit_deduction: amount,
+      action_type: action,
+      description_text: description || `Deducted ${amount} credits for ${action}`
+    });
+
+    if (updateError) {
+      console.error("Error deducting credits:", updateError);
+      toast({
+        title: "Credit Deduction Failed",
+        description: "There was an error deducting credits. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    toast({
+      title: "Credits Deducted",
+      description: `Successfully deducted ${amount} credits for ${action}`,
+    });
+    return true;
   } catch (error) {
-    console.error('Error deducting credits:', error);
+    console.error("Error during credit deduction:", error);
+    toast({
+      title: "Credit Deduction Error",
+      description: "An error occurred while deducting credits. Please try again.",
+      variant: "destructive",
+    });
     return false;
   }
-};
-
-// Check if user has enough credits for a specific action
-export const checkCreditsForAction = async (
-  userId: string,
-  action: CreditAction
-): Promise<{ hasEnoughCredits: boolean; requiredCredits: number }> => {
-  const requiredCredits = getCreditCost(action);
-  
-  if (!requiredCredits) {
-    return { hasEnoughCredits: true, requiredCredits: 0 }; // If action doesn't require credits, return true
-  }
-  
-  const hasCredits = await checkUserCredits(userId, requiredCredits);
-  
-  return { hasEnoughCredits: hasCredits, requiredCredits };
 };

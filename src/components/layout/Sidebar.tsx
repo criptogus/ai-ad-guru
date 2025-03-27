@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import SidebarHeader from "./SidebarHeader";
@@ -8,7 +7,7 @@ import CreateCampaignButton from "./CreateCampaignButton";
 import ThemeToggle from "./ThemeToggle";
 import ProfileDropdown from "./ProfileDropdown";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCreditCosts } from "@/services";
+import { getAllCreditCosts } from "@/services/credits/creditCosts";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
@@ -31,16 +30,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       "relative h-screen bg-background border-r p-2 sm:p-3 flex flex-col transition-all duration-300 ease-in-out z-10",
       collapsed ? "w-[60px] sm:w-[68px]" : "w-[240px]"
     )}>
-      {/* Collapse button */}
       <SidebarCollapseButton 
         collapsed={collapsed} 
         onClick={() => setCollapsed(!collapsed)} 
       />
 
-      {/* Logo */}
       <SidebarHeader collapsed={collapsed} />
 
-      {/* Credits Display */}
       <div className={cn(
         "mb-4 px-1 sm:px-2 py-2 border rounded-lg text-center bg-purple-50 dark:bg-purple-900/20 transition-all",
         collapsed ? "mx-0 p-1 sm:p-2" : "mx-1"
@@ -59,13 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* Navigation */}
       <SidebarNavigation collapsed={collapsed} activePage={activePage} />
 
-      {/* Create Button */}
       <CreateCampaignButton collapsed={collapsed} />
 
-      {/* Theme Toggle & User Profile */}
       <div className="border-t pt-3">
         <ThemeToggle />
         <ProfileDropdown collapsed={collapsed} />

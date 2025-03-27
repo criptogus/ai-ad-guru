@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAd } from "@/hooks/adGeneration";
-import { Loader2, Sparkles } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, PlusCircle, Sparkles } from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
+import { MetaAdCard } from "./meta/card";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];

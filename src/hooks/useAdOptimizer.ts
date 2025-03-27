@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
@@ -20,7 +19,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
   const { toast } = useToast();
   const creditCostsData = getCreditCosts();
   const { user } = useAuth();
-  const optimizationCost = creditCostsData.aiOptimization.daily;
+  const optimizationCost = creditCostsData.adOptimization.daily;
 
   const optimizeGoogleAds = async (
     ads: GoogleAd[],
@@ -73,7 +72,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
         await deductUserCredits(
           user.id,
           optimizationCost,
-          'ai_optimization_daily',
+          'ad_optimization_daily',
           `Optimized ${optimizedAds.length} Google ads`
         );
         
@@ -150,7 +149,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
         await deductUserCredits(
           user.id,
           optimizationCost,
-          'ai_optimization_daily',
+          'ad_optimization_daily',
           `Optimized ${optimizedAds.length} Meta/Instagram ads`
         );
         

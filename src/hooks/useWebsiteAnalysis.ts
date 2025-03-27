@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,9 +11,9 @@ export interface WebsiteAnalysisResult {
   keywords: string[];
   callToAction: string[];
   uniqueSellingPoints: string[];
-  keySellingPoints?: string[];
+  keySellingPoints?: string[]; // Added this property for backward compatibility
   websiteUrl?: string;
-  usps?: string[];
+  usps?: string[]; // Added this property for backward compatibility
 }
 
 export interface AnalysisCache {
