@@ -29,6 +29,8 @@ export const useImageGeneration = () => {
 
       // Add error handling for edge function call
       try {
+        console.log("Calling generate-image function with prompt:", enhancedPrompt.substring(0, 100) + "...");
+        
         const { data, error } = await supabase.functions.invoke('generate-image', {
           body: { prompt: enhancedPrompt }
         });
@@ -40,6 +42,7 @@ export const useImageGeneration = () => {
         }
 
         if (!data || !data.imageUrl) {
+          console.error("Invalid response from generate-image function:", data);
           throw new Error("No image URL returned from image generation");
         }
 

@@ -67,6 +67,8 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
       // Using try-catch to better handle edge function errors
       try {
+        console.log("Sending request to generate-ads function:", JSON.stringify(request).substring(0, 150) + "...");
+        
         const { data, error } = await supabase.functions.invoke('generate-ads', {
           body: request
         });
@@ -77,6 +79,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         }
 
         if (!data || !data.success) {
+          console.error("Function returned error:", data?.error || "Unknown error");
           throw new Error(data?.error || "Failed to generate ads");
         }
 
@@ -185,6 +188,8 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
       // Using try-catch to better handle edge function errors
       try {
+        console.log("Sending request to generate-ads function:", JSON.stringify(request).substring(0, 150) + "...");
+        
         const { data, error } = await supabase.functions.invoke('generate-ads', {
           body: request
         });
@@ -195,6 +200,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         }
 
         if (!data || !data.success) {
+          console.error("Function returned error:", data?.error || "Unknown error");
           throw new Error(data?.error || "Failed to generate Meta ads");
         }
 
@@ -245,6 +251,8 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
       // Using try-catch to better handle edge function errors
       try {
+        console.log("Sending request to generate-ads function:", JSON.stringify(request).substring(0, 150) + "...");
+        
         const { data, error } = await supabase.functions.invoke('generate-ads', {
           body: request
         });
@@ -255,6 +263,7 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         }
 
         if (!data || !data.success) {
+          console.error("Function returned error:", data?.error || "Unknown error");
           throw new Error(data?.error || "Failed to generate LinkedIn ads");
         }
 
@@ -305,6 +314,8 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
 
       // Using try-catch to better handle edge function errors
       try {
+        console.log("Sending request to generate-ads function:", JSON.stringify(request).substring(0, 150) + "...");
+        
         const { data, error } = await supabase.functions.invoke('generate-ads', {
           body: request
         });
@@ -315,12 +326,13 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
         }
 
         if (!data || !data.success) {
+          console.error("Function returned error:", data?.error || "Unknown error");
           throw new Error(data?.error || "Failed to generate Microsoft ads");
         }
 
         console.log("Microsoft ads generated:", data);
         
-        // Post-process to ensure backward compatibility between headlines[] and headline1/2/3
+        // Process the ads
         const processedAds = data.data.map((ad: any) => {
           const processedAd: GoogleAd = {
             headline1: '',

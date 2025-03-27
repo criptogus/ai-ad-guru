@@ -3,6 +3,7 @@ import { useState } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
 import { toast } from "sonner";
+import { errorLogger } from "@/services/libs/error-handling";
 
 export const useMetaAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -46,6 +47,7 @@ export const useMetaAdActions = (
       });
 
     } catch (error) {
+      errorLogger.logError(error, "handleGenerateMetaAds");
       console.error("Error generating Meta ads:", error);
       toast("Ad Generation Failed", {
         description: error instanceof Error ? error.message : "Failed to generate Instagram Ads. Please check network connection and try again."
@@ -94,6 +96,7 @@ export const useMetaAdActions = (
       });
       
     } catch (error) {
+      errorLogger.logError(error, "handleGenerateImage");
       console.error("Error generating image:", error);
       toast("Image Generation Failed", {
         description: error instanceof Error ? error.message : "Failed to generate image. Please check network connection and try again."
