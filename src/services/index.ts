@@ -1,10 +1,20 @@
 
-// Credits service exports
-export * from './credits/creditUsage';
-export * from './credits/creditChecks';
-export * from './credits/creditCosts';
+// Core services exports
+export * from './auth';
+export * from './billing';
+export * from './campaign';
+export * from './analytics';
+export * from './ads';
+export * from './media';
+export * from './credits';
 
-// Explicitly re-export the team roles function
+// Shared libraries exports
+export * from './libs/supabase-client';
+export * from './libs/auth-helpers';
+export * from './libs/error-handling';
+export * from './libs/api-client';
+
+// Explicitly re-export team-related functions to maintain backward compatibility
 export { 
   getRolePermissions,
   isAdmin,
@@ -12,7 +22,6 @@ export {
   isViewer
 } from './team/roles';
 
-// Explicitly re-export team member functions
 export { 
   getTeamMembers,
   inviteUser as inviteTeamMember,
@@ -20,12 +29,9 @@ export {
   removeTeamMember
 } from './team/members';
 
-// Re-export team invitations function with unique name to avoid conflicts
 export { 
   inviteUser,
   getTeamInvitations,
   resendInvitation,
   revokeInvitation
 } from './team/invitations';
-
-// Add other service exports here as needed
