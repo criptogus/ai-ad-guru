@@ -5,10 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     if (!prompt) {
+      const error = "Missing Image Prompt";
+      setLastError(error);
       toast({
         title: "Missing Image Prompt",
         description: "An image prompt is required to generate an image",
@@ -19,6 +22,7 @@ export const useImageGeneration = () => {
 
     try {
       setIsGenerating(true);
+      setLastError(null);
       
       console.log("Generating image with prompt:", prompt);
       
@@ -39,16 +43,20 @@ export const useImageGeneration = () => {
 
       if (error) {
         console.error("Error generating image:", error);
+        const errorMessage = error.message || "Failed to generate image";
+        setLastError(errorMessage);
         toast({
           title: "Image Generation Failed",
-          description: error.message || "Failed to generate image",
+          description: errorMessage,
           variant: "destructive",
         });
         return null;
       }
 
       if (!data.imageUrl) {
-        console.error("No image URL returned");
+        const errorMessage = "No image URL returned";
+        setLastError(errorMessage);
+        console.error(errorMessage);
         toast({
           title: "Image Generation Failed",
           description: "No image was generated. Please try again.",
@@ -66,9 +74,11 @@ export const useImageGeneration = () => {
       return data.imageUrl;
     } catch (error) {
       console.error("Error in generateAdImage:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      setLastError(errorMessage);
       toast({
         title: "Image Generation Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;
@@ -106,6 +116,7 @@ export const useImageGeneration = () => {
 
   return {
     generateAdImage,
-    isGenerating
+    isGenerating,
+    lastError
   };
 };

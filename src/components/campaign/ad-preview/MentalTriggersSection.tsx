@@ -9,18 +9,23 @@ import { useMentalTriggers } from "@/hooks/useMentalTriggers";
 import { TriggerData } from "@/types/campaign";
 
 interface MentalTriggersSectionProps {
-  platform: string;
-  onInsertTrigger: (trigger: string) => void;
+  platform?: string;
+  activePlatform?: string;
+  onInsertTrigger?: (trigger: string) => void;
+  onSelectTrigger?: (trigger: string, platform: string) => void;
   mindTriggers?: Record<string, string>;
 }
 
 const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
   platform,
+  activePlatform,
   onInsertTrigger,
+  onSelectTrigger,
   mindTriggers = {}
 }) => {
   const { insertTrigger, loadingTriggerField, setLoadingTriggerField } = useMentalTriggers();
-  const activeTrigger = mindTriggers[platform];
+  const activeTrigger = platform ? mindTriggers[platform] : (activePlatform ? mindTriggers[activePlatform] : undefined);
+  const currentPlatform = platform || activePlatform || "google";
 
   // Define available triggers for this platform
   const availableTriggers = [
@@ -56,8 +61,10 @@ const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
 
   const handleSelectTrigger = (trigger: string) => {
     // Use the selected trigger
-    if (activeTrigger !== trigger) {
+    if (onInsertTrigger) {
       onInsertTrigger(trigger);
+    } else if (onSelectTrigger && currentPlatform) {
+      onSelectTrigger(trigger, currentPlatform);
     }
   };
 
