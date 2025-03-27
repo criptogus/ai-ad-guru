@@ -1,0 +1,8 @@
+
+project_id = "your-project-id"
+# List of function entrypoints
+entrypoints = [
+  "generate-ads/index.ts",
+  "generate-image/index.ts", 
+  "optimize-ads/index.ts"
+]

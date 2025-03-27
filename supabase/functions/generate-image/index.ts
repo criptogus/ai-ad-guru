@@ -1,115 +1,92 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { generateImageWithGPT4o, downloadImage } from "./imageGenerator.ts";
-import { saveGeneratedImage } from "./databaseHandler.ts";
-import { storeImageInSupabase } from "./storageHandler.ts";
-import { corsHeaders } from "./utils.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders
-    });
+    return new Response(null, { headers: corsHeaders });
   }
-
+  
   try {
-    // Get the request body
-    const requestData = await req.json();
+    if (!OPENAI_API_KEY) {
+      throw new Error("Missing OpenAI API key");
+    }
     
-    // Extract the required parameters
-    const {
-      prompt,
-      imageFormat = "square", // Default to square format
-      platform = "instagram", // Default to instagram
-      userId,
-      templateId,
-      campaignId,
-      mainText,
-      subText
-    } = requestData;
-
-    // Validate the required parameters
+    const { prompt, platform = 'meta', style = 'photorealistic' } = await req.json();
+    
     if (!prompt) {
-      throw new Error("Missing required parameter: prompt");
-    }
-
-    // Get environment variables
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (!openaiApiKey) {
-      throw new Error("OPENAI_API_KEY is not set in environment variables");
+      throw new Error("Missing image prompt");
     }
     
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error("Supabase environment variables are not properly set");
-    }
-
-    console.log(`Generating image for platform: ${platform}, format: ${imageFormat}`);
+    console.log(`Generating image for platform: ${platform} with style: ${style}`);
+    console.log(`Prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
     
     // Generate the image using OpenAI
-    const { url: originalImageUrl, revisedPrompt } = await generateImageWithGPT4o({
-      prompt,
-      imageFormat,
-      openaiApiKey,
-      mainText,
-      subText,
-      templateId
-    });
-
-    // Store a persistent copy in Supabase Storage
-    const imageBlob = await downloadImage(originalImageUrl);
-    const persistentImageUrl = await storeImageInSupabase(imageBlob, {
-      supabaseUrl,
-      supabaseServiceKey
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: prompt,
+        n: 1,
+        size: platform === 'meta' || platform === 'instagram' ? "1024x1024" : "1792x1024", // Square for Instagram, wide for LinkedIn
+        quality: style === 'photorealistic' ? "hd" : "standard",
+      }),
     });
     
-    // Save the image record to the database if a user ID is provided
-    let finalImageUrl = persistentImageUrl;
-    if (userId) {
-      finalImageUrl = await saveGeneratedImage({
-        imageUrl: persistentImageUrl,
-        prompt,
-        userId,
-        templateId,
-        campaignId,
-        supabaseUrl,
-        supabaseKey: supabaseServiceKey
-      });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI API error:", errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || "Unknown error"}`);
     }
-
-    // Return the success response
+    
+    const data = await response.json();
+    const imageUrl = data.data?.[0]?.url;
+    
+    if (!imageUrl) {
+      throw new Error("No image URL returned from OpenAI");
+    }
+    
+    console.log("Image generated successfully!");
+    
     return new Response(
-      JSON.stringify({
-        success: true,
-        imageUrl: finalImageUrl,
-        revisedPrompt,
-        originalUrl: originalImageUrl
+      JSON.stringify({ 
+        success: true, 
+        imageUrl,
+        prompt
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
     );
   } catch (error) {
-    console.error("Error in generate-image function:", error);
+    console.error("Error:", error.message);
     
-    // Return the error response
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "An unexpected error occurred"
       }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+        status: 500
       }
     );
   }

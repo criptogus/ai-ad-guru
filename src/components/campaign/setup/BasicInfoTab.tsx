@@ -4,45 +4,60 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InfoCircle } from "lucide-react";
+import { FormError } from "./FormError";
 
 interface BasicInfoTabProps {
   campaignData: any;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
+  errors: Record<string, string | null>;
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   campaignData,
   handleInputChange,
   handleSelectChange,
+  errors,
 }) => {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Campaign Name</Label>
+        <Label htmlFor="name" className="flex items-center">
+          Campaign Name <span className="text-red-500 ml-1">*</span>
+          <div className="ml-2 text-muted-foreground hover:text-foreground cursor-help">
+            <InfoCircle className="h-4 w-4" />
+          </div>
+        </Label>
         <Input
           id="name"
           name="name"
           value={campaignData.name || ""}
           onChange={handleInputChange}
-          required
+          className={errors.name ? "border-red-500" : ""}
         />
+        <FormError error={errors.name} />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="description">Campaign Description</Label>
+        <Label htmlFor="description" className="flex items-center">
+          Campaign Description <span className="text-red-500 ml-1">*</span>
+        </Label>
         <Textarea
           id="description"
           name="description"
           rows={3}
           value={campaignData.description || ""}
           onChange={handleInputChange}
-          required
+          className={errors.description ? "border-red-500" : ""}
         />
+        <FormError error={errors.description} />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="targetUrl">Target URL</Label>
+        <Label htmlFor="targetUrl" className="flex items-center">
+          Target URL <span className="text-red-500 ml-1">*</span>
+        </Label>
         <Input
           id="targetUrl"
           name="targetUrl"
@@ -50,8 +65,9 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           placeholder="https://example.com/landing-page"
           value={campaignData.targetUrl || ""}
           onChange={handleInputChange}
-          required
+          className={errors.targetUrl ? "border-red-500" : ""}
         />
+        <FormError error={errors.targetUrl} />
         <p className="text-xs text-muted-foreground">
           The landing page where users will be directed after clicking your ad
         </p>
@@ -59,7 +75,9 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="budget">Daily Budget ($)</Label>
+          <Label htmlFor="budget" className="flex items-center">
+            Daily Budget ($) <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Input
             id="budget"
             name="budget"
@@ -67,16 +85,19 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
             min="5"
             value={campaignData.budget || ""}
             onChange={handleInputChange}
-            required
+            className={errors.budget ? "border-red-500" : ""}
           />
+          <FormError error={errors.budget} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="objective">Campaign Objective</Label>
+          <Label htmlFor="objective" className="flex items-center">
+            Campaign Objective <span className="text-red-500 ml-1">*</span>
+          </Label>
           <Select 
             value={campaignData.objective || ""} 
             onValueChange={(value) => handleSelectChange("objective", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className={errors.objective ? "border-red-500" : ""}>
               <SelectValue placeholder="Select an objective" />
             </SelectTrigger>
             <SelectContent>
@@ -88,6 +109,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
               <SelectItem value="app_installs">App Installs</SelectItem>
             </SelectContent>
           </Select>
+          <FormError error={errors.objective} />
         </div>
       </div>
     </div>
