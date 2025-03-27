@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,8 +30,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setIsProcessing(true);
       setProcessingPack(packId);
       
-      console.log(`Creating checkout session for ${amount} credits at $${price}`);
-      
       // Create a checkout session via edge function
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
@@ -43,16 +40,14 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       });
       
       if (error) {
-        console.error("Error creating checkout session:", error);
         throw new Error(error.message);
       }
       
       if (!data?.url) {
-        console.error("No checkout URL returned:", data);
         throw new Error("Failed to create checkout session");
       }
       
-      // Store purchase intent in localStorage (to be used for verification later)
+      // Store purchase intent in localStorage
       localStorage.setItem('credit_purchase_intent', JSON.stringify({
         amount,
         timestamp: Date.now(),

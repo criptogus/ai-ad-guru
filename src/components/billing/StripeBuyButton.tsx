@@ -40,8 +40,6 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({
     setError(null);
     
     try {
-      console.log(`Starting checkout process for user: ${user.id}`);
-      
       // Create a checkout session via edge function
       const { data, error: functionError } = await supabase.functions.invoke("create-checkout-session", {
         body: { 
@@ -52,16 +50,13 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({
       });
       
       if (functionError) {
-        console.error("Error from create-checkout-session edge function:", functionError);
         throw new Error(functionError.message || "Failed to create checkout session");
       }
       
       if (!data?.url) {
-        console.error("No checkout URL returned from edge function:", data);
         throw new Error("No checkout URL returned");
       }
       
-      console.log("Checkout session created successfully, redirecting to:", data.url);
       window.location.href = data.url;
       
     } catch (error: any) {

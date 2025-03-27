@@ -2,14 +2,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import Stripe from 'https://esm.sh/stripe@12.14.0';
 
-// Define CORS headers for browser requests
+// Define CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Handle preflight OPTIONS request
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -18,13 +17,11 @@ Deno.serve(async (req) => {
 
   try {
     // Parse request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (parseError) {
-      console.error('Error parsing request body:', parseError);
+    const { userId, planId, returnUrl } = await req.json();
+
+    if (!userId || !returnUrl) {
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        JSON.stringify({ error: "Missing required fields" }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
@@ -32,37 +29,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate required fields
-    const { userId, planId, returnUrl } = requestBody;
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: "User ID is required" }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
-    }
-
-    if (!returnUrl) {
-      return new Response(
-        JSON.stringify({ error: "Return URL is required" }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
-    }
-
-    console.log('Creating checkout session for user:', userId);
-    console.log('Plan ID:', planId || 'default plan');
-    console.log('Return URL:', returnUrl);
-
-    // Get the Stripe API key from environment variables
+    // Get Stripe API key
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
-      console.error('STRIPE_SECRET_KEY is not configured');
       return new Response(
         JSON.stringify({ error: "Stripe API key not configured" }),
         {
@@ -72,68 +41,52 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Initialize Stripe with the secret key
+    // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 
-    // Set up product details based on plan ID or use default
+    // Set up product details based on plan ID
     let productDetails;
     let priceAmount;
     let creditAmount;
 
-    // Define credit packages
+    // Define credit packages with simplified structure
     switch (planId) {
       case 'starter':
-        productDetails = {
-          name: 'Starter Credit Pack',
-          description: '100 credits for AI-generated ads and optimization',
-        };
-        priceAmount = 4900; // $49.00
+        productDetails = { name: 'Starter Credit Pack', description: '100 credits' };
+        priceAmount = 1500; // $15.00
         creditAmount = 100;
         break;
       case 'pro':
-        productDetails = {
-          name: 'Professional Credit Pack',
-          description: '250 credits for AI-generated ads and optimization',
-        };
-        priceAmount = 9900; // $99.00
-        creditAmount = 250;
+        productDetails = { name: 'Professional Credit Pack', description: '500 credits' };
+        priceAmount = 5000; // $50.00
+        creditAmount = 500;
         break;
       case 'agency':
-        productDetails = {
-          name: 'Agency Credit Pack',
-          description: '700 credits for AI-generated ads and optimization',
-        };
-        priceAmount = 24900; // $249.00
-        creditAmount = 700;
+        productDetails = { name: 'Agency Credit Pack', description: '2000 credits' };
+        priceAmount = 15000; // $150.00
+        creditAmount = 2000;
         break;
       case 'subscription':
-        productDetails = {
-          name: 'AI AdGuru Pro Subscription',
-          description: '400 credits per month, AI-generated ad copy and images, campaign management',
-        };
+        productDetails = { name: 'AI AdGuru Pro Subscription', description: '400 credits/month' };
         priceAmount = 9900; // $99.00
         creditAmount = 400;
         break;
       default:
-        productDetails = {
-          name: 'Custom Credit Pack',
-          description: 'Credits for AI-generated ads and optimization',
-        };
-        priceAmount = 4900; // Default to $49.00
+        productDetails = { name: 'Custom Credit Pack', description: 'Credits for ads' };
+        priceAmount = 1500; // Default to $15.00
         creditAmount = 100;
     }
 
-    // Set up metadata for the checkout session
+    // Set up metadata
     const metadata = {
-      userId: userId,
+      userId,
       planId: planId || 'default',
-      creditAmount: creditAmount.toString(),
-      createdAt: new Date().toISOString(),
+      creditAmount: creditAmount.toString()
     };
 
-    // Create a checkout session with detailed product information
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -155,22 +108,18 @@ Deno.serve(async (req) => {
         },
       ],
       mode: planId === 'subscription' ? 'subscription' : 'payment',
-      allow_promotion_codes: true,
       success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: returnUrl,
-      metadata: metadata,
+      metadata,
       client_reference_id: userId,
     });
-
-    // Log success for debugging
-    console.log('Checkout session created:', session.id);
     
-    // Return the session ID and URL
+    // Return the session
     return new Response(
       JSON.stringify({ 
         sessionId: session.id, 
         url: session.url,
-        creditAmount: creditAmount,
+        creditAmount,
         success: true 
       }),
       {
@@ -179,14 +128,9 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // Log the error
-    console.error('Error creating checkout session:', error);
-    
-    // Return an error response
+    // Return error response
     return new Response(
-      JSON.stringify({ 
-        error: error.message || "An unexpected error occurred"
-      }),
+      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
