@@ -18,7 +18,7 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   onBack,
   onNext
 }) => {
-  const { analyzeAudience, isAnalyzing, analysisResult: audienceResult } = useAudienceAnalysis();
+  const { analyzeAudience, isAnalyzing, analysisResult: audienceResult, cacheInfo } = useAudienceAnalysis();
   const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>("all");
 
   const handleAnalyze = async (platform?: string) => {
@@ -47,6 +47,7 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
           analysisResult={audienceResult}
           onAnalyze={handleAnalyze}
           selectedPlatform={selectedPlatform}
+          cacheInfo={cacheInfo}
         />
         
         <div className="mt-6 pt-4 border-t flex justify-between items-center">

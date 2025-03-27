@@ -18,11 +18,20 @@ export interface AudienceAnalysisResult {
   interests?: string[];
   painPoints?: string[];
   decisionFactors?: string[];
+  // Cache information
+  fromCache?: boolean;
+  cachedAt?: string;
+}
+
+export interface AudienceCacheInfo {
+  fromCache: boolean;
+  cachedAt?: string;
 }
 
 export const useAudienceAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AudienceAnalysisResult | null>(null);
+  const [cacheInfo, setCacheInfo] = useState<AudienceCacheInfo | null>(null);
   const { toast } = useToast();
 
   const analyzeAudience = async (
@@ -36,7 +45,7 @@ export const useAudienceAnalysis = () => {
         throw new Error("Website data is required for audience analysis");
       }
 
-      console.log(`Analyzing audience for ${platform || 'all platforms'}`);
+      console.log(`Analyzing audience for ${platform || 'all platforms'} using website: ${websiteData.websiteUrl || 'unknown'}`);
       
       const { data, error } = await supabase.functions.invoke('analyze-audience', {
         body: { 
@@ -69,10 +78,27 @@ export const useAudienceAnalysis = () => {
       
       setAnalysisResult(processedData);
       
-      toast({
-        title: "Analysis Complete",
-        description: `Audience targeting analysis for ${platform || 'all platforms'} completed successfully`,
-      });
+      // Set cache info if available
+      if (data.fromCache) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: data.cachedAt
+        });
+        
+        toast({
+          title: "Using Cached Analysis",
+          description: "Using previously analyzed audience data for this website",
+        });
+      } else {
+        setCacheInfo({
+          fromCache: false
+        });
+        
+        toast({
+          title: "Analysis Complete",
+          description: `Audience targeting analysis for ${platform || 'all platforms'} completed successfully`,
+        });
+      }
       
       return processedData;
     } catch (error: any) {
@@ -92,6 +118,7 @@ export const useAudienceAnalysis = () => {
     analyzeAudience,
     isAnalyzing,
     analysisResult,
-    setAnalysisResult
+    setAnalysisResult,
+    cacheInfo
   };
 };

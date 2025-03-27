@@ -1,8 +1,7 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
+import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
 
 export type LinkedInAd = MetaAd;
 export type MicrosoftAd = GoogleAd;
@@ -20,6 +19,7 @@ export interface CampaignData {
   microsoftAds?: MicrosoftAd[];
   mindTriggers?: Record<string, string>; // Platform to mind trigger mapping
   audienceAnalysis?: AudienceAnalysisResult; // Added audience analysis field
+  audienceCacheInfo?: AudienceCacheInfo; // Added audience cache info field
   [key: string]: any;
 }
 
@@ -40,6 +40,8 @@ export interface CampaignContextType {
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
   audienceAnalysisResult: AudienceAnalysisResult | null; // Added audience analysis result
   setAudienceAnalysisResult: React.Dispatch<React.SetStateAction<AudienceAnalysisResult | null>>; // Added setter
+  audienceCacheInfo: AudienceCacheInfo | null; // Added audience cache info
+  setAudienceCacheInfo: React.Dispatch<React.SetStateAction<AudienceCacheInfo | null>>; // Added setter
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
@@ -59,6 +61,7 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
   const [audienceAnalysisResult, setAudienceAnalysisResult] = useState<AudienceAnalysisResult | null>(null);
+  const [audienceCacheInfo, setAudienceCacheInfo] = useState<AudienceCacheInfo | null>(null);
 
   // Make the campaign context available globally for direct access
   useEffect(() => {
@@ -70,7 +73,8 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       metaAds,
       linkedInAds,
       microsoftAds,
-      audienceAnalysisResult
+      audienceAnalysisResult,
+      audienceCacheInfo
     };
     
     // Add the context to the window object for global access
@@ -80,7 +84,7 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => {
       delete (window as any).campaignContext;
     };
-  }, [currentStep, campaignData, analysisResult, googleAds, metaAds, linkedInAds, microsoftAds, audienceAnalysisResult]);
+  }, [currentStep, campaignData, analysisResult, googleAds, metaAds, linkedInAds, microsoftAds, audienceAnalysisResult, audienceCacheInfo]);
 
   return (
     <CampaignContext.Provider
@@ -100,7 +104,9 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         microsoftAds,
         setMicrosoftAds,
         audienceAnalysisResult,
-        setAudienceAnalysisResult
+        setAudienceAnalysisResult,
+        audienceCacheInfo,
+        setAudienceCacheInfo
       }}
     >
       {children}

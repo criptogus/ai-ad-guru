@@ -1,12 +1,13 @@
 
 import React, { useState } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
+import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, BarChart3, Users, Target } from "lucide-react";
+import { Loader2, BarChart3, Users, Target, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 export interface AudienceAnalysisPanelProps {
   websiteData: WebsiteAnalysisResult;
@@ -14,6 +15,7 @@ export interface AudienceAnalysisPanelProps {
   analysisResult: AudienceAnalysisResult | null;
   onAnalyze: (platform?: string) => Promise<void>;
   selectedPlatform?: string;
+  cacheInfo?: AudienceCacheInfo | null;
 }
 
 const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
@@ -21,7 +23,8 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
   isAnalyzing,
   analysisResult,
   onAnalyze,
-  selectedPlatform = "all"
+  selectedPlatform = "all",
+  cacheInfo
 }) => {
   const [activePlatform, setActivePlatform] = useState<string>(selectedPlatform);
 
@@ -37,6 +40,14 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
     linkedin: "LinkedIn",
     microsoft: "Microsoft"
   };
+
+  const formatCacheDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
+  };
+
+  const isFromCache = cacheInfo?.fromCache || (analysisResult && analysisResult.fromCache);
+  const cachedAt = cacheInfo?.cachedAt || analysisResult?.cachedAt;
 
   return (
     <div className="space-y-4">
@@ -66,6 +77,15 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
+          {isFromCache && cachedAt && (
+            <div className="flex justify-end">
+              <Badge variant="outline" className="flex items-center gap-1 bg-amber-100/10">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs">Cached {formatCacheDate(cachedAt)}</span>
+              </Badge>
+            </div>
+          )}
+          
           <Tabs defaultValue={activePlatform} value={activePlatform} onValueChange={handleSelectPlatform}>
             <TabsList className="w-full grid grid-cols-5">
               <TabsTrigger value="all">All</TabsTrigger>

@@ -1,8 +1,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import OpenAI from "https://esm.sh/openai@4.6.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +25,16 @@ serve(async (req) => {
     });
   }
 
+  // Initialize Supabase client for caching
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Supabase configuration missing');
+    // Continue without caching
+  }
+
+  const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY 
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    : null;
+
   try {
     const { websiteData, platform } = await req.json();
     
@@ -32,7 +45,46 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Analyzing audience for ${platform || 'all platforms'} using website data`);
+    const websiteUrl = websiteData.websiteUrl || "";
+    const cacheKey = `${websiteUrl}:${platform || 'all'}`;
+    console.log(`Analyzing audience for ${platform || 'all platforms'} using website with URL: ${websiteUrl}`);
+    
+    // Check cache first if we have a valid URL and Supabase client
+    if (websiteUrl && supabase) {
+      // Check if we have a cached result (within the last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      try {
+        const { data: cachedData, error: cacheError } = await supabase
+          .from('audience_analysis_cache')
+          .select('*')
+          .eq('url', websiteUrl)
+          .eq('platform', platform || 'all')
+          .gte('created_at', thirtyDaysAgo.toISOString())
+          .maybeSingle();
+        
+        if (cacheError) {
+          console.error("Error checking audience cache:", cacheError);
+          // Continue with analysis even if cache check fails
+        }
+        
+        // If we have a valid cached result, return it
+        if (cachedData && cachedData.analysis_result) {
+          console.log("Using cached audience analysis result from:", cachedData.created_at);
+          return new Response(JSON.stringify({
+            ...cachedData.analysis_result,
+            fromCache: true,
+            cachedAt: cachedData.created_at
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+      } catch (cacheError) {
+        console.error("Error in audience cache operation:", cacheError);
+        // Continue with analysis even if cache check fails
+      }
+    }
     
     // Create a prompt based on the provided advanced analytics prompt template
     const prompt = createAudienceAnalysisPrompt(websiteData, platform);
@@ -52,6 +104,29 @@ serve(async (req) => {
     });
 
     const analysisResult = parseAnalysisResponse(response.choices[0].message.content, platform);
+    
+    // Cache the analysis result if we have a URL and Supabase client
+    if (websiteUrl && supabase) {
+      try {
+        const { error: upsertError } = await supabase
+          .from('audience_analysis_cache')
+          .upsert({
+            url: websiteUrl,
+            platform: platform || 'all',
+            analysis_result: analysisResult
+          }, { onConflict: 'url,platform' });
+        
+        if (upsertError) {
+          console.error("Error caching audience analysis result:", upsertError);
+          // Continue even if caching fails
+        } else {
+          console.log("Audience analysis result cached successfully");
+        }
+      } catch (cacheError) {
+        console.error("Error in audience cache operation:", cacheError);
+        // Continue even if caching fails
+      }
+    }
     
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
