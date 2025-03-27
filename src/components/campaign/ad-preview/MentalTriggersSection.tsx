@@ -6,17 +6,19 @@ import { Sparkles } from "lucide-react";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
 
 interface MentalTriggersSectionProps {
-  onSelectTrigger: (trigger: string) => void;
+  onSelectTrigger: (trigger: string, platform: string) => void;
+  activePlatform: string;
 }
 
 const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
   onSelectTrigger,
+  activePlatform
 }) => {
   const [openTriggerGallery, setOpenTriggerGallery] = useState(false);
 
   const handleSelectTrigger = (trigger: string) => {
-    onSelectTrigger(trigger);
-    // Do not navigate to next step, just close the gallery
+    // Pass both the trigger and the current platform
+    onSelectTrigger(trigger, activePlatform);
     setOpenTriggerGallery(false);
   };
 
@@ -33,6 +35,7 @@ const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
         <Button 
           onClick={(e) => {
             e.preventDefault(); // Prevent any form submission
+            e.stopPropagation(); // Prevent event bubbling
             setOpenTriggerGallery(true);
           }} 
           variant="outline"

@@ -11,6 +11,8 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoveRight } from "lucide-react";
 import MentalTriggersSection from "./MentalTriggersSection";
+import { useCampaign } from "@/contexts/CampaignContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult | null;
@@ -56,10 +58,25 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   mindTriggers = {}
 }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
-  const [selectedTrigger, setSelectedTrigger] = useState<string>("");
+  const { campaignData, setCampaignData } = useCampaign();
+  const { toast } = useToast();
 
-  const handleSelectTrigger = (trigger: string) => {
-    setSelectedTrigger(trigger);
+  const handleSelectTrigger = (trigger: string, platform: string) => {
+    // Update mind triggers for the current platform without navigating
+    const updatedMindTriggers = {
+      ...campaignData.mindTriggers || {},
+      [platform]: trigger
+    };
+    
+    setCampaignData((prev) => ({
+      ...prev,
+      mindTriggers: updatedMindTriggers
+    }));
+    
+    toast({
+      title: "Mind Trigger Updated",
+      description: `Mind trigger for ${platform} ads has been updated.`,
+    });
   };
 
   if (!analysisResult) {
@@ -133,7 +150,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           </div>
 
           <div className="space-y-6">
-            <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
+            <MentalTriggersSection 
+              onSelectTrigger={handleSelectTrigger} 
+              activePlatform={selectedPlatform}
+            />
           </div>
         </div>
 

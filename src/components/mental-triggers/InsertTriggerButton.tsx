@@ -32,6 +32,10 @@ const InsertTriggerButton: React.FC<InsertTriggerButtonProps> = ({
           e.stopPropagation(); // Stop propagation
           setIsOpen(true);
         }}
+        onMouseDown={(e) => {
+          e.preventDefault(); // Prevent default behavior
+          e.stopPropagation(); // Stop propagation
+        }}
       >
         <Sparkles className="h-4 w-4 mr-2" />
         {children || "Mental Triggers"}
