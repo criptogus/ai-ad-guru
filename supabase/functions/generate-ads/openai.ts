@@ -18,13 +18,25 @@ export const generateWithOpenAI = async (prompt: string) => {
   const openai = getOpenAIClient();
   
   console.log("Sending prompt to OpenAI...");
+  console.log("Prompt length:", prompt.length);
+  console.log("Prompt preview:", prompt.substring(0, 150) + "...");
   
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // Using the most capable model for better ad generation
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an expert advertising copywriter who creates high-converting, platform-specific ads based on marketing best practices. Return your response as properly formatted JSON only."
+        },
+        { 
+          role: "user", 
+          content: prompt 
+        }
+      ],
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }, // Request JSON format
     });
     
     if (!response.choices || response.choices.length === 0) {
