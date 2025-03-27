@@ -1,102 +1,80 @@
 
 /**
  * API Error Handler
- * Handles API errors consistently across the application
+ * Handles errors from API requests
  */
 
 import { errorLogger } from './errorLogger';
 
 /**
- * API Error structure
+ * Standard API error format
  */
 export interface ApiError {
+  status: number;
   message: string;
   code?: string;
-  status?: number;
-  details?: Record<string, any>;
+  details?: any;
 }
 
 /**
- * Parse error from API response
+ * Parse API error response
  */
 export const parseApiError = (error: any): ApiError => {
   // If it's already in our format, return it
-  if (error && typeof error === 'object' && 'message' in error) {
+  if (error && typeof error === 'object' && 'status' in error && 'message' in error) {
     return error as ApiError;
   }
   
-  // Check for fetch Response object
-  if (error instanceof Response) {
+  // If it's an axios error
+  if (error && error.response) {
+    const { status, data } = error.response;
+    
     return {
-      message: `HTTP error ${error.status}: ${error.statusText}`,
-      status: error.status
+      status,
+      message: data?.message || 'An error occurred with the API request',
+      code: data?.code,
+      details: data?.details
     };
   }
   
-  // Handle Error objects
-  if (error instanceof Error) {
+  // If it's a network error
+  if (error && error.message && error.message.includes('Network Error')) {
     return {
-      message: error.message,
-      details: { stack: error.stack }
+      status: 0,
+      message: 'Network error. Please check your connection and try again.',
+      code: 'NETWORK_ERROR'
     };
   }
   
-  // Handle string errors
-  if (typeof error === 'string') {
-    return { message: error };
-  }
-  
-  // Default case
+  // Default unknown error
   return {
-    message: 'An unknown error occurred',
-    details: { originalError: error }
+    status: 500,
+    message: error?.message || 'An unknown error occurred',
+    code: 'UNKNOWN_ERROR',
+    details: error
   };
 };
 
 /**
- * Handle API error with consistent behavior
+ * Handle API error - logs it and returns a formatted error
  */
-export const handleApiError = (
-  error: any,
-  context: string,
-  options?: {
-    rethrow?: boolean;
-    defaultMessage?: string;
-  }
-): ApiError => {
-  const parsedError = parseApiError(error);
-  
+export const handleApiError = (error: any, context: string): ApiError => {
   // Log the error
-  errorLogger.logError(parsedError, context);
+  errorLogger.logError(error, `API Error (${context})`);
   
-  // Return a consistent error format
-  const formattedError: ApiError = {
-    message: parsedError.message || options?.defaultMessage || 'An error occurred',
-    code: parsedError.code,
-    status: parsedError.status,
-    details: parsedError.details
-  };
-  
-  // Rethrow if needed
-  if (options?.rethrow) {
-    throw formattedError;
-  }
-  
-  return formattedError;
+  // Parse and return formatted error
+  return parseApiError(error);
 };
 
 /**
- * Safely execute a function that might throw API errors
+ * Create a function that handles API errors for a specific context
  */
-export const safeApiCall = async <T>(
-  apiCall: () => Promise<T>,
-  context: string,
-  fallbackValue?: T
-): Promise<T> => {
-  try {
-    return await apiCall();
-  } catch (error) {
-    handleApiError(error, context);
-    return fallbackValue as T;
-  }
+export const createApiErrorHandler = (context: string) => {
+  return (error: any): ApiError => handleApiError(error, context);
+};
+
+export default {
+  parseApiError,
+  handleApiError,
+  createApiErrorHandler
 };

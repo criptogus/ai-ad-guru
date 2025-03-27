@@ -10,6 +10,16 @@ import {
   getInvoiceHistory
 } from './billingApi';
 
+// Export types
+import * as BillingTypes from './types';
+export type { 
+  CheckoutSession,
+  SubscriptionDetails,
+  CreditPurchase,
+  Invoice,
+  PaymentVerificationResult
+} from './types';
+
 // Export with distinct names
 export {
   createCheckoutSession,
@@ -20,6 +30,3 @@ export {
   getCreditPurchaseHistory,
   getInvoiceHistory
 };
-
-// Export types
-export * from './types';
