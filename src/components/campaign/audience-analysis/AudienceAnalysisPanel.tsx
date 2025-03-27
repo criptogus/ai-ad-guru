@@ -15,7 +15,7 @@ interface AudienceAnalysisPanelProps {
   isAnalyzing: boolean;
   analysisResult: AudienceAnalysisResult | null;
   onAnalyze: (platform?: string) => Promise<void>;
-  selectedPlatform?: string; // Add this prop to the interface
+  selectedPlatform?: string;
 }
 
 const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
@@ -23,7 +23,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
   isAnalyzing,
   analysisResult,
   onAnalyze,
-  selectedPlatform = "all" // Provide a default value
+  selectedPlatform = "all"
 }) => {
   const [internalSelectedPlatform, setInternalSelectedPlatform] = useState<string>(selectedPlatform);
   const { toast } = useToast();
@@ -59,9 +59,9 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
   };
 
   return (
-    <Card className="shadow-md border border-accent/20">
+    <Card className="shadow-sm border border-border">
       <CardHeader className="bg-card pb-4">
-        <CardTitle className="text-xl text-foreground flex items-center">
+        <CardTitle className="text-lg text-foreground flex items-center">
           <Target className="mr-2 h-5 w-5 text-primary" />
           Advanced Audience Analysis
         </CardTitle>
@@ -70,9 +70,9 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="pt-6">
+      <CardContent className="pt-4">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h3 className="text-sm font-medium mb-1">Select Platform:</h3>
               <Tabs 
@@ -80,11 +80,11 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
                 onValueChange={setInternalSelectedPlatform} 
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-4 mb-4">
-                  <TabsTrigger value="all">All Platforms</TabsTrigger>
-                  <TabsTrigger value="google">Google Ads</TabsTrigger>
-                  <TabsTrigger value="meta">Meta Ads</TabsTrigger>
-                  <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
+                <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="google">Google</TabsTrigger>
+                  <TabsTrigger value="meta">Meta</TabsTrigger>
+                  <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -92,7 +92,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
             <Button 
               onClick={handleAnalyze} 
               disabled={isAnalyzing || !websiteData}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              className="mt-2 sm:mt-0"
             >
               {isAnalyzing ? (
                 <>
@@ -115,15 +115,15 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
           )}
           
           {analysisResult && (
-            <div className="mt-6">
+            <div className="mt-4">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center">
-                  <PieChart className="h-5 w-5 mr-2 text-purple-600" />
+                  <PieChart className="h-5 w-5 mr-2 text-primary" />
                   <h3 className="font-medium">Analysis Results</h3>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                  <Badge variant="outline" className="bg-primary/10 text-primary">
                     {analysisResult.platform === 'all' ? 'All Platforms' : `${analysisResult.platform} Ads`}
                   </Badge>
                   
@@ -133,7 +133,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
                 </div>
               </div>
               
-              <Card className="border border-accent/20">
+              <Card className="border border-border">
                 <CardContent className="p-4">
                   <ScrollArea className="h-[400px] pr-4">
                     {analysisResult.analysisText ? (

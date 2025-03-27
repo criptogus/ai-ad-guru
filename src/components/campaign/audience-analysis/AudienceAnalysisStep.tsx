@@ -29,45 +29,43 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <CardTitle>Audience Analysis</CardTitle>
-          </div>
-          <CardDescription>
-            Let our AI analyze your website content to identify the perfect audience for your ads
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <AudienceAnalysisPanel
-            websiteData={analysisResult!}
-            isAnalyzing={isAnalyzing}
-            analysisResult={audienceResult}
-            onAnalyze={handleAnalyze}
-            selectedPlatform={selectedPlatform}
-          />
-        </CardContent>
-      </Card>
+    <Card className="shadow-md border border-border">
+      <CardHeader className="pb-3">
+        <div className="flex items-center space-x-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <CardTitle>Audience Analysis</CardTitle>
+        </div>
+        <CardDescription>
+          Let our AI analyze your website content to identify the perfect audience for your ads
+        </CardDescription>
+      </CardHeader>
       
-      <div className="pt-4 border-t flex justify-between items-center">
-        <Button variant="outline" onClick={onBack} className="flex items-center">
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+      <CardContent className="pt-4">
+        <AudienceAnalysisPanel
+          websiteData={analysisResult!}
+          isAnalyzing={isAnalyzing}
+          analysisResult={audienceResult}
+          onAnalyze={handleAnalyze}
+          selectedPlatform={selectedPlatform}
+        />
         
-        <span className="text-sm text-muted-foreground">
-          Step 4 of 7
-        </span>
-        
-        <Button onClick={onNext} className="flex items-center" disabled={!audienceResult}>
-          Next Step
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-    </div>
+        <div className="mt-6 pt-4 border-t flex justify-between items-center">
+          <Button variant="outline" onClick={onBack} className="flex items-center">
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          
+          <span className="text-sm text-muted-foreground">
+            Step 4 of 7
+          </span>
+          
+          <Button onClick={onNext} className="flex items-center" disabled={!audienceResult}>
+            Next Step
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

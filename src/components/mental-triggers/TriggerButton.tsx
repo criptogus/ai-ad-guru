@@ -32,7 +32,7 @@ export const TriggerButton: React.FC<TriggerButtonProps> = ({
   };
 
   const handleSelectTrigger = (trigger: string) => {
-    // Call the callback without any additional logic
+    // Call the callback with the trigger, ensuring we don't navigate
     onSelectTrigger(trigger);
     setOpen(false);
   };
@@ -44,6 +44,7 @@ export const TriggerButton: React.FC<TriggerButtonProps> = ({
           <TooltipTrigger asChild>
             <Button
               onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                // Prevent default browser navigation and event bubbling
                 e.preventDefault();
                 e.stopPropagation();
                 setOpen(true);

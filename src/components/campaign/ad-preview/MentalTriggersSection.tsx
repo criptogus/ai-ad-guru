@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MentalTriggersSectionProps } from "@/types/campaign";
 import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
@@ -32,7 +32,7 @@ const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="shadow-sm border border-border">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center">
           <SparklesIcon className="h-5 w-5 mr-2 text-primary" />

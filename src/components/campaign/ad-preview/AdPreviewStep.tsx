@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -77,8 +78,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       title: "Mind Trigger Updated",
       description: `Mind trigger for ${platform} ads has been updated.`,
     });
-    
-    // Explicitly DO NOT call onNext here
   };
 
   if (!analysisResult) {
@@ -86,7 +85,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   }
 
   return (
-    <Card>
+    <Card className="shadow-md border border-border">
       <CardHeader>
         <CardTitle>Ad Creation & Preview</CardTitle>
       </CardHeader>
