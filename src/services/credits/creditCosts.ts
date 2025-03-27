@@ -20,8 +20,9 @@ export type CreditAction =
   | "weekly_optimization"
   | "banner_creation"
   | "smart_banner"
-  | "credit_refund"
-  | "ai_optimization_daily";
+  | "smart_banner_creation"
+  | "ad_optimization_daily"
+  | "credit_refund";
 
 // Define the structure for credit costs
 export interface CreditCosts {
@@ -35,6 +36,7 @@ export interface CreditCosts {
   campaignCreation: number;
   bannerCreation: number;
   smartBanner: number;
+  aiInsightsReport?: number;
 }
 
 // Define the credit costs
@@ -52,7 +54,8 @@ const creditCostsData: CreditCosts = {
   },
   campaignCreation: 1,
   bannerCreation: 3,
-  smartBanner: 5
+  smartBanner: 5,
+  aiInsightsReport: 10
 };
 
 // Function to get credit costs for a specific action
@@ -73,6 +76,7 @@ export const getCreditCost = (action: CreditAction): number => {
     case "website_analysis":
       return creditCostsData.websiteAnalysis;
     case "daily_optimization":
+    case "ad_optimization_daily":
       return creditCostsData.adOptimization.daily;
     case "three_day_optimization":
       return creditCostsData.adOptimization.every3Days;
@@ -81,11 +85,10 @@ export const getCreditCost = (action: CreditAction): number => {
     case "banner_creation":
       return creditCostsData.bannerCreation;
     case "smart_banner":
+    case "smart_banner_creation":
       return creditCostsData.smartBanner;
     case "credit_refund":
       return 0; // Refunds don't cost credits
-    case "ai_optimization_daily":
-      return creditCostsData.adOptimization.daily;
     default:
       return 0;
   }

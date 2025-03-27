@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getCreditCosts } from "@/services/credits/creditCosts";
+import { getAllCreditCosts } from "@/services/credits/creditCosts";
 
 interface AdOptimizerProps {
   adType: "google" | "meta" | "linkedin" | "microsoft";
@@ -25,7 +26,7 @@ const AdOptimizer: React.FC<AdOptimizerProps> = ({
 }) => {
   const [selectedGoal, setSelectedGoal] = useState<OptimizationGoal>("increase_ctr");
   const { optimizeGoogleAds, optimizeMetaAds, isOptimizing } = useAdOptimizer();
-  const creditCostsData = getCreditCosts();
+  const creditCostsData = getAllCreditCosts();
   const optimizationCost = creditCostsData.adOptimization.daily;
   
   const handleOptimize = async () => {

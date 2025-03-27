@@ -1,6 +1,6 @@
 
 import React from "react";
-import { getAllCreditCosts } from "@/services/credits/creditCosts"; // Fixed import
+import { getAllCreditCosts } from "@/services/credits/creditCosts";
 
 const CreditCostInfo = () => {
   const creditCostsData = getAllCreditCosts();

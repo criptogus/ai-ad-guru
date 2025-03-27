@@ -1,3 +1,4 @@
+
 import React from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -151,7 +152,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Custom AI Insights Report</span>
-                  <span className="font-semibold">{creditCostsData.aiInsightsReport} credits</span>
+                  <span className="font-semibold">{creditCostsData.aiInsightsReport || 10} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   In-depth analysis of your campaigns with recommendations

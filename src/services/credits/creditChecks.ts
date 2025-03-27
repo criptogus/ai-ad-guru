@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getCreditCost, CreditAction } from "./creditCosts";
@@ -61,25 +62,20 @@ export const deductUserCredits = async (
 
     if (updateError) {
       console.error("Error deducting credits:", updateError);
-      toast({
-        title: "Credit Deduction Failed",
+      toast("Credit Deduction Failed", {
         description: "There was an error deducting credits. Please try again.",
-        variant: "destructive",
       });
       return false;
     }
 
-    toast({
-      title: "Credits Deducted",
+    toast("Credits Deducted", {
       description: `Successfully deducted ${amount} credits for ${action}`,
     });
     return true;
   } catch (error) {
     console.error("Error during credit deduction:", error);
-    toast({
-      title: "Credit Deduction Error",
+    toast("Credit Deduction Error", {
       description: "An error occurred while deducting credits. Please try again.",
-      variant: "destructive",
     });
     return false;
   }

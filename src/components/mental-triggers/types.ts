@@ -27,5 +27,6 @@ export interface TriggerCategoryInfo {
   name: string;
   description: string;
   icon: string;
-  emoji: string; // Added emoji property to fix the errors
+  emoji: string;
+  color?: string; // Add color property as optional
 }
