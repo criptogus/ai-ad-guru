@@ -1,93 +1,144 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
+import React, { useState } from "react";
 import { GoogleAd } from "@/hooks/adGeneration";
-import MentalTriggersSection from "../MentalTriggersSection";
-import { TriggerButtonInline } from "../TriggerButtonInline";
+import { Button } from "@/components/ui/button";
+import { Edit, Check, X, Copy } from "lucide-react";
+import GoogleAdDetails from "./GoogleAdDetails";
+import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
 
 interface GoogleAdEditorProps {
   ad: GoogleAd;
-  onChange: (updatedAd: GoogleAd) => void;
+  index: number;
+  onUpdateAd: (index: number, updatedAd: GoogleAd) => void;
 }
 
-const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({ ad, onChange }) => {
-  const handleHeadlineChange = (index: number, value: string) => {
-    const newHeadlines = [...ad.headlines];
-    newHeadlines[index] = value;
-    onChange({ ...ad, headlines: newHeadlines });
+const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
+  ad,
+  index,
+  onUpdateAd,
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
+
+  const handleStartEditing = () => {
+    setIsEditing(true);
   };
 
-  const handleDescriptionChange = (index: number, value: string) => {
-    const newDescriptions = [...ad.descriptions];
-    newDescriptions[index] = value;
-    onChange({ ...ad, descriptions: newDescriptions });
+  const handleSaveChanges = () => {
+    onUpdateAd(index, editedAd);
+    setIsEditing(false);
+  };
+
+  const handleCancelEditing = () => {
+    setEditedAd(ad);
+    setIsEditing(false);
+  };
+
+  const handleCopyContent = () => {
+    const content = `Headlines:\n${ad.headlines.join('\n')}\n\nDescriptions:\n${ad.descriptions.join('\n')}`;
+    navigator.clipboard.writeText(content);
+  };
+
+  const handleUpdateAd = (updatedAd: GoogleAd) => {
+    setEditedAd(updatedAd);
   };
 
   const handleInsertTrigger = (triggerText: string) => {
-    handleHeadlineChange(0, triggerText);
+    // Choose where to insert the trigger (e.g., first headline)
+    const updatedHeadlines = [...editedAd.headlines];
+    if (updatedHeadlines[0].length + triggerText.length <= 30) {
+      // If it fits in the first headline
+      updatedHeadlines[0] = triggerText;
+    } else if (updatedHeadlines[1].length + triggerText.length <= 30) {
+      // If it fits in the second headline
+      updatedHeadlines[1] = triggerText;
+    } else if (updatedHeadlines[2].length + triggerText.length <= 30) {
+      // If it fits in the third headline
+      updatedHeadlines[2] = triggerText;
+    } else {
+      // If it doesn't fit in any headline, try to add to description
+      const updatedDescriptions = [...editedAd.descriptions];
+      if (updatedDescriptions[0].length + triggerText.length <= 90) {
+        updatedDescriptions[0] = triggerText;
+        setEditedAd({
+          ...editedAd,
+          descriptions: updatedDescriptions
+        });
+        return;
+      }
+    }
+    
+    setEditedAd({
+      ...editedAd,
+      headlines: updatedHeadlines
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium">Headlines (30 chars max)</h3>
-              </div>
-              
-              {ad.headlines.map((headline, index) => (
-                <div key={`headline-${index}`} className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor={`headline-${index}`}>Headline {index + 1}</Label>
-                    {index === 0 && (
-                      <TriggerButtonInline onInsert={handleInsertTrigger} />
-                    )}
-                  </div>
-                  <Input
-                    id={`headline-${index}`}
-                    value={headline}
-                    onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                    maxLength={30}
-                    className="h-9"
-                  />
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {headline.length}/30 characters
-                  </div>
-                </div>
-              ))}
-            </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-md font-medium">Ad Content</h3>
+        
+        <div className="flex space-x-2">
+          {isEditing ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelEditing}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveChanges}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyContent}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStartEditing}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
 
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">Descriptions (90 chars max)</h3>
-              {ad.descriptions.map((description, index) => (
-                <div key={`description-${index}`} className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor={`description-${index}`}>Description {index + 1}</Label>
-                    <TriggerButtonInline onInsert={(text) => handleDescriptionChange(index, text)} />
-                  </div>
-                  <Textarea
-                    id={`description-${index}`}
-                    value={description}
-                    onChange={(e) => handleDescriptionChange(index, e.target.value)}
-                    maxLength={90}
-                    rows={2}
-                  />
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {description.length}/90 characters
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <MentalTriggersSection onSelectTrigger={handleInsertTrigger} />
+      {isEditing && (
+        <div className="mb-2">
+          <TriggerButton
+            onSelectTrigger={handleInsertTrigger}
+            buttonText="Add Mind Trigger"
+            tooltip="Insert psychological triggers to improve ad performance"
+            variant="outline"
+            size="sm"
+          />
+        </div>
+      )}
+
+      <GoogleAdDetails
+        ad={isEditing ? editedAd : ad}
+        onUpdate={handleUpdateAd}
+        isEditing={isEditing}
+      />
     </div>
   );
 };
