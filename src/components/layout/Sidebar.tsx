@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import SidebarHeader from "./SidebarHeader";
 import SidebarNavigationItems from "./SidebarNavigationItems";
 import SidebarCollapseButton from "./SidebarCollapseButton";
-import { ModeToggle } from "./ThemeToggle"; // Changed from ModeToggle to ThemeToggle
+import ThemeToggle from "./ThemeToggle";
 import { useSidebar } from "@/hooks/useSidebar";
 
 export interface SidebarProps {
@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <div className="p-3 border-t flex items-center justify-between">
-          <ModeToggle />
+          <ThemeToggle />
           <SidebarCollapseButton 
             collapsed={collapsed} 
             onClick={() => toggleCollapsed(!collapsed)} 
