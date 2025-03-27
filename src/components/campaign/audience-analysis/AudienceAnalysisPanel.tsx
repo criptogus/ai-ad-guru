@@ -1,16 +1,14 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Lightbulb, Target, PieChart, Copy } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, BarChart3, Users, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-interface AudienceAnalysisPanelProps {
+export interface AudienceAnalysisPanelProps {
   websiteData: WebsiteAnalysisResult;
   isAnalyzing: boolean;
   analysisResult: AudienceAnalysisResult | null;
@@ -25,74 +23,35 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
   onAnalyze,
   selectedPlatform = "all"
 }) => {
-  const [internalSelectedPlatform, setInternalSelectedPlatform] = useState<string>(selectedPlatform);
-  const { toast } = useToast();
+  const [activePlatform, setActivePlatform] = useState<string>(selectedPlatform);
 
-  const handleAnalyze = async () => {
-    const platform = internalSelectedPlatform === "all" ? undefined : internalSelectedPlatform;
-    await onAnalyze(platform);
+  const handleSelectPlatform = (platform: string) => {
+    setActivePlatform(platform);
+    onAnalyze(platform === "all" ? undefined : platform);
   };
 
-  const handleCopyToClipboard = () => {
-    if (analysisResult?.analysisText) {
-      navigator.clipboard.writeText(analysisResult.analysisText);
-      toast({
-        title: "Copied",
-        description: "Analysis copied to clipboard",
-      });
-    }
-  };
-
-  // Function to process the text and add basic formatting
-  const formatAnalysisText = (text: string) => {
-    // Replace line breaks with <br> elements
-    let formattedText = text.replace(/\n/g, '<br />');
-    
-    // Add bold to headings (lines ending with : or that are all uppercase)
-    formattedText = formattedText.replace(/([A-Za-z\s]+)(:)(<br \/>)/g, '<strong>$1$2</strong>$3');
-    formattedText = formattedText.replace(/(<br \/>)([A-Z][A-Z\s]+)(<br \/>)/g, '$1<strong>$2</strong>$3');
-    
-    // Add styling to bullet points
-    formattedText = formattedText.replace(/- (.*?)(<br \/>)/g, '• <span class="ml-2">$1</span>$2');
-    
-    return formattedText;
+  const platformNames = {
+    all: "All Platforms",
+    google: "Google Ads",
+    meta: "Meta/Instagram",
+    linkedin: "LinkedIn",
+    microsoft: "Microsoft"
   };
 
   return (
-    <Card className="shadow-sm border border-border">
-      <CardHeader className="bg-card pb-4">
-        <CardTitle className="text-lg text-foreground flex items-center">
-          <Target className="mr-2 h-5 w-5 text-primary" />
-          Advanced Audience Analysis
-        </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Generate detailed targeting recommendations based on your website content
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="pt-4">
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-medium mb-1">Select Platform:</h3>
-              <Tabs 
-                value={internalSelectedPlatform} 
-                onValueChange={setInternalSelectedPlatform} 
-                className="w-full"
-              >
-                <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="google">Google</TabsTrigger>
-                  <TabsTrigger value="meta">Meta</TabsTrigger>
-                  <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-            
+    <div className="space-y-4">
+      {!analysisResult ? (
+        <div className="bg-muted/50 rounded-lg p-6 text-center space-y-4 border border-border">
+          <BarChart3 className="h-12 w-12 mx-auto text-primary/70" />
+          <h3 className="text-lg font-medium">Audience Analysis</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Our AI will analyze your website content to identify the ideal target audience for your ads across different platforms.
+          </p>
+          <div className="flex justify-center pt-2">
             <Button 
-              onClick={handleAnalyze} 
-              disabled={isAnalyzing || !websiteData}
-              className="mt-2 sm:mt-0"
+              onClick={() => onAnalyze()} 
+              disabled={isAnalyzing}
+              className="min-w-[200px]"
             >
               {isAnalyzing ? (
                 <>
@@ -100,58 +59,118 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
                   Analyzing...
                 </>
               ) : (
-                <>
-                  <Lightbulb className="mr-2 h-4 w-4" />
-                  Generate Targeting
-                </>
+                <>Analyze Audience</>
               )}
             </Button>
           </div>
-          
-          {!websiteData && (
-            <div className="p-4 bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 rounded-md">
-              Please complete website analysis first to use this feature.
-            </div>
-          )}
-          
-          {analysisResult && (
-            <div className="mt-4">
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center">
-                  <PieChart className="h-5 w-5 mr-2 text-primary" />
-                  <h3 className="font-medium">Analysis Results</h3>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-primary/10 text-primary">
-                    {analysisResult.platform === 'all' ? 'All Platforms' : `${analysisResult.platform} Ads`}
-                  </Badge>
-                  
-                  <Button size="sm" variant="outline" onClick={handleCopyToClipboard}>
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-              
-              <Card className="border border-border">
-                <CardContent className="p-4">
-                  <ScrollArea className="h-[400px] pr-4">
-                    {analysisResult.analysisText ? (
-                      <div 
-                        className="text-sm leading-relaxed whitespace-pre-line"
-                        dangerouslySetInnerHTML={{ __html: formatAnalysisText(analysisResult.analysisText) }}
-                      />
-                    ) : (
-                      <p className="text-muted-foreground italic">No analysis data available</p>
-                    )}
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <div className="space-y-4">
+          <Tabs defaultValue={activePlatform} value={activePlatform} onValueChange={handleSelectPlatform}>
+            <TabsList className="w-full grid grid-cols-5">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="google">Google</TabsTrigger>
+              <TabsTrigger value="meta">Instagram</TabsTrigger>
+              <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
+              <TabsTrigger value="microsoft">Microsoft</TabsTrigger>
+            </TabsList>
+            
+            {Object.entries(platformNames).map(([platform, name]) => (
+              <TabsContent key={platform} value={platform} className="pt-4">
+                {isAnalyzing ? (
+                  <div className="h-60 flex items-center justify-center">
+                    <div className="text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                      <p className="text-muted-foreground">Analyzing audience for {name}...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <h3 className="text-lg font-medium flex items-center mb-4">
+                          <Users className="mr-2 h-5 w-5 text-primary" />
+                          Audience Demographics
+                        </h3>
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Age Groups</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.demographics.ageGroups.map((age, idx) => (
+                                <Badge key={idx} variant="secondary">{age}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Gender</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.demographics.gender.map((g, idx) => (
+                                <Badge key={idx} variant="secondary">{g}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Education Level</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.demographics.educationLevel.map((edu, idx) => (
+                                <Badge key={idx} variant="secondary">{edu}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Income Level</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.demographics.incomeLevel.map((income, idx) => (
+                                <Badge key={idx} variant="secondary">{income}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="pt-6">
+                        <h3 className="text-lg font-medium flex items-center mb-4">
+                          <Target className="mr-2 h-5 w-5 text-primary" />
+                          Interests & Behaviors
+                        </h3>
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Interests</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.interests.map((interest, idx) => (
+                                <Badge key={idx} variant="secondary">{interest}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Pain Points</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.painPoints.map((pain, idx) => (
+                                <Badge key={idx} variant="secondary">{pain}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Decision Factors</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {analysisResult.decisionFactors.map((factor, idx) => (
+                                <Badge key={idx} variant="secondary">{factor}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -91,7 +91,10 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
 
   // Unified handler that works with either onSelectTrigger or onInsert
   // but does not perform any navigation
-  const handleSelectTrigger = (trigger: string) => {
+  const handleSelectTrigger = (e: React.MouseEvent, trigger: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (onSelectTrigger) {
       onSelectTrigger(trigger);
     }
@@ -158,7 +161,7 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => handleSelectTrigger(trigger.text)}
+                      onClick={(e) => handleSelectTrigger(e, trigger.text)}
                       className="whitespace-nowrap"
                     >
                       Insert
