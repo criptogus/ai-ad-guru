@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, RotateCw, Trash2 } from "lucide-react";
+import { Edit, RotateCw, Trash2, Copy } from "lucide-react";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
 const platformStyles = {
@@ -9,23 +9,23 @@ const platformStyles = {
     headline: "text-[#1a0dab] font-medium text-lg",
     url: "text-[#006621] text-sm",
     description: "text-[#4d5156] text-base",
-    background: "bg-white",
+    background: "bg-white dark:bg-gray-800",
   },
   linkedin: {
-    headline: "text-[#202124] font-semibold text-lg",
-    body: "text-gray-700 text-base",
+    headline: "text-[#202124] dark:text-gray-100 font-semibold text-lg",
+    body: "text-gray-700 dark:text-gray-300 text-base",
     button: "bg-[#0a66c2] text-white px-4 py-2 rounded-md text-sm",
-    background: "bg-[#f3f2ef]",
+    background: "bg-[#f3f2ef] dark:bg-gray-800",
   },
   meta: {
-    caption: "text-[#262626] text-base leading-snug",
-    background: "bg-white",
+    caption: "text-[#262626] dark:text-gray-100 text-base leading-snug",
+    background: "bg-white dark:bg-gray-800",
   },
   bing: {
-    headline: "text-[#004e8c] font-medium text-lg",
-    url: "text-[#006621] text-sm",
-    description: "text-gray-700 text-base",
-    background: "bg-white",
+    headline: "text-[#004e8c] dark:text-blue-300 font-medium text-lg",
+    url: "text-[#006621] dark:text-green-400 text-sm",
+    description: "text-gray-700 dark:text-gray-300 text-base",
+    background: "bg-white dark:bg-gray-800",
   },
 };
 
@@ -110,7 +110,7 @@ export function AdVariationCard({
         return (
           <div className="font-['Segoe UI', 'Helvetica Neue', sans-serif] p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
               <span className="text-sm font-medium">Company Name • Sponsored</span>
             </div>
             <div className={platformStyles.linkedin.headline}>{ad.headline}</div>
@@ -123,9 +123,9 @@ export function AdVariationCard({
         return (
           <div className="font-[system-ui] p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
               <span className="text-sm font-medium">
-                {ad.companyName || "Your Company"} <span className="text-gray-500">• Sponsored</span>
+                {ad.companyName || "Your Company"} <span className="text-gray-500 dark:text-gray-400">• Sponsored</span>
               </span>
             </div>
             
@@ -136,7 +136,7 @@ export function AdVariationCard({
                 className="w-full aspect-square object-cover rounded mb-3"
               />
             ) : (
-              <div className="aspect-square bg-gray-200 rounded-md mb-3 flex items-center justify-center text-gray-400">
+              <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-md mb-3 flex items-center justify-center text-gray-400 dark:text-gray-500">
                 No image
               </div>
             )}
@@ -151,7 +151,7 @@ export function AdVariationCard({
             )}
             
             <div className="mt-2">
-              <span className="text-sm text-blue-600">
+              <span className="text-sm text-blue-600 dark:text-blue-400">
                 {ad.description || "Learn More"}
               </span>
             </div>
@@ -196,6 +196,7 @@ export function AdVariationCard({
                   size="sm" 
                   onClick={onCopy}
                 >
+                  <Copy className="h-4 w-4 mr-1" />
                   Copy
                 </Button>
               )}
@@ -219,7 +220,7 @@ export function AdVariationCard({
 
       {/* Action Buttons */}
       {!isEditing && (
-        <div className="flex justify-between p-3 border-t border-gray-200">
+        <div className="flex justify-between p-3 border-t border-gray-200 dark:border-gray-700">
           {onRegenerate && (
             <Button 
               variant="outline" 
