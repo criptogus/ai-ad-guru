@@ -1,106 +1,62 @@
+/**
+ * Credit Costs
+ * Defines the credit costs for various actions
+ */
 
-// Define the optimization costs structure
-export interface OptimizationCosts {
-  daily: number;
-  every3Days: number;
-  weekly: number;
-}
-
-// Define credit actions
-export type CreditAction = 
-  | "google_ads_generation"
-  | "meta_ads_generation"
-  | "linkedin_ads_generation"
-  | "microsoft_ads_generation"
-  | "image_generation"
-  | "campaign_creation"
-  | "website_analysis"
-  | "daily_optimization"
-  | "three_day_optimization"
-  | "weekly_optimization"
-  | "banner_creation"
-  | "smart_banner"
-  | "smart_banner_creation"
-  | "ad_optimization_daily"
-  | "credit_refund";
-
-// Define the structure for credit costs
-export interface CreditCosts {
-  googleAds: number;
-  metaAds: number;
-  linkedInAds: number;
-  microsoftAds: number;
-  imageGeneration: number;
-  websiteAnalysis: number;
-  adOptimization: OptimizationCosts;
-  campaignCreation: number;
-  bannerCreation: number;
-  smartBanner: number;
-  aiInsightsReport?: number;
-}
-
-// Define the credit costs
-const creditCostsData: CreditCosts = {
-  googleAds: 5,
-  metaAds: 5,
-  linkedInAds: 5,
-  microsoftAds: 5,
-  imageGeneration: 3,
-  websiteAnalysis: 2,
-  adOptimization: {
-    daily: 10,
-    every3Days: 5,
-    weekly: 2
-  },
-  campaignCreation: 1,
-  bannerCreation: 3,
-  smartBanner: 5,
-  aiInsightsReport: 10
+export const creditCosts = {
+  // Ad creation costs
+  'google_ads_generation': 5,  // Generate 5 Google text ad variations
+  'meta_ads_generation': 5,    // Generate Instagram ad with text variations
+  'linkedin_ads_generation': 5,  // Generate LinkedIn ad
+  'microsoft_ads_generation': 5,  // Generate Microsoft ad variations
+  'image_generation': 5,       // Generate a single ad image
+  
+  // AI optimization costs
+  'daily_optimization': 10,    // Daily AI optimization
+  'three_day_optimization': 5, // 3-day interval AI optimization
+  'weekly_optimization': 2,    // Weekly AI optimization
+  
+  // Website analysis costs
+  'website_analysis': 3,       // Analyze website for ad creation
+  
+  // Smart banner costs
+  'banner_generation': 5,      // Create AI-generated banner
+  'banner_image': 3,           // Generate image for banner
+  
+  // Campaign creation costs
+  'campaign_creation': 5,      // Create and publish campaign
+  
+  // Other costs
+  'advanced_targeting': 2,     // Generate AI targeting recommendations
+  'performance_insights': 1    // Generate AI performance insights
 };
 
-// Function to get credit costs for a specific action
+/**
+ * Credit Action Types
+ */
+export type CreditAction = keyof typeof creditCosts;
+
+/**
+ * Get credit cost for an action
+ */
 export const getCreditCost = (action: CreditAction): number => {
-  switch (action) {
-    case "google_ads_generation":
-      return creditCostsData.googleAds;
-    case "meta_ads_generation":
-      return creditCostsData.metaAds;
-    case "linkedin_ads_generation":
-      return creditCostsData.linkedInAds;
-    case "microsoft_ads_generation":
-      return creditCostsData.microsoftAds;
-    case "image_generation":
-      return creditCostsData.imageGeneration;
-    case "campaign_creation":
-      return creditCostsData.campaignCreation;
-    case "website_analysis":
-      return creditCostsData.websiteAnalysis;
-    case "daily_optimization":
-    case "ad_optimization_daily":
-      return creditCostsData.adOptimization.daily;
-    case "three_day_optimization":
-      return creditCostsData.adOptimization.every3Days;
-    case "weekly_optimization":
-      return creditCostsData.adOptimization.weekly;
-    case "banner_creation":
-      return creditCostsData.bannerCreation;
-    case "smart_banner":
-    case "smart_banner_creation":
-      return creditCostsData.smartBanner;
-    case "credit_refund":
-      return 0; // Refunds don't cost credits
-    default:
-      return 0;
-  }
+  return creditCosts[action] || 0;
 };
 
-// Function to get all credit costs
-export const getAllCreditCosts = (): CreditCosts => {
-  return creditCostsData;
+/**
+ * Get a formatted display of credit costs
+ */
+export const getCreditCostsForDisplay = (): Array<{action: string, description: string, cost: number}> => {
+  return [
+    { action: 'google_ads_generation', description: 'Google Search Ads (5 text variations)', cost: creditCosts.google_ads_generation },
+    { action: 'meta_ads_generation', description: 'Instagram Ad (1 image + caption)', cost: creditCosts.meta_ads_generation },
+    { action: 'linkedin_ads_generation', description: 'LinkedIn Ad (1 image + caption)', cost: creditCosts.linkedin_ads_generation },
+    { action: 'microsoft_ads_generation', description: 'Microsoft Ads (5 text variations)', cost: creditCosts.microsoft_ads_generation },
+    { action: 'image_generation', description: 'AI-Generated Ad Image', cost: creditCosts.image_generation },
+    { action: 'daily_optimization', description: 'Daily AI Optimization', cost: creditCosts.daily_optimization },
+    { action: 'three_day_optimization', description: '3-Day AI Optimization', cost: creditCosts.three_day_optimization },
+    { action: 'weekly_optimization', description: 'Weekly AI Optimization', cost: creditCosts.weekly_optimization },
+    { action: 'website_analysis', description: 'Website Analysis', cost: creditCosts.website_analysis },
+    { action: 'campaign_creation', description: 'Campaign Creation', cost: creditCosts.campaign_creation }
+  ];
 };
-
-// For backward compatibility
-export const getCreditCosts = getAllCreditCosts;
-
-// For use in other modules
-export { creditCostsData };

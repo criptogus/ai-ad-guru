@@ -1,92 +1,93 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { CreditAction } from "./creditCosts";
+/**
+ * Credit Usage Service
+ * Handles credit usage and verification
+ */
 
-export interface CreditUsage {
-  id: string;
-  userId: string;
-  amount: number;
-  action: string;
-  description: string;
-  createdAt: string;
-  details?: string;
+import { errorLogger } from '@/services/libs/error-handling';
+import { getUserCredits, useCredits, hasEnoughCredits } from './creditsApi';
+import { CreditAction, creditCosts } from './creditCosts';
+
+export interface CreditUsageResult {
+  success: boolean;
+  remainingCredits?: number;
+  error?: string;
 }
 
 /**
- * Consume credits for a specific action
- * This function will check if a user has enough credits and then deduct them
+ * Use credits for a specific action with error handling
  */
-export const consumeCredits = async (
+export const useCreditWithErrorHandling = async (
   userId: string,
-  amount: number,
   action: CreditAction,
-  description: string
-): Promise<boolean> => {
+  description: string,
+  metadata?: Record<string, any>
+): Promise<CreditUsageResult> => {
   try {
-    // First deduct the credits from the user's profile
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ 
-        credits: supabase.rpc('decrement_credits', { amount }) 
-      })
-      .eq('id', userId);
+    // First check if user has enough credits
+    const hasCredits = await hasEnoughCredits(userId, action);
     
-    if (updateError) {
-      console.error("Error updating user credits:", updateError);
-      return false;
+    if (!hasCredits) {
+      const cost = creditCosts[action] || 0;
+      return {
+        success: false,
+        error: `Insufficient credits. This action requires ${cost} credits.`
+      };
     }
     
-    // Log the credit usage
-    const { error: logError } = await supabase
-      .from('credit_usage')
-      .insert([{
-        user_id: userId,
-        action,
-        amount,
-        details: description
-      }]);
+    // Use credits
+    const success = await useCredits(userId, action, description, metadata);
     
-    if (logError) {
-      console.error("Error logging credit usage:", logError);
-      // We already deducted the credits, so we return true anyway
-      return true;
+    if (!success) {
+      return {
+        success: false,
+        error: "Failed to use credits. Please try again."
+      };
     }
     
-    return true;
+    // Get remaining credits
+    const remainingCredits = await getUserCredits(userId);
+    
+    return {
+      success: true,
+      remainingCredits
+    };
   } catch (error) {
-    console.error("Error consuming credits:", error);
-    return false;
+    errorLogger.logError(error, 'useCreditWithErrorHandling');
+    
+    return {
+      success: false,
+      error: error.message || "An error occurred while processing credits."
+    };
   }
 };
 
 /**
- * Get credit usage history for a user
+ * Calculate total credit cost for a set of actions
  */
-export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage[]> => {
+export const calculateTotalCreditCost = (actions: CreditAction[]): number => {
+  return actions.reduce((total, action) => {
+    return total + (creditCosts[action] || 0);
+  }, 0);
+};
+
+/**
+ * Check if user has enough credits for multiple actions
+ */
+export const hasEnoughCreditsForActions = async (userId: string, actions: CreditAction[]): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
-      .from("credit_usage")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching credit usage history:", error);
-      return [];
+    const totalCost = calculateTotalCreditCost(actions);
+    
+    if (totalCost <= 0) {
+      return true; // No credits needed
     }
-
-    // Map the database fields to our CreditUsage interface
-    return (data || []).map(item => ({
-      id: item.id,
-      userId: item.user_id,
-      amount: item.amount,
-      action: item.action,
-      description: item.details || '',
-      createdAt: item.created_at,
-      details: item.details
-    }));
+    
+    // Get user's current credit balance
+    const userCredits = await getUserCredits(userId);
+    
+    return userCredits >= totalCost;
   } catch (error) {
-    console.error("Error in getCreditUsageHistory:", error);
-    return [];
+    errorLogger.logError(error, 'hasEnoughCreditsForActions');
+    return false;
   }
 };

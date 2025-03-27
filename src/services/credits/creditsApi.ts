@@ -1,126 +1,158 @@
 
+/**
+ * Credits API Service
+ * Handles credit-related API requests
+ */
+
 import { supabase } from '@/integrations/supabase/client';
-import { CreditAction } from './types';
+import { errorLogger } from '@/services/libs/error-handling';
+import { creditCosts } from './creditCosts';
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  action: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+  campaignId?: string;
+  platformId?: string;
+}
 
 /**
- * Credits Service API
- * This service encapsulates all credits-related operations
+ * Get user's current credit balance
  */
-export const creditsApi = {
-  /**
-   * Get user credits
-   */
-  getUserCredits: async (userId: string) => {
+export const getUserCredits = async (userId: string): Promise<number> => {
+  try {
+    // Query user profile for credits
     const { data, error } = await supabase
       .from('profiles')
       .select('credits')
       .eq('id', userId)
       .single();
-      
-    if (error) throw error;
-    return data?.credits || 0;
-  },
-  
-  /**
-   * Add credits to user
-   */
-  addCredits: async (userId: string, amount: number, reason: string) => {
-    // First get current credits
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
-      .single();
-      
-    if (fetchError) throw fetchError;
     
-    const currentCredits = profile?.credits || 0;
-    const newCreditAmount = currentCredits + amount;
-    
-    // Update credits
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ credits: newCreditAmount })
-      .eq('id', userId);
-      
-    if (updateError) throw updateError;
-    
-    // Log credit transaction
-    await this.logCreditTransaction(userId, amount, 'add', reason);
-    
-    return newCreditAmount;
-  },
-  
-  /**
-   * Consume credits
-   */
-  consumeCredits: async (userId: string, amount: number, action: CreditAction, details: string) => {
-    // First get current credits
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
-      .single();
-      
-    if (fetchError) throw fetchError;
-    
-    const currentCredits = profile?.credits || 0;
-    
-    // Check if user has enough credits
-    if (currentCredits < amount) {
-      return false;
-    }
-    
-    const newCreditAmount = currentCredits - amount;
-    
-    // Update credits
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ credits: newCreditAmount })
-      .eq('id', userId);
-      
-    if (updateError) throw updateError;
-    
-    // Log credit transaction
-    await this.logCreditTransaction(userId, amount, 'consume', `${action}: ${details}`);
-    
-    return true;
-  },
-  
-  /**
-   * Log credit transaction
-   */
-  logCreditTransaction: async (
-    userId: string, 
-    amount: number, 
-    type: 'add' | 'consume', 
-    description: string
-  ) => {
-    const { error } = await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: userId,
-        amount,
-        type,
-        description
-      });
-      
     if (error) {
-      console.error('Error logging credit transaction:', error);
+      throw error;
     }
-  },
-  
-  /**
-   * Get credit usage history
-   */
-  getCreditUsageHistory: async (userId: string) => {
+    
+    return data?.credits || 0;
+  } catch (error) {
+    errorLogger.logError(error, 'getUserCredits');
+    return 0;
+  }
+};
+
+/**
+ * Get credit transaction history for a user
+ */
+export const getCreditTransactions = async (userId: string): Promise<CreditTransaction[]> => {
+  try {
+    // Query credit transactions for user
     const { data, error } = await supabase
       .from('credit_transactions')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-      
-    if (error) throw error;
-    return data || [];
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data.map(item => ({
+      id: item.id,
+      userId: item.user_id,
+      action: item.action,
+      amount: item.amount,
+      description: item.description,
+      createdAt: item.created_at,
+      campaignId: item.campaign_id,
+      platformId: item.platform_id
+    })) || [];
+  } catch (error) {
+    errorLogger.logError(error, 'getCreditTransactions');
+    return [];
+  }
+};
+
+/**
+ * Add credits to a user's account
+ */
+export const addCredits = async (userId: string, amount: number, description: string): Promise<boolean> => {
+  try {
+    // Start a transaction
+    const { data, error } = await supabase.rpc('add_credits', {
+      user_id: userId,
+      credit_amount: amount,
+      tx_description: description
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data || false;
+  } catch (error) {
+    errorLogger.logError(error, 'addCredits');
+    return false;
+  }
+};
+
+/**
+ * Use credits for an action
+ */
+export const useCredits = async (
+  userId: string, 
+  action: keyof typeof creditCosts, 
+  description: string,
+  metadata?: Record<string, any>
+): Promise<boolean> => {
+  try {
+    // Get cost for this action
+    const creditCost = creditCosts[action] || 0;
+    
+    if (creditCost <= 0) {
+      return true; // No credits needed for this action
+    }
+    
+    // Use credits
+    const { data, error } = await supabase.rpc('use_credits', {
+      user_id: userId,
+      credit_amount: creditCost,
+      tx_action: action,
+      tx_description: description,
+      campaign_id: metadata?.campaignId,
+      platform_id: metadata?.platformId
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data || false;
+  } catch (error) {
+    errorLogger.logError(error, 'useCredits');
+    return false;
+  }
+};
+
+/**
+ * Check if user has enough credits for an action
+ */
+export const hasEnoughCredits = async (userId: string, action: keyof typeof creditCosts): Promise<boolean> => {
+  try {
+    // Get cost for this action
+    const creditCost = creditCosts[action] || 0;
+    
+    if (creditCost <= 0) {
+      return true; // No credits needed for this action
+    }
+    
+    // Get user's current credit balance
+    const userCredits = await getUserCredits(userId);
+    
+    return userCredits >= creditCost;
+  } catch (error) {
+    errorLogger.logError(error, 'hasEnoughCredits');
+    return false;
   }
 };
