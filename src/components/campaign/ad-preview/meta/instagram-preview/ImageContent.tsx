@@ -33,23 +33,25 @@ const ImageContent: React.FC<ImageContentProps> = ({
   const getClassName = () => {
     switch (format) {
       case "story":
-        return "aspect-[9/16] w-full";
+        return "aspect-[9/16] w-full relative";
+      case "reel":
+        return "aspect-[4/5] w-full relative";
       case "portrait":
-        return "aspect-[4/5] w-full";
+        return "aspect-[4/5] w-full relative";
       case "landscape":
-        return "aspect-video w-full";
+        return "aspect-video w-full relative";
       default: // feed/square
-        return "aspect-square w-full";
+        return "aspect-square w-full relative";
     }
   };
 
   const getLoadingItem = () => {
     if (isLoading) {
-      return <ImageLoader viewType={format === "story" ? "story" : format === "reel" ? "reel" : "feed"} text="Generating..." />;
+      return <ImageLoader viewType={format as any} text="Generating..." />;
     }
     
     if (isUploading) {
-      return <ImageLoader viewType={format === "story" ? "story" : format === "reel" ? "reel" : "feed"} text="Uploading..." />;
+      return <ImageLoader viewType={format as any} text="Uploading..." />;
     }
     
     return null;
@@ -65,13 +67,14 @@ const ImageContent: React.FC<ImageContentProps> = ({
   const loadingItem = getLoadingItem();
 
   return (
-    <div className={`relative bg-gray-100 dark:bg-gray-800 overflow-hidden ${getClassName()}`}>
+    <div className={`${getClassName()} bg-gray-100 dark:bg-gray-800 overflow-hidden`}>
       {ad.imageUrl ? (
         <ImageDisplay
           imageUrl={ad.imageUrl}
           alt={`Ad image ${imageKey}`}
           onGenerateImage={onGenerateImage}
           isLoading={isLoading}
+          format={format}
         />
       ) : loadingItem ? (
         loadingItem
@@ -107,6 +110,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
         </div>
       )}
       
+      {/* Simple template gallery */}
       {showTemplateGallery && (
         <div className="absolute inset-0 z-10">
           <div className="w-full h-full bg-black/50 flex items-center justify-center">

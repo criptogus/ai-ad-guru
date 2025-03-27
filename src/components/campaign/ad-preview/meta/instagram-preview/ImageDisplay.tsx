@@ -8,20 +8,33 @@ export interface ImageDisplayProps {
   alt?: string;
   onGenerateImage?: () => Promise<void>;
   isLoading?: boolean;
+  format?: string;
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({ 
   imageUrl,
   alt = "Instagram ad",
   onGenerateImage,
-  isLoading = false 
+  isLoading = false,
+  format = "feed"
 }) => {
+  // Determine the best object-fit style based on format
+  const getObjectFitStyle = () => {
+    switch (format) {
+      case "story":
+      case "reel":
+        return "object-cover";
+      default:
+        return "object-cover";
+    }
+  };
+
   return (
-    <div className="w-full relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+    <div className={`w-full h-full relative overflow-hidden bg-gray-100 dark:bg-gray-800`}>
       <img
         src={imageUrl}
         alt={alt}
-        className="w-full h-full object-cover"
+        className={`w-full h-full ${getObjectFitStyle()}`}
       />
       
       {onGenerateImage && (

@@ -4,7 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import AdVariationCard from "../AdVariationCard";
+import InstagramAdsPreview from "./meta/InstagramAdsPreview";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -28,36 +28,6 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   mindTrigger
 }) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-  };
-
-  const handleSave = (index: number, updatedAd: MetaAd) => {
-    onUpdateMetaAd(index, updatedAd);
-    setEditingIndex(null);
-  };
-
-  const handleCancel = () => {
-    setEditingIndex(null);
-  };
-
-  const handleCopy = (ad: MetaAd) => {
-    // Create formatted text for clipboard
-    const adText = `Headline: ${ad.headline}
-
-${ad.primaryText}
-
-CTA: ${ad.description}
-
-${ad.hashtags ? '\nHashtags: #' + ad.hashtags.join(' #') : ''}`;
-
-    navigator.clipboard.writeText(adText);
-  };
-
-  const handleRegenerateImage = (ad: MetaAd, index: number) => {
-    onGenerateImage(ad, index);
-  };
 
   return (
     <div className="space-y-6">
@@ -89,26 +59,15 @@ ${ad.hashtags ? '\nHashtags: #' + ad.hashtags.join(' #') : ''}`;
         </Button>
       </div>
 
-      {/* Ad Preview Grid */}
+      {/* Mobile-First Instagram Ads Preview */}
       {metaAds.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6">
-          {metaAds.map((ad, index) => (
-            <AdVariationCard
-              key={index}
-              platform="meta"
-              ad={ad}
-              analysisResult={analysisResult}
-              isEditing={editingIndex === index}
-              index={index}
-              onEdit={() => handleEdit(index)}
-              onSave={() => handleSave(index, ad)}
-              onCancel={handleCancel}
-              onCopy={() => handleCopy(ad)}
-              onRegenerate={() => handleRegenerateImage(ad, index)}
-              onUpdate={(updatedAd) => onUpdateMetaAd(index, updatedAd as MetaAd)}
-            />
-          ))}
-        </div>
+        <InstagramAdsPreview
+          ads={metaAds}
+          companyName={analysisResult.companyName}
+          loadingImageIndex={loadingImageIndex}
+          onGenerateImage={onGenerateImage}
+          onUpdateAd={onUpdateMetaAd}
+        />
       ) : !isGenerating ? (
         <div className="border border-dashed rounded-md p-8 text-center bg-background">
           <p className="text-muted-foreground mb-4">No Instagram Ads generated yet</p>

@@ -7,7 +7,6 @@ import ImageContent from "./ImageContent";
 import TextContent from "./TextContent";
 import ActionBar from "./ActionBar";
 import InstagramPreviewFooter from "./InstagramPreviewFooter";
-import ImageUploadHandler from "./ImageUploadHandler";
 import { toast } from "sonner";
 
 interface InstagramPreviewProps {
@@ -37,11 +36,11 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const getPreviewClass = () => {
     switch (viewMode) {
       case "story":
-        return "max-w-[250px] w-full";
+        return "max-w-[288px] w-full aspect-[9/16] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-black";
       case "reel":
-        return "max-w-[250px] w-full";
+        return "max-w-[288px] w-full aspect-[4/5] border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-black";
       default: // feed
-        return "max-w-[330px] w-full";
+        return "max-w-[288px] w-full border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-800";
     }
   };
 
@@ -101,13 +100,8 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     }
   };
 
-  // Determine container class based on view mode
-  const containerClass = viewMode === "story" || viewMode === "reel"
-    ? "border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900 aspect-[9/16]"
-    : "border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900";
-
   return (
-    <div className={`${getPreviewClass()} mx-auto ${containerClass}`}>
+    <div className={`${getPreviewClass()} transition-all duration-200 ease-in-out`}>
       <InstagramPreviewHeader companyName={companyName} format={viewMode} />
       
       <ImageContent 
@@ -117,19 +111,40 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}
-        format={viewMode === "story" ? "story" : viewMode === "reel" ? "reel" : "feed"}
+        format={viewMode}
         onTemplateSelect={handleTemplateSelect}
       />
       
-      <div className="p-3">
-        <ActionBar />
-        <TextContent 
-          headline={ad.headline}
-          primaryText={ad.primaryText}
-          companyName={companyName}
-        />
-        <InstagramPreviewFooter ad={ad} companyName={companyName} />
-      </div>
+      {viewMode === "feed" && (
+        <div className="p-3">
+          <ActionBar />
+          <TextContent 
+            headline={ad.headline}
+            primaryText={ad.primaryText}
+            companyName={companyName}
+          />
+          <InstagramPreviewFooter ad={ad} companyName={companyName} />
+        </div>
+      )}
+      
+      {viewMode === "story" && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+          <div className="bg-black/50 text-white px-4 py-2 rounded-full text-sm flex items-center">
+            <span className="transform rotate-180">↓</span>
+            <span className="ml-2">Swipe Up</span>
+          </div>
+        </div>
+      )}
+      
+      {viewMode === "reel" && (
+        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3">
+          <div className="text-sm font-medium mb-1">{ad.headline}</div>
+          <div className="text-xs">{companyName}</div>
+          <button className="mt-2 bg-blue-500 text-white text-xs px-3 py-1 rounded-md">
+            {ad.description || "Shop Now"}
+          </button>
+        </div>
+      )}
       
       <input 
         type="file" 
