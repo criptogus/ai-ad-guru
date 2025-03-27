@@ -16,7 +16,7 @@ interface MindTriggerSelectionStepProps {
   onNext: () => void;
 }
 
-const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
+export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
   selectedPlatforms,
   selectedTriggers,
   onTriggersChange,
@@ -94,5 +94,3 @@ const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> = ({
     </Card>
   );
 };
-
-export default MindTriggerSelectionStep;

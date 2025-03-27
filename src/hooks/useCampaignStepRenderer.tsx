@@ -89,23 +89,26 @@ const useCampaignStepRenderer = ({
         return (
           <MindTriggerSelectionStep
             selectedPlatforms={campaignData.platforms || []}
-            onNext={(mindTriggers) => handleNextWrapper({ mindTriggers })}
+            selectedTriggers={campaignData.mindTriggers || {}}
+            onTriggersChange={(mindTriggers) => handleNextWrapper({ mindTriggers })}
             onBack={handleBack}
+            onNext={() => handleNextWrapper()}
           />
         );
       case 3:
         return (
           <CampaignSetupStep
             analysisResult={analysisResult}
-            onNext={(setupData) => handleNextWrapper(setupData)}
+            campaignData={campaignData}
+            onUpdateCampaignData={(setupData) => handleNextWrapper(setupData)}
             onBack={handleBack}
+            onNext={() => handleNextWrapper()}
           />
         );
       case 4:
         return (
           <AdPreviewStep
             analysisResult={analysisResult}
-            campaignData={campaignData}
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
@@ -123,20 +126,29 @@ const useCampaignStepRenderer = ({
             onUpdateLinkedInAd={handleUpdateLinkedInAd}
             onNext={() => handleNextWrapper()}
             onBack={handleBack}
+            mindTriggers={campaignData.mindTriggers}
           />
         );
       case 5:
         return (
           <CampaignSummary
+            campaignName={campaignData.name || ""}
+            platforms={campaignData.platforms || []}
+            budget={campaignData.budget || 0}
+            budgetType={campaignData.budgetType || "daily"}
+            startDate={campaignData.startDate || ""}
+            endDate={campaignData.endDate}
+            objective={campaignData.objective || ""}
+            targetAudience={campaignData.targetAudience || ""}
+            websiteUrl={campaignData.targetUrl || analysisResult?.websiteUrl || ""}
             analysisResult={analysisResult}
-            campaignData={campaignData}
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
             linkedInAds={linkedInAds}
-            isCreating={isCreating}
-            onBack={handleBack}
-            onCreateCampaign={createCampaign}
+            onApprove={createCampaign}
+            onEdit={handleBack}
+            isLoading={isCreating}
           />
         );
       default:
