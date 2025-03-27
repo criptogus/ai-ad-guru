@@ -1,9 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Chrome, Linkedin, Instagram, Target } from "lucide-react";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 interface PlatformSelectionStepProps {
   onNext: (data?: { platforms: string[] }) => void;
@@ -14,7 +15,8 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   onNext,
   onBack,
 }) => {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const { campaignData } = useCampaign();
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaignData.platforms || []);
 
   const platforms = [
     {
@@ -47,12 +49,23 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
     },
   ];
 
+  // Initialize with existing selection
+  useEffect(() => {
+    if (campaignData.platforms && campaignData.platforms.length > 0) {
+      setSelectedPlatforms(campaignData.platforms);
+    }
+  }, [campaignData.platforms]);
+
   const handlePlatformToggle = (platformId: string) => {
     if (selectedPlatforms.includes(platformId)) {
       setSelectedPlatforms(selectedPlatforms.filter(id => id !== platformId));
     } else {
       setSelectedPlatforms([...selectedPlatforms, platformId]);
     }
+  };
+
+  const handleNextClick = () => {
+    onNext({ platforms: selectedPlatforms });
   };
 
   const showWarning = selectedPlatforms.length === 0;
@@ -120,7 +133,7 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
               Back
             </Button>
             <Button 
-              onClick={() => onNext({ platforms: selectedPlatforms })}
+              onClick={handleNextClick}
               disabled={showWarning}
             >
               Next Step

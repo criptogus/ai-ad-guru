@@ -68,7 +68,7 @@ const useCampaignStepRenderer = ({
 }: UseCampaignStepRendererProps) => {
   const getStepContent = () => {
     switch (currentStep) {
-      case 0:
+      case 1:
         return (
           <WebsiteAnalysisStep
             isAnalyzing={isAnalyzing}
@@ -78,14 +78,14 @@ const useCampaignStepRenderer = ({
             cacheInfo={cacheInfo}
           />
         );
-      case 1:
+      case 2:
         return (
           <PlatformSelectionStep 
             onNext={(data) => handleNextWrapper(data)}
             onBack={handleBack}
           />
         );
-      case 2:
+      case 3:
         return (
           <MindTriggerSelectionStep
             selectedPlatforms={campaignData.platforms || []}
@@ -95,7 +95,7 @@ const useCampaignStepRenderer = ({
             onNext={() => handleNextWrapper()}
           />
         );
-      case 3:
+      case 4:
         return (
           <CampaignSetupStep
             analysisResult={analysisResult}
@@ -105,7 +105,7 @@ const useCampaignStepRenderer = ({
             onNext={() => handleNextWrapper()}
           />
         );
-      case 4:
+      case 5:
         return (
           <AdPreviewStep
             analysisResult={analysisResult}
@@ -129,7 +129,7 @@ const useCampaignStepRenderer = ({
             mindTriggers={campaignData.mindTriggers}
           />
         );
-      case 5:
+      case 6:
         return (
           <CampaignSummary
             campaignName={campaignData.name || ""}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCampaign } from "@/contexts/CampaignContext";
@@ -286,13 +287,28 @@ const CampaignContent: React.FC = () => {
   };
 
   const handleNextWrapper = (data?: any) => {
+    // First update the data if provided
     if (data) {
-      setCampaignData({
-        ...campaignData,
+      setCampaignData((prevData) => ({
+        ...prevData,
         ...data,
-      });
+      }));
+      
+      // If this is from the Platform Selection step (step 2), we want to continue
+      // to the next step immediately after updating the data
+      if (currentStep === 2) {
+        // Small delay to ensure state updates before navigation
+        setTimeout(() => {
+          handleNext();
+        }, 0);
+        return false;
+      }
+      
+      // For other steps, don't navigate automatically when just updating data
       return false;
     }
+    
+    // If no data provided, this is an explicit navigation request
     handleNext();
     return true;
   };
