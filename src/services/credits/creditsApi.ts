@@ -6,7 +6,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 import { CreditAction } from './types';
-import { creditCosts } from './creditCosts';
+import { CREDIT_COSTS } from './creditCosts';
 
 export interface CreditTransaction {
   id: string;
@@ -108,7 +108,7 @@ export const useCredits = async (
 ): Promise<boolean> => {
   try {
     // Get cost for this action
-    const creditCost = creditCosts[action] || 0;
+    const creditCost = CREDIT_COSTS[action] || 0;
     
     if (creditCost <= 0) {
       return true; // No credits needed for this action
@@ -141,7 +141,7 @@ export const useCredits = async (
 export const hasEnoughCredits = async (userId: string, action: CreditAction): Promise<boolean> => {
   try {
     // Get cost for this action
-    const creditCost = creditCosts[action] || 0;
+    const creditCost = CREDIT_COSTS[action] || 0;
     
     if (creditCost <= 0) {
       return true; // No credits needed for this action

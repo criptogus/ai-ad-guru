@@ -9,7 +9,7 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getAllCreditCosts } from "@/services/credits/creditCosts";
+import { getCreditCost } from "@/services/credits/creditCosts";
 
 interface AdOptimizerProps {
   adType: "google" | "meta" | "linkedin" | "microsoft";
@@ -26,8 +26,7 @@ const AdOptimizer: React.FC<AdOptimizerProps> = ({
 }) => {
   const [selectedGoal, setSelectedGoal] = useState<OptimizationGoal>("increase_ctr");
   const { optimizeGoogleAds, optimizeMetaAds, isOptimizing } = useAdOptimizer();
-  const creditCostsData = getAllCreditCosts();
-  const optimizationCost = creditCostsData.adOptimization.daily;
+  const optimizationCost = getCreditCost("adOptimization.daily");
   
   const handleOptimize = async () => {
     let optimizedAds;

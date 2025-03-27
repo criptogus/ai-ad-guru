@@ -1,4 +1,3 @@
-
 /**
  * Credit Usage Service
  * Handles credit usage and verification
@@ -7,7 +6,7 @@
 import { errorLogger } from '@/services/libs/error-handling';
 import { getUserCredits, useCredits, hasEnoughCredits } from './creditsApi';
 import { CreditAction } from './types';
-import { creditCosts } from './creditCosts';
+import { CREDIT_COSTS } from './creditCosts';
 
 export interface CreditUsageResult {
   success: boolean;
@@ -29,7 +28,7 @@ export const useCreditWithErrorHandling = async (
     const hasCredits = await hasEnoughCredits(userId, action);
     
     if (!hasCredits) {
-      const cost = creditCosts[action] || 0;
+      const cost = CREDIT_COSTS[action] || 0;
       return {
         success: false,
         error: `Insufficient credits. This action requires ${cost} credits.`
@@ -68,7 +67,7 @@ export const useCreditWithErrorHandling = async (
  */
 export const calculateTotalCreditCost = (actions: CreditAction[]): number => {
   return actions.reduce((total, action) => {
-    return total + (creditCosts[action] || 0);
+    return total + (CREDIT_COSTS[action] || 0);
   }, 0);
 };
 

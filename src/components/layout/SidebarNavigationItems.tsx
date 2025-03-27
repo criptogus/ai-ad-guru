@@ -1,74 +1,106 @@
 
 import React from "react";
-import { useLocation } from "react-router-dom";
-import { Home, LayoutDashboard, Users, Settings, PlusCircle, FileImageIcon, Beaker } from "lucide-react";
-import { NavigationItem } from "@/components/layout/NavigationItem";
-import { ImageIcon } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  BarChart3,
+  Calendar,
+  Home,
+  Settings,
+  CreditCard,
+  Users,
+  FileText,
+  ArrowRightLeft,
+  Image,
+  Layers
+} from "lucide-react";
 
-export const SidebarNavigationItems = () => {
+interface SidebarNavigationItemsProps {
+  activePage?: string;
+  collapsed?: boolean;
+}
+
+const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
+  activePage = "dashboard", 
+  collapsed = false 
+}) => {
   const location = useLocation();
-  const isActivePath = (path: string) => location.pathname === path;
+  const currentPath = location.pathname;
+
+  const navItems = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: Home,
+      active: activePage === "dashboard" || currentPath === "/dashboard"
+    },
+    {
+      name: "Campaigns",
+      href: "/campaigns",
+      icon: Layers,
+      active: activePage === "campaigns" || currentPath.includes("/campaigns")
+    },
+    {
+      name: "Analytics",
+      href: "/analytics",
+      icon: BarChart3,
+      active: activePage === "analytics" || currentPath === "/analytics"
+    },
+    {
+      name: "Smart Banner",
+      href: "/smart-banner",
+      icon: Image,
+      active: activePage === "smart-banner" || currentPath.includes("/smart-banner")
+    },
+    {
+      name: "Assets",
+      href: "/assets",
+      icon: FileText,
+      active: activePage === "assets" || currentPath === "/assets"
+    },
+    {
+      name: "Credits",
+      href: "/credits-info",
+      icon: CreditCard,
+      active: activePage === "credits" || currentPath.includes("/credits")
+    },
+    {
+      name: "Connections",
+      href: "/connections",
+      icon: ArrowRightLeft,
+      active: activePage === "connections" || currentPath === "/connections"
+    },
+    {
+      name: "Team",
+      href: "/team",
+      icon: Users,
+      active: activePage === "team" || currentPath === "/team"
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
+      active: activePage === "settings" || currentPath === "/settings"
+    }
+  ];
 
   return (
     <div className="space-y-1">
-      <NavigationItem
-        to="/dashboard"
-        icon={<Home className="h-4 w-4" />}
-        label="Home"
-        active={isActivePath("/dashboard")}
-      />
-      <NavigationItem
-        to="/campaigns"
-        icon={<LayoutDashboard className="h-4 w-4" />}
-        label="Campaigns"
-        active={isActivePath("/campaigns")}
-      />
-      <NavigationItem
-        to="/create-campaign"
-        icon={<PlusCircle className="h-4 w-4" />}
-        label="Create Campaign"
-        active={isActivePath("/create-campaign")}
-      />
-      <NavigationItem
-        to="/assets"
-        icon={<FileImageIcon className="h-4 w-4" />}
-        label="Assets"
-        active={isActivePath("/assets")}
-      />
-      <NavigationItem
-        to="/team"
-        icon={<Users className="h-4 w-4" />}
-        label="Team"
-        active={isActivePath("/team")}
-      />
-      
-      <h2 className="mb-2 mt-6 px-4 text-lg font-semibold tracking-tight">
-        Tools
-      </h2>
-      
-      <NavigationItem
-        to="/prompt-templates"
-        icon={<ImageIcon className="h-4 w-4" />}
-        label="GPT-4o Image Generator"
-        active={isActivePath("/prompt-templates")}
-      />
-      
-      <NavigationItem
-        to="/test-ads"
-        icon={<Beaker className="h-4 w-4" />}
-        label="Ad Testing Area"
-        active={isActivePath("/test-ads")}
-      />
-      
-      <h2 className="mb-2 mt-6 px-4 text-lg font-semibold tracking-tight">
-        Settings
-      </h2>
-      <NavigationItem
-        to="/settings"
-        icon={<Settings className="h-4 w-4" />}
-        label="Settings"
-        active={isActivePath("/settings")}
-      />
+      {navItems.map((item) => (
+        <Link
+          key={item.name}
+          to={item.href}
+          className={cn(
+            "flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors",
+            item.active
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+        >
+          <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
+          {!collapsed && <span>{item.name}</span>}
+        </Link>
+      ))}
     </div>
   );
 };

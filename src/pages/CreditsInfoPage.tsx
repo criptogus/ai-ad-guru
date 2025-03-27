@@ -6,11 +6,21 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, CreditCard, Coins, BarChart4, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getAllCreditCosts } from "@/services/credits/creditCosts";
+import { getCreditCost } from "@/services/credits/creditCosts";
 
 const CreditsInfoPage = () => {
   const navigate = useNavigate();
-  const creditCostsData = getAllCreditCosts();
+  
+  // Get individual credit costs
+  const googleAdsCost = getCreditCost("googleAds");
+  const metaAdsCost = getCreditCost("metaAds");
+  const linkedInAdsCost = getCreditCost("linkedInAds");
+  const imageGenerationCost = getCreditCost("imageGeneration");
+  const websiteAnalysisCost = getCreditCost("websiteAnalysis");
+  const aiInsightsReportCost = getCreditCost("aiInsightsReport");
+  const dailyOptimizationCost = getCreditCost("adOptimization.daily");
+  const every3DaysOptimizationCost = getCreditCost("adOptimization.every3Days");
+  const weeklyOptimizationCost = getCreditCost("adOptimization.weekly");
   
   return (
     <AppLayout activePage="credits">
@@ -48,7 +58,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Google Search Ads (5 variations)</span>
-                  <span className="font-semibold">{creditCostsData.googleAds} credits</span>
+                  <span className="font-semibold">{googleAdsCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Includes headline, description, and URL path optimization
@@ -58,7 +68,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Instagram/Meta Ads (with image)</span>
-                  <span className="font-semibold">{creditCostsData.metaAds} credits</span>
+                  <span className="font-semibold">{metaAdsCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Includes caption, AI-generated image, and hashtags
@@ -68,7 +78,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>LinkedIn Text Ads</span>
-                  <span className="font-semibold">{creditCostsData.linkedInAds} credits</span>
+                  <span className="font-semibold">{linkedInAdsCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Professionally-toned ad copy for business audience
@@ -89,7 +99,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Daily Optimization</span>
-                  <span className="font-semibold">{creditCostsData.adOptimization.daily} credits/day</span>
+                  <span className="font-semibold">{dailyOptimizationCost} credits/day</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   AI analyzes and adjusts your campaigns every 24 hours
@@ -99,7 +109,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>3-Day Optimization</span>
-                  <span className="font-semibold">{creditCostsData.adOptimization.every3Days} credits/cycle</span>
+                  <span className="font-semibold">{every3DaysOptimizationCost} credits/cycle</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Balance between cost and performance
@@ -109,7 +119,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Weekly Optimization</span>
-                  <span className="font-semibold">{creditCostsData.adOptimization.weekly} credits/week</span>
+                  <span className="font-semibold">{weeklyOptimizationCost} credits/week</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Most cost-effective option for stable campaigns
@@ -132,7 +142,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Individual Image Generation</span>
-                  <span className="font-semibold">{creditCostsData.imageGeneration} credits</span>
+                  <span className="font-semibold">{imageGenerationCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Generate a single AI image using DALL·E 3
@@ -142,7 +152,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Website Analysis</span>
-                  <span className="font-semibold">{creditCostsData.websiteAnalysis} credits</span>
+                  <span className="font-semibold">{websiteAnalysisCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   AI analyzes your website for ad-worthy content
@@ -152,7 +162,7 @@ const CreditsInfoPage = () => {
               <div className="border rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span>Custom AI Insights Report</span>
-                  <span className="font-semibold">{creditCostsData.aiInsightsReport || 10} credits</span>
+                  <span className="font-semibold">{aiInsightsReportCost} credits</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   In-depth analysis of your campaigns with recommendations
