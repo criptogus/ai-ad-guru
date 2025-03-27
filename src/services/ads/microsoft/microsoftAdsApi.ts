@@ -1,64 +1,52 @@
 
 /**
  * Microsoft Ads API Service
- * Handles communication with the Microsoft Advertising API
+ * Handles communication with Microsoft Advertising API
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
-
-export interface MicrosoftAdAccount {
-  id: string;
-  name: string;
-  status: string;
-}
-
-export interface MicrosoftCampaign {
-  id: string;
-  name: string;
-  status: string;
-  budget: number;
-  startDate: string;
-  endDate?: string;
-}
+import { MicrosoftAd } from './microsoftAdGenerator';
 
 /**
- * Get Microsoft ad accounts for the authenticated user
+ * Publish Microsoft ad to the Microsoft Advertising API
  */
-export const getMicrosoftAdAccounts = async (): Promise<MicrosoftAdAccount[]> => {
+export const publishMicrosoftAd = async (
+  accountId: string,
+  ad: MicrosoftAd
+): Promise<boolean> => {
   try {
-    // This is a placeholder for actual Microsoft Ads API integration
-    console.log('Getting Microsoft ad accounts');
-    return [];
+    console.log(`Publishing Microsoft ad to account ${accountId}:`, ad);
+    
+    // Mock implementation
+    // In a real app, this would make API calls to Microsoft
+    
+    return true;
   } catch (error) {
-    errorLogger.logError(error, 'getMicrosoftAdAccounts');
-    return [];
+    errorLogger.logError(error, 'publishMicrosoftAd');
+    return false;
   }
 };
 
 /**
- * Get Microsoft campaigns for a specific ad account
+ * Get Microsoft ad performance metrics
  */
-export const getMicrosoftCampaigns = async (accountId: string): Promise<MicrosoftCampaign[]> => {
+export const getMicrosoftAdMetrics = async (
+  accountId: string,
+  adId: string
+): Promise<Record<string, any>> => {
   try {
-    // This is a placeholder for actual Microsoft Ads API integration
-    console.log('Getting Microsoft campaigns for account', accountId);
-    return [];
+    console.log(`Getting metrics for Microsoft ad ${adId} in account ${accountId}`);
+    
+    // Mock implementation
+    return {
+      impressions: 2145,
+      clicks: 57,
+      ctr: 0.0266,
+      conversions: 8,
+      cost: 109.27
+    };
   } catch (error) {
-    errorLogger.logError(error, 'getMicrosoftCampaigns');
-    return [];
-  }
-};
-
-/**
- * Create a new Microsoft campaign
- */
-export const createMicrosoftCampaign = async (accountId: string, campaignData: any): Promise<MicrosoftCampaign | null> => {
-  try {
-    // This is a placeholder for actual Microsoft Ads API integration
-    console.log('Creating Microsoft campaign for account', accountId, campaignData);
-    return null;
-  } catch (error) {
-    errorLogger.logError(error, 'createMicrosoftCampaign');
-    return null;
+    errorLogger.logError(error, 'getMicrosoftAdMetrics');
+    return {};
   }
 };

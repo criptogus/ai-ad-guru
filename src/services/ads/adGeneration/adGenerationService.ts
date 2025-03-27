@@ -1,83 +1,58 @@
 
 /**
  * Ad Generation Service
- * Central service for generating ads across platforms
+ * Central service for generating ads across different platforms
  */
 
-import { errorLogger } from '@/services/libs/error-handling';
 import { generateGoogleAds } from '@/services/ads/google/googleAdGenerator';
 import { generateMetaAds } from '@/services/ads/meta/metaAdGenerator';
 import { generateLinkedInAds } from '@/services/ads/linkedin/linkedInAdGenerator';
 import { generateMicrosoftAds } from '@/services/ads/microsoft/microsoftAdGenerator';
-
-export interface AdGenerationParams {
-  platform: 'google' | 'meta' | 'linkedin' | 'microsoft';
-  companyName: string;
-  industry: string;
-  productDescription: string;
-  targetAudience: string;
-  keywords: string[];
-  callToAction: string;
-  mindTrigger?: string;
-  websiteUrl?: string;
-}
+import { errorLogger } from '@/services/libs/error-handling';
 
 /**
  * Generate ads for a specific platform
  */
-export const generateAds = async (params: AdGenerationParams): Promise<any[]> => {
+export const generateAdsForPlatform = async (
+  platform: 'google' | 'meta' | 'linkedin' | 'microsoft',
+  data: any
+) => {
   try {
-    switch (params.platform) {
+    switch (platform) {
       case 'google':
-        return await generateGoogleAds({
-          companyName: params.companyName,
-          industry: params.industry,
-          productDescription: params.productDescription,
-          targetAudience: params.targetAudience,
-          keywords: params.keywords,
-          callToAction: params.callToAction,
-          mindTrigger: params.mindTrigger,
-          finalUrl: params.websiteUrl
-        });
-      
+        return await generateGoogleAds(data);
       case 'meta':
-        return await generateMetaAds({
-          companyName: params.companyName,
-          industry: params.industry,
-          productDescription: params.productDescription,
-          targetAudience: params.targetAudience,
-          keywords: params.keywords,
-          callToAction: params.callToAction,
-          mindTrigger: params.mindTrigger
-        });
-      
+        return await generateMetaAds(data);
       case 'linkedin':
-        return await generateLinkedInAds({
-          companyName: params.companyName,
-          industry: params.industry,
-          productDescription: params.productDescription,
-          targetAudience: params.targetAudience,
-          keywords: params.keywords,
-          callToAction: params.callToAction,
-          mindTrigger: params.mindTrigger
-        });
-      
+        return await generateLinkedInAds(data);
       case 'microsoft':
-        return await generateMicrosoftAds({
-          companyName: params.companyName,
-          industry: params.industry,
-          productDescription: params.productDescription,
-          targetAudience: params.targetAudience,
-          keywords: params.keywords,
-          callToAction: params.callToAction,
-          mindTrigger: params.mindTrigger
-        });
-      
+        return await generateMicrosoftAds(data);
       default:
-        throw new Error(`Unsupported platform: ${params.platform}`);
+        throw new Error(`Unsupported platform: ${platform}`);
     }
   } catch (error) {
-    errorLogger.logError(error, 'generateAds');
-    return [];
+    errorLogger.logError(error, 'generateAdsForPlatform');
+    throw error;
+  }
+};
+
+/**
+ * Generate ads for multiple platforms
+ */
+export const generateMultiPlatformAds = async (
+  platforms: Array<'google' | 'meta' | 'linkedin' | 'microsoft'>,
+  data: any
+) => {
+  try {
+    const results: Record<string, any> = {};
+    
+    for (const platform of platforms) {
+      results[platform] = await generateAdsForPlatform(platform, data);
+    }
+    
+    return results;
+  } catch (error) {
+    errorLogger.logError(error, 'generateMultiPlatformAds');
+    throw error;
   }
 };

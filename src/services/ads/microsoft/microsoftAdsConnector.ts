@@ -1,77 +1,52 @@
 
 /**
  * Microsoft Ads Connector Service
- * Manages OAuth connection to Microsoft Advertising platform
+ * Handles authentication and connection to Microsoft Advertising API
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
 
-export interface MicrosoftOAuthCredentials {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-}
-
-export interface MicrosoftConnectionStatus {
-  connected: boolean;
-  accountId?: string;
-  accountName?: string;
-  expiresAt?: number;
-  error?: string;
-}
-
 /**
- * Initiate Microsoft OAuth connection flow
+ * Connect to Microsoft Advertising API
  */
-export const initiateMicrosoftConnection = (): string => {
+export const connectToMicrosoftAds = async (
+  authCode: string
+): Promise<{success: boolean, accountId?: string, error?: string}> => {
   try {
-    // This is a placeholder for actual Microsoft OAuth connection logic
-    console.log('Initiating Microsoft connection');
-    return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?placeholder=true';
+    console.log('Connecting to Microsoft Advertising API with auth code:', authCode);
+    
+    // Mock implementation
+    // In a real app, this would exchange the auth code for access tokens
+    
+    return {
+      success: true,
+      accountId: 'ms-123456789'
+    };
   } catch (error) {
-    errorLogger.logError(error, 'initiateMicrosoftConnection');
-    return '';
+    errorLogger.logError(error, 'connectToMicrosoftAds');
+    return {
+      success: false,
+      error: error.message || 'Failed to connect to Microsoft Advertising API'
+    };
   }
 };
 
 /**
- * Handle Microsoft OAuth callback and complete connection
+ * Get Microsoft ad accounts for the user
  */
-export const handleMicrosoftCallback = async (code: string): Promise<MicrosoftOAuthCredentials | null> => {
+export const getMicrosoftAdAccounts = async (
+  accessToken: string
+): Promise<Array<{id: string, name: string}>> => {
   try {
-    // This is a placeholder for actual Microsoft OAuth callback logic
-    console.log('Handling Microsoft callback with code', code);
-    return null;
+    console.log('Getting Microsoft ad accounts with access token');
+    
+    // Mock implementation
+    return [
+      { id: 'ms-123456789', name: 'Main Business Account' },
+      { id: 'ms-987654321', name: 'Agency Account' }
+    ];
   } catch (error) {
-    errorLogger.logError(error, 'handleMicrosoftCallback');
-    return null;
-  }
-};
-
-/**
- * Get Microsoft connection status
- */
-export const getMicrosoftConnectionStatus = async (userId: string): Promise<MicrosoftConnectionStatus> => {
-  try {
-    // This is a placeholder for actual Microsoft connection status check
-    console.log('Getting Microsoft connection status for user', userId);
-    return { connected: false };
-  } catch (error) {
-    errorLogger.logError(error, 'getMicrosoftConnectionStatus');
-    return { connected: false, error: error.message };
-  }
-};
-
-/**
- * Disconnect Microsoft account
- */
-export const disconnectMicrosoft = async (userId: string): Promise<boolean> => {
-  try {
-    // This is a placeholder for actual Microsoft disconnect logic
-    console.log('Disconnecting Microsoft for user', userId);
-    return true;
-  } catch (error) {
-    errorLogger.logError(error, 'disconnectMicrosoft');
-    return false;
+    errorLogger.logError(error, 'getMicrosoftAdAccounts');
+    return [];
   }
 };

@@ -1,122 +1,48 @@
 
 /**
  * Billing API Service
- * Handles billing-related API requests
+ * Handles communication with the payment processor
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
-
-export interface BillingPlan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  creditsPerCycle: number;
-  features: string[];
-  cycle: 'monthly' | 'annually';
-}
-
-export interface Subscription {
-  id: string;
-  planId: string;
-  userId: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing';
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAt?: string;
-}
+import type { 
+  CheckoutSession, 
+  SubscriptionDetails, 
+  CreditPurchase, 
+  Invoice,
+  PaymentVerificationResult
+} from './types';
 
 /**
- * Get available billing plans
- */
-export const getBillingPlans = async (): Promise<BillingPlan[]> => {
-  try {
-    // This is a placeholder for actual billing plan retrieval
-    return [
-      {
-        id: 'starter',
-        name: 'Starter',
-        description: 'Perfect for individuals and small projects',
-        price: 29,
-        creditsPerCycle: 100,
-        features: [
-          '100 credits per month',
-          'Google Ads integration',
-          'Meta Ads integration',
-          'Basic AI optimization'
-        ],
-        cycle: 'monthly'
-      },
-      {
-        id: 'pro',
-        name: 'Professional',
-        description: 'Ideal for growing businesses',
-        price: 79,
-        creditsPerCycle: 350,
-        features: [
-          '350 credits per month',
-          'All Starter features',
-          'LinkedIn Ads integration',
-          'Microsoft Ads integration',
-          'Advanced AI optimization',
-          'Priority support'
-        ],
-        cycle: 'monthly'
-      },
-      {
-        id: 'enterprise',
-        name: 'Enterprise',
-        description: 'For agencies and large businesses',
-        price: 199,
-        creditsPerCycle: 1000,
-        features: [
-          '1,000 credits per month',
-          'All Professional features',
-          'Team collaboration',
-          'Custom integrations',
-          'Dedicated account manager',
-          'White-label reports'
-        ],
-        cycle: 'monthly'
-      }
-    ];
-  } catch (error) {
-    errorLogger.logError(error, 'getBillingPlans');
-    return [];
-  }
-};
-
-/**
- * Get user subscription
- */
-export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
-  try {
-    // This is a placeholder for actual subscription retrieval
-    console.log('Getting subscription for user', userId);
-    
-    return null;
-  } catch (error) {
-    errorLogger.logError(error, 'getUserSubscription');
-    return null;
-  }
-};
-
-/**
- * Create a checkout session
+ * Create a checkout session for payment
  */
 export const createCheckoutSession = async (
   userId: string,
-  planId: string,
+  amount: number,
+  price: number,
+  productName: string,
   successUrl: string,
   cancelUrl: string
-): Promise<string | null> => {
+): Promise<CheckoutSession | null> => {
   try {
-    // This is a placeholder for actual checkout session creation
-    console.log('Creating checkout session for user', userId, 'and plan', planId);
+    // Call Supabase Edge Function to create checkout session
+    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      body: {
+        userId,
+        amount,
+        price,
+        productName,
+        successUrl,
+        cancelUrl
+      }
+    });
     
-    // In a real implementation, this would call the create-checkout-session edge function
+    if (error) {
+      throw error;
+    }
     
-    return 'https://checkout.stripe.com/placeholder-url';
+    return data as CheckoutSession;
   } catch (error) {
     errorLogger.logError(error, 'createCheckoutSession');
     return null;
@@ -124,16 +50,156 @@ export const createCheckoutSession = async (
 };
 
 /**
+ * Verify payment after successful checkout
+ */
+export const verifyPayment = async (
+  sessionId: string
+): Promise<PaymentVerificationResult> => {
+  try {
+    // Call Supabase Edge Function to verify payment
+    const { data, error } = await supabase.functions.invoke('verify-payment', {
+      body: { sessionId }
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data as PaymentVerificationResult;
+  } catch (error) {
+    errorLogger.logError(error, 'verifyPayment');
+    return {
+      success: false,
+      error: error.message || 'Failed to verify payment'
+    };
+  }
+};
+
+/**
+ * Get subscription details for a user
+ */
+export const getSubscriptionDetails = async (
+  userId: string
+): Promise<SubscriptionDetails | null> => {
+  try {
+    // In a real app, this would fetch from the database or Stripe API
+    // Mock implementation for now
+    return {
+      id: 'sub_12345',
+      status: 'active',
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      plan: {
+        id: 'plan_pro',
+        name: 'Professional',
+        amount: 9900,
+        currency: 'usd',
+        interval: 'month'
+      },
+      cancelAtPeriodEnd: false
+    };
+  } catch (error) {
+    errorLogger.logError(error, 'getSubscriptionDetails');
+    return null;
+  }
+};
+
+/**
  * Cancel a subscription
  */
-export const cancelSubscription = async (userId: string): Promise<boolean> => {
+export const cancelSubscription = async (
+  userId: string, 
+  subscriptionId: string
+): Promise<boolean> => {
   try {
-    // This is a placeholder for actual subscription cancellation
-    console.log('Canceling subscription for user', userId);
+    // In a real app, this would call Stripe API
+    console.log(`Canceling subscription ${subscriptionId} for user ${userId}`);
     
+    // Mock implementation for now
     return true;
   } catch (error) {
     errorLogger.logError(error, 'cancelSubscription');
     return false;
+  }
+};
+
+/**
+ * Get user's subscription
+ */
+export const getUserSubscription = async (
+  userId: string
+): Promise<SubscriptionDetails | null> => {
+  try {
+    return await getSubscriptionDetails(userId);
+  } catch (error) {
+    errorLogger.logError(error, 'getUserSubscription');
+    return null;
+  }
+};
+
+/**
+ * Get credit purchase history for a user
+ */
+export const getCreditPurchaseHistory = async (
+  userId: string
+): Promise<CreditPurchase[]> => {
+  try {
+    // In a real app, this would fetch from the database
+    // Mock implementation for now
+    return [
+      {
+        id: 'purchase_123',
+        amount: 4900,
+        credits: 100,
+        status: 'completed',
+        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'purchase_456',
+        amount: 9900,
+        credits: 250,
+        status: 'completed',
+        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+  } catch (error) {
+    errorLogger.logError(error, 'getCreditPurchaseHistory');
+    return [];
+  }
+};
+
+/**
+ * Get invoice history for a user
+ */
+export const getInvoiceHistory = async (
+  userId: string
+): Promise<Invoice[]> => {
+  try {
+    // In a real app, this would fetch from Stripe API
+    // Mock implementation for now
+    return [
+      {
+        id: 'inv_123',
+        number: 'INV-001',
+        amount: 4900,
+        currency: 'usd',
+        status: 'paid',
+        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        pdfUrl: 'https://example.com/invoice/123.pdf',
+        description: '100 Credits'
+      },
+      {
+        id: 'inv_456',
+        number: 'INV-002',
+        amount: 9900,
+        currency: 'usd',
+        status: 'paid',
+        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        pdfUrl: 'https://example.com/invoice/456.pdf',
+        description: '250 Credits'
+      }
+    ];
+  } catch (error) {
+    errorLogger.logError(error, 'getInvoiceHistory');
+    return [];
   }
 };

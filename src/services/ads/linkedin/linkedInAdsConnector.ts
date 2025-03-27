@@ -1,80 +1,52 @@
 
 /**
  * LinkedIn Ads Connector Service
- * Handles OAuth and connection to LinkedIn Ads accounts
+ * Handles authentication and connection to LinkedIn Marketing API
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
 
-export interface LinkedInOAuthConfig {
-  clientId: string;
-  redirectUri: string;
-  scope: string[];
-}
-
-export interface LinkedInConnectionResult {
-  success: boolean;
-  accountId?: string;
-  error?: string;
-}
-
 /**
- * Build OAuth URL for LinkedIn Ads authorization
+ * Connect to LinkedIn Marketing API
  */
-export const buildLinkedInOAuthUrl = (config: LinkedInOAuthConfig): string => {
+export const connectToLinkedInAds = async (
+  authCode: string
+): Promise<{success: boolean, accountId?: string, error?: string}> => {
   try {
-    const baseUrl = 'https://www.linkedin.com/oauth/v2/authorization';
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: config.clientId,
-      redirect_uri: config.redirectUri,
-      scope: config.scope.join(' '),
-      state: Math.random().toString(36).substring(2)
-    });
+    console.log('Connecting to LinkedIn Marketing API with auth code:', authCode);
     
-    return `${baseUrl}?${params.toString()}`;
-  } catch (error) {
-    errorLogger.logError(error, 'buildLinkedInOAuthUrl');
-    return '';
-  }
-};
-
-/**
- * Handle OAuth callback and establish LinkedIn Ads connection
- */
-export const handleLinkedInOAuthCallback = async (
-  code: string, 
-  redirectUri: string
-): Promise<LinkedInConnectionResult> => {
-  try {
-    // Placeholder for actual OAuth token exchange
-    console.log('Processing LinkedIn OAuth callback, code:', code);
+    // Mock implementation
+    // In a real app, this would exchange the auth code for access tokens
     
-    // Return mock success response
     return {
       success: true,
-      accountId: 'linkedin-' + Math.random().toString(36).substring(2)
+      accountId: 'li-123456789'
     };
   } catch (error) {
-    errorLogger.logError(error, 'handleLinkedInOAuthCallback');
-    
+    errorLogger.logError(error, 'connectToLinkedInAds');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error during LinkedIn authentication'
+      error: error.message || 'Failed to connect to LinkedIn Marketing API'
     };
   }
 };
 
 /**
- * Disconnect from LinkedIn Ads
+ * Get LinkedIn ad accounts for the user
  */
-export const disconnectLinkedInAds = async (userId: string): Promise<boolean> => {
+export const getLinkedInAdAccounts = async (
+  accessToken: string
+): Promise<Array<{id: string, name: string}>> => {
   try {
-    // Placeholder for actual disconnection logic
-    console.log('Disconnecting LinkedIn Ads for user:', userId);
-    return true;
+    console.log('Getting LinkedIn ad accounts with access token');
+    
+    // Mock implementation
+    return [
+      { id: 'li-123456789', name: 'Main Company Account' },
+      { id: 'li-987654321', name: 'Agency Account' }
+    ];
   } catch (error) {
-    errorLogger.logError(error, 'disconnectLinkedInAds');
-    return false;
+    errorLogger.logError(error, 'getLinkedInAdAccounts');
+    return [];
   }
 };

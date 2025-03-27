@@ -1,3 +1,4 @@
+
 /**
  * Credit Costs
  * Defines the credit costs for various actions
@@ -23,13 +24,17 @@ export const creditCosts = {
   'banner_generation': 5,      // Create AI-generated banner
   'banner_image': 3,           // Generate image for banner
   'smart_banner': 5,           // Save smart banner to campaign
+  'smart_banner_creation': 5,  // Smart banner creation cost
   
   // Campaign creation costs
   'campaign_creation': 5,      // Create and publish campaign
   
   // Other costs
   'advanced_targeting': 2,     // Generate AI targeting recommendations
-  'performance_insights': 1    // Generate AI performance insights
+  'performance_insights': 1,   // Generate AI performance insights
+  
+  // Internal system actions (not shown to users)
+  'credit_refund': 0           // Refund credits (internal use)
 };
 
 /**
@@ -43,6 +48,11 @@ export type CreditAction = keyof typeof creditCosts;
 export const getCreditCost = (action: CreditAction): number => {
   return creditCosts[action] || 0;
 };
+
+/**
+ * Alias for getCreditCost to maintain backward compatibility
+ */
+export const getCreditCosts = getCreditCost;
 
 /**
  * Optimization costs structure for the different frequencies

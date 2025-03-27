@@ -1,65 +1,52 @@
 
 /**
  * LinkedIn Ads API Service
- * Handles communication with the LinkedIn Ads API
+ * Handles communication with LinkedIn Marketing API
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
-
-export interface LinkedInAdAccount {
-  id: string;
-  name: string;
-  status: string;
-}
-
-export interface LinkedInCampaign {
-  id: string;
-  name: string;
-  status: string;
-  startDate: string;
-  endDate?: string;
-  budget: number;
-  targetAudience: any;
-}
+import { LinkedInAd } from './linkedInAdGenerator';
 
 /**
- * Get LinkedIn ad accounts for the authenticated user
+ * Publish LinkedIn ad to the LinkedIn Marketing API
  */
-export const getLinkedInAdAccounts = async (): Promise<LinkedInAdAccount[]> => {
+export const publishLinkedInAd = async (
+  accountId: string,
+  ad: LinkedInAd
+): Promise<boolean> => {
   try {
-    // This is a placeholder for actual LinkedIn API integration
-    console.log('Getting LinkedIn ad accounts');
-    return [];
+    console.log(`Publishing LinkedIn ad to account ${accountId}:`, ad);
+    
+    // Mock implementation
+    // In a real app, this would make API calls to LinkedIn
+    
+    return true;
   } catch (error) {
-    errorLogger.logError(error, 'getLinkedInAdAccounts');
-    return [];
+    errorLogger.logError(error, 'publishLinkedInAd');
+    return false;
   }
 };
 
 /**
- * Get LinkedIn campaigns for a specific ad account
+ * Get LinkedIn ad performance metrics
  */
-export const getLinkedInCampaigns = async (accountId: string): Promise<LinkedInCampaign[]> => {
+export const getLinkedInAdMetrics = async (
+  accountId: string,
+  adId: string
+): Promise<Record<string, any>> => {
   try {
-    // This is a placeholder for actual LinkedIn API integration
-    console.log('Getting LinkedIn campaigns for account', accountId);
-    return [];
+    console.log(`Getting metrics for LinkedIn ad ${adId} in account ${accountId}`);
+    
+    // Mock implementation
+    return {
+      impressions: 3245,
+      clicks: 87,
+      ctr: 0.0268,
+      conversions: 12,
+      cost: 152.34
+    };
   } catch (error) {
-    errorLogger.logError(error, 'getLinkedInCampaigns');
-    return [];
-  }
-};
-
-/**
- * Create a new LinkedIn campaign
- */
-export const createLinkedInCampaign = async (accountId: string, campaignData: any): Promise<LinkedInCampaign | null> => {
-  try {
-    // This is a placeholder for actual LinkedIn API integration
-    console.log('Creating LinkedIn campaign for account', accountId, campaignData);
-    return null;
-  } catch (error) {
-    errorLogger.logError(error, 'createLinkedInCampaign');
-    return null;
+    errorLogger.logError(error, 'getLinkedInAdMetrics');
+    return {};
   }
 };

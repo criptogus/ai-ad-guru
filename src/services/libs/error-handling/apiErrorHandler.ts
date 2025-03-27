@@ -1,77 +1,102 @@
 
 /**
  * API Error Handler
- * Handles error responses from API calls
+ * Handles API errors consistently across the application
  */
 
-import { toast } from 'sonner';
+import { errorLogger } from './errorLogger';
 
+/**
+ * API Error structure
+ */
 export interface ApiError {
-  status?: number;
-  code?: string;
   message: string;
-  details?: unknown;
+  code?: string;
+  status?: number;
+  details?: Record<string, any>;
 }
 
 /**
- * Handle API errors with appropriate user feedback
+ * Parse error from API response
  */
-export const handleApiError = (error: any, context?: string): ApiError => {
-  const apiError: ApiError = {
-    message: 'An unknown error occurred'
-  };
-  
-  // Extract useful information from error object
-  if (error.response) {
-    // HTTP error response
-    apiError.status = error.response.status;
-    apiError.message = error.response.data?.message || `Error ${error.response.status}`;
-    apiError.details = error.response.data;
-    
-    // Special handling for common status codes
-    switch (error.response.status) {
-      case 401:
-        apiError.message = 'Authentication required. Please log in again.';
-        break;
-      case 403:
-        apiError.message = 'You do not have permission to perform this action.';
-        break;
-      case 429:
-        apiError.message = 'Too many requests. Please try again later.';
-        break;
-    }
-  } else if (error.request) {
-    // Request was made but no response received
-    apiError.message = 'No response from server. Please check your connection.';
-  } else if (error.message) {
-    // Error setting up the request
-    apiError.message = error.message;
+export const parseApiError = (error: any): ApiError => {
+  // If it's already in our format, return it
+  if (error && typeof error === 'object' && 'message' in error) {
+    return error as ApiError;
   }
   
-  // Add context to the error message if provided
-  const contextMessage = context ? `[${context}] ${apiError.message}` : apiError.message;
+  // Check for fetch Response object
+  if (error instanceof Response) {
+    return {
+      message: `HTTP error ${error.status}: ${error.statusText}`,
+      status: error.status
+    };
+  }
   
-  // Show toast notification for user feedback
-  toast.error('Error', {
-    description: contextMessage,
-  });
+  // Handle Error objects
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      details: { stack: error.stack }
+    };
+  }
   
-  // Log error to console for debugging
-  console.error(contextMessage, error);
+  // Handle string errors
+  if (typeof error === 'string') {
+    return { message: error };
+  }
   
-  return apiError;
+  // Default case
+  return {
+    message: 'An unknown error occurred',
+    details: { originalError: error }
+  };
 };
 
 /**
- * Check if an error is a network connectivity issue
+ * Handle API error with consistent behavior
  */
-export const isNetworkError = (error: any): boolean => {
-  return !error.response && error.request;
+export const handleApiError = (
+  error: any,
+  context: string,
+  options?: {
+    rethrow?: boolean;
+    defaultMessage?: string;
+  }
+): ApiError => {
+  const parsedError = parseApiError(error);
+  
+  // Log the error
+  errorLogger.logError(parsedError, context);
+  
+  // Return a consistent error format
+  const formattedError: ApiError = {
+    message: parsedError.message || options?.defaultMessage || 'An error occurred',
+    code: parsedError.code,
+    status: parsedError.status,
+    details: parsedError.details
+  };
+  
+  // Rethrow if needed
+  if (options?.rethrow) {
+    throw formattedError;
+  }
+  
+  return formattedError;
 };
 
 /**
- * Check if an error is due to authentication issues
+ * Safely execute a function that might throw API errors
  */
-export const isAuthError = (error: any): boolean => {
-  return error.response?.status === 401;
+export const safeApiCall = async <T>(
+  apiCall: () => Promise<T>,
+  context: string,
+  fallbackValue?: T
+): Promise<T> => {
+  try {
+    return await apiCall();
+  } catch (error) {
+    handleApiError(error, context);
+    return fallbackValue as T;
+  }
 };

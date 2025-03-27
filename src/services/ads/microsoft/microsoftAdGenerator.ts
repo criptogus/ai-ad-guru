@@ -1,80 +1,66 @@
 
 /**
- * Microsoft Ad Generator Service
- * Generates Microsoft Ads content
+ * Microsoft Ad Generator
+ * Handles the generation of Microsoft ads using AI
  */
 
 import { errorLogger } from '@/services/libs/error-handling';
 
-export interface MicrosoftAdGenerationParams {
-  companyName: string;
-  industry: string;
-  productDescription: string;
-  targetAudience: string;
-  keywords: string[];
-  callToAction: string;
-  mindTrigger?: string;
+// Interfaces for Microsoft ad generation
+export interface MicrosoftAdRequest {
+  companyName?: string;
+  targetAudience?: string;
+  productDescription?: string;
+  uniqueSellingPoints?: string[];
+  callToAction?: string;
+  campaignGoals?: string;
+  websiteUrl?: string;
+  additionalInfo?: string;
 }
 
 export interface MicrosoftAd {
-  headlines: string[];
-  descriptions: string[];
+  id?: string;
+  headline: string;
+  description: string;
   path1?: string;
   path2?: string;
-  finalUrl: string;
+  finalUrl?: string;
+  adVariations?: string[];
 }
 
 /**
- * Generate Microsoft ad content based on input parameters
+ * Generate Microsoft ads based on website analysis data
  */
-export const generateMicrosoftAds = async (params: MicrosoftAdGenerationParams): Promise<MicrosoftAd[]> => {
+export const generateMicrosoftAds = async (
+  adRequest: MicrosoftAdRequest
+): Promise<MicrosoftAd[]> => {
   try {
-    // This is a placeholder for actual ad generation logic
-    console.log('Generating Microsoft ads with params', params);
+    console.log('Generating Microsoft ads with:', adRequest);
     
-    // Return placeholder ads
-    return [
+    // Mock implementation for now
+    // In a real scenario, this would call an AI service
+    const mockAds: MicrosoftAd[] = [
       {
-        headlines: [
-          `${params.companyName} Solutions`,
-          `Top ${params.industry} Services`,
-          `Expert ${params.industry} Help`
-        ],
-        descriptions: [
-          `Find the best ${params.industry} solutions for your business. ${params.callToAction}.`,
-          `Professional ${params.industry} services tailored to your needs. Contact us today.`
-        ],
-        finalUrl: 'https://example.com'
+        id: 'ms-ad-1',
+        headline: 'Professional Services | Expert Solutions',
+        description: 'Transform your business with our expert solutions. Get started today!',
+        path1: 'services',
+        path2: 'professional',
+        finalUrl: adRequest.websiteUrl || 'https://example.com'
       },
       {
-        headlines: [
-          `${params.companyName} - ${params.industry} Leaders`,
-          `Professional ${params.industry} Services`,
-          `Trusted by Businesses`
-        ],
-        descriptions: [
-          `Get expert ${params.industry} assistance from industry leaders. ${params.callToAction}.`,
-          `Our ${params.industry} solutions help businesses grow. Learn more.`
-        ],
-        finalUrl: 'https://example.com'
+        id: 'ms-ad-2',
+        headline: 'Business Solutions | Proven Results',
+        description: 'Industry-leading solutions with proven ROI. Schedule a demo now!',
+        path1: 'solutions',
+        path2: 'business',
+        finalUrl: adRequest.websiteUrl || 'https://example.com'
       }
     ];
+    
+    return mockAds;
   } catch (error) {
     errorLogger.logError(error, 'generateMicrosoftAds');
-    return [];
-  }
-};
-
-/**
- * Optimize Microsoft ads based on performance data
- */
-export const optimizeMicrosoftAds = async (ads: MicrosoftAd[], performance: any): Promise<MicrosoftAd[]> => {
-  try {
-    // This is a placeholder for actual ad optimization logic
-    console.log('Optimizing Microsoft ads with performance data', performance);
-    return ads;
-  } catch (error) {
-    errorLogger.logError(error, 'optimizeMicrosoftAds');
-    return ads;
+    throw new Error('Failed to generate Microsoft ads');
   }
 };
