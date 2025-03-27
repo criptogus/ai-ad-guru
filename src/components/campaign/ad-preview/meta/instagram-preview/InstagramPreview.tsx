@@ -60,12 +60,21 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
 
   return (
     <div className={cn(
-      "overflow-hidden bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm",
+      "overflow-hidden bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm group",
       getContainerStyle()
     )}>
       <div className={getLayoutStyle()}>
         {/* Header (username, sponsored, etc.) */}
-        <HeaderSection companyName={companyName} showMenu={showMenu} setShowMenu={setShowMenu} />
+        <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+            <div>
+              <p className="text-sm font-medium">{companyName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sponsored</p>
+            </div>
+          </div>
+          <button className="text-gray-500 dark:text-gray-400">•••</button>
+        </div>
         
         {/* Main Content Area */}
         <div className={viewMode === "feed" ? "flex-grow" : "flex-grow relative"}>
@@ -97,10 +106,30 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
                 isLoading={isLoading}
                 onGenerateImage={handleGenerateImage}
               />
-              <ContentSection 
-                ad={ad} 
-                companyName={companyName} 
-              />
+              <div className="p-3">
+                {/* Action buttons */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4">
+                    <button className="text-gray-800 dark:text-gray-200">♥</button>
+                    <button className="text-gray-800 dark:text-gray-200">💬</button>
+                    <button className="text-gray-800 dark:text-gray-200">↪</button>
+                  </div>
+                  <button className="text-gray-800 dark:text-gray-200">🔖</button>
+                </div>
+                
+                {/* Caption */}
+                <div className="mb-2 text-sm">
+                  <span className="font-medium">{companyName}</span>{" "}
+                  <span>{ad.primaryText}</span>
+                </div>
+                
+                {/* Call to action */}
+                <div className="mt-3">
+                  <button className="text-blue-500 font-medium text-sm">
+                    {ad.description || "Learn More"}
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>

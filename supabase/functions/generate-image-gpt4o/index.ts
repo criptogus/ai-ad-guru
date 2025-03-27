@@ -27,7 +27,8 @@ serve(async (req) => {
       industry,
       templateId,
       campaignId,
-      userId
+      userId,
+      imagePrompt  // Add explicit imagePrompt field
     } = requestData;
     
     console.log("Received image generation request:", JSON.stringify({
@@ -35,26 +36,25 @@ serve(async (req) => {
       mainText,
       subText,
       campaignId,
+      imagePrompt, // Log the image prompt
     }));
     
-    if (!promptTemplate && !templateId) {
-      throw new Error('Either promptTemplate or templateId is required');
+    // Use direct imagePrompt if provided, otherwise use template variables
+    let finalPrompt = imagePrompt || promptTemplate;
+    
+    if (!finalPrompt) {
+      throw new Error('No image prompt provided');
     }
     
-    if (!userId) {
-      throw new Error('User ID is required for image generation');
-    }
-    
-    // Get template if templateId is provided
-    let finalPrompt = promptTemplate;
-    
-    // Replace template variables
-    if (mainText) {
-      finalPrompt = finalPrompt.replace(/\${mainText:[^}]*}/g, mainText);
-    }
-    
-    if (subText) {
-      finalPrompt = finalPrompt.replace(/\${subText:[^}]*}/g, subText);
+    // Replace template variables if using a template
+    if (!imagePrompt && promptTemplate) {
+      if (mainText) {
+        finalPrompt = finalPrompt.replace(/\${mainText:[^}]*}/g, mainText);
+      }
+      
+      if (subText) {
+        finalPrompt = finalPrompt.replace(/\${subText:[^}]*}/g, subText);
+      }
     }
     
     // Add context about company, industry, and brand tone if available

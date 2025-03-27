@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { errorLogger } from "@/services/libs/error-handling";
 
 export const useImageGenerationActions = (
-  generateAdImage: (prompt: string) => Promise<string | null>,
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
@@ -23,7 +23,13 @@ export const useImageGenerationActions = (
       setLoadingImageIndex(index);
       setError(null);
 
-      const imageUrl = await generateAdImage(ad.imagePrompt);
+      // Add the image prompt directly to ensure it's used for generation
+      const additionalInfo = {
+        imagePrompt: ad.imagePrompt,
+        format: ad.format || "feed"
+      };
+
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (!imageUrl) {
         throw new Error("Failed to generate image");
@@ -43,7 +49,7 @@ export const useImageGenerationActions = (
       });
 
       toast("Image Generated", {
-        description: "AI-generated image created successfully"
+        description: "AI-generated image created successfully. 5 credits used."
       });
     } catch (error) {
       errorLogger.logError(error, "handleGenerateImage");
