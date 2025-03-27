@@ -1,10 +1,10 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { InstagramPreview } from "./instagram-preview";
 import { MetaAd } from "@/hooks/adGeneration";
 import { Button } from "@/components/ui/button";
-import { Feed, MonitorSmartphone, Video } from "lucide-react";
+import { Newspaper, Smartphone, Video } from "lucide-react";
+import InstagramPreview from "./instagram-preview/InstagramPreview";
 
 interface InstagramAdsPreviewProps {
   ads: MetaAd[];
@@ -51,7 +51,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
               }`}
               onClick={() => setViewMode("feed")}
             >
-              <Feed className="h-4 w-4 mr-2" />
+              <Newspaper className="h-4 w-4 mr-2" />
               Feed
             </Button>
             <Button
@@ -64,7 +64,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
               }`}
               onClick={() => setViewMode("story")}
             >
-              <MonitorSmartphone className="h-4 w-4 mr-2" />
+              <Smartphone className="h-4 w-4 mr-2" />
               Story
             </Button>
             <Button
