@@ -64,6 +64,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <summary>Error details</summary>
             <p>{this.state.error?.toString()}</p>
           </details>
+          <button 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Try again
+          </button>
         </div>
       );
     }
