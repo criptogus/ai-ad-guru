@@ -5,7 +5,8 @@ import { Save, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { consumeCredits, getCreditCosts } from "@/services";
+import { consumeCredits } from "@/services/credits/creditUsage";
+import { getCreditCosts } from "@/services/credits/creditCosts";
 
 interface SaveToCampaignOptionProps {
   backgroundImage: string | null;
@@ -30,7 +31,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
     try {
       const creditSuccess = await consumeCredits(
         user.id,
-        creditCosts.smartBanner,
+        creditCosts.smart_banner_creation,
         'smart_banner_creation',
         `Smart Banner - ${platform} ${format}`
       );
@@ -81,7 +82,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save to Campaign ({creditCosts.smartBanner} credits)
+                Save to Campaign ({creditCosts.smart_banner_creation} credits)
               </>
             )}
           </Button>

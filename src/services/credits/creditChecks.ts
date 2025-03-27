@@ -2,22 +2,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CreditAction } from "@/services/types";
 import { toast } from "sonner";
+import { getCreditCosts } from "./creditCosts";
 
-// Credit costs for different actions
-export const getCreditCosts = () => ({
-  google_ad_creation: 5,
-  meta_ad_creation: 5,
-  linkedin_ad_creation: 5,
-  microsoft_ad_creation: 5,
-  image_generation: 1,
-  website_analysis: 1,
-  ai_optimization_daily: 10,
-  ai_optimization_3days: 5,
-  ai_optimization_weekly: 2,
-  campaign_creation: 0,
-  ai_insights_report: 3,
-  smart_banner_creation: 2
-});
+// Credit costs are now managed in a separate file to avoid duplication
 
 /**
  * Check if a user has enough credits for an action and returns current credit balance
@@ -42,7 +29,7 @@ export const checkCreditsForAction = async (
 
     // Get cost of the action
     const costs = getCreditCosts();
-    const cost = amount !== undefined ? amount : (costs[action] || 0);
+    const cost = amount !== undefined ? amount : costs[action] || 0;
 
     // Check if user has enough credits
     const userCredits = profile?.credits || 0;
