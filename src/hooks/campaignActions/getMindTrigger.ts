@@ -1,22 +1,25 @@
 
+// Helper functions to retrieve mind triggers
+
 /**
- * Helper function to retrieve the mind trigger for a specific platform
+ * Get mind trigger for a specific platform
  */
 export const getMindTrigger = (
-  campaignData: { mindTriggers?: Record<string, string> }, 
+  campaign: { mindTriggers?: Record<string, string> },
   platform: string
 ): string => {
-  if (!campaignData.mindTriggers) {
+  // If no mind triggers or platform not found, return empty string
+  if (!campaign.mindTriggers || !campaign.mindTriggers[platform]) {
     return '';
   }
+
+  // Extract the actual trigger text from custom triggers
+  const trigger = campaign.mindTriggers[platform];
   
-  const trigger = campaignData.mindTriggers[platform];
-  
-  // Handle custom triggers (if they have a "custom:" prefix)
-  if (trigger && trigger.startsWith('custom:')) {
-    return trigger.substring(7); // Remove the "custom:" prefix
+  // If it's a custom trigger (prefixed with custom:), extract the actual content
+  if (trigger.startsWith('custom:')) {
+    return trigger.substring(7); // Remove the 'custom:' prefix
   }
   
-  // Return the trigger or empty string if not found
-  return trigger || '';
+  return trigger;
 };
