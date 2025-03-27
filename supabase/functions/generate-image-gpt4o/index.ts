@@ -1,15 +1,15 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, handleCorsRequest } from "../generate-image/utils.ts";
-import { supabaseAdmin } from "./supabaseClient.ts";
+import { corsHeaders } from "../generate-image/utils.ts";
 
 // Set up OpenAI API key
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  const corsResponse = handleCorsRequest(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
   
   try {
     if (!openaiApiKey) {
@@ -48,25 +48,6 @@ serve(async (req) => {
     // Get template if templateId is provided
     let finalPrompt = promptTemplate;
     
-    if (templateId && !promptTemplate) {
-      // Fetch template from Supabase
-      const { data: template, error } = await supabaseAdmin
-        .from('prompt_templates')
-        .select('*')
-        .eq('id', templateId)
-        .single();
-        
-      if (error) {
-        throw new Error(`Error fetching template: ${error.message}`);
-      }
-      
-      if (!template) {
-        throw new Error(`Template with ID ${templateId} not found`);
-      }
-      
-      finalPrompt = template.prompt_text;
-    }
-    
     // Replace template variables
     if (mainText) {
       finalPrompt = finalPrompt.replace(/\${mainText:[^}]*}/g, mainText);
@@ -97,6 +78,9 @@ serve(async (req) => {
       finalPrompt += ".";
     }
     
+    // Add instructions for high-quality Instagram advertising imagery
+    finalPrompt += " Create a professional, high-quality Instagram ad image. The image should be visually striking with excellent lighting and composition. No text overlay (text will be added separately). The image should be perfect for Instagram advertising.";
+    
     // Ensure prompt doesn't exceed OpenAI's limit (truncate if needed)
     const MAX_PROMPT_LENGTH = 1000;
     if (finalPrompt.length > MAX_PROMPT_LENGTH) {
@@ -117,6 +101,10 @@ serve(async (req) => {
         model: "gpt-4o",
         messages: [
           {
+            role: "system",
+            content: "You are an expert at creating stunning and professional Instagram ad images."
+          },
+          {
             role: "user",
             content: finalPrompt
           }
@@ -136,7 +124,7 @@ serve(async (req) => {
     }
     
     const openAIData = await openAIResponse.json();
-    console.log("OpenAI response:", JSON.stringify(openAIData));
+    console.log("OpenAI response received");
     
     // Extract image URL from OpenAI response - using the new format with tool_calls
     const message = openAIData.choices?.[0]?.message;
@@ -157,30 +145,13 @@ serve(async (req) => {
       throw new Error("No image URL in the tool_calls response");
     }
     
-    // Store the generated image in database
-    const { data: imageRecord, error: insertError } = await supabaseAdmin
-      .from('generated_images')
-      .insert({
-        user_id: userId,
-        campaign_id: campaignId || null,
-        template_id: templateId || null,
-        image_url: imageUrl,
-        prompt_used: finalPrompt
-      })
-      .select()
-      .single();
-      
-    if (insertError) {
-      console.error("Error storing image record:", insertError);
-      // Continue anyway - we'll return the image URL even if recording fails
-    }
+    console.log("Successfully generated image");
     
     return new Response(
       JSON.stringify({
         success: true,
         imageUrl,
-        promptUsed: finalPrompt,
-        recordId: imageRecord?.id
+        promptUsed: finalPrompt
       }),
       {
         headers: {

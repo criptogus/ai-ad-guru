@@ -85,7 +85,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
         </div>
 
         {/* Mobile-style Preview Column with improved spacing */}
-        <div className="max-w-[430px] mx-auto space-y-12 overflow-y-auto max-h-[75vh] pb-16 px-3">
+        <div className="max-w-[450px] mx-auto space-y-12 overflow-y-auto max-h-[75vh] pb-16 px-6">
           {ads.map((ad, index) => (
             <div 
               key={index} 

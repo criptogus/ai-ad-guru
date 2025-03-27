@@ -34,9 +34,9 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
         className="w-full h-full object-cover"
       />
       
-      {/* Overlay with image prompt */}
+      {/* Overlay with image prompt - only show when hovering */}
       {imagePrompt && (
-        <div className="absolute top-2 left-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs p-1.5 rounded opacity-70 hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 left-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs p-1.5 rounded opacity-0 hover:opacity-100 transition-opacity">
           <p className="line-clamp-2">{imagePrompt}</p>
         </div>
       )}
