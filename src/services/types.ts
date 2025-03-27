@@ -1,44 +1,16 @@
 
-// Credit action types
+// Define the possible credit actions
 export type CreditAction = 
   | 'google_ad_creation'
   | 'meta_ad_creation'
   | 'linkedin_ad_creation'
   | 'microsoft_ad_creation'
-  | 'campaign_creation'
-  | 'website_analysis'
   | 'image_generation'
+  | 'website_analysis'
+  | 'campaign_creation'
+  | 'credit_purchase'
+  | 'ai_insights_report'
+  | 'smart_banner_creation'
   | 'ai_optimization_daily'
   | 'ai_optimization_3days'
-  | 'ai_optimization_weekly'
-  | 'ai_insights_report'
-  | 'credit_purchase'
-  | 'smart_banner_creation'
-  | 'credit_refund';
-
-// Credit usage record
-export interface CreditUsage {
-  id: string;
-  userId: string;
-  amount: number;
-  action: CreditAction;
-  description: string;
-  createdAt: string;
-}
-
-// User role type
-export type UserRole = "Admin" | "Editor" | "Viewer" | "Analyst";
-
-// Team member type
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  lastActive: string;
-}
-
-// Role permissions type
-export interface RolePermissions {
-  [key: string]: string[];
-}
+  | 'ai_optimization_weekly';

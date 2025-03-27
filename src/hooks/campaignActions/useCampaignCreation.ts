@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { consumeCredits, getCreditCosts } from "@/services";
+import { consumeCredits } from "@/services/credits/creditUsage";
+import { getCreditCosts } from "@/services/credits/creditCosts";
 
 export const useCampaignCreation = (
   user: any,
@@ -22,9 +24,10 @@ export const useCampaignCreation = (
     setIsCreating(true);
 
     try {
-      const requiredCredits = creditCosts.campaignCreation;
+      const requiredCredits = creditCosts.campaign_creation || 0;
       const hasImages = metaAds.some(ad => ad.imageUrl);
-      const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
+      const imageCredits = hasImages ? creditCosts.image_generation || 0 : 0;
+      const totalCredits = requiredCredits + imageCredits;
       
       const creditSuccess = await consumeCredits(
         user.id,
@@ -47,7 +50,7 @@ export const useCampaignCreation = (
             name: campaignData.name,
             description: campaignData.description,
             target_audience: campaignData.targetAudience,
-            platform: campaignData.platform,
+            platform: campaignData.platform || campaignData.platforms?.join(','),
             budget: campaignData.budget,
             budget_type: campaignData.budgetType,
             start_date: campaignData.startDate,
@@ -81,10 +84,12 @@ export const useCampaignCreation = (
       });
       
       try {
-        const requiredCredits = creditCosts.campaignCreation;
+        const requiredCredits = creditCosts.campaign_creation || 0;
         const hasImages = metaAds.some(ad => ad.imageUrl);
-        const totalCredits = requiredCredits + (hasImages ? creditCosts.imageGeneration : 0);
+        const imageCredits = hasImages ? creditCosts.image_generation || 0 : 0;
+        const totalCredits = requiredCredits + imageCredits;
         
+        // Refund credits if campaign creation failed
         await supabase
           .from('profiles')
           .update({ 
