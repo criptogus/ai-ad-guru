@@ -1,26 +1,20 @@
 
-import { UserRole } from "@/components/roles/InviteUserModal";
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  lastActive: string;
-}
-
+// Credit action types
 export type CreditAction = 
-  | 'campaign_creation' 
-  | 'ai_optimization' 
-  | 'image_generation' 
-  | 'credit_purchase' 
-  | 'credit_refund'
-  | 'meta_ad_generation'
-  | 'google_ad_generation'
-  | 'microsoft_ad_generation'  
-  | 'smart_banner_creation'
-  | 'ad_optimization';
+  | 'google_ad_creation'
+  | 'meta_ad_creation'
+  | 'linkedin_ad_creation'
+  | 'microsoft_ad_creation'
+  | 'campaign_creation'
+  | 'website_analysis'
+  | 'image_generation'
+  | 'ai_optimization_daily'
+  | 'ai_optimization_3days'
+  | 'ai_optimization_weekly'
+  | 'ai_insights_report'
+  | 'credit_purchase';
 
+// Credit usage record
 export interface CreditUsage {
   id: string;
   userId: string;
@@ -28,4 +22,18 @@ export interface CreditUsage {
   action: CreditAction;
   description: string;
   createdAt: string;
+}
+
+// Team member type
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: "Admin" | "Editor" | "Viewer";
+  lastActive: string;
+}
+
+// Role permissions type
+export interface RolePermissions {
+  [key: string]: string[];
 }

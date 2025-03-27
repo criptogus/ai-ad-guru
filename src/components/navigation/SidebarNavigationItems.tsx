@@ -15,7 +15,9 @@ import {
   Users,
   LayoutTemplate,
   SlidersHorizontal,
-  PlusCircle
+  PlusCircle,
+  Coins,
+  Image
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -97,6 +99,12 @@ export const SidebarNavigationItems: React.FC = () => {
         label="Analytics"
       />
       <NavigationItem
+        to="/assets"
+        active={isActiveRoute("/assets")}
+        icon={<Image />}
+        label="Assets Gallery"
+      />
+      <NavigationItem
         to="/config"
         active={isActiveRoute("/config")}
         icon={<Settings />}
@@ -107,6 +115,12 @@ export const SidebarNavigationItems: React.FC = () => {
         active={isActiveRoute("/billing")}
         icon={<CreditCard />}
         label="Billing"
+      />
+      <NavigationItem
+        to="/credits-info"
+        active={isActiveRoute("/credits-info")}
+        icon={<Coins />}
+        label="Credits Info"
       />
       {user?.role === "admin" && (
         <NavigationItem

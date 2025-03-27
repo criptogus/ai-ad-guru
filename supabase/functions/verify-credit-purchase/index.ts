@@ -1,5 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import Stripe from 'https://esm.sh/stripe@12.14.0';
 
 // Define CORS headers for browser requests
 const corsHeaders = {
@@ -15,73 +16,186 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Parse the request body
-    const body = await req.json();
-    const { userId, timestamp, amount, price, stripeLink } = body;
-    
-    console.log('Verifying credit purchase:', { userId, timestamp, amount, price, stripeLink });
-    
-    // Validate the required fields
-    if (!userId || !timestamp || !amount || !price || !stripeLink) {
+    // Parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields', 
-          verified: false 
-        }),
-        { 
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400 
+          status: 400,
+        }
+      );
+    }
+
+    // Get the Stripe session ID from the request
+    const { sessionId } = requestBody;
+
+    if (!sessionId) {
+      return new Response(
+        JSON.stringify({ error: "Session ID is required" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
         }
       );
     }
     
-    // In a production environment, we would verify the purchase with Stripe's API
-    // For now, we'll simulate a check based on the timestamp
-    const purchaseTime = new Date(timestamp);
-    const currentTime = new Date();
-    const timeDifferenceMinutes = (currentTime.getTime() - purchaseTime.getTime()) / 1000 / 60;
+    console.log('Verifying payment session:', sessionId);
+
+    // Get the Supabase client - we'll use this to update the user's credits
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
     
-    // Allow purchases made within the last 10 minutes
-    // This is a simple validation; in a real-world scenario, you'd use Stripe's API
-    if (timeDifferenceMinutes <= 10) {
-      console.log('Credit purchase verified successfully');
-      
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables');
       return new Response(
-        JSON.stringify({ 
-          verified: true,
-          message: 'Purchase verified successfully' 
-        }),
-        { 
+        JSON.stringify({ error: "Server configuration error" }),
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
-    } else {
-      console.log('Credit purchase verification failed: Purchase too old');
-      
-      return new Response(
-        JSON.stringify({ 
-          verified: false,
-          message: 'Purchase verification failed. The purchase attempt is too old.' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
+          status: 500,
         }
       );
     }
     
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get the Stripe API key and initialize Stripe
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      console.error('STRIPE_SECRET_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: "Payment system not properly configured" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+    });
+
+    // Retrieve the checkout session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: "Invalid session ID" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+    
+    // Check if the payment was successful
+    if (session.payment_status !== 'paid') {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Payment has not been completed",
+          paymentStatus: session.payment_status
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+    
+    // Get the metadata from the session (user ID and credit amount)
+    const userId = session.metadata?.userId || session.client_reference_id;
+    const creditAmount = parseInt(session.metadata?.creditAmount || '100', 10);
+    
+    if (!userId) {
+      console.error('No user ID found in session metadata');
+      return new Response(
+        JSON.stringify({ error: "Could not identify user for this session" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+    
+    console.log(`Adding ${creditAmount} credits to user ${userId}`);
+    
+    // Get the user's current credits
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+      
+    if (userError) {
+      console.error('Error fetching user profile:', userError);
+      return new Response(
+        JSON.stringify({ error: "Could not fetch user profile" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+    
+    // Calculate new credit balance
+    const currentCredits = userData.credits || 0;
+    const newCreditBalance = currentCredits + creditAmount;
+    
+    // Update the user's credits
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        credits: newCreditBalance,
+        has_paid: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+      
+    if (updateError) {
+      console.error('Error updating user credits:', updateError);
+      return new Response(
+        JSON.stringify({ error: "Failed to update user credits" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+    
+    // Store the transaction in a credit_transactions table or similar
+    // This would be implemented in a real app, but we'll skip it for this example
+    
+    // Return success response
+    return new Response(
+      JSON.stringify({
+        success: true,
+        userId,
+        creditAmount,
+        newBalance: newCreditBalance,
+        message: `Successfully added ${creditAmount} credits to user account`,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error('Error processing request:', error);
+    console.error('Error verifying payment:', error);
     
     return new Response(
       JSON.stringify({ 
-        error: `Server error: ${error.message}`,
-        verified: false 
+        error: error.message || "An unexpected error occurred",
+        stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500,
       }
     );
   }

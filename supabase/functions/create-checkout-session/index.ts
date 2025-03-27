@@ -11,6 +11,7 @@ const corsHeaders = {
 
 // Handle preflight OPTIONS request
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate required fields
-    const { userId, returnUrl } = requestBody;
+    const { userId, planId, returnUrl } = requestBody;
 
     if (!userId) {
       return new Response(
@@ -55,6 +56,7 @@ Deno.serve(async (req) => {
     }
 
     console.log('Creating checkout session for user:', userId);
+    console.log('Plan ID:', planId || 'default plan');
     console.log('Return URL:', returnUrl);
 
     // Get the Stripe API key from environment variables
@@ -87,9 +89,59 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Set up product details based on plan ID or use default
+    let productDetails;
+    let priceAmount;
+    let creditAmount;
+
+    // Define credit packages
+    switch (planId) {
+      case 'starter':
+        productDetails = {
+          name: 'Starter Credit Pack',
+          description: '100 credits for AI-generated ads and optimization',
+        };
+        priceAmount = 4900; // $49.00
+        creditAmount = 100;
+        break;
+      case 'pro':
+        productDetails = {
+          name: 'Professional Credit Pack',
+          description: '250 credits for AI-generated ads and optimization',
+        };
+        priceAmount = 9900; // $99.00
+        creditAmount = 250;
+        break;
+      case 'agency':
+        productDetails = {
+          name: 'Agency Credit Pack',
+          description: '700 credits for AI-generated ads and optimization',
+        };
+        priceAmount = 24900; // $249.00
+        creditAmount = 700;
+        break;
+      case 'subscription':
+        productDetails = {
+          name: 'AI AdGuru Pro Subscription',
+          description: '400 credits per month, AI-generated ad copy and images, campaign management',
+        };
+        priceAmount = 9900; // $99.00
+        creditAmount = 400;
+        break;
+      default:
+        productDetails = {
+          name: 'Custom Credit Pack',
+          description: 'Credits for AI-generated ads and optimization',
+        };
+        priceAmount = 4900; // Default to $49.00
+        creditAmount = 100;
+    }
+
     // Set up metadata for the checkout session
     const metadata = {
       userId: userId,
+      planId: planId || 'default',
+      creditAmount: creditAmount.toString(),
       createdAt: new Date().toISOString(),
     };
 
@@ -103,19 +155,21 @@ Deno.serve(async (req) => {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: 'AI AdGuru Pro Subscription',
-                description: '400 credits per month, AI-generated ad copy and images, campaign management',
+                name: productDetails.name,
+                description: productDetails.description,
                 images: ['https://images.unsplash.com/photo-1616469829581-73993eb86b02?q=80&w=2070&auto=format&fit=crop'],
               },
-              unit_amount: 9900, // $99.00
-              recurring: {
-                interval: 'month',
-              },
+              unit_amount: priceAmount,
+              ...(planId === 'subscription' ? {
+                recurring: {
+                  interval: 'month',
+                },
+              } : {}),
             },
             quantity: 1,
           },
         ],
-        mode: 'subscription',
+        mode: planId === 'subscription' ? 'subscription' : 'payment',
         allow_promotion_codes: true,
         billing_address_collection: 'required',
         customer_email: null, // Could be dynamically set if we have user email
@@ -146,6 +200,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         sessionId: session.id, 
         url: session.url,
+        creditAmount: creditAmount,
         success: true 
       }),
       {

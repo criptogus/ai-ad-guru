@@ -1,17 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { CreditAction } from "../types";
+import { getCreditCosts } from "./creditCosts";
 
 // Function to check if user has enough credits for an action
 export const checkCreditsForAction = async (
-  userId: string, 
-  action: CreditAction, 
-  requiredCredits: number
-): Promise<{hasEnoughCredits: boolean, currentCredits: number}> => {
+  userId: string,
+  action: CreditAction,
+  quantity: number = 1
+): Promise<{ hasEnoughCredits: boolean; currentCredits: number; requiredCredits: number }> => {
   try {
-    // Get the user's current credit balance
-    const { data: profile, error } = await supabase
+    // Get current user credits
+    const { data: user, error } = await supabase
       .from('profiles')
       .select('credits')
       .eq('id', userId)
@@ -19,51 +19,61 @@ export const checkCreditsForAction = async (
     
     if (error) throw error;
     
-    const currentCredits = profile?.credits || 0;
-    const hasEnoughCredits = currentCredits >= requiredCredits;
+    const currentCredits = user?.credits || 0;
+    const creditCosts = getCreditCosts();
     
-    return { hasEnoughCredits, currentCredits };
+    let requiredCredits = 0;
+    
+    // Calculate required credits based on action
+    switch (action) {
+      case 'google_ad_creation':
+        requiredCredits = creditCosts.googleAds * quantity;
+        break;
+      case 'meta_ad_creation':
+        requiredCredits = creditCosts.metaAds * quantity;
+        break;
+      case 'linkedin_ad_creation':
+        requiredCredits = creditCosts.linkedinAds * quantity;
+        break;
+      case 'microsoft_ad_creation':
+        requiredCredits = creditCosts.microsoftAds * quantity;
+        break;
+      case 'campaign_creation':
+        requiredCredits = creditCosts.campaignCreation * quantity;
+        break;
+      case 'website_analysis':
+        requiredCredits = creditCosts.websiteAnalysis * quantity;
+        break;
+      case 'image_generation':
+        requiredCredits = creditCosts.imageGeneration * quantity;
+        break;
+      case 'ai_optimization_daily':
+        requiredCredits = creditCosts.aiOptimization.daily * quantity;
+        break;
+      case 'ai_optimization_3days':
+        requiredCredits = creditCosts.aiOptimization.every3Days * quantity;
+        break;
+      case 'ai_optimization_weekly':
+        requiredCredits = creditCosts.aiOptimization.weekly * quantity;
+        break;
+      case 'ai_insights_report':
+        requiredCredits = creditCosts.aiInsightsReport * quantity;
+        break;
+      case 'credit_purchase':
+        requiredCredits = 0; // Adding credits doesn't consume credits
+        break;
+      default:
+        requiredCredits = 1 * quantity; // Default to 1 credit per action
+    }
+    
+    return {
+      hasEnoughCredits: currentCredits >= requiredCredits,
+      currentCredits,
+      requiredCredits
+    };
   } catch (error) {
     console.error("Error checking credits:", error);
-    toast.error("Failed to check credit balance. Please try again.");
-    return { hasEnoughCredits: false, currentCredits: 0 };
-  }
-};
-
-// Helper function to check if the current user has enough credits
-export const checkUserCredits = async (userId: string, requiredCredits: number): Promise<boolean> => {
-  try {
-    if (!userId) {
-      console.error("No user ID provided");
-      return false;
-    }
-    
-    const { hasEnoughCredits } = await checkCreditsForAction(userId, 'credit_purchase', requiredCredits);
-    return hasEnoughCredits;
-  } catch (error) {
-    console.error("Error checking user credits:", error);
-    return false;
-  }
-};
-
-// Helper function to deduct credits from the current user
-export const deductUserCredits = async (
-  userId: string,
-  amount: number,
-  action: CreditAction,
-  description: string
-): Promise<boolean> => {
-  try {
-    if (!userId) {
-      console.error("No user ID provided");
-      return false;
-    }
-    
-    // Import dynamically to avoid circular dependencies
-    const { consumeCredits } = await import('./creditUsage');
-    return await consumeCredits(userId, amount, action, description);
-  } catch (error) {
-    console.error("Error deducting user credits:", error);
-    return false;
+    // Return false in case of error to prevent actions that might require credits
+    return { hasEnoughCredits: false, currentCredits: 0, requiredCredits: 0 };
   }
 };
