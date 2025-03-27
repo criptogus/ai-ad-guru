@@ -1,9 +1,8 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { OpenAI } from "https://esm.sh/openai@4.20.1";
+import OpenAI from "https://esm.sh/openai@4.6.0";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,91 +15,87 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { businessDescription, targetAudience, keywords, brandTone, uniqueSellingPoints } = await req.json();
-
-    console.log('Generating targeting recommendations with input:', { 
-      businessDescription, 
-      targetAudience,
-      keywordsCount: keywords?.length 
+  if (!OPENAI_API_KEY) {
+    return new Response(JSON.stringify({ error: "OpenAI API key not configured" }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
+  }
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
-    }
+  try {
+    const { businessDescription, targetAudience, keywordsCount = 5 } = await req.json();
+    
+    console.log(`Generating targeting recommendations with input: ${JSON.stringify({
+      businessDescription,
+      targetAudience,
+      keywordsCount
+    }, null, 2)}`);
 
     const openai = new OpenAI({
-      apiKey: openAIApiKey,
+      apiKey: OPENAI_API_KEY
     });
 
-    // Create a prompt for OpenAI
     const prompt = `
-      Based on the following business information, provide optimal advertising targeting parameters:
+    Based on the following business description and target audience, provide targeting recommendations for digital advertising campaigns.
 
-      Business Description: ${businessDescription || ''}
-      Target Audience: ${targetAudience || ''}
-      Keywords: ${keywords?.join(', ') || ''}
-      Brand Tone: ${brandTone || ''}
-      Unique Selling Points: ${uniqueSellingPoints?.join(', ') || ''}
-
-      As an advertising targeting expert, recommend specific values for the following targeting parameters:
-      
-      1. Language (language code from common web languages like "en", "es", "fr", etc.)
-      2. Country (country code like "US", "CA", "UK", etc.)
-      3. Age Range (pick one: "18-24", "25-34", "35-44", "45-54", "55-64", "65+", or "18-65+")
-      4. Gender (pick one: "all", "male", or "female")
-      5. Locations (specific cities, states or regions, comma separated)
-      6. Interests (for Meta Ads behavioral targeting, comma separated)
-
-      Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
-      {"language": "en", "country": "US", "ageRange": "25-34", "gender": "all", "locations": "New York, Los Angeles, Chicago", "interests": "technology, innovation, smartphones"}
-    `;
-
-    console.log('Sending request to OpenAI...');
+    Business Description: ${businessDescription}
+    
+    Target Audience: ${targetAudience}
+    
+    Please provide:
+    1. A language code (e.g., en, es, pt)
+    2. A country code (e.g., US, UK, BR)
+    3. An age range (e.g., 18-24, 25-54)
+    4. Gender targeting (e.g., all, male, female)
+    5. Top ${keywordsCount} specific locations (cities or regions)
+    6. Top ${keywordsCount} interests or keywords for targeting
+    
+    Format your response as a JSON object with the following structure:
+    {
+      "language": "en",
+      "country": "US",
+      "ageRange": "25-54",
+      "gender": "all",
+      "locations": "New York, Los Angeles, Chicago, Miami, Seattle",
+      "interests": "fitness, nutrition, wellness, yoga, meditation"
+    }`;
+    
+    console.log("Sending request to OpenAI...");
+    
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns." },
+        { role: "user", content: prompt }
+      ],
       temperature: 0.7,
-      max_tokens: 500,
-      response_format: { type: "json_object" }
     });
-
-    console.log('Received response from OpenAI');
-    const targetingText = response.choices[0].message.content;
-    console.log('Raw OpenAI response:', targetingText);
+    
+    const responseText = response.choices[0].message.content;
+    console.log(`Raw OpenAI response: ${responseText}`);
     
     try {
-      // Extract JSON from the response
-      const targetingData = JSON.parse(targetingText);
-      console.log('Successfully parsed OpenAI response as JSON:', targetingData);
+      const targetingData = JSON.parse(responseText);
+      console.log(`Successfully parsed OpenAI response as JSON: ${JSON.stringify(targetingData, null, 2)}`);
       
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: targetingData,
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-      
-    } catch (error) {
-      console.error("Failed to parse OpenAI response as JSON:", error);
-      console.error("Raw response:", targetingText);
-      throw new Error(`Failed to parse targeting data: ${error.message}`);
-    }
-
-  } catch (error) {
-    console.error('Error in generate-targeting function:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-      {
+      return new Response(JSON.stringify(targetingData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response:", parseError);
+      return new Response(JSON.stringify({ 
+        error: "Failed to parse AI response", 
+        rawResponse: responseText 
+      }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+  } catch (error) {
+    console.error("Error generating targeting recommendations:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });

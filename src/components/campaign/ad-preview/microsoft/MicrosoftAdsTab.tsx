@@ -2,30 +2,26 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration";
 import { Loader2, Sparkles } from "lucide-react";
-import MetaAdsList from "./MetaAdsList";
+import MicrosoftAdsList from "./MicrosoftAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface MetaAdsTabProps {
-  metaAds: MetaAd[];
+interface MicrosoftAdsTabProps {
+  microsoftAds: GoogleAd[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
-  loadingImageIndex: number | null;
   onGenerateAds: () => Promise<void>;
-  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
-  onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   mindTrigger?: string;
 }
 
-const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
-  metaAds,
+const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
+  microsoftAds,
   analysisResult,
   isGenerating,
-  loadingImageIndex,
   onGenerateAds,
-  onGenerateImage,
-  onUpdateMetaAd,
+  onUpdateMicrosoftAd,
   mindTrigger
 }) => {
   return (
@@ -42,10 +38,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
         </Alert>
       )}
 
-      {metaAds.length === 0 ? (
+      {microsoftAds.length === 0 ? (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
-            Generate Instagram ads based on your website content. Our AI will create visual ad content optimized for social engagement.
+            Generate Microsoft Ads based on your website content. Our AI will create search ads optimized for the Microsoft Advertising network.
           </p>
           <Button 
             onClick={onGenerateAds} 
@@ -58,7 +54,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                 Generating Ads...
               </>
             ) : (
-              <>Generate Instagram Ads</>
+              <>Generate Microsoft Ads</>
             )}
           </Button>
           {mindTrigger && (
@@ -68,16 +64,14 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
           )}
         </div>
       ) : (
-        <MetaAdsList
-          metaAds={metaAds}
+        <MicrosoftAdsList
+          microsoftAds={microsoftAds}
           analysisResult={analysisResult}
-          loadingImageIndex={loadingImageIndex}
-          onGenerateImage={onGenerateImage}
-          onUpdateMetaAd={onUpdateMetaAd}
+          onUpdateMicrosoftAd={onUpdateMicrosoftAd}
         />
       )}
     </div>
   );
 };
 
-export default MetaAdsTab;
+export default MicrosoftAdsTab;

@@ -46,8 +46,25 @@ export const useCampaignSteps = (
       }
     }
 
-    // Validate campaign setup
+    // Validate mind triggers selection
     if (currentStep === 3) {
+      const platforms = campaignData.platforms || [];
+      const mindTriggers = campaignData.mindTriggers || {};
+      
+      const missingTriggers = platforms.filter(platform => !mindTriggers[platform]);
+      
+      if (missingTriggers.length > 0) {
+        toast({
+          title: "Mind Triggers Required",
+          description: `Please select mind triggers for ${missingTriggers.join(", ")}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Validate campaign setup
+    if (currentStep === 4) {
       if (!campaignData.name || !campaignData.description) {
         toast({
           title: "Required fields missing",
@@ -59,7 +76,7 @@ export const useCampaignSteps = (
     }
 
     // Check if we have ads before proceeding to summary
-    if (currentStep === 4) {
+    if (currentStep === 5) {
       const platforms = campaignData.platforms || [];
       
       let hasAds = false;
@@ -84,8 +101,8 @@ export const useCampaignSteps = (
       }
     }
 
-    // Only check credits on the final submit step (now step 5)
-    if (currentStep === 5) {
+    // Only check credits on the final submit step (now step 6)
+    if (currentStep === 6) {
       if (user && user.credits < 5) {
         toast({
           title: "Insufficient credits",

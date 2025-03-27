@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { getDomainFromUrl } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Sparkles } from "lucide-react";
 
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
@@ -31,6 +32,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
       {mindTrigger && (
         <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
             Active Mind Trigger
           </AlertTitle>
           <AlertDescription className="text-blue-600 dark:text-blue-300">
