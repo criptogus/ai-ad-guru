@@ -30,6 +30,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
   // Handle custom trigger addition without navigation
   const handleAddCustom = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent any form submission
+    e.stopPropagation(); // Prevent event bubbling
     
     if (customTrigger.trim()) {
       onAddCustomTrigger(customTrigger);
@@ -41,6 +42,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       if (customTrigger.trim()) {
         onAddCustomTrigger(customTrigger);
         setCustomTrigger("");
@@ -60,7 +62,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
         </SelectTrigger>
         <SelectContent>
           {getPlatformTriggers(platform).map(trigger => (
-            <SelectItem key={trigger.id} value={trigger.id}>
+            <SelectItem key={trigger.id} value={trigger.id} onSelect={(e) => e.preventDefault()}>
               {trigger.name} - {trigger.description}
             </SelectItem>
           ))}

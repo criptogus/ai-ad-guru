@@ -12,6 +12,7 @@ const TemplateExamples: React.FC<TemplateExamplesProps> = ({ platform, onSelectT
 
   const handleTemplateClick = (e: React.MouseEvent, template: string) => {
     e.preventDefault(); // Prevent any form submission
+    e.stopPropagation(); // Prevent event bubbling
     onSelectTemplate(template);
   };
 

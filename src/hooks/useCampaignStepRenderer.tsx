@@ -1,4 +1,3 @@
-
 import React from "react";
 import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
@@ -6,7 +5,7 @@ import PlatformSelectionStep from "@/components/campaign/PlatformSelectionStep";
 import { MindTriggerSelectionStep } from "@/components/campaign/mind-trigger";
 import AudienceAnalysisStep from "@/components/campaign/audience-analysis/AudienceAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
-import AdPreviewStep from "@/components/campaign/AdPreviewStep";
+import AdPreviewStep from "@/components/campaign/ad-preview/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
@@ -91,7 +90,12 @@ const useCampaignStepRenderer = ({
           <MindTriggerSelectionStep
             selectedPlatforms={campaignData.platforms || []}
             selectedTriggers={campaignData.mindTriggers || {}}
-            onTriggersChange={(mindTriggers) => handleNextWrapper({ mindTriggers })}
+            onTriggersChange={(mindTriggers) => {
+              setCampaignData(prev => ({
+                ...prev,
+                mindTriggers
+              }));
+            }}
             onBack={handleBack}
             onNext={() => handleNextWrapper()}
           />
