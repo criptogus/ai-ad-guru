@@ -27,7 +27,6 @@ Deno.serve(async (req) => {
     }
 
     // For now, return a placeholder image URL
-    // This reduces the dependency on external AI services during development
     const placeholderImage = 'https://placehold.co/600x600/EEE/31343C?text=AI+Image+Coming+Soon';
 
     return new Response(

@@ -15,26 +15,10 @@ export interface GoogleAd {
   descriptions: string[];
 }
 
-export interface LinkedInAd {
-  headline: string;
-  primaryText: string;
-  description: string;
-  imagePrompt?: string;
-  imageUrl?: string;
-  format?: string;
-}
-
 export interface MetaAd {
   headline: string;
   primaryText: string;
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  format?: string;
-  hashtags?: string[];
-}
-
-export interface MicrosoftAd {
-  headlines: string[];
-  descriptions: string[];
 }

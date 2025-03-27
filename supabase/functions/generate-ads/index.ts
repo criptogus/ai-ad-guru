@@ -1,6 +1,4 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
-
 // Define CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,12 +14,7 @@ Deno.serve(async (req) => {
 
   try {
     // Parse request body
-    const { 
-      platform, 
-      websiteData, 
-      mindTrigger, 
-      variations = 3 
-    } = await req.json();
+    const { platform, websiteData, mindTrigger, variations = 3 } = await req.json();
 
     // Input validation
     if (!platform || !websiteData) {
@@ -37,7 +30,7 @@ Deno.serve(async (req) => {
     // Generate fallback ads
     let ads = [];
 
-    // Always generate some fallback ads
+    // Create simple fallback ads based on platform
     if (platform === 'google') {
       // Generate basic Google ads
       ads = Array(variations).fill(0).map((_, i) => ({

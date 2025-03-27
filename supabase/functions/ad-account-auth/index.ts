@@ -1,42 +1,23 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
-import { corsHeaders, handleCorsRequest } from "./utils/cors.ts";
-import { getAuthUrl } from "./actions/getAuthUrl.ts";
-import { exchangeToken } from "./actions/exchangeToken.ts";
+// Define CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  const corsResponse = handleCorsRequest(req);
-  if (corsResponse) return corsResponse;
+Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
-    // Create the Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing Supabase URL or service role key");
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Server configuration error"
-        }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
-    
     // Parse the request body
     let requestBody;
     try {
       requestBody = await req.json();
     } catch (error) {
-      console.error("Error parsing request body:", error);
       return new Response(
         JSON.stringify({
           success: false,
@@ -49,16 +30,38 @@ serve(async (req) => {
       );
     }
     
-    const { action } = requestBody;
+    const { action, platform, userId } = requestBody;
     
-    // Generate OAuth URL
+    // Generate OAuth URL (mock)
     if (action === 'getAuthUrl') {
-      return await getAuthUrl(supabaseClient, requestBody);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          url: `https://example.com/oauth/${platform}?user=${userId}`
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
     
-    // Exchange code for token
+    // Exchange code for token (mock)
     if (action === 'exchangeToken') {
-      return await exchangeToken(supabaseClient, requestBody);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          accountId: 'mock-account-123',
+          accountName: `${platform} Account`,
+          accessToken: 'mock-token',
+          refreshToken: 'mock-refresh',
+          expiresAt: Date.now() + (60 * 60 * 1000)
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
     
     return new Response(
@@ -72,9 +75,7 @@ serve(async (req) => {
       }
     );
     
-  } catch (error: any) {
-    console.error(`Error processing request:`, error);
-    
+  } catch (error) {
     return new Response(
       JSON.stringify({ 
         success: false, 
