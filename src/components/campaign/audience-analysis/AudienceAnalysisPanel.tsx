@@ -3,7 +3,7 @@ import React from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCcw } from "lucide-react";
+import { Loader2, RefreshCcw, Calendar } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
 
   return (
     <div className="space-y-4">
-      <Tabs value={selectedPlatform} onValueChange={(value) => onAnalyze(value === "all" ? undefined : value)}>
+      <Tabs value={selectedPlatform} onValueChange={(value) => onAnalyze(value === "all" ? undefined : value)} className="w-full">
         <TabsList className="w-full">
           <TabsTrigger value="all">All Platforms</TabsTrigger>
           <TabsTrigger value="google">Google</TabsTrigger>
@@ -60,7 +60,8 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
                 <div className="space-y-6">
                   {cacheInfo?.fromCache && cacheInfo.cachedAt && (
                     <div className="bg-muted/30 p-3 rounded-md flex items-center justify-between">
-                      <div className="text-sm">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">Using cached analysis</span> from {formatCacheDate(cacheInfo.cachedAt)}
                       </div>
                       <Button size="sm" variant="outline" onClick={() => onAnalyze(selectedPlatform === "all" ? undefined : selectedPlatform)}>
