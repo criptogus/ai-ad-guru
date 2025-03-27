@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { generateGoogleAds, generateLinkedInAds, generateMicrosoftAds, generateMetaAds } from "./adGenerators.ts";
 import { parseAdResponse } from "./responseParser.ts";
+import { generateFallbackGoogleAds, generateFallbackMetaAds, generateFallbackLinkedInAds, generateFallbackMicrosoftAds } from "./fallbacks/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,26 +55,55 @@ serve(async (req) => {
     console.log(`With mind trigger: ${mindTrigger || "None"}`);
     console.log(`Campaign data: ${JSON.stringify(campaignData).substring(0, 200)}...`);
 
+    // Try to generate AI ads, but use fallbacks if OpenAI call fails
     let response;
-    switch (platform) {
-      case "google":
-        response = await generateGoogleAds(campaignData, mindTrigger);
-        break;
-      case "linkedin":
-        response = await generateLinkedInAds(campaignData, mindTrigger);
-        break;
-      case "microsoft":
-        response = await generateMicrosoftAds(campaignData, mindTrigger);
-        break;
-      case "meta":
-        response = await generateMetaAds(campaignData, mindTrigger);
-        break;
-      default:
-        throw new Error(`Unsupported platform: ${platform}`);
-    }
+    let parsedAds;
+    
+    try {
+      // First attempt: using OpenAI for generation
+      switch (platform) {
+        case "google":
+          response = await generateGoogleAds(campaignData, mindTrigger);
+          break;
+        case "linkedin":
+          response = await generateLinkedInAds(campaignData, mindTrigger);
+          break;
+        case "microsoft":
+          response = await generateMicrosoftAds(campaignData, mindTrigger);
+          break;
+        case "meta":
+          response = await generateMetaAds(campaignData, mindTrigger);
+          break;
+        default:
+          throw new Error(`Unsupported platform: ${platform}`);
+      }
 
-    // Parse the response into the appropriate format
-    const parsedAds = parseAdResponse(response, platform, campaignData);
+      // Parse the AI-generated response
+      parsedAds = parseAdResponse(response, platform, campaignData);
+      
+    } catch (aiError) {
+      console.error(`Error generating ads with AI: ${aiError.message}`);
+      
+      // Fallback: If AI generation fails, use predefined templates
+      console.log(`Using fallback ads for ${platform} platform`);
+      
+      switch (platform) {
+        case "google":
+          parsedAds = generateFallbackGoogleAds(campaignData);
+          break;
+        case "linkedin":
+          parsedAds = generateFallbackLinkedInAds(campaignData);
+          break;
+        case "microsoft":
+          parsedAds = generateFallbackMicrosoftAds(campaignData);
+          break;
+        case "meta":
+          parsedAds = generateFallbackMetaAds(campaignData);
+          break;
+        default:
+          throw new Error(`Unsupported platform: ${platform}`);
+      }
+    }
     
     return new Response(
       JSON.stringify({

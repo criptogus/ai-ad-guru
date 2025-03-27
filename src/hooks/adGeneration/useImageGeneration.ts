@@ -1,12 +1,11 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     setIsGenerating(true);
@@ -46,22 +45,36 @@ export const useImageGeneration = () => {
           throw new Error("No image URL returned from image generation");
         }
 
+        // If this was a fallback image, inform the user
+        if (data.fallback) {
+          toast("Using Placeholder Image", {
+            description: "We're using a placeholder image due to temporary connection issues.",
+          });
+        }
+
         // Return the URL of the generated image
         return data.imageUrl;
       } catch (functionError) {
         console.error("Edge function error:", functionError);
-        throw new Error(`Edge function error: ${functionError.message || "Unknown error"}`);
+        
+        // Return a placeholder image as a fallback
+        toast("Using Placeholder Image", {
+          description: "We're using a placeholder image due to temporary connection issues.",
+        });
+        
+        return "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad";
       }
     } catch (error) {
       console.error("Image generation error:", error);
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       setLastError(errorMessage);
-      toast({
-        title: "Failed to generate image",
-        description: errorMessage,
-        variant: "destructive",
+      
+      toast("Using Placeholder Image", {
+        description: "We're using a placeholder image instead due to a temporary issue.",
       });
-      return null;
+      
+      // Return a placeholder image as a fallback
+      return "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad";
     } finally {
       setIsGenerating(false);
     }

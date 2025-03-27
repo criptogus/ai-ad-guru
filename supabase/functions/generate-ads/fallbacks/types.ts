@@ -5,13 +5,13 @@ export interface GoogleAd {
   headline3: string;
   description1: string;
   description2: string;
+  headlines: string[];
+  descriptions: string[];
   finalUrl?: string;
   path1?: string;
   path2?: string;
   displayPath?: string;
-  siteLinks?: Array<{title: string, link: string}>;
-  headlines?: string[];
-  descriptions?: string[];
+  siteLinks?: {title: string, link: string}[];
 }
 
 export interface MetaAd {

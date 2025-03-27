@@ -2,39 +2,37 @@
 import { MetaAd } from "./types.ts";
 
 /**
- * Generates fallback Meta (Instagram) Ads when the AI generation fails
+ * Generates fallback Meta Ads when the AI generation fails
  * @param campaignData The campaign data used for generating the ads
  * @returns An array of MetaAd objects
  */
 export function generateFallbackMetaAds(campaignData: any): MetaAd[] {
   const companyName = campaignData.companyName || "Our Company";
   const description = campaignData.businessDescription || "Our services";
-  const callToAction = Array.isArray(campaignData.callToAction) 
-    ? campaignData.callToAction[0] 
-    : campaignData.callToAction || "Learn More";
+  const targetAudience = campaignData.targetAudience || "Our customers";
   
-  // Generate 3 fallback Meta ads
+  // Generate 3 fallback Meta/Instagram ads
   return [
     {
-      headline: `Discover ${companyName}`,
-      primaryText: `Transform your experience with our premium solutions. ${description.substring(0, 100)}... Designed with you in mind, our services deliver exceptional results every time.`,
-      description: callToAction,
-      imagePrompt: `Professional lifestyle image showcasing ${companyName} services, bright modern aesthetic, aspirational`,
-      hashtags: ["#QualityService", "#PremiumExperience", "#Innovation"]
+      headline: `Transform with ${companyName}`,
+      primaryText: `Looking for a change? ${description} We've helped countless ${targetAudience} achieve their goals. Tap to learn more!`,
+      description: "Learn More",
+      imagePrompt: `A professional, bright image showing ${companyName} services in action, with happy customers and a modern aesthetic. Inspirational and engaging.`,
+      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
     },
     {
-      headline: `Experience the ${companyName} Difference`,
-      primaryText: `Why settle for less when you can have the best? Our team of experts is ready to deliver outstanding results that exceed your expectations. Join our satisfied customers today!`,
-      description: `Shop Now | ${callToAction}`,
-      imagePrompt: `Clean product showcase of ${companyName} offerings with minimalist background, professional lighting`,
-      hashtags: ["#BestService", "#CustomerSatisfaction", "#ExpertSolutions"]
+      headline: `${companyName} - Your Partner in Success`,
+      primaryText: `Don't settle for second best. Our proven solutions help ${targetAudience} get real results. Check out what we can do for you today!`,
+      description: "Shop Now",
+      imagePrompt: `A before and after transformation showing the impact of ${companyName}'s solutions, visually striking and professional.`,
+      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
     },
     {
-      headline: `Limited Time Offer from ${companyName}`,
-      primaryText: `Don't miss out on our special promotion! For a limited time, get exclusive access to our premium services at special rates. Act now before this offer expires.`,
-      description: `Limited Time | ${callToAction}`,
-      imagePrompt: `Eye-catching promotional image for ${companyName} with bold text overlay announcing special offer`,
-      hashtags: ["#SpecialOffer", "#LimitedTimeOffer", "#ExclusiveDeal"]
+      headline: `Special Offer from ${companyName}`,
+      primaryText: `Limited time only! Take advantage of our exclusive offer designed specifically for ${targetAudience}. Don't miss out on this opportunity!`,
+      description: "Get Offer",
+      imagePrompt: `An eye-catching promotional image for ${companyName} with vibrant colors, showing the product/service with a sense of urgency and excitement.`,
+      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
     }
   ];
 }

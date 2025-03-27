@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd } from "@/hooks/adGeneration";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { errorLogger } from "@/services/libs/error-handling";
 
 export const useGoogleAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -11,14 +12,11 @@ export const useGoogleAdActions = (
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
 
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) {
-      toast({
-        title: "Website analysis required",
-        description: "Please analyze a website before generating ads",
-        variant: "destructive",
+      toast("Website analysis required", {
+        description: "Please analyze a website before generating ads"
       });
       return;
     }
@@ -42,17 +40,15 @@ export const useGoogleAdActions = (
         googleAds: ads,
       }));
 
-      toast({
-        title: "Google Ads Generated",
-        description: `${ads.length} ad variations created`,
+      toast("Google Ads Generated", {
+        description: `${ads.length} ad variations created. 5 credits used.`
       });
 
     } catch (error) {
+      errorLogger.logError(error, "handleGenerateGoogleAds");
       console.error("Error generating Google ads:", error);
-      toast({
-        title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Google Ads",
-        variant: "destructive",
+      toast("Ad Generation Failed", {
+        description: error instanceof Error ? error.message : "Failed to generate Google Ads. Please check network connection and try again."
       });
     } finally {
       setIsGenerating(false);
