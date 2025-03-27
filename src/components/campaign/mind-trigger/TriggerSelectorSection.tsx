@@ -4,6 +4,7 @@ import { useTriggerData } from './useTriggerData';
 import TriggerCard from './TriggerCard';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TriggerSelectorSectionProps {
   title: string;
