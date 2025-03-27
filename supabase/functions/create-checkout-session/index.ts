@@ -73,21 +73,9 @@ Deno.serve(async (req) => {
     }
 
     // Initialize Stripe with the secret key
-    let stripe;
-    try {
-      stripe = new Stripe(stripeKey, {
-        apiVersion: '2023-10-16',
-      });
-    } catch (stripeInitError) {
-      console.error('Error initializing Stripe:', stripeInitError);
-      return new Response(
-        JSON.stringify({ error: "Error initializing payment system" }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      );
-    }
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+    });
 
     // Set up product details based on plan ID or use default
     let productDetails;
@@ -146,51 +134,33 @@ Deno.serve(async (req) => {
     };
 
     // Create a checkout session with detailed product information
-    let session;
-    try {
-      session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: productDetails.name,
-                description: productDetails.description,
-                images: ['https://images.unsplash.com/photo-1616469829581-73993eb86b02?q=80&w=2070&auto=format&fit=crop'],
-              },
-              unit_amount: priceAmount,
-              ...(planId === 'subscription' ? {
-                recurring: {
-                  interval: 'month',
-                },
-              } : {}),
-            },
-            quantity: 1,
-          },
-        ],
-        mode: planId === 'subscription' ? 'subscription' : 'payment',
-        allow_promotion_codes: true,
-        billing_address_collection: 'required',
-        customer_email: null, // Could be dynamically set if we have user email
-        success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: returnUrl,
-        metadata: metadata,
-        client_reference_id: userId, // Important for identifying the user
-      });
-    } catch (sessionError) {
-      console.error('Error creating Stripe checkout session:', sessionError);
-      return new Response(
-        JSON.stringify({ 
-          error: sessionError.message || "Error creating checkout session",
-          details: process.env.NODE_ENV !== 'production' ? sessionError : undefined
-        }),
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
-    }
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: productDetails.name,
+              description: productDetails.description,
+            },
+            unit_amount: priceAmount,
+            ...(planId === 'subscription' ? {
+              recurring: {
+                interval: 'month',
+              },
+            } : {}),
+          },
+          quantity: 1,
+        },
+      ],
+      mode: planId === 'subscription' ? 'subscription' : 'payment',
+      allow_promotion_codes: true,
+      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: returnUrl,
+      metadata: metadata,
+      client_reference_id: userId,
+    });
 
     // Log success for debugging
     console.log('Checkout session created:', session.id);
@@ -215,8 +185,7 @@ Deno.serve(async (req) => {
     // Return an error response
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An unexpected error occurred",
-        stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
+        error: error.message || "An unexpected error occurred"
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

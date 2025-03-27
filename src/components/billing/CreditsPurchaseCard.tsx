@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getCreditCost } from "@/services/credits/creditCosts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreditsPurchaseCardProps {
   userId?: string;
@@ -14,8 +15,9 @@ interface CreditsPurchaseCardProps {
 const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, currentCredits }) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingPack, setProcessingPack] = useState<string | null>(null);
   
-  const handlePurchaseClick = async (amount: number, price: number) => {
+  const handlePurchaseClick = async (amount: number, price: number, packId: string) => {
     if (!userId) {
       toast({
         title: "Error",
@@ -27,38 +29,38 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     
     try {
       setIsProcessing(true);
+      setProcessingPack(packId);
       
-      // Create a checkout session
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      console.log(`Creating checkout session for ${amount} credits at $${price}`);
+      
+      // Create a checkout session via edge function
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: {
           userId,
-          amount,
-          price,
-          productName: `${amount} Credits`,
-          successUrl: `${window.location.origin}/billing?success=true`,
-          cancelUrl: `${window.location.origin}/billing?canceled=true`,
-        }),
+          planId: packId,
+          returnUrl: `${window.location.origin}/billing?success=true`,
+        },
       });
       
-      const session = await response.json();
+      if (error) {
+        console.error("Error creating checkout session:", error);
+        throw new Error(error.message);
+      }
       
-      if (session.error) {
-        throw new Error(session.error);
+      if (!data?.url) {
+        console.error("No checkout URL returned:", data);
+        throw new Error("Failed to create checkout session");
       }
       
       // Store purchase intent in localStorage (to be used for verification later)
       localStorage.setItem('credit_purchase_intent', JSON.stringify({
         amount,
         timestamp: Date.now(),
-        sessionId: session.id,
+        sessionId: data.sessionId,
       }));
       
       // Redirect to Stripe checkout
-      window.location.href = session.url;
+      window.location.href = data.url;
       
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -69,6 +71,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       });
     } finally {
       setIsProcessing(false);
+      setProcessingPack(null);
     }
   };
   
@@ -108,11 +111,20 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                   </ul>
                   <Button 
                     className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(100, 15)}
+                    onClick={() => handlePurchaseClick(100, 15, 'starter')}
                     disabled={isProcessing}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Buy Credits
+                    {isProcessing && processingPack === 'starter' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Buy Credits
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -145,11 +157,20 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                   </ul>
                   <Button 
                     className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(500, 50)}
+                    onClick={() => handlePurchaseClick(500, 50, 'pro')}
                     disabled={isProcessing}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Buy Credits
+                    {isProcessing && processingPack === 'pro' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Buy Credits
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -179,11 +200,20 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                   </ul>
                   <Button 
                     className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(2000, 150)}
+                    onClick={() => handlePurchaseClick(2000, 150, 'agency')}
                     disabled={isProcessing}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Buy Credits
+                    {isProcessing && processingPack === 'agency' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Buy Credits
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>

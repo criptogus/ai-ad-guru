@@ -26,9 +26,6 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Base Stripe checkout URL - we'll generate one dynamically instead
-  const baseStripeCheckoutUrl = "https://buy.stripe.com/test_7sIcNy8yG0jWgpy3cc";
-
   const handleCheckout = async () => {
     if (!user) {
       toast({
@@ -45,39 +42,27 @@ const StripeBuyButton: React.FC<StripeBuyButtonProps> = ({
     try {
       console.log(`Starting checkout process for user: ${user.id}`);
       
-      // Try to use the edge function first
-      try {
-        console.log("Attempting to create checkout session via edge function");
-        const { data, error: functionError } = await supabase.functions.invoke("create-checkout-session", {
-          body: { 
-            userId: user.id,
-            returnUrl: window.location.origin + "/billing"
-          }
-        });
-        
-        if (functionError) {
-          console.error("Error from create-checkout-session edge function:", functionError);
-          throw new Error(functionError.message || "Failed to create checkout session");
+      // Create a checkout session via edge function
+      const { data, error: functionError } = await supabase.functions.invoke("create-checkout-session", {
+        body: { 
+          userId: user.id,
+          planId: 'subscription',
+          returnUrl: window.location.origin + "/billing"
         }
-        
-        if (!data?.url) {
-          console.error("No checkout URL returned from edge function");
-          throw new Error("No checkout URL returned");
-        }
-        
-        console.log("Checkout session created successfully, redirecting to:", data.url);
-        window.open(data.url, "_blank");
-        return;
-      } catch (edgeFunctionError) {
-        console.error("Edge function error, falling back to direct URL:", edgeFunctionError);
-        // Fall back to direct URL approach
+      });
+      
+      if (functionError) {
+        console.error("Error from create-checkout-session edge function:", functionError);
+        throw new Error(functionError.message || "Failed to create checkout session");
       }
       
-      // Fallback: Use direct Stripe checkout URL with client_reference_id
-      console.log("Using fallback direct URL approach");
-      const checkoutUrl = `${baseStripeCheckoutUrl}?client_reference_id=${user.id}`;
-      console.log(`Opening Stripe checkout via direct URL for user: ${user.id}`);
-      window.open(checkoutUrl, "_blank");
+      if (!data?.url) {
+        console.error("No checkout URL returned from edge function:", data);
+        throw new Error("No checkout URL returned");
+      }
+      
+      console.log("Checkout session created successfully, redirecting to:", data.url);
+      window.location.href = data.url;
       
     } catch (error: any) {
       console.error("Checkout error:", error);

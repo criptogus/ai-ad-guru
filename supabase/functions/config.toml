@@ -1,8 +1,9 @@
 
-project_id = "your-project-id"
+project_id = "svnockyhgohttzgbgydo"
 # List of function entrypoints
 entrypoints = [
   "generate-ads/index.ts",
   "generate-image/index.ts", 
-  "optimize-ads/index.ts"
+  "optimize-ads/index.ts",
+  "create-checkout-session/index.ts"
 ]
