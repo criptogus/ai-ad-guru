@@ -1,6 +1,6 @@
 
-// Import types from creditCosts
-import { creditCosts } from './credits/creditCosts';
+// Import types from types
+import { CreditCosts } from './credits/types';
 
 // Define OptimizationCosts type explicitly
 export interface CreditOptimizationCosts {

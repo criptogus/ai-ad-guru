@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
 import { checkUserCredits, deductUserCredits } from "@/services/credits/creditChecks";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCreditCosts } from "@/services";
+import { getCreditCost } from "@/services/credits/creditCosts";
 
 export const useImageGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -16,12 +15,10 @@ export const useImageGenerationActions = (
   const { toast } = useToast();
   const { user } = useAuth();
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
-  const creditCosts = getCreditCosts();
 
   const clearImageGenerationError = () => setImageGenerationError(null);
 
   const handleGenerateImage = async (prompt: string, indexOrOptions: number | any = 0) => {
-    // Determine if we're dealing with an index (number) or options object
     const index = typeof indexOrOptions === 'number' ? indexOrOptions : 0;
     const options = typeof indexOrOptions === 'object' ? indexOrOptions : {};
     
@@ -39,8 +36,7 @@ export const useImageGenerationActions = (
       return null;
     }
 
-    // Check if user has enough credits
-    const imageCost = creditCosts.imageGeneration || 5;
+    const imageCost = getCreditCost('imageGeneration');
     const hasCredits = await checkUserCredits(user.id, imageCost);
 
     if (!hasCredits) {
@@ -53,20 +49,17 @@ export const useImageGenerationActions = (
     }
 
     try {
-      // Add some context from the analysis result if available
       let enhancedPrompt = prompt;
       if (analysisResult) {
         enhancedPrompt += ` Style should match the brand tone: ${analysisResult.brandTone}.`;
       }
 
-      // Include any platform-specific context
       if (options.platform) {
         enhancedPrompt += ` Optimize for ${options.platform} platform.`;
       }
 
       console.log("Generating image with prompt:", enhancedPrompt);
       
-      // Deduct credits first
       const creditSuccess = await deductUserCredits(
         user.id,
         imageCost,
@@ -85,7 +78,6 @@ export const useImageGenerationActions = (
         throw new Error("Failed to generate image");
       }
 
-      // Update the specific ad with the generated image
       const updatedAds = [...metaAds];
       if (updatedAds[index]) {
         updatedAds[index] = {
@@ -93,7 +85,6 @@ export const useImageGenerationActions = (
           imageUrl
         };
         
-        // Update campaign data
         setCampaignData((prev: any) => ({
           ...prev,
           metaAds: updatedAds

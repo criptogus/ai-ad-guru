@@ -6,7 +6,8 @@
 
 import { errorLogger } from '@/services/libs/error-handling';
 import { getUserCredits, useCredits, hasEnoughCredits } from './creditsApi';
-import { CreditAction, creditCosts } from './creditCosts';
+import { CreditAction } from './types';
+import { creditCosts } from './creditCosts';
 
 export interface CreditUsageResult {
   success: boolean;

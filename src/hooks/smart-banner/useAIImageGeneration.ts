@@ -1,139 +1,141 @@
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { BannerTemplate, BannerFormat, BannerPlatform } from "./types";
-import { getCreditCosts, consumeCredits } from "@/services";
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { secureApi } from '@/services/api/secureApi';
+import { useToast } from '@/hooks/use-toast';
+import { getCreditCost } from "@/services/credits/creditCosts";
+import { PromptTemplate } from '@/hooks/template/usePromptTemplates';
 
-export const useAIImageGeneration = (
-  selectedTemplate: BannerTemplate | null,
-  selectedFormat: BannerFormat,
-  selectedPlatform: BannerPlatform,
-  userId: string | undefined,
-  saveImageToUserBank: (imageUrl: string) => Promise<void>
-) => {
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [brandTone, setBrandTone] = useState("professional");
-  const creditCosts = getCreditCosts();
+interface ImageGenerationConfig {
+  templateId?: string;
+  promptTemplate?: string;
+  mainText?: string;
+  subText?: string;
+  companyName?: string;
+  industry?: string;
+  brandTone?: string;
+  campaignId?: string;
+}
 
-  // Generate an AI image for the banner background
-  const generateAIImage = async (prompt: string): Promise<string | null> => {
-    if (!userId) {
-      toast.error("Please log in to generate images");
+export interface UseAIImageGenerationReturn {
+  generateImage: (config: ImageGenerationConfig) => Promise<string | null>;
+  isGenerating: boolean;
+  lastError: string | null;
+  lastGeneratedImageUrl: string | null;
+  clearError: () => void;
+}
+
+export const useAIImageGeneration = (): UseAIImageGenerationReturn => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [lastGeneratedImageUrl, setLastGeneratedImageUrl] = useState<string | null>(null);
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const creditAmount = getCreditCost('imageGeneration');
+  
+  const generateImage = async (config: ImageGenerationConfig): Promise<string | null> => {
+    if (!user) {
+      const errorMessage = "You must be logged in to generate images";
+      setLastError(errorMessage);
+      toast({
+        title: "Authentication Required",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return null;
     }
     
-    if (!selectedTemplate) {
-      toast.error("Please select a template first");
+    const { 
+      templateId, 
+      promptTemplate, 
+      mainText, 
+      subText, 
+      companyName,
+      industry,
+      brandTone,
+      campaignId 
+    } = config;
+    
+    if (!templateId && !promptTemplate) {
+      const errorMessage = "Either a template ID or prompt template is required";
+      setLastError(errorMessage);
+      toast({
+        title: "Missing Template",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return null;
     }
     
-    setIsGeneratingImage(true);
+    setIsGenerating(true);
+    setLastError(null);
     
     try {
       // Preview credit usage
-      toast.info("Credit Usage Preview", {
-        description: `This will use ${creditCosts.smartBanner} credits to generate this banner image`,
+      toast({
+        title: "Credit Usage Preview",
+        description: `This will use ${creditAmount} credits to generate this ad image with AI`,
         duration: 3000,
       });
       
-      // Consume credits
-      const creditSuccess = await consumeCredits(
-        userId,
-        creditCosts.smartBanner,
-        'smart_banner_creation',
-        `AI Banner for ${selectedPlatform} (${selectedFormat})`
+      // Consume credits - assuming we need 5 credits for image generation
+      const response = await secureApi.invokeFunction(
+        'generate-image-gpt4o',
+        {
+          templateId,
+          promptTemplate,
+          mainText,
+          subText,
+          companyName,
+          industry,
+          brandTone,
+          campaignId,
+          userId: user.id
+        }
       );
       
-      if (!creditSuccess) {
-        toast.error("Insufficient Credits", {
-          description: "You don't have enough credits to generate this image",
-          duration: 5000,
-        });
-        return null;
+      const typedResponse = response as any; // Type assertion for response
+      
+      if (!typedResponse.success) {
+        throw new Error(typedResponse.error || "Failed to generate image");
       }
       
-      // Determine image dimensions based on format
-      let imageFormat = "square";
-      if (selectedFormat === "horizontal") {
-        imageFormat = "landscape";
-      } else if (selectedFormat === "story") {
-        imageFormat = "portrait";
-      }
+      setLastGeneratedImageUrl(typedResponse.imageUrl);
       
-      // Call the Supabase function to generate the image with DALL-E
-      const { data, error } = await supabase.functions.invoke('generate-banner-image', {
-        body: { 
-          prompt,
-          platform: selectedPlatform,
-          format: selectedFormat,
-          templateType: selectedTemplate.type,
-          templateName: selectedTemplate.name,
-          templateId: selectedTemplate.id,
-          brandTone
-        },
+      toast({
+        title: "Image Generated Successfully",
+        description: `${creditAmount} credits were used for this ad image`,
+        variant: "default",
       });
       
-      if (error) {
-        throw new Error(error.message);
-      }
+      return typedResponse.imageUrl;
       
-      if (!data || !data.imageUrl) {
-        throw new Error("No image was generated");
-      }
-      
-      // Save to user's image bank
-      if (data.imageUrl) {
-        await saveImageToUserBank(data.imageUrl);
-      }
-      
-      toast.success("Banner image generated successfully");
-      return data.imageUrl;
     } catch (error) {
-      console.error("Error generating AI image:", error);
-      toast.error("Failed to generate image", {
-        description: error instanceof Error ? error.message : "Unknown error occurred"
+      console.error("Error generating image with AI:", error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Unknown error occurred while generating image";
+      
+      setLastError(errorMessage);
+      
+      toast({
+        title: "Image Generation Failed",
+        description: errorMessage,
+        variant: "destructive",
       });
       
-      // Refund credits on failure
-      if (userId) {
-        await consumeCredits(
-          userId,
-          -creditCosts.smartBanner,
-          'credit_refund',
-          'Refund for failed banner image generation'
-        );
-      }
       return null;
     } finally {
-      setIsGeneratingImage(false);
+      setIsGenerating(false);
     }
   };
-
-  // Regenerate the AI image with the same prompt
-  const regenerateImage = async (): Promise<string | null> => {
-    // This would typically use the same prompt as before
-    // For simplicity, we're mocking this functionality
-    setIsGeneratingImage(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In a real implementation, you would call the AI service again
-      toast.success("Banner image regenerated");
-      return null; // In a real implementation, return the new image URL
-    } catch (error) {
-      console.error("Error regenerating image:", error);
-      toast.error("Failed to regenerate image");
-      return null;
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
-
+  
   return {
-    isGeneratingImage,
-    generateAIImage,
-    regenerateImage,
-    brandTone,
-    setBrandTone
+    generateImage,
+    isGenerating,
+    lastError,
+    lastGeneratedImageUrl,
+    clearError: () => setLastError(null)
   };
 };

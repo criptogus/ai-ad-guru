@@ -23,15 +23,15 @@ export const useCampaignCreation = (
     setIsCreating(true);
 
     try {
-      const requiredCredits = getCreditCost('campaign_creation') || 0;
+      const requiredCredits = getCreditCost('googleAds'); // Changed from 'campaign_creation' to 'googleAds'
       const hasImages = metaAds.some(ad => ad.imageUrl);
-      const imageCredits = hasImages ? getCreditCost('image_generation') || 0 : 0;
+      const imageCredits = hasImages ? getCreditCost('imageGeneration') : 0; // Changed from 'image_generation' to 'imageGeneration'
       const totalCredits = requiredCredits + imageCredits;
       
       const creditSuccess = await consumeCredits(
         user.id,
         totalCredits,
-        'campaign_creation',
+        'googleAds', // Changed from 'campaign_creation' to 'googleAds'
         `Campaign: ${campaignData.name} - ${hasImages ? 'With images' : 'Text only'}`
       );
       
@@ -83,9 +83,9 @@ export const useCampaignCreation = (
       });
       
       try {
-        const requiredCredits = getCreditCost('campaign_creation') || 0;
+        const requiredCredits = getCreditCost('googleAds'); // Changed from 'campaign_creation' to 'googleAds'
         const hasImages = metaAds.some(ad => ad.imageUrl);
-        const imageCredits = hasImages ? getCreditCost('image_generation') || 0 : 0;
+        const imageCredits = hasImages ? getCreditCost('imageGeneration') : 0; // Changed from 'image_generation' to 'imageGeneration'
         const totalCredits = requiredCredits + imageCredits;
         
         // Refund credits if campaign creation failed

@@ -1,4 +1,3 @@
-
 /**
  * Credits API Service
  * Handles credit-related API requests
@@ -6,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
+import { CreditAction } from './types';
 import { creditCosts } from './creditCosts';
 
 export interface CreditTransaction {
@@ -102,7 +102,7 @@ export const addCredits = async (userId: string, amount: number, description: st
  */
 export const useCredits = async (
   userId: string, 
-  action: keyof typeof creditCosts, 
+  action: CreditAction, 
   description: string,
   metadata?: Record<string, any>
 ): Promise<boolean> => {
@@ -138,7 +138,7 @@ export const useCredits = async (
 /**
  * Check if user has enough credits for an action
  */
-export const hasEnoughCredits = async (userId: string, action: keyof typeof creditCosts): Promise<boolean> => {
+export const hasEnoughCredits = async (userId: string, action: CreditAction): Promise<boolean> => {
   try {
     // Get cost for this action
     const creditCost = creditCosts[action] || 0;

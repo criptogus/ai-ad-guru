@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { secureApi } from '@/services/api/secureApi';
 import { useToast } from '@/hooks/use-toast';
-import { getCreditCosts, consumeCredits } from '@/services';
+import { getCreditCost } from '@/services/credits/creditCosts';
 import { PromptTemplate } from '@/hooks/template/usePromptTemplates';
 
 interface ImageGenerationConfig {
@@ -32,7 +31,7 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
   
   const { user } = useAuth();
   const { toast } = useToast();
-  const creditCosts = getCreditCosts();
+  const imageCost = getCreditCost('imageGeneration');
   
   const generateImage = async (config: ImageGenerationConfig): Promise<string | null> => {
     if (!user) {
@@ -75,14 +74,14 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
       // Preview credit usage
       toast({
         title: "Credit Usage Preview",
-        description: `This will use 5 credits to generate this ad image with GPT-4o`,
+        description: `This will use ${imageCost} credits to generate this ad image with GPT-4o`,
         duration: 3000,
       });
       
       // Consume credits - assuming we need 5 credits for image generation
       const creditSuccess = await consumeCredits(
         user.id,
-        5, // Fixed credit cost for image generation
+        imageCost,
         'image_generation', // Use a valid credit action type
         `GPT-4o Ad Image Generation`
       );
@@ -142,7 +141,7 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
       if (user?.id) {
         await consumeCredits(
           user.id,
-          -5, // Refund 5 credits
+          -imageCost,
           'credit_refund', // Use a valid credit action type
           'Refund for failed GPT-4o image generation'
         );

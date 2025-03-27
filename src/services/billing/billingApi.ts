@@ -1,4 +1,3 @@
-
 /**
  * Billing API Service
  * Handles communication with the payment processor
@@ -69,7 +68,7 @@ export const verifyPayment = async (
   } catch (error) {
     errorLogger.logError(error, 'verifyPayment');
     return {
-      success: false,
+      verified: false,
       error: error.message || 'Failed to verify payment'
     };
   }
@@ -151,14 +150,16 @@ export const getCreditPurchaseHistory = async (
         amount: 4900,
         credits: 100,
         status: 'completed',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        paymentMethod: 'card'
       },
       {
         id: 'purchase_456',
         amount: 9900,
         credits: 250,
         status: 'completed',
-        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+        date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        paymentMethod: 'card'
       }
     ];
   } catch (error) {
@@ -179,21 +180,17 @@ export const getInvoiceHistory = async (
     return [
       {
         id: 'inv_123',
-        number: 'INV-001',
         amount: 4900,
-        currency: 'usd',
         status: 'paid',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         pdfUrl: 'https://example.com/invoice/123.pdf',
         description: '100 Credits'
       },
       {
         id: 'inv_456',
-        number: 'INV-002',
         amount: 9900,
-        currency: 'usd',
         status: 'paid',
-        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
         pdfUrl: 'https://example.com/invoice/456.pdf',
         description: '250 Credits'
       }

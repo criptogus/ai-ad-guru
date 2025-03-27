@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
@@ -22,7 +21,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
-  const creditCost = getCreditCost('smart_banner');
+  const creditCost = getCreditCost('imageGeneration');
 
   const handleSaveToCampaign = async () => {
     if (!user || !backgroundImage) return;
@@ -32,7 +31,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
       const creditSuccess = await consumeCredits(
         user.id,
         creditCost,
-        'smart_banner',
+        'imageGeneration',
         `Smart Banner - ${platform} ${format}`
       );
       

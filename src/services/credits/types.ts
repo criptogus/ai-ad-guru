@@ -3,18 +3,32 @@
  * Credit action types
  */
 export type CreditAction = 
-  | 'campaign_creation' 
-  | 'ad_optimization' 
+  | 'googleAds' 
+  | 'metaAds' 
+  | 'linkedInAds'
+  | 'microsoftAds'
+  | 'imageGeneration'
+  | 'websiteAnalysis'
+  | 'aiInsightsReport'
+  | 'adOptimization.daily'
+  | 'adOptimization.every3Days'
+  | 'adOptimization.weekly'
+  | 'campaign_creation'
   | 'image_generation'
-  | 'ad_testing'
-  | 'audience_analysis';
+  | 'smart_banner';
 
 /**
  * Credit cost structure
  */
 export interface CreditCosts {
   campaignCreation: number;
+  googleAds: number;
+  metaAds: number;
+  linkedInAds: number;
+  microsoftAds: number;
   imageGeneration: number;
+  websiteAnalysis: number;
+  aiInsightsReport: number;
   adOptimization: {
     daily: number;
     every3Days: number;
