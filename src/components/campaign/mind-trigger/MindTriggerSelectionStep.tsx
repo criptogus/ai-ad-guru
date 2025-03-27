@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-import PlatformTriggers from './PlatformTriggers';
+import { PlatformTriggers } from './index';
 
 interface MindTriggerSelectionStepProps {
   selectedPlatforms: string[];
@@ -32,7 +32,8 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
   };
   
   // Only call onNext when the Next button is explicitly clicked
-  const handleNext = () => {
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     onNext();
   };
   
@@ -63,12 +64,14 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
         <Button 
           onClick={onBack}
           variant="outline"
+          type="button"
         >
           Back
         </Button>
         <Button 
-          onClick={handleNext}
+          onClick={handleNextClick}
           disabled={!allTriggersSelected}
+          type="button"
         >
           Next Step <MoveRight className="ml-2 h-4 w-4" />
         </Button>

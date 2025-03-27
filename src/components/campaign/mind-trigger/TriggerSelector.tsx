@@ -36,6 +36,17 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
       setCustomTrigger("");
     }
   };
+
+  // Handle Enter key in input field without causing form submission
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (customTrigger.trim()) {
+        onAddCustomTrigger(customTrigger);
+        setCustomTrigger("");
+      }
+    }
+  };
   
   return (
     <div>
@@ -62,6 +73,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
           <Input 
             value={customTrigger}
             onChange={(e) => setCustomTrigger(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Enter a custom trigger or prompt instruction"
           />
           <Button 
