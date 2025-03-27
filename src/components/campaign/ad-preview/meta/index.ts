@@ -11,8 +11,12 @@ export { default as TabHeader } from './TabHeader';
 // Export Meta Ad Card
 export { default as MetaAdCard } from './card/MetaAdCard';
 
-// Export Trigger Button
-export { default as MetaTriggerButton } from './MetaTriggerButton';
+// The import below is causing the error - the file doesn't exist
+// Let's remove it or create the file
+// export { default as MetaTriggerButton } from './MetaTriggerButton';
+
+// Instead, use the existing TriggerButtonInline component
+export { default as MetaTriggerButton } from '../TriggerButtonInline';
 
 // Export Image Prompt Gallery
 export { default as MetaImagePromptGallery } from './MetaImagePromptGallery';
