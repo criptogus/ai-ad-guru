@@ -1,71 +1,62 @@
 
-import { AllCreditCosts, OptimizationCosts } from "../types";
+import { AllCreditCosts, CreditAction, OptimizationCosts } from "../types";
 
-// Define optimization costs
-const optimizationCosts: OptimizationCosts = {
-  daily: 10,
-  threeDays: 5,
-  weekly: 2
-};
+// Define the credit cost for each action
+export const getCreditCost = (action: CreditAction): number => {
+  const costs = getCreditCosts();
 
-// Define credit costs for different actions
-export const creditCosts: AllCreditCosts = {
-  google_ad_creation: 5,
-  meta_ad_creation: 5,
-  linkedin_ad_creation: 5,
-  microsoft_ad_creation: 5,
-  image_generation: 3,
-  website_analysis: 2,
-  campaign_creation: 1,
-  ai_insights_report: 3,
-  smart_banner_creation: 3,
-  ai_optimization_daily: optimizationCosts.daily,
-  ai_optimization_3days: optimizationCosts.threeDays,
-  ai_optimization_weekly: optimizationCosts.weekly,
-};
-
-// Get credit cost for an action
-export const getCreditCost = (action: string): number => {
-  if (action.startsWith('ai_optimization_')) {
-    const frequency = action.replace('ai_optimization_', '');
-    if (frequency === 'daily') return optimizationCosts.daily;
-    if (frequency === '3days') return optimizationCosts.threeDays;
-    if (frequency === 'weekly') return optimizationCosts.weekly;
-    return 0;
+  switch (action) {
+    case 'google_ad_creation':
+      return costs.googleAdCreation;
+    case 'meta_ad_creation':
+      return costs.metaAdCreation;
+    case 'linkedin_ad_creation':
+      return costs.linkedInAdCreation;
+    case 'microsoft_ad_creation':
+      return costs.microsoftAdCreation;
+    case 'image_generation':
+      return costs.imageGeneration;
+    case 'website_analysis':
+      return costs.websiteAnalysis;
+    case 'campaign_creation':
+      return costs.campaignCreation;
+    case 'ai_insights_report':
+      return costs.aiInsightsReport;
+    case 'smart_banner_creation':
+      return costs.smartBannerCreation;
+    case 'ai_optimization_daily':
+      return (costs.optimization as OptimizationCosts).daily;
+    case 'ai_optimization_3days':
+      return (costs.optimization as OptimizationCosts).threeDays;
+    case 'ai_optimization_weekly':
+      return (costs.optimization as OptimizationCosts).weekly;
+    case 'credit_purchase':
+    case 'credit_refund':
+      return 0; // These don't cost credits
+    default:
+      return 0;
   }
-  
-  return (creditCosts as Record<string, number>)[action] || 0;
 };
 
-// For backward compatibility with old code
-export const getCreditCosts = (): Record<string, any> => {
+// Get all credit costs
+export const getCreditCosts = (): AllCreditCosts => {
   return {
-    campaignCreation: creditCosts.campaign_creation,
-    googleAdCreation: creditCosts.google_ad_creation,
-    metaAdCreation: creditCosts.meta_ad_creation,
-    linkedinAdCreation: creditCosts.linkedin_ad_creation,
-    microsoftAdCreation: creditCosts.microsoft_ad_creation,
-    imageGeneration: creditCosts.image_generation,
-    websiteAnalysis: creditCosts.website_analysis,
-    aiInsightsReport: creditCosts.ai_insights_report,
-    smartBannerCreation: creditCosts.smart_banner_creation,
-    aiOptimization: {
-      daily: optimizationCosts.daily,
-      every3Days: optimizationCosts.threeDays,
-      weekly: optimizationCosts.weekly
+    googleAdCreation: 5,
+    metaAdCreation: 5,
+    linkedInAdCreation: 5,
+    microsoftAdCreation: 5,
+    imageGeneration: 2,
+    websiteAnalysis: 1,
+    campaignCreation: 2,
+    aiInsightsReport: 3,
+    smartBannerCreation: 5,
+    optimization: {
+      daily: 10,
+      threeDays: 5,
+      weekly: 2
     }
   };
 };
 
-// Get all credit costs
-export const getAllCreditCosts = (): AllCreditCosts => {
-  return {
-    ...creditCosts,
-    optimization: optimizationCosts
-  };
-};
-
-// Get optimization costs
-export const getOptimizationCosts = (): OptimizationCosts => {
-  return optimizationCosts;
-};
+// For backward compatibility
+export { getCreditCosts as getAiOptimizationCosts };

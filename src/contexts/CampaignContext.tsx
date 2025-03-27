@@ -41,7 +41,7 @@ export interface CampaignContextType {
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0); // Changed from 1 to 0 to start at website analysis
   const [campaignData, setCampaignData] = useState<CampaignData>({
     platforms: [],
     name: "",
