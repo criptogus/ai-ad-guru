@@ -1,24 +1,23 @@
 
-import React, { forwardRef } from "react";
+import React, { useRef } from "react";
 
-export interface ImageUploadHandlerProps {
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+interface ImageUploadHandlerProps {
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  acceptedFormats?: string;
 }
 
-const ImageUploadHandler = forwardRef<HTMLInputElement, ImageUploadHandlerProps>(
-  ({ onChange }, ref) => {
-    return (
-      <input
-        type="file"
-        ref={ref}
-        onChange={onChange}
-        accept="image/*"
-        className="hidden"
-      />
-    );
-  }
-);
-
-ImageUploadHandler.displayName = "ImageUploadHandler";
+const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
+  onChange,
+  acceptedFormats = "image/jpeg,image/png,image/webp"
+}) => {
+  return (
+    <input 
+      type="file" 
+      className="hidden" 
+      onChange={onChange}
+      accept={acceptedFormats}
+    />
+  );
+};
 
 export default ImageUploadHandler;

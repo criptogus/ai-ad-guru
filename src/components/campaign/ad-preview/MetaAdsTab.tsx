@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle, Sparkles } from "lucide-react";
+import { Loader2, PlusCircle, Sparkles, Copy, Trash } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -32,6 +32,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<MetaAd[]>(metaAds);
+  const [viewMode, setViewMode] = useState<"feed" | "story" | "reel">("feed");
 
   useEffect(() => {
     setLocalAds(metaAds);
@@ -47,6 +48,7 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
     setLocalAds(newAds);
     onUpdateMetaAd(index, updatedAd);
     setEditingAdIndex(null);
+    toast.success("Ad updated successfully");
   };
 
   const handleCancelEdit = () => {
@@ -57,6 +59,81 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   const handleCopyAd = (ad: MetaAd) => {
     const text = `Headline: ${ad.headline}\n\nPrimary Text: ${ad.primaryText}\n\nDescription: ${ad.description}`;
     navigator.clipboard.writeText(text);
+    toast.success("Ad content copied to clipboard");
+  };
+
+  const handleDuplicateAd = (index: number) => {
+    const adToDuplicate = {...localAds[index], id: crypto.randomUUID()};
+    const newAds = [...localAds];
+    newAds.splice(index + 1, 0, adToDuplicate);
+    setLocalAds(newAds);
+    toast.success("Ad duplicated");
+  };
+
+  const handleDeleteAd = (index: number) => {
+    if (localAds.length <= 1) {
+      toast.error("Cannot delete the last ad");
+      return;
+    }
+    
+    const newAds = [...localAds];
+    newAds.splice(index, 1);
+    setLocalAds(newAds);
+    toast.success("Ad deleted");
+  };
+
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    try {
+      await onGenerateImage(ad, index);
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+      throw error;
+    }
+  };
+  
+  // Format mind trigger display with better formatting
+  const formatMindTrigger = (trigger: string) => {
+    if (!trigger) return "";
+    
+    // Handle custom triggers (prefixed with "custom:")
+    if (trigger.startsWith("custom:")) {
+      // Return just the first line of the custom trigger for display
+      const content = trigger.substring(7);
+      const firstLine = content.split('\n')[0];
+      return firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
+    }
+    
+    // Format trigger_id to readable format
+    const triggerMap: Record<string, string> = {
+      // Meta/Instagram triggers
+      "lifestyle": "Lifestyle Aspiration",
+      "before_after": "Before & After",
+      "user_generated": "User Generated Content",
+      "storytelling": "Storytelling",
+      "tutorial": "Tutorial/How-to",
+      
+      // Google/Microsoft triggers
+      "urgency": "Urgency",
+      "social_proof": "Social Proof",
+      "problem_solution": "Problem-Solution",
+      "curiosity": "Curiosity",
+      "comparison": "Comparison",
+      
+      // LinkedIn triggers
+      "thought_leadership": "Thought Leadership",
+      "data_insights": "Data & Insights",
+      "professional_growth": "Professional Growth",
+      "industry_trends": "Industry Trends",
+      "case_study": "Case Study"
+    };
+    
+    return triggerMap[trigger] || 
+      trigger.split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
   };
 
   return (
@@ -68,11 +145,11 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
             Active Mind Trigger
           </AlertTitle>
           <AlertDescription className="text-blue-600 dark:text-blue-300">
-            {mindTrigger}
+            <span className="font-medium">{formatMindTrigger(mindTrigger)}</span>
           </AlertDescription>
         </Alert>
       )}
-
+      
       {metaAds.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
@@ -92,7 +169,10 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                     Generating Ads...
                   </>
                 ) : (
-                  <>Generate Instagram Ads</>
+                  <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Generate Instagram Ads
+                  </>
                 )}
               </Button>
               <div className="text-xs text-muted-foreground mt-2">
@@ -102,27 +182,56 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">Instagram Ad Variations</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onGenerateAds}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Regenerating...
-                </>
-              ) : (
-                "Regenerate Ads"
-              )}
-            </Button>
+        <>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-medium">Instagram Ad Variations</h2>
+              <p className="text-sm text-muted-foreground">
+                Edit and customize your Instagram ad variations
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <div className="flex items-center gap-1 border rounded-md p-1">
+                <button 
+                  className={`px-2 py-1 text-xs rounded ${viewMode === 'feed' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                  onClick={() => setViewMode('feed')}
+                >
+                  Feed
+                </button>
+                <button 
+                  className={`px-2 py-1 text-xs rounded ${viewMode === 'story' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                  onClick={() => setViewMode('story')}
+                >
+                  Story
+                </button>
+                <button 
+                  className={`px-2 py-1 text-xs rounded ${viewMode === 'reel' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                  onClick={() => setViewMode('reel')}
+                >
+                  Reel
+                </button>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGenerateAds}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  "Regenerate Ads"
+                )}
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {localAds.map((ad, index) => (
               <MetaAdCard
                 key={index}
@@ -136,11 +245,13 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
                 onSave={(updatedAd) => handleSaveAd(index, updatedAd)}
                 onCancel={handleCancelEdit}
                 onCopy={() => handleCopyAd(ad)}
-                onGenerateImage={() => onGenerateImage(ad, index)}
+                onGenerateImage={() => handleGenerateImage(ad, index)}
+                onDuplicate={() => handleDuplicateAd(index)}
+                onDelete={() => handleDeleteAd(index)}
               />
             ))}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

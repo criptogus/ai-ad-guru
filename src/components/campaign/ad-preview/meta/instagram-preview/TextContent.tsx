@@ -1,9 +1,9 @@
 
 import React from "react";
 
-export interface TextContentProps {
+interface TextContentProps {
   headline?: string;
-  primaryText?: string;
+  primaryText: string;
   companyName: string;
 }
 
@@ -13,22 +13,12 @@ const TextContent: React.FC<TextContentProps> = ({
   companyName
 }) => {
   return (
-    <div className="mt-2 mb-3">
-      <div className="flex items-center">
-        <span className="font-semibold text-sm text-black dark:text-white">
-          {companyName}
-        </span>
-        {headline && (
-          <span className="ml-1 text-sm text-black dark:text-white">
-            {headline}
-          </span>
-        )}
+    <div className="mt-2">
+      <div className="flex items-start space-x-1">
+        <p className="text-sm font-semibold">{companyName}</p>
+        <p className="text-sm whitespace-pre-line">{primaryText}</p>
       </div>
-      {primaryText && (
-        <p className="text-sm mt-1 text-black dark:text-white">
-          {primaryText}
-        </p>
-      )}
+      {headline && <p className="text-sm font-medium mt-1">{headline}</p>}
     </div>
   );
 };

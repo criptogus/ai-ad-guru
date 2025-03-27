@@ -1,37 +1,42 @@
 
-import React from 'react';
-import { Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
-import { MetaAd } from '@/hooks/adGeneration';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { MetaAd } from "@/hooks/adGeneration";
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
-  companyName?: string;
+  companyName: string;
 }
 
-const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName = "yourcompany" }) => {
+const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({
+  ad,
+  companyName
+}) => {
   return (
-    <div className="px-3 pt-2">
-      <div className="flex justify-between mb-2">
-        <div className="flex space-x-4">
-          <Heart className="w-6 h-6" />
-          <MessageCircle className="w-6 h-6" />
-          <Send className="w-6 h-6" />
-        </div>
-        <Bookmark className="w-6 h-6" />
+    <div className="mt-2">
+      <div className="text-xs text-gray-500 my-1">
+        {Math.floor(Math.random() * 1000) + 100} likes
       </div>
-      <div className="font-medium mb-1">1,234 likes</div>
-      <div className="text-sm">
-        <div className="mb-1">
-          <span className="font-medium mr-1">{companyName}</span>
-          {ad.primaryText}
-        </div>
-        {ad.hashtags && ad.hashtags.length > 0 && (
-          <div className="text-blue-500">
-            {ad.hashtags.join(' ')}
-          </div>
-        )}
-        <div className="text-gray-500 mt-1">View all 48 comments</div>
-        <div className="text-xs text-gray-400 mt-1">2 DAYS AGO</div>
+      
+      {ad.hashtags && ad.hashtags.length > 0 && (
+        <p className="text-xs text-blue-600 mt-1">
+          {ad.hashtags.map(tag => `#${tag}`).join(' ')}
+        </p>
+      )}
+      
+      <div className="mt-2 space-y-1">
+        <p className="text-xs text-gray-500">View all {Math.floor(Math.random() * 50) + 5} comments</p>
+        <p className="text-xs text-gray-400">{Math.floor(Math.random() * 10) + 1} DAYS AGO</p>
+      </div>
+      
+      <div className="mt-2 pt-2 border-t">
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="w-full bg-blue-500 hover:bg-blue-600"
+        >
+          {ad.description || "Learn More"}
+        </Button>
       </div>
     </div>
   );

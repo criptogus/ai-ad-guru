@@ -15,13 +15,8 @@ export interface MetaAdCardProps {
   onCopy: () => void;
   onGenerateImage: () => Promise<void>;
   onUpdate?: (updatedAd: MetaAd) => void;
-}
-
-export interface EditorSectionProps {
-  ad: MetaAd;
-  isEditing: boolean;
-  onUpdate: (updatedAd: MetaAd) => void;
-  onSelectTrigger?: (trigger: string) => void;
+  onDuplicate?: () => void;
+  onDelete?: () => void;
 }
 
 export interface PreviewSectionProps {
@@ -32,4 +27,12 @@ export interface PreviewSectionProps {
   loadingImageIndex: number | null;
   onGenerateImage: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
+  viewMode?: "feed" | "story" | "reel";
+}
+
+export interface EditorSectionProps {
+  ad: MetaAd;
+  isEditing: boolean;
+  onUpdate: (updatedAd: MetaAd) => void;
+  onSelectTrigger?: (trigger: string) => void;
 }

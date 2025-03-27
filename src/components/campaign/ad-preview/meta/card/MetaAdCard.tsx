@@ -19,9 +19,12 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   onCancel,
   onCopy,
   onGenerateImage,
-  onUpdate
+  onUpdate,
+  onDuplicate,
+  onDelete
 }) => {
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+  const [viewMode, setViewMode] = useState<"feed" | "story" | "reel">("feed");
   const companyName = analysisResult.companyName || "Your Company";
 
   useEffect(() => {
@@ -58,6 +61,8 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
           onSave={handleSaveClick}
           onCancel={onCancel}
           onCopy={onCopy}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
         />
 
         <div className="grid md:grid-cols-2 gap-4 p-4">
@@ -69,6 +74,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
             loadingImageIndex={loadingImageIndex}
             onGenerateImage={onGenerateImage}
             onUpdateAd={onUpdate}
+            viewMode={viewMode}
           />
           
           <AdEditorSection

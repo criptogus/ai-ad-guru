@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Save, X } from "lucide-react";
+import { Copy, Edit, Save, X, Copy as Duplicate, Trash } from "lucide-react";
 
 interface AdCardHeaderProps {
   index: number;
@@ -10,6 +10,8 @@ interface AdCardHeaderProps {
   onSave: () => void;
   onCancel: () => void;
   onCopy: () => void;
+  onDuplicate?: () => void;
+  onDelete?: () => void;
 }
 
 const AdCardHeader: React.FC<AdCardHeaderProps> = ({
@@ -18,7 +20,9 @@ const AdCardHeader: React.FC<AdCardHeaderProps> = ({
   onEdit,
   onSave,
   onCancel,
-  onCopy
+  onCopy,
+  onDuplicate,
+  onDelete
 }) => {
   return (
     <div className="flex justify-between items-center bg-muted p-3 border-b">
@@ -53,6 +57,27 @@ const AdCardHeader: React.FC<AdCardHeaderProps> = ({
               <Copy className="h-4 w-4 mr-1" />
               Copy
             </Button>
+            {onDuplicate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDuplicate}
+              >
+                <Duplicate className="h-4 w-4 mr-1" />
+                Duplicate
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDelete}
+                className="text-red-500 hover:text-red-600"
+              >
+                <Trash className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
