@@ -12,7 +12,9 @@ export type CreditAction =
   | 'ai_optimization_3days'
   | 'ai_optimization_weekly'
   | 'ai_insights_report'
-  | 'credit_purchase';
+  | 'credit_purchase'
+  | 'smart_banner_creation'
+  | 'credit_refund';
 
 // Credit usage record
 export interface CreditUsage {
@@ -29,9 +31,12 @@ export interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Editor" | "Viewer";
+  role: "Admin" | "Editor" | "Viewer" | "Analyst";
   lastActive: string;
 }
+
+// User role type
+export type UserRole = "Admin" | "Editor" | "Viewer" | "Analyst";
 
 // Role permissions type
 export interface RolePermissions {

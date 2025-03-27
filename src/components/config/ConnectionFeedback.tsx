@@ -43,20 +43,22 @@ const ConnectionFeedback: React.FC<ConnectionFeedbackProps> = ({
       case "error":
         return "destructive";
       case "warning":
-        return "warning";
+        return "default"; // Using default for warning since "warning" variant isn't supported
       default:
         return "default";
     }
   };
   
   return (
-    <Alert variant={getVariant()} className="mt-4">
-      {getIcon()}
-      <AlertTitle>
-        {status === "success" ? `${platform} Connected Successfully` :
-         status === "error" ? `${platform} Connection Failed` :
-         `${platform} Connection Warning`}
-      </AlertTitle>
+    <Alert variant={getVariant()} className={`mt-4 ${status === "warning" ? "border-yellow-500 text-yellow-700 dark:text-yellow-400" : ""}`}>
+      <div className="flex items-center gap-2">
+        {getIcon()}
+        <AlertTitle>
+          {status === "success" ? `${platform} Connected Successfully` :
+          status === "error" ? `${platform} Connection Failed` :
+          `${platform} Connection Warning`}
+        </AlertTitle>
+      </div>
       <AlertDescription className="space-y-4">
         <p>{message}</p>
         {details && <p className="text-sm opacity-80">{details}</p>}

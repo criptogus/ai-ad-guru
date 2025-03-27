@@ -8,6 +8,7 @@ export interface CreditCosts {
   websiteAnalysis: number;
   imageGeneration: number;
   aiInsightsReport: number;
+  smartBanner: number;
   aiOptimization: {
     daily: number;
     every3Days: number;
@@ -25,6 +26,7 @@ export const getCreditCosts = (): CreditCosts => {
     websiteAnalysis: 3,
     imageGeneration: 5,
     aiInsightsReport: 15,
+    smartBanner: 5,
     aiOptimization: {
       daily: 10,
       every3Days: 5,
