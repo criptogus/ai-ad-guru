@@ -61,6 +61,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const { campaignData, setCampaignData } = useCampaign();
   const { toast } = useToast();
 
+  // This function should ONLY update the state and not trigger navigation
   const handleSelectTrigger = (trigger: string, platform: string) => {
     // Only update the state, do not call onNext or any navigation
     const updatedMindTriggers = {
@@ -77,6 +78,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       title: "Mind Trigger Updated",
       description: `Mind trigger for ${platform} ads has been updated.`,
     });
+    
+    // Explicitly DO NOT call onNext here
   };
 
   if (!analysisResult) {
@@ -164,7 +167,12 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           >
             Back
           </Button>
-          <Button onClick={onNext}>
+          <Button 
+            onClick={() => {
+              // Explicitly force navigation only from button click
+              onNext();
+            }}
+          >
             Next Step 
             <MoveRight className="ml-2 h-4 w-4" />
           </Button>

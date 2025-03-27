@@ -47,16 +47,27 @@ const TriggerGallery: React.FC<TriggerGalleryProps> = ({
   };
   
   const handleSelectTrigger = (promptTemplate: string) => {
-    // Prevent default and stop propagation
+    // Prevent default and stop propagation to avoid any possible navigation
     onSelectTrigger(promptTemplate);
+    // Close the dialog - but no further actions that could cause navigation
     onOpenChange(false);
   };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col" onPointerDownOutside={(e) => {
-        e.preventDefault();
-      }}>
+      <DialogContent 
+        className="sm:max-w-2xl max-h-[80vh] flex flex-col" 
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          onOpenChange(false);
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Mental Triggers Gallery</DialogTitle>
           <DialogDescription>

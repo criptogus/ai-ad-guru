@@ -291,8 +291,10 @@ const CampaignContent: React.FC = () => {
         ...campaignData,
         ...data,
       });
+      return false;
     }
     handleNext();
+    return true;
   };
 
   const createCampaign = async (): Promise<void> => {

@@ -24,10 +24,10 @@ export const useCampaignSteps = (
   };
 
   const handleNext = (data?: any) => {
-    // Update data if provided but only navigate when explicitly called
+    // Update data if provided but NEVER navigate automatically from data updates
     if (data) {
-      // This is intentionally not using any navigation logic
-      return false; // Signal not to create campaign yet
+      // Explicitly return false to prevent any navigation attempts
+      return false;
     }
     
     // Validate current step
@@ -121,7 +121,7 @@ export const useCampaignSteps = (
       return true; // Signal to create campaign
     }
 
-    // Only advance to the next step when explicitly called
+    // Only advance to the next step when explicitly called with no data
     setCurrentStep(currentStep + 1);
     return false;
   };

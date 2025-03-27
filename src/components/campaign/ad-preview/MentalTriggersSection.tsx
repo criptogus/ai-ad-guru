@@ -16,9 +16,10 @@ const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
 }) => {
   const [openTriggerGallery, setOpenTriggerGallery] = useState(false);
 
+  // Updated to make the intent very clear
   const handleSelectTrigger = (trigger: string) => {
-    // Call the onSelectTrigger with both the trigger and the current platform
-    // but do not add any navigation logic
+    // Call the onSelectTrigger callback, but don't include any navigation logic
+    // This only updates the state through onSelectTrigger
     onSelectTrigger(trigger, activePlatform);
     setOpenTriggerGallery(false);
   };
