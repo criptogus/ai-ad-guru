@@ -15,13 +15,15 @@ Deno.serve(async (req) => {
   try {
     // Parse request body
     const { userId, planId, returnUrl } = await req.json();
+    
+    console.log(`Creating checkout session for user ${userId}, plan ${planId}`);
 
-    // Mock success response with placeholder checkout URL
+    // Very simplified mock response
     return new Response(
       JSON.stringify({ 
         success: true,
-        url: returnUrl || 'https://example.com/checkout-success',
-        sessionId: 'mock-session-' + Date.now()
+        url: returnUrl || `https://example.com/checkout-success?session=mock-${Date.now()}`,
+        sessionId: `mock-session-${Date.now()}`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -29,9 +31,11 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // Return error response
+    console.error("Checkout error:", error);
+    
+    // Simplified error response
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
+      JSON.stringify({ error: "Checkout creation failed" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

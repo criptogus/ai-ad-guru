@@ -15,6 +15,8 @@ Deno.serve(async (req) => {
   try {
     // Parse request body
     const { prompt } = await req.json();
+    
+    console.log(`Generating image for prompt: ${prompt}`);
 
     if (!prompt) {
       return new Response(
@@ -26,14 +28,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // For now, return a placeholder image URL
-    const placeholderImage = 'https://placehold.co/600x600/EEE/31343C?text=AI+Image+Coming+Soon';
+    // Simplified placeholder response
+    const placeholderImage = 'https://placehold.co/600x600/EEE/31343C?text=AI+Image';
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        imageUrl: placeholderImage,
-        prompt
+        imageUrl: placeholderImage 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -41,9 +42,10 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // Return error response
+    console.error("Image generation error:", error);
+    
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
+      JSON.stringify({ error: "Failed to generate image" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

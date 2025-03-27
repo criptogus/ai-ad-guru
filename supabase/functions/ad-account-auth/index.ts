@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
     }
     
     const { action, platform, userId } = requestBody;
+    console.log(`Processing ${action} for ${platform} account, user: ${userId}`);
     
     // Generate OAuth URL (mock)
     if (action === 'getAuthUrl') {
@@ -53,9 +54,7 @@ Deno.serve(async (req) => {
           success: true, 
           accountId: 'mock-account-123',
           accountName: `${platform} Account`,
-          accessToken: 'mock-token',
-          refreshToken: 'mock-refresh',
-          expiresAt: Date.now() + (60 * 60 * 1000)
+          accessToken: 'mock-token'
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,10 +75,12 @@ Deno.serve(async (req) => {
     );
     
   } catch (error) {
+    console.error("Auth error:", error);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Unknown error occurred'
+        error: "Authentication process failed"
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

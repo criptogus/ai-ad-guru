@@ -13,31 +13,22 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Parse request body
-    const { campaignId, platform, ads } = await req.json();
+    // Parse request body - simplified for the mock
+    const { campaignId } = await req.json();
+    
+    console.log(`Optimizing ads for campaign: ${campaignId}`);
 
-    if (!campaignId || !platform || !ads) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
-    }
-
-    // Simple mock optimization - just return the same ads with "optimized" flag
-    const optimizedAds = ads.map(ad => ({
-      ...ad,
-      optimized: true,
-      optimizationDate: new Date().toISOString()
-    }));
-
+    // Minimal mock implementation
     return new Response(
       JSON.stringify({ 
         success: true,
-        platform,
-        optimizedAds
+        optimizationResults: {
+          improvementScore: 0.85,
+          recommendations: [
+            "Increased budget allocation to top performing ad variants",
+            "Paused 2 underperforming ads"
+          ]
+        }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -45,9 +36,10 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // Return error response
+    console.error("Ad optimization error:", error);
+    
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
+      JSON.stringify({ error: "Failed to optimize ads" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

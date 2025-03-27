@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+import { GoogleAd, MetaAd } from "./types.ts";
+
+// Minimal mock implementation
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -13,60 +16,53 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Parse request body
-    const { platform, websiteData, mindTrigger, variations = 3 } = await req.json();
-
-    // Input validation
-    if (!platform || !websiteData) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+    // Parse the request body
+    const { websiteUrl, platforms } = await req.json();
+    
+    console.log(`Generating ads for website: ${websiteUrl}, platforms: ${platforms.join(', ')}`);
+    
+    const response: Record<string, GoogleAd[] | MetaAd[]> = {};
+    
+    // Generate placeholder ads based on requested platforms
+    if (platforms.includes('google')) {
+      response.google = [
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          headlines: [
+            "Premium Quality Services",
+            "Top-Rated Solutions",
+            "Best Value Guaranteed"
+          ],
+          descriptions: [
+            "Professional services tailored to your needs. Try today!",
+            "Discover why customers choose us. Fast results!"
+          ]
         }
-      );
+      ];
+    }
+    
+    if (platforms.includes('meta')) {
+      response.meta = [
+        {
+          headline: "Transform Your Business Today",
+          primaryText: "Get started with our premium services and see results fast",
+          description: "Click to learn more about our exclusive offers",
+          imagePrompt: "Professional team working together in modern office with bright lighting"
+        }
+      ];
     }
 
-    // Generate fallback ads
-    let ads = [];
-
-    // Create simple fallback ads based on platform
-    if (platform === 'google') {
-      // Generate basic Google ads
-      ads = Array(variations).fill(0).map((_, i) => ({
-        id: `google-ad-${Date.now()}-${i}`,
-        headline: `${websiteData.businessName || 'Business'} - Premium Solutions`,
-        description: `Discover our ${websiteData.uniqueSellingPoints?.[0] || 'top quality'} products and services. Learn more now!`,
-        path1: 'solutions',
-        path2: 'premium',
-        finalUrl: websiteData.websiteUrl || 'https://example.com',
-      }));
-    } else if (platform === 'meta') {
-      // Generate basic Meta/Instagram ads
-      ads = Array(variations).fill(0).map((_, i) => ({
-        id: `meta-ad-${Date.now()}-${i}`,
-        caption: `Discover what makes us different: ${websiteData.uniqueSellingPoints?.[0] || 'quality service'}. \n\nVisit our website to learn more! ${websiteData.callToAction?.[0] || 'Shop now'} 🔥\n\n#business #quality #service`,
-        imagePrompt: `A professional image for ${websiteData.businessName || 'a business'} that sells ${websiteData.productOrService || 'products and services'}`,
-        placeholderImage: 'https://placehold.co/600x600/EEE/31343C?text=AI+Image+Coming+Soon',
-      }));
-    }
-
-    // Return the generated ads
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        platform,
-        ads
-      }),
+      JSON.stringify({ success: true, ...response }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
   } catch (error) {
-    // Return error response
+    console.error("Ad generation error:", error);
+    
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
+      JSON.stringify({ error: "Failed to generate ads" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
