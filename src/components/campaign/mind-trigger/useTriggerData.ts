@@ -74,8 +74,28 @@ export const useTriggerData = () => {
     return templates[platformId as keyof typeof templates] || templates.google;
   }, []);
 
+  // Add the missing getTriggerDescription function
+  const getTriggerDescription = useCallback((platformId: string, triggerId: string): string => {
+    if (!triggerId) return "";
+    
+    // Handle custom triggers (prefixed with "custom:")
+    if (triggerId.startsWith("custom:")) {
+      return triggerId.substring(7); // Remove the "custom:" prefix
+    }
+    
+    // Find the trigger in the platform's trigger list
+    const triggerObj = getPlatformTriggers(platformId).find(t => t.id === triggerId);
+    if (triggerObj) {
+      return triggerObj.description;
+    }
+    
+    // Fallback: return the trigger ID
+    return triggerId;
+  }, [getPlatformTriggers]);
+
   return {
     getPlatformTriggers,
-    getPlatformTemplates
+    getPlatformTemplates,
+    getTriggerDescription
   };
 };
