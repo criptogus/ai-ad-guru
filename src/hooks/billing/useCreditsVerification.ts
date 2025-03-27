@@ -57,13 +57,15 @@ export const useCreditsVerification = () => {
             if (updateError) {
               console.error("Error updating user credits:", updateError);
             } else {
-              // Add credit usage record
-              await supabase.from('credit_usage').insert({
-                user_id: user.id,
-                amount: -amount, // Negative means credits added
-                action: 'credit_purchase',
-                description: `Purchased ${amount} credits`,
-              }).then(() => {
+              try {
+                // Add credit usage record
+                await supabase.from('credit_usage').insert({
+                  user_id: user.id,
+                  amount: -amount, // Negative means credits added
+                  action: 'credit_purchase',
+                  description: `Purchased ${amount} credits`,
+                });
+                
                 setVerified(true);
                 
                 // Clear the purchase intent
@@ -71,9 +73,9 @@ export const useCreditsVerification = () => {
                 
                 // Reload the page to refresh user data
                 window.location.reload();
-              }).catch(err => {
+              } catch (err) {
                 console.error("Error logging credit purchase:", err);
-              });
+              }
             }
           }
         } catch (error) {

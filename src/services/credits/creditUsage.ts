@@ -1,6 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { CreditAction } from "@/services/types";
+import { CreditAction } from "./creditCosts";
+
+export interface CreditUsage {
+  id: string;
+  userId: string;
+  amount: number;
+  action: string;
+  description: string;
+  createdAt: string;
+  details?: string;
+}
 
 /**
  * Consume credits for a specific action
@@ -52,7 +62,7 @@ export const consumeCredits = async (
 /**
  * Get credit usage history for a user
  */
-export const getCreditUsageHistory = async (userId: string) => {
+export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage[]> => {
   try {
     const { data, error } = await supabase
       .from("credit_usage")
@@ -65,7 +75,16 @@ export const getCreditUsageHistory = async (userId: string) => {
       return [];
     }
 
-    return data || [];
+    // Map the database fields to our CreditUsage interface
+    return (data || []).map(item => ({
+      id: item.id,
+      userId: item.user_id,
+      amount: item.amount,
+      action: item.action,
+      description: item.details || '',
+      createdAt: item.created_at,
+      details: item.details
+    }));
   } catch (error) {
     console.error("Error in getCreditUsageHistory:", error);
     return [];

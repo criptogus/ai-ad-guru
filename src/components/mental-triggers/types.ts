@@ -1,25 +1,16 @@
 
+export type TriggerCategory = 
+  | "google_ad" 
+  | "meta_ad" 
+  | "linkedin_ad" 
+  | "microsoft_ad" 
+  | "all";
+
 export interface MentalTrigger {
   id: string;
   name: string;
   description: string;
   category: TriggerCategory;
-  examples: string[];
+  emoji: string; // Add emoji property
   promptTemplate: string;
-}
-
-export type TriggerCategory = 
-  | 'urgency' 
-  | 'social-proof' 
-  | 'value-proposition' 
-  | 'authority' 
-  | 'curiosity' 
-  | 'emotional';
-
-export interface TriggerCategoryInfo {
-  id: TriggerCategory;
-  name: string;
-  description: string;
-  emoji: string;
-  color: string;
 }

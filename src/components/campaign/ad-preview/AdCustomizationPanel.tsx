@@ -35,7 +35,7 @@ const AdCustomizationPanel: React.FC<AdCustomizationPanelProps> = ({
             <div>
               <h3 className="font-medium mb-1">Key Selling Points</h3>
               <ul className="list-disc pl-4 text-muted-foreground">
-                {analysisResult.usps?.slice(0, 3).map((usp, index) => (
+                {analysisResult.keySellingPoints?.slice(0, 3).map((usp, index) => (
                   <li key={index} className="line-clamp-1">{usp}</li>
                 )) || "No selling points identified"}
               </ul>
