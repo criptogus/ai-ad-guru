@@ -1,151 +1,94 @@
 
-import React from "react";
-import { useLocation, Link } from "react-router-dom";
-import {
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarMenuBadge
-} from "../ui/sidebar";
-import {
-  Home,
-  LineChart,
-  Settings,
-  CreditCard,
-  Megaphone,
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  BarChart,
+  Settings, 
   Users,
-  LayoutTemplate,
-  SlidersHorizontal,
-  PlusCircle,
-  Coins,
-  Image
-} from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+  CreditCard,
+  Image, 
+  Megaphone,
+  Compass
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface NavigationItemProps {
-  to: string;
-  active: boolean;
-  icon: React.ReactNode;
-  label: string;
-  badge?: string;
+export interface SidebarNavigationItemsProps {
+  collapsed?: boolean;
 }
 
-const NavigationItem: React.FC<NavigationItemProps> = ({
-  to,
-  active,
-  icon,
-  label,
-  badge
-}) => {
-  const isMobile = useIsMobile();
-  
+export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed }) => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const items = [
+    {
+      name: 'Dashboard',
+      icon: LayoutDashboard,
+      path: '/dashboard',
+      active: currentPath === '/dashboard' || currentPath === '/',
+    },
+    {
+      name: 'Campaigns',
+      icon: Megaphone,
+      path: '/campaigns',
+      active: currentPath.includes('/campaigns'),
+    },
+    {
+      name: 'Analytics',
+      icon: BarChart,
+      path: '/analytics',
+      active: currentPath.includes('/analytics'),
+    },
+    {
+      name: 'Assets',
+      icon: Image,
+      path: '/assets',
+      active: currentPath.includes('/assets'),
+    },
+    {
+      name: 'Team',
+      icon: Users,
+      path: '/roles',
+      active: currentPath.includes('/roles'),
+    },
+    {
+      name: 'Billing',
+      icon: CreditCard,
+      path: '/billing',
+      active: currentPath.includes('/billing'),
+    },
+    {
+      name: 'Settings',
+      icon: Settings,
+      path: '/settings',
+      active: currentPath.includes('/settings'),
+    },
+    {
+      name: 'Support',
+      icon: Compass,
+      path: '/support',
+      active: currentPath.includes('/support'),
+    },
+  ];
+
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
-        asChild
-        isActive={active}
-        tooltip={label}
-      >
-        <Link to={to} className="flex items-center">
-          {React.cloneElement(icon as React.ReactElement, { 
-            className: "h-4 w-4", 
-            size: isMobile ? 16 : 18 
-          })}
-          <span className="ml-3 text-xs sm:text-sm">{label}</span>
+    <>
+      {items.map((item) => (
+        <Link 
+          key={item.name} 
+          to={item.path} 
+          className={cn(
+            "flex items-center px-2 py-2 rounded-md transition-all duration-200",
+            "hover:bg-gray-100 dark:hover:bg-gray-800",
+            item.active ? "bg-gray-100 dark:bg-gray-800 text-primary" : "text-gray-600 dark:text-gray-400",
+            collapsed ? "justify-center" : "justify-start"
+          )}
+        >
+          <item.icon className={cn("h-5 w-5", item.active ? "text-primary" : "text-gray-500 dark:text-gray-400")} />
+          {!collapsed && <span className="ml-3">{item.name}</span>}
         </Link>
-      </SidebarMenuButton>
-      {badge && (
-        <SidebarMenuBadge className="bg-purple-100 text-purple-800 text-xs dark:bg-purple-900 dark:text-purple-100">
-          {badge}
-        </SidebarMenuBadge>
-      )}
-    </SidebarMenuItem>
-  );
-};
-
-export const SidebarNavigationItems: React.FC = () => {
-  const { pathname } = useLocation();
-  const { user } = useAuth();
-
-  const isActiveRoute = (route: string) => {
-    // Check if the route is exactly matched or is a sub-route
-    return pathname === route || pathname.startsWith(`${route}/`);
-  };
-
-  return (
-    <div className="space-y-1 py-2">
-      <NavigationItem
-        to="/dashboard"
-        active={isActiveRoute("/dashboard") || pathname === "/"}
-        icon={<Home />}
-        label="Dashboard"
-      />
-      <NavigationItem
-        to="/campaigns"
-        active={isActiveRoute("/campaigns")}
-        icon={<Megaphone />}
-        label="Campaigns"
-      />
-      <NavigationItem
-        to="/create-campaign"
-        active={isActiveRoute("/create-campaign")}
-        icon={<PlusCircle />}
-        label="Create Campaign"
-      />
-      <NavigationItem
-        to="/analytics"
-        active={isActiveRoute("/analytics")}
-        icon={<LineChart />}
-        label="Analytics"
-      />
-      <NavigationItem
-        to="/assets"
-        active={isActiveRoute("/assets")}
-        icon={<Image />}
-        label="Assets Gallery"
-      />
-      <NavigationItem
-        to="/config"
-        active={isActiveRoute("/config")}
-        icon={<Settings />}
-        label="Account Setup"
-      />
-      <NavigationItem
-        to="/billing"
-        active={isActiveRoute("/billing")}
-        icon={<CreditCard />}
-        label="Billing"
-      />
-      <NavigationItem
-        to="/credits-info"
-        active={isActiveRoute("/credits-info")}
-        icon={<Coins />}
-        label="Credits Info"
-      />
-      {user?.role === "admin" && (
-        <NavigationItem
-          to="/user-roles"
-          active={isActiveRoute("/user-roles")}
-          icon={<Users />}
-          label="User Roles"
-        />
-      )}
-      {user?.role === "admin" && (
-        <NavigationItem
-          to="/test-ads"
-          active={isActiveRoute("/test-ads")}
-          icon={<LayoutTemplate />}
-          label="Test Ads"
-        />
-      )}
-      {user?.role === "admin" && (
-        <NavigationItem
-          to="/openai-test"
-          active={isActiveRoute("/openai-test")}
-          icon={<SlidersHorizontal />}
-          label="OpenAI Test"
-        />
-      )}
-    </div>
+      ))}
+    </>
   );
 };

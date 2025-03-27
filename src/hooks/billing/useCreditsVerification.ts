@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useCreditsVerification = () => {
   const [processing, setProcessing] = useState(false);
   const [verified, setVerified] = useState(false);
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   
   useEffect(() => {
     const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
@@ -57,20 +58,24 @@ export const useCreditsVerification = () => {
               console.error("Error updating user credits:", updateError);
             } else {
               // Add credit usage record
-              await supabase.from('credit_usage').insert({
-                user_id: user.id,
-                amount: -amount, // Negative means credits added
-                action: 'credit_purchase',
-                description: `Purchased ${amount} credits`,
-              }).catch(err => console.error("Error logging credit purchase:", err));
+              try {
+                await supabase.from('credit_usage').insert({
+                  user_id: user.id,
+                  amount: -amount, // Negative means credits added
+                  action: 'credit_purchase',
+                  description: `Purchased ${amount} credits`,
+                });
+              } catch (err) {
+                console.error("Error logging credit purchase:", err);
+              }
               
               setVerified(true);
               
               // Clear the purchase intent
               localStorage.removeItem('credit_purchase_intent');
               
-              // Refresh the user data to show updated credits
-              refreshUser();
+              // Reload the page to refresh user data
+              window.location.reload();
             }
           }
         } catch (error) {
@@ -82,7 +87,7 @@ export const useCreditsVerification = () => {
       
       verifyPurchase();
     }
-  }, [user, refreshUser]);
+  }, [user]);
   
   return { processing, verified };
 };

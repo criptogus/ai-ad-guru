@@ -1,30 +1,35 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface CreateCampaignButtonProps {
-  collapsed: boolean;
+  collapsed?: boolean;
 }
 
-const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed }) => {
+const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+
+  const handleCreateCampaign = () => {
+    navigate('/create-campaign');
+  };
 
   return (
-    <Button 
-      className={cn(
-        "my-3 sm:my-4 gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700", 
-        collapsed ? "px-1 sm:px-2 aspect-square" : "w-full"
-      )} 
-      onClick={() => navigate("/create-campaign")}
-    >
-      <PlusCircle size={collapsed ? 18 : 16} />
-      {!collapsed && <span className="text-xs sm:text-sm">Create Campaign</span>}
-    </Button>
+    <div className="my-4">
+      <Button
+        onClick={handleCreateCampaign}
+        className={cn(
+          "w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
+          "text-white border-0 py-2 px-4 rounded transition-all duration-200 ease-in-out",
+          collapsed ? "px-2 justify-center" : ""
+        )}
+      >
+        <Plus className="h-4 w-4" />
+        {!collapsed && <span className="ml-2">New Campaign</span>}
+      </Button>
+    </div>
   );
 };
 

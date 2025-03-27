@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { UserRole } from "@/components/roles/InviteUserModal";
+import { UserRole } from "@/services/types";
 import { toast } from "sonner";
 
 // Function to invite a user to the team

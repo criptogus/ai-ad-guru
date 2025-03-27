@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { UserPlus } from "lucide-react";
-import InviteUserModal, { UserRole } from "@/components/roles/InviteUserModal";
-import { getTeamMembers, getRolePermissions, inviteUser, TeamMember } from "@/services";
+import InviteUserModal from "@/components/roles/InviteUserModal";
+import { getTeamMembers, getRolePermissions, inviteUser } from "@/services";
+import { TeamMember, UserRole } from "@/services/types";
 import { useToast } from "@/hooks/use-toast";
 
 const UserRolesPage = () => {

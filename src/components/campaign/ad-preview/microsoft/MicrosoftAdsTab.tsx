@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { Loader2, Sparkles } from "lucide-react";
-import MicrosoftAdsList from "./MicrosoftAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MicrosoftAdsTabProps {

@@ -26,6 +26,9 @@ export interface CreditUsage {
   createdAt: string;
 }
 
+// User role type
+export type UserRole = "Admin" | "Editor" | "Viewer" | "Analyst";
+
 // Team member type
 export interface TeamMember {
   id: string;
@@ -34,9 +37,6 @@ export interface TeamMember {
   role: UserRole;
   lastActive: string;
 }
-
-// User role type - Updated to match the enum in InviteUserModal
-export type UserRole = "Admin" | "Editor" | "Viewer" | "Analyst";
 
 // Role permissions type
 export interface RolePermissions {

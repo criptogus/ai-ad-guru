@@ -4,13 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import GoogleAdsTab from "./GoogleAdsTab";
 import MetaAdsTab from "./MetaAdsTab";
-import LinkedInAdsTab from "./linkedin/LinkedInAdsTab";
-import MicrosoftAdsTab from "./microsoft/MicrosoftAdsTab";
+import LinkedInAdsTab from "./LinkedInAdsTab";
+import MicrosoftAdsTab from "./MicrosoftAdsTab";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoveRight } from "lucide-react";
-import AdCustomizationPanel from "./AdCustomizationPanel";
 import MentalTriggersSection from "./MentalTriggersSection";
 
 interface AdPreviewStepProps {
@@ -134,10 +133,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           </div>
 
           <div className="space-y-6">
-            <AdCustomizationPanel
-              analysisResult={analysisResult}
-              selectedTrigger={selectedTrigger}
-            />
             <MentalTriggersSection onSelectTrigger={handleSelectTrigger} />
           </div>
         </div>

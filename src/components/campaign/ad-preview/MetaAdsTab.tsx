@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
 import { Loader2, Sparkles } from "lucide-react";
-import MetaAdsList from "./MetaAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MetaAdsTabProps {
