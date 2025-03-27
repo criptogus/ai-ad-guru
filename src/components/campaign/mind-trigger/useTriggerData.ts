@@ -6,39 +6,44 @@ type TriggerItem = {
   id: string;
   name: string;
   description: string;
+  icon?: string;
   examples?: string[];
 };
 
 export const useTriggerData = () => {
-  // Common mind triggers
+  // Common mind triggers with icons
   const mindTriggers = {
     google: [
-      { id: "urgency", name: "Urgency", description: "Create a sense of limited time or scarcity" },
-      { id: "social_proof", name: "Social Proof", description: "Highlight popularity or testimonials" },
-      { id: "problem_solution", name: "Problem-Solution", description: "Present a problem, then offer your solution" },
-      { id: "curiosity", name: "Curiosity", description: "Create intrigue with incomplete information" },
-      { id: "comparison", name: "Comparison", description: "Compare your offering to alternatives" },
+      { id: "urgency", name: "Urgency", description: "Create a sense of limited time or scarcity", icon: "⏰" },
+      { id: "social_proof", name: "Social Proof", description: "Highlight popularity or testimonials", icon: "👥" },
+      { id: "problem_solution", name: "Problem-Solution", description: "Present a problem, then offer your solution", icon: "🔍" },
+      { id: "curiosity", name: "Curiosity", description: "Create intrigue with incomplete information", icon: "🧩" },
+      { id: "comparison", name: "Comparison", description: "Compare your offering to alternatives", icon: "⚖️" },
+      { id: "emotional", name: "Emotional Appeal", description: "Connect on an emotional level", icon: "❤️" },
     ],
     meta: [
-      { id: "lifestyle", name: "Lifestyle Aspiration", description: "Show the desired lifestyle your product enables" },
-      { id: "before_after", name: "Before & After", description: "Demonstrate transformation and results" },
-      { id: "user_generated", name: "User Generated Content", description: "Authentic content from real customers" },
-      { id: "storytelling", name: "Storytelling", description: "Narrative that connects emotionally" },
-      { id: "tutorial", name: "Tutorial/How-to", description: "Demonstrate product value through instruction" },
+      { id: "lifestyle", name: "Lifestyle Aspiration", description: "Show the desired lifestyle your product enables", icon: "✨" },
+      { id: "before_after", name: "Before & After", description: "Demonstrate transformation and results", icon: "🔄" },
+      { id: "user_generated", name: "User Generated Content", description: "Authentic content from real customers", icon: "👤" },
+      { id: "storytelling", name: "Storytelling", description: "Narrative that connects emotionally", icon: "📖" },
+      { id: "tutorial", name: "Tutorial/How-to", description: "Demonstrate product value through instruction", icon: "📝" },
+      { id: "scarcity", name: "Scarcity", description: "Highlight limited quantity or exclusivity", icon: "🔥" },
     ],
     linkedin: [
-      { id: "thought_leadership", name: "Thought Leadership", description: "Position as an industry expert" },
-      { id: "data_insights", name: "Data & Insights", description: "Share valuable business intelligence" },
-      { id: "professional_growth", name: "Professional Growth", description: "Help advance careers or businesses" },
-      { id: "industry_trends", name: "Industry Trends", description: "Highlight emerging opportunities" },
-      { id: "case_study", name: "Case Study", description: "Show real-world business results" },
+      { id: "thought_leadership", name: "Thought Leadership", description: "Position as an industry expert", icon: "🏆" },
+      { id: "data_insights", name: "Data & Insights", description: "Share valuable business intelligence", icon: "📊" },
+      { id: "professional_growth", name: "Professional Growth", description: "Help advance careers or businesses", icon: "📈" },
+      { id: "industry_trends", name: "Industry Trends", description: "Highlight emerging opportunities", icon: "🔮" },
+      { id: "case_study", name: "Case Study", description: "Show real-world business results", icon: "🔎" },
+      { id: "authority", name: "Authority", description: "Position as an expert or industry leader", icon: "👑" },
     ],
     microsoft: [
-      { id: "specificity", name: "Specificity", description: "Use precise numbers and details" },
-      { id: "authority", name: "Authority", description: "Establish expertise and credibility" },
-      { id: "emotional", name: "Emotional Appeal", description: "Connect on an emotional level" },
-      { id: "question", name: "Question Format", description: "Pose a question to engage the reader" },
-      { id: "benefit_driven", name: "Benefit-Driven", description: "Focus on specific benefits to the user" },
+      { id: "specificity", name: "Specificity", description: "Use precise numbers and details", icon: "🔢" },
+      { id: "authority", name: "Authority", description: "Establish expertise and credibility", icon: "🎯" },
+      { id: "emotional", name: "Emotional Appeal", description: "Connect on an emotional level", icon: "💫" },
+      { id: "question", name: "Question Format", description: "Pose a question to engage the reader", icon: "❓" },
+      { id: "benefit_driven", name: "Benefit-Driven", description: "Focus on specific benefits to the user", icon: "💎" },
+      { id: "professional", name: "Professional", description: "Corporate tone, trust, and credibility", icon: "💼" },
     ],
   };
 
@@ -64,6 +69,14 @@ export const useTriggerData = () => {
       "[Question about Pain Point]? | [Solution] | [Social Proof]",
       "[Location] [Service] | [USP] | Free [Bonus]",
     ],
+  };
+
+  // Icons for platforms
+  const platformIcons = {
+    google: "🔍",
+    meta: "📱",
+    linkedin: "📘",
+    microsoft: "📌"
   };
 
   const getPlatformTriggers = useCallback((platformId: string): TriggerItem[] => {
@@ -93,9 +106,32 @@ export const useTriggerData = () => {
     return triggerId;
   }, [getPlatformTriggers]);
 
+  // Helper function to get platform display name
+  const getPlatformDisplayName = useCallback((platform: string): string => {
+    switch (platform) {
+      case 'google':
+        return 'Google Ads';
+      case 'meta':
+        return 'Instagram/Meta Ads';
+      case 'linkedin':
+        return 'LinkedIn Ads';
+      case 'microsoft':
+        return 'Microsoft Ads';
+      default:
+        return platform.charAt(0).toUpperCase() + platform.slice(1);
+    }
+  }, []);
+
+  // Helper function to get platform icon
+  const getPlatformIcon = useCallback((platform: string): string => {
+    return platformIcons[platform as keyof typeof platformIcons] || '🔍';
+  }, []);
+
   return {
     getPlatformTriggers,
     getPlatformTemplates,
-    getTriggerDescription
+    getTriggerDescription,
+    getPlatformDisplayName,
+    getPlatformIcon
   };
 };
