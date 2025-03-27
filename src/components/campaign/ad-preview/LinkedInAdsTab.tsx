@@ -7,6 +7,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useFormContext } from "react-hook-form";
 
 interface LinkedInAdsTabProps {
   linkedInAds: MetaAd[];
@@ -31,6 +32,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
 }) => {
   const [editingAdIndex, setEditingAdIndex] = useState<number | null>(null);
   const [localAds, setLocalAds] = useState<MetaAd[]>([]);
+  const formContext = useFormContext(); // To check if we're in a form context
 
   useEffect(() => {
     setLocalAds(linkedInAds);

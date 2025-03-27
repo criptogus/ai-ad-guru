@@ -11,6 +11,7 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoveRight } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
+import { useForm, FormProvider } from "react-hook-form";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult | null;
@@ -57,90 +58,100 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
 }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
   const { campaignData } = useCampaign();
+  const methods = useForm(); // Initialize react-hook-form
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
   }
 
   return (
-    <Card className="shadow-md border border-border">
-      <CardHeader>
-        <CardTitle>Ad Creation & Preview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="google">Google Ads</TabsTrigger>
-            <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
-            <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
-            <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
-          </TabsList>
+    <FormProvider {...methods}>
+      <Card className="shadow-md border border-border">
+        <CardHeader>
+          <CardTitle>Ad Creation & Preview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
+            <TabsList className="w-full mb-4">
+              <TabsTrigger value="google">Google Ads</TabsTrigger>
+              <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
+              <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
+              <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="google">
-            <GoogleAdsTab
-              googleAds={googleAds}
-              analysisResult={analysisResult}
-              isGenerating={isGenerating}
-              onGenerateAds={onGenerateGoogleAds}
-              onUpdateGoogleAd={onUpdateGoogleAd}
-              mindTrigger={mindTriggers?.google}
-            />
-          </TabsContent>
+            <TabsContent value="google">
+              <GoogleAdsTab
+                googleAds={googleAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                onGenerateAds={onGenerateGoogleAds}
+                onUpdateGoogleAd={onUpdateGoogleAd}
+                mindTrigger={mindTriggers['google']}
+              />
+            </TabsContent>
 
-          <TabsContent value="meta">
-            <MetaAdsTab
-              metaAds={metaAds}
-              analysisResult={analysisResult}
-              isGenerating={isGenerating}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateAds={onGenerateMetaAds}
-              onGenerateImage={onGenerateImage}
-              onUpdateMetaAd={onUpdateMetaAd}
-              mindTrigger={mindTriggers?.meta}
-            />
-          </TabsContent>
+            <TabsContent value="meta">
+              <MetaAdsTab
+                metaAds={metaAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                loadingImageIndex={loadingImageIndex}
+                onGenerateAds={onGenerateMetaAds}
+                onGenerateImage={onGenerateImage}
+                onUpdateMetaAd={onUpdateMetaAd}
+                mindTrigger={mindTriggers['meta']}
+              />
+            </TabsContent>
 
-          <TabsContent value="linkedin">
-            <LinkedInAdsTab
-              linkedInAds={linkedInAds}
-              analysisResult={analysisResult}
-              isGenerating={isGenerating}
-              loadingImageIndex={loadingImageIndex}
-              onGenerateAds={onGenerateLinkedInAds}
-              onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
-              onUpdateLinkedInAd={onUpdateLinkedInAd}
-              mindTrigger={mindTriggers?.linkedin}
-            />
-          </TabsContent>
+            <TabsContent value="linkedin">
+              <LinkedInAdsTab
+                linkedInAds={linkedInAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                loadingImageIndex={loadingImageIndex}
+                onGenerateAds={onGenerateLinkedInAds}
+                onGenerateImage={onGenerateImage}
+                onUpdateLinkedInAd={onUpdateLinkedInAd}
+                mindTrigger={mindTriggers['linkedin']}
+              />
+            </TabsContent>
 
-          <TabsContent value="microsoft">
-            <MicrosoftAdsTab
-              microsoftAds={microsoftAds}
-              analysisResult={analysisResult}
-              isGenerating={isGenerating}
-              onGenerateAds={onGenerateMicrosoftAds}
-              onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-              mindTrigger={mindTriggers?.microsoft}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="microsoft">
+              <MicrosoftAdsTab
+                microsoftAds={microsoftAds}
+                analysisResult={analysisResult}
+                isGenerating={isGenerating}
+                onGenerateAds={onGenerateMicrosoftAds}
+                onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+                mindTrigger={mindTriggers['microsoft']}
+              />
+            </TabsContent>
+          </Tabs>
 
-        <div className="mt-6 pt-4 border-t flex justify-between">
-          <Button
-            onClick={onBack}
-            variant="outline"
-          >
-            Back
-          </Button>
-          <Button 
-            onClick={onNext}
-          >
-            Next Step 
-            <MoveRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="mt-6 pt-4 border-t flex justify-between items-center">
+            <Button variant="outline" onClick={onBack} className="flex items-center">
+              Back
+            </Button>
+            
+            <span className="text-sm text-muted-foreground">
+              Step 6 of 7
+            </span>
+            
+            <Button 
+              onClick={onNext} 
+              className="flex items-center gap-2"
+              disabled={
+                (googleAds.length === 0 && metaAds.length === 0 && 
+                linkedInAds.length === 0 && microsoftAds.length === 0)
+              }
+            >
+              Next Step
+              <MoveRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </FormProvider>
   );
 };
 
