@@ -175,7 +175,7 @@ Then, provide detailed targeting recommendations for ${platform} including:
 - Ad format recommendations
 - Campaign objective recommendations
 
-Format your response as JSON with the following structure:
+Provide your response as structured JSON with the following fields but ALSO include a detailed narrative analysis outside of the JSON structure:
 {
   "demographics": {
     "ageGroups": ["25-34", "35-44"],
@@ -185,9 +185,10 @@ Format your response as JSON with the following structure:
   },
   "interests": ["Interest1", "Interest2", "Interest3"],
   "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
-  "decisionFactors": ["Factor1", "Factor2", "Factor3"],
-  "analysisText": "Your full text analysis here"
+  "decisionFactors": ["Factor1", "Factor2", "Factor3"]
 }
+
+After the JSON, provide a narrative analysis explaining your recommendations.
 `;
   } else {
     // If no specific platform is requested, provide analysis for all platforms
@@ -204,7 +205,7 @@ Analyze this content to identify:
 
 Then, provide detailed targeting recommendations for each platform.
 
-Format your response as JSON with the following structure:
+Provide your response as structured JSON with the following fields but ALSO include a detailed narrative analysis outside of the JSON structure:
 {
   "demographics": {
     "ageGroups": ["25-34", "35-44"],
@@ -214,9 +215,10 @@ Format your response as JSON with the following structure:
   },
   "interests": ["Interest1", "Interest2", "Interest3"],
   "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
-  "decisionFactors": ["Factor1", "Factor2", "Factor3"],
-  "analysisText": "Your full text analysis here"
+  "decisionFactors": ["Factor1", "Factor2", "Factor3"]
 }
+
+After the JSON, provide a narrative analysis explaining your recommendations.
 `;
   }
 }
@@ -225,15 +227,22 @@ function parseAnalysisResponse(responseText: string, platform?: string): any {
   try {
     // Try to extract JSON from the response if it's present
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    let analysisTextOnly = responseText;
     
     if (jsonMatch) {
+      // Extract the JSON part
       const jsonStr = jsonMatch[0];
       const parsedData = JSON.parse(jsonStr);
+      
+      // Remove the JSON part from the analysis text to get clean text
+      analysisTextOnly = responseText.replace(jsonMatch[0], '').trim();
+      // Also remove any code block markers
+      analysisTextOnly = analysisTextOnly.replace(/```json|```/g, '').trim();
       
       return {
         success: true,
         platform: platform || 'all',
-        analysisText: responseText,
+        analysisText: analysisTextOnly,
         demographics: parsedData.demographics || {
           ageGroups: ["25-34", "35-44"],
           gender: ["All"],
@@ -250,7 +259,7 @@ function parseAnalysisResponse(responseText: string, platform?: string): any {
     return {
       success: true,
       platform: platform || 'all',
-      analysisText: responseText,
+      analysisText: analysisTextOnly,
       demographics: {
         ageGroups: ["25-34", "35-44"],
         gender: ["All"],

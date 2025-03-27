@@ -34,6 +34,15 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
     return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
   };
 
+  // Format analysis text to remove any JSON representation
+  const formatAnalysisText = (text: string) => {
+    // Try to extract only the prose part of the analysis by removing JSON syntax
+    return text
+      .replace(/```json[\s\S]*?```/g, '') // Remove JSON code blocks with backticks
+      .replace(/\{[\s\S]*?\}/g, '') // Remove raw JSON objects
+      .trim();
+  };
+
   if (!websiteData) {
     return <div>Website data is required for audience analysis</div>;
   }
@@ -127,7 +136,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
 
                   <div className="bg-muted/20 p-4 rounded-md">
                     <h3 className="font-medium text-lg mb-2">Detailed Analysis</h3>
-                    <p className="text-sm whitespace-pre-line">{analysisResult.analysisText}</p>
+                    <p className="text-sm whitespace-pre-line">{formatAnalysisText(analysisResult.analysisText)}</p>
                   </div>
                 </div>
               ) : (
