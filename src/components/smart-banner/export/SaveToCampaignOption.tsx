@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { consumeCredits } from "@/services/credits/creditUsage";
-import { getCreditCosts } from "@/services/credits/creditCosts";
+import { getCreditCost } from "@/services/credits/creditCosts";
 
 interface SaveToCampaignOptionProps {
   backgroundImage: string | null;
@@ -22,7 +22,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
-  const creditCosts = getCreditCosts();
+  const creditCost = getCreditCost('smart_banner_creation');
 
   const handleSaveToCampaign = async () => {
     if (!user || !backgroundImage) return;
@@ -31,7 +31,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
     try {
       const creditSuccess = await consumeCredits(
         user.id,
-        creditCosts.smart_banner_creation,
+        creditCost,
         'smart_banner_creation',
         `Smart Banner - ${platform} ${format}`
       );
@@ -82,7 +82,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save to Campaign ({creditCosts.smart_banner_creation} credits)
+                Save to Campaign ({creditCost} credits)
               </>
             )}
           </Button>

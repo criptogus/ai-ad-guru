@@ -36,10 +36,10 @@ export interface RolePermissions {
 // Credit usage interfaces
 export interface CreditUsage {
   id: string;
-  userId: string;
-  action: string;
+  user_id: string;
+  action: CreditAction;
   amount: number;
-  timestamp: string;
+  created_at: string;
   details?: string;
 }
 
@@ -53,4 +53,5 @@ export interface OptimizationCosts {
 // Credit costs interface
 export interface AllCreditCosts {
   [key: string]: number | OptimizationCosts;
+  optimization?: OptimizationCosts;
 }

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
@@ -17,8 +18,9 @@ export { type OptimizationGoal }; // Re-export the OptimizationGoal type
 export const useAdOptimizer = (): UseAdOptimizerReturn => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const { toast } = useToast();
-  const creditCosts = getCreditCosts();
+  const creditCostsData = getCreditCosts();
   const { user } = useAuth();
+  const optimizationCost = creditCostsData.aiOptimization.daily;
 
   const optimizeGoogleAds = async (
     ads: GoogleAd[],
@@ -44,12 +46,12 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(user.id, creditCosts.aiOptimization.daily);
+    const hasCredits = await checkUserCredits(user.id, optimizationCost);
     
     if (!hasCredits) {
       toast({
         title: "Not Enough Credits",
-        description: `You need ${creditCosts.aiOptimization.daily} credits to optimize ads. Please purchase more credits.`,
+        description: `You need ${optimizationCost} credits to optimize ads. Please purchase more credits.`,
         variant: "destructive",
       });
       return null;
@@ -70,8 +72,8 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         await deductUserCredits(
           user.id,
-          creditCosts.aiOptimization.daily,
-          'ai_optimization',
+          optimizationCost,
+          'ai_optimization_daily',
           `Optimized ${optimizedAds.length} Google ads`
         );
         
@@ -121,12 +123,12 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(user.id, creditCosts.aiOptimization.daily);
+    const hasCredits = await checkUserCredits(user.id, optimizationCost);
     
     if (!hasCredits) {
       toast({
         title: "Not Enough Credits",
-        description: `You need ${creditCosts.aiOptimization.daily} credits to optimize ads. Please purchase more credits.`,
+        description: `You need ${optimizationCost} credits to optimize ads. Please purchase more credits.`,
         variant: "destructive",
       });
       return null;
@@ -147,8 +149,8 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         await deductUserCredits(
           user.id,
-          creditCosts.aiOptimization.daily,
-          'ai_optimization',
+          optimizationCost,
+          'ai_optimization_daily',
           `Optimized ${optimizedAds.length} Meta/Instagram ads`
         );
         

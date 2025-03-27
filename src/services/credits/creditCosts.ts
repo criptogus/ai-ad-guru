@@ -38,10 +38,22 @@ export const getCreditCost = (action: string): number => {
 };
 
 // For backward compatibility with old code
-export const getCreditCosts = (): AllCreditCosts => {
+export const getCreditCosts = (): Record<string, any> => {
   return {
-    ...creditCosts,
-    optimization: optimizationCosts
+    campaignCreation: creditCosts.campaign_creation,
+    googleAdCreation: creditCosts.google_ad_creation,
+    metaAdCreation: creditCosts.meta_ad_creation,
+    linkedinAdCreation: creditCosts.linkedin_ad_creation,
+    microsoftAdCreation: creditCosts.microsoft_ad_creation,
+    imageGeneration: creditCosts.image_generation,
+    websiteAnalysis: creditCosts.website_analysis,
+    aiInsightsReport: creditCosts.ai_insights_report,
+    smartBannerCreation: creditCosts.smart_banner_creation,
+    aiOptimization: {
+      daily: optimizationCosts.daily,
+      every3Days: optimizationCosts.threeDays,
+      weekly: optimizationCosts.weekly
+    }
   };
 };
 

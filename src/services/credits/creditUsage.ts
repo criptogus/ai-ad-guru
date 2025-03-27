@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { checkCreditsForAction, deductUserCredits } from "./creditChecks";
 import { CreditAction } from "@/services/types";
 
 /**
@@ -14,15 +13,36 @@ export const consumeCredits = async (
   description: string
 ): Promise<boolean> => {
   try {
-    // Check if a user has enough credits
-    const { hasEnoughCredits } = await checkCreditsForAction(userId, action, amount);
+    // First deduct the credits from the user's profile
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        credits: supabase.rpc('decrement_credits', { amount }) 
+      })
+      .eq('id', userId);
     
-    if (!hasEnoughCredits) {
+    if (updateError) {
+      console.error("Error updating user credits:", updateError);
       return false;
     }
     
-    // Deduct credits
-    return await deductUserCredits(userId, amount, action, description);
+    // Log the credit usage
+    const { error: logError } = await supabase
+      .from('credit_usage')
+      .insert([{
+        user_id: userId,
+        action,
+        amount,
+        details: description
+      }]);
+    
+    if (logError) {
+      console.error("Error logging credit usage:", logError);
+      // We already deducted the credits, so we return true anyway
+      return true;
+    }
+    
+    return true;
   } catch (error) {
     console.error("Error consuming credits:", error);
     return false;

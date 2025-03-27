@@ -33,30 +33,25 @@ export const deductUserCredits = async (
   details?: string
 ): Promise<boolean> => {
   try {
-    return await consumeCredits(userId, amount, action, details);
+    return await consumeCredits(userId, amount, action, details || '');
   } catch (error) {
     console.error('Error deducting credits:', error);
     return false;
   }
 };
 
-// Check if user has enough credits for a specific action and deduct them if they do
+// Check if user has enough credits for a specific action
 export const checkCreditsForAction = async (
   userId: string,
-  action: CreditAction,
-  details?: string
-): Promise<boolean> => {
+  action: CreditAction
+): Promise<{ hasEnoughCredits: boolean; requiredCredits: number }> => {
   const requiredCredits = getCreditCost(action);
   
   if (!requiredCredits) {
-    return true; // If action doesn't require credits, return true
+    return { hasEnoughCredits: true, requiredCredits: 0 }; // If action doesn't require credits, return true
   }
   
   const hasCredits = await checkUserCredits(userId, requiredCredits);
   
-  if (!hasCredits) {
-    return false;
-  }
-  
-  return await deductUserCredits(userId, requiredCredits, action, details);
+  return { hasEnoughCredits: hasCredits, requiredCredits };
 };

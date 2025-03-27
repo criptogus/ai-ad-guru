@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +26,8 @@ const AdOptimizer: React.FC<AdOptimizerProps> = ({
 }) => {
   const [selectedGoal, setSelectedGoal] = useState<OptimizationGoal>("increase_ctr");
   const { optimizeGoogleAds, optimizeMetaAds, isOptimizing } = useAdOptimizer();
-  const creditCosts = getCreditCosts();
-  const optimizationCost = creditCosts.aiOptimization.daily;
+  const creditCostsData = getCreditCosts();
+  const optimizationCost = creditCostsData.aiOptimization.daily;
   
   const handleOptimize = async () => {
     let optimizedAds;
