@@ -1,55 +1,60 @@
 
 /**
- * Billing Service Types
- * Type definitions for billing-related functionality
+ * Billing Types
+ * Defines types used in the billing system
  */
 
+// Checkout session
 export interface CheckoutSession {
   id: string;
   url: string;
-  amount: number;
-  currency: string;
-  productName: string;
-  credits?: number;
+  status: string;
 }
 
+// Subscription details
 export interface SubscriptionDetails {
   id: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+  status: string;
   currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
   plan: {
     id: string;
     name: string;
     amount: number;
     currency: string;
-    interval: 'month' | 'year';
+    interval: string;
   };
-  cancelAtPeriodEnd: boolean;
 }
 
+// Credit purchase history item
 export interface CreditPurchase {
   id: string;
   amount: number;
   credits: number;
-  status: 'completed' | 'pending' | 'failed';
-  createdAt: string;
+  status: string;
+  date: string;
+  paymentMethod?: string;
 }
 
+// Invoice history item
 export interface Invoice {
   id: string;
-  number: string;
   amount: number;
-  currency: string;
-  status: 'paid' | 'open' | 'void' | 'draft';
-  createdAt: string;
-  pdfUrl?: string;
+  status: string;
+  date: string;
   description: string;
+  pdfUrl?: string;
 }
 
+// Payment verification result
 export interface PaymentVerificationResult {
-  success: boolean;
-  sessionId?: string;
-  customerId?: string;
-  credits?: number;
+  verified: boolean;
+  session?: {
+    id: string;
+    status: string;
+    payment_status?: string;
+  };
+  message?: string;
+  warning?: string;
   error?: string;
 }
