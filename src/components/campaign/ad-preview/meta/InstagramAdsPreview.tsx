@@ -106,3 +106,6 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
       </CardContent>
     </Card>
   );
+};
+
+export default InstagramAdsPreview;
