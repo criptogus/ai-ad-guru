@@ -19,12 +19,12 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   onNext
 }) => {
   const { analyzeAudience, isAnalyzing, analysisResult: audienceResult } = useAudienceAnalysis();
-  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>("all");
 
   const handleAnalyze = async (platform?: string) => {
     if (!analysisResult) return;
     
-    setSelectedPlatform(platform);
+    setSelectedPlatform(platform || "all");
     await analyzeAudience(analysisResult, platform);
   };
 

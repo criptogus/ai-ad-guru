@@ -15,19 +15,21 @@ interface AudienceAnalysisPanelProps {
   isAnalyzing: boolean;
   analysisResult: AudienceAnalysisResult | null;
   onAnalyze: (platform?: string) => Promise<void>;
+  selectedPlatform?: string; // Add this prop to the interface
 }
 
 const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
   websiteData,
   isAnalyzing,
   analysisResult,
-  onAnalyze
+  onAnalyze,
+  selectedPlatform = "all" // Provide a default value
 }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [internalSelectedPlatform, setInternalSelectedPlatform] = useState<string>(selectedPlatform);
   const { toast } = useToast();
 
   const handleAnalyze = async () => {
-    const platform = selectedPlatform === "all" ? undefined : selectedPlatform;
+    const platform = internalSelectedPlatform === "all" ? undefined : internalSelectedPlatform;
     await onAnalyze(platform);
   };
 
@@ -73,7 +75,11 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium mb-1">Select Platform:</h3>
-              <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
+              <Tabs 
+                value={internalSelectedPlatform} 
+                onValueChange={setInternalSelectedPlatform} 
+                className="w-full"
+              >
                 <TabsList className="grid grid-cols-4 mb-4">
                   <TabsTrigger value="all">All Platforms</TabsTrigger>
                   <TabsTrigger value="google">Google Ads</TabsTrigger>
