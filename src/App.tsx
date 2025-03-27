@@ -10,7 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import TestAdsPage from "./pages/TestAdsPage";
 import InstagramTemplateExamplePage from "./pages/InstagramTemplateExamplePage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
-import Index from "./pages/Index";
+import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 
@@ -26,6 +26,7 @@ function App() {
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/create-campaign" element={<CreateCampaignPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/billing" element={<BillingPage />} />
           <Route path="/test-ads" element={<TestAdsPage />} />
           <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
           <Route path="*" element={<NotFound />} />
