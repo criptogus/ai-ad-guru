@@ -69,17 +69,17 @@ export function AdVariationCard({
       case "google":
         return (
           <div className="font-['Arial'] p-4">
-            <div className={styles.headline}>
+            <div className={platformStyles.google.headline}>
               {ad.headlines?.[0]} | {ad.headlines?.[1]}
             </div>
-            <div className={styles.url}>
+            <div className={platformStyles.google.url}>
               {getDomain(ad.finalUrl || "example.com")}
             </div>
-            <div className={styles.description}>
+            <div className={platformStyles.google.description}>
               {ad.descriptions?.[0]}
             </div>
             {ad.descriptions?.[1] && (
-              <div className={styles.description}>
+              <div className={platformStyles.google.description}>
                 {ad.descriptions[1]}
               </div>
             )}
@@ -89,17 +89,17 @@ export function AdVariationCard({
       case "bing":
         return (
           <div className="font-['Segoe UI'] p-4">
-            <div className={styles.headline}>
+            <div className={platformStyles.bing.headline}>
               {ad.headlines?.[0]} | {ad.headlines?.[1]}
             </div>
-            <div className={styles.url}>
+            <div className={platformStyles.bing.url}>
               {getDomain(ad.finalUrl || "example.com")}
             </div>
-            <div className={styles.description}>
+            <div className={platformStyles.bing.description}>
               {ad.descriptions?.[0]}
             </div>
             {ad.descriptions?.[1] && (
-              <div className={styles.description}>
+              <div className={platformStyles.bing.description}>
                 {ad.descriptions[1]}
               </div>
             )}
@@ -113,9 +113,9 @@ export function AdVariationCard({
               <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
               <span className="text-sm font-medium">Company Name • Sponsored</span>
             </div>
-            <div className={styles.headline}>{ad.headline}</div>
-            <div className={styles.body + " my-2"}>{ad.primaryText}</div>
-            <button className={styles.button}>{ad.description || "Learn More"}</button>
+            <div className={platformStyles.linkedin.headline}>{ad.headline}</div>
+            <div className={platformStyles.linkedin.body + " my-2"}>{ad.primaryText}</div>
+            <button className={platformStyles.linkedin.button}>{ad.description || "Learn More"}</button>
           </div>
         );
         
@@ -141,7 +141,7 @@ export function AdVariationCard({
               </div>
             )}
             
-            <div className={styles.caption}>
+            <div className={platformStyles.meta.caption}>
               <span className="font-medium mr-1">{ad.companyName || "Your Company"}</span>
               {ad.primaryText}
             </div>
