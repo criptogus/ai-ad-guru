@@ -11,6 +11,8 @@ import TestAdsPage from "./pages/TestAdsPage";
 import InstagramTemplateExamplePage from "./pages/InstagramTemplateExamplePage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
@@ -18,7 +20,7 @@ function App() {
       <div className="app">
         <Toaster />
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
@@ -26,6 +28,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/test-ads" element={<TestAdsPage />} />
           <Route path="/template-example" element={<InstagramTemplateExamplePage />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </ThemeProvider>
