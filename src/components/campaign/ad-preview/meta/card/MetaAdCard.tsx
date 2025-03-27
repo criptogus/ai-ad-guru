@@ -6,6 +6,7 @@ import { MetaAdCardProps } from "./types";
 import AdCardHeader from "./AdCardHeader";
 import AdPreviewSection from "./AdPreviewSection";
 import AdEditorSection from "./AdEditorSection";
+import AdVariationCard from "../../AdVariationCard";
 
 const MetaAdCard: React.FC<MetaAdCardProps> = ({
   ad,
@@ -25,7 +26,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
 }) => {
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
   const [viewMode, setViewMode] = useState<"feed" | "story" | "reel">("feed");
-  const companyName = analysisResult.companyName || "Your Company";
+  const companyName = analysisResult?.companyName || "Your Company";
 
   useEffect(() => {
     setEditedAd(ad);
@@ -50,6 +51,23 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
   const handleSaveClick = () => {
     onSave(editedAd);
   };
+
+  // For simple preview using AdVariationCard
+  if (false) { // We'll keep the detailed implementation for now
+    return (
+      <AdVariationCard
+        platform="meta"
+        ad={{...ad, companyName}}
+        onEdit={onEdit}
+        onRegenerate={onGenerateImage}
+        onDelete={onDelete}
+        onCopy={onCopy}
+        isEditing={isEditing}
+        onSave={handleSaveClick}
+        onCancel={onCancel}
+      />
+    );
+  }
 
   return (
     <Card className="overflow-hidden">
