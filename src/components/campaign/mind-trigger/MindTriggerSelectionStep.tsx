@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-import TriggerSelectorSection from './TriggerSelectorSection';
-import { useTriggerData } from './useTriggerData';
+import PlatformTriggers from './PlatformTriggers';
 
 interface MindTriggerSelectionStepProps {
   selectedPlatforms: string[];
@@ -22,7 +21,6 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
   onNext
 }) => {
   const [localTriggers, setLocalTriggers] = useState<Record<string, string>>(selectedTriggers);
-  const { getPlatformDisplayName } = useTriggerData();
   
   // This function will ONLY update the state, never trigger navigation
   const handleTriggerChange = (platform: string, trigger: string) => {
@@ -49,16 +47,12 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
           Different platforms respond better to different psychological approaches.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-8">
-        {selectedPlatforms.map(platform => (
-          <TriggerSelectorSection
-            key={platform}
-            title={getPlatformDisplayName(platform)}
-            platform={platform}
-            selected={localTriggers[platform] || ''}
-            onSelect={(triggerId) => handleTriggerChange(platform, triggerId)}
-          />
-        ))}
+      <CardContent className="space-y-6">
+        <PlatformTriggers 
+          selectedPlatforms={selectedPlatforms}
+          selectedTriggers={localTriggers}
+          onTriggerChange={handleTriggerChange}
+        />
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button 
