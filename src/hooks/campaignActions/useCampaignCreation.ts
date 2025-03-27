@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { consumeCredits } from "@/services/credits/creditUsage";
-import { getCreditCosts } from "@/services/credits/creditCosts";
+import { getCreditCost } from "@/services/credits/creditCosts";
 
 export const useCampaignCreation = (
   user: any,
@@ -16,7 +16,6 @@ export const useCampaignCreation = (
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
-  const creditCosts = getCreditCosts();
 
   const createCampaign = async () => {
     if (!user || !campaignData) return;
@@ -24,9 +23,9 @@ export const useCampaignCreation = (
     setIsCreating(true);
 
     try {
-      const requiredCredits = creditCosts.campaign_creation || 0;
+      const requiredCredits = getCreditCost('campaign_creation') || 0;
       const hasImages = metaAds.some(ad => ad.imageUrl);
-      const imageCredits = hasImages ? creditCosts.image_generation || 0 : 0;
+      const imageCredits = hasImages ? getCreditCost('image_generation') || 0 : 0;
       const totalCredits = requiredCredits + imageCredits;
       
       const creditSuccess = await consumeCredits(
@@ -84,9 +83,9 @@ export const useCampaignCreation = (
       });
       
       try {
-        const requiredCredits = creditCosts.campaign_creation || 0;
+        const requiredCredits = getCreditCost('campaign_creation') || 0;
         const hasImages = metaAds.some(ad => ad.imageUrl);
-        const imageCredits = hasImages ? creditCosts.image_generation || 0 : 0;
+        const imageCredits = hasImages ? getCreditCost('image_generation') || 0 : 0;
         const totalCredits = requiredCredits + imageCredits;
         
         // Refund credits if campaign creation failed

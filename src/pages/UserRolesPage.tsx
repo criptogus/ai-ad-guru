@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { UserPlus } from "lucide-react";
 import InviteUserModal from "@/components/roles/InviteUserModal";
-import { getTeamMembers, getRolePermissions, inviteUser } from "@/services";
+import { getTeamMembers, inviteUser } from "@/services/team/members";
+import { getRolePermissions } from "@/services/team/roles";
 import { TeamMember, UserRole } from "@/services/types";
 import { useToast } from "@/hooks/use-toast";
 

@@ -37,6 +37,14 @@ export const getCreditCost = (action: string): number => {
   return (creditCosts as Record<string, number>)[action] || 0;
 };
 
+// For backward compatibility with old code
+export const getCreditCosts = (): AllCreditCosts => {
+  return {
+    ...creditCosts,
+    optimization: optimizationCosts
+  };
+};
+
 // Get all credit costs
 export const getAllCreditCosts = (): AllCreditCosts => {
   return {
