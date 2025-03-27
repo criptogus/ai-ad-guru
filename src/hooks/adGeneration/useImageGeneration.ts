@@ -26,9 +26,9 @@ export const useImageGeneration = () => {
       }
 
       // Call the edge function to generate the image
-      const { data, error: functionError } = await supabase.functions.invoke('generate-image', {
+      const { data, error: functionError } = await supabase.functions.invoke('generate-image-gpt4o', {
         body: {
-          prompt,
+          imagePrompt: prompt,
           ...additionalInfo
         }
       });
@@ -49,7 +49,7 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      console.log("Successfully generated image");
+      console.log("Successfully generated image URL:", data.imageUrl);
       return data.imageUrl;
     } catch (err) {
       console.error("Exception in generateAdImage:", err);

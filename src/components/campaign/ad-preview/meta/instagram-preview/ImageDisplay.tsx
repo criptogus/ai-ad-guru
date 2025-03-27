@@ -28,11 +28,13 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      <img
-        src={imageUrl}
-        alt={alt}
-        className="w-full h-full object-cover"
-      />
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={alt}
+          className="w-full h-full object-cover"
+        />
+      )}
       
       {/* Overlay with image prompt - only show when hovering */}
       {imagePrompt && (

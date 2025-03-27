@@ -13,7 +13,7 @@ export const useImageGenerationActions = (
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (!ad.imagePrompt) {
-      toast("Image prompt required", {
+      toast.error("Image prompt required", {
         description: "Please provide an image prompt to generate an image"
       });
       return;
@@ -29,11 +29,14 @@ export const useImageGenerationActions = (
         format: ad.format || "feed"
       };
 
+      console.log(`Generating image with prompt: ${ad.imagePrompt}`);
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (!imageUrl) {
         throw new Error("Failed to generate image");
       }
+
+      console.log(`Generated image URL: ${imageUrl}`);
 
       // Update the campaign data with the new image URL
       setCampaignData((prev: any) => {
@@ -48,7 +51,7 @@ export const useImageGenerationActions = (
         };
       });
 
-      toast("Image Generated", {
+      toast.success("Image Generated", {
         description: "AI-generated image created successfully. 5 credits used."
       });
     } catch (error) {
@@ -72,7 +75,7 @@ export const useImageGenerationActions = (
       
       setError(error instanceof Error ? error.message : "Failed to generate image");
       
-      toast("Using placeholder image", {
+      toast.error("Using placeholder image", {
         description: "Unable to generate custom image. Using a placeholder instead."
       });
     } finally {
