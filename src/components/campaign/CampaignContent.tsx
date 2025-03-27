@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import CampaignHeader from "./CampaignHeader";
@@ -6,7 +5,7 @@ import StepIndicator from "./StepIndicator";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
 import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { useCampaignCreation } from "@/hooks/useCampaignCreation";
+import { useCampaignCreation } from "@/hooks/campaignActions/useCampaignCreation";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 
 const CampaignContent: React.FC = () => {
@@ -52,13 +51,11 @@ const CampaignContent: React.FC = () => {
   
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
-  // Handle website analysis
   const handleWebsiteAnalysis = async (url: string) => {
     const result = await analyzeWebsite(url);
     if (result) {
       setAnalysisResult(result);
       
-      // Update campaign data with results from analysis
       setCampaignData(prev => ({
         ...prev,
         targetUrl: result.websiteUrl,
@@ -68,7 +65,6 @@ const CampaignContent: React.FC = () => {
     return result;
   };
 
-  // Handle audience analysis
   const handleAudienceAnalysis = async (platform?: string) => {
     if (!analysisResult) return;
     
@@ -76,7 +72,6 @@ const CampaignContent: React.FC = () => {
     if (result) {
       setAudienceAnalysisResult(result);
       
-      // Store the result in campaign data
       setCampaignData(prev => ({
         ...prev,
         audienceAnalysis: result
@@ -84,7 +79,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Handle ad generation
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) return;
     
@@ -133,7 +127,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Handle image generation
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (!ad.imagePrompt) return;
     
@@ -143,10 +136,8 @@ const CampaignContent: React.FC = () => {
       const imageUrl = await generateAdImage(ad.imagePrompt);
       
       if (imageUrl) {
-        // Update the ad with the generated image
         const updatedAd = { ...ad, imageUrl };
         
-        // Update the appropriate ad array based on context
         const platform = campaignData.currentEditingPlatform || "meta";
         
         if (platform === "meta") {
@@ -164,7 +155,6 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Handle ad updates
   const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
     const newAds = [...googleAds];
     newAds[index] = updatedAd;
@@ -189,7 +179,6 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds(newAds);
   };
 
-  // Navigation
   const handleNext = (data?: any) => {
     if (data) {
       setCampaignData(prev => ({
@@ -205,25 +194,19 @@ const CampaignContent: React.FC = () => {
   };
 
   const handleNextWrapper = (data?: any) => {
-    // Perform any specific actions based on current step
     if (currentStep === 1) {
-      // After website analysis
       handleNext(data);
     } else if (currentStep === 2) {
-      // After platform selection
       handleNext(data);
     } else if (currentStep === 3) {
-      // After mind trigger selection
       handleNext(data);
     } else if (currentStep === 4) {
-      // After audience analysis
       handleNext(data);
     } else {
       handleNext(data);
     }
   };
 
-  // Content renderer
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -255,7 +238,7 @@ const CampaignContent: React.FC = () => {
 
   return (
     <div className="py-6 px-4 md:px-6 space-y-8">
-      <CampaignHeader />
+      <CampaignHeader onBack={handleBack} />
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
