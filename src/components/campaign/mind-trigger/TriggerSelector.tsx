@@ -25,7 +25,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
     <div>
       <h3 className="text-md font-medium mb-2">Select a Mind Trigger</h3>
       <Select 
-        value={selectedTrigger || ""} 
+        value={selectedTrigger.startsWith("custom:") ? "" : selectedTrigger} 
         onValueChange={onSelectTrigger}
       >
         <SelectTrigger>
