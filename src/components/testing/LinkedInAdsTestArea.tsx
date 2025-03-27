@@ -63,7 +63,7 @@ const LinkedInAdsTestArea: React.FC = () => {
     // Update form values
     methods.setValue("ad", updatedAd);
     methods.setValue("testAd", updatedAd);
-    methods.setValue(field, value);
+    methods.setValue(field as any, value);
   };
 
   const handleReset = () => {
@@ -119,7 +119,7 @@ const LinkedInAdsTestArea: React.FC = () => {
         const updatedAd = { ...testAd, imageUrl };
         setTestAd(updatedAd);
         
-        // Update form value
+        // Update form values - fixed to use the correct form fields
         methods.setValue("ad", updatedAd);
         methods.setValue("testAd", updatedAd);
         

@@ -66,7 +66,15 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       metaAds: metaAds || [],
       linkedInAds: linkedInAds || [],
       microsoftAds: microsoftAds || [],
-      platform: selectedPlatform
+      platform: selectedPlatform,
+      // Add additional fields that might be used in nested components
+      ad: null,
+      companyInfo: analysisResult || undefined,
+      companyName: analysisResult?.companyName || "",
+      primaryText: "",
+      headline: "",
+      description: "",
+      imagePrompt: ""
     }
   });
 

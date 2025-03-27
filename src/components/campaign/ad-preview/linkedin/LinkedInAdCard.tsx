@@ -8,6 +8,7 @@ import { Copy, Edit, Save, X } from "lucide-react";
 import LinkedInAdPreview from "./LinkedInAdPreview";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useFormContext } from "react-hook-form";
 
 interface LinkedInAdCardProps {
   ad: MetaAd;
@@ -38,6 +39,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
 }) => {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+  const formMethods = useFormContext();
   
   // Use external editing state if provided, otherwise use internal state
   const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
@@ -69,6 +71,16 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
     } else if (onUpdateAd) {
       onUpdateAd(editedAd);
       setInternalIsEditing(false);
+      
+      // Update the form context if available
+      if (formMethods) {
+        const linkedInAds = formMethods.getValues("linkedInAds") || [];
+        if (linkedInAds.length > index) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = editedAd;
+          formMethods.setValue("linkedInAds", updatedAds);
+        }
+      }
     }
   };
 
