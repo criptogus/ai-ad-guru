@@ -8,6 +8,7 @@ import LinkedInAdForm from "./linkedin/LinkedInAdForm";
 import LinkedInPreviewSection from "./linkedin/LinkedInPreviewSection";
 import { defaultAd, defaultAnalysisResult } from "./linkedin/defaultData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useForm, FormProvider } from "react-hook-form";
 
 const LinkedInAdsTestArea: React.FC = () => {
   const [testAd, setTestAd] = useState<MetaAd>(defaultAd);
@@ -20,6 +21,17 @@ const LinkedInAdsTestArea: React.FC = () => {
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
   const [imageFormat, setImageFormat] = useState("square"); // square (1080x1080) or landscape (1200x627)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+  // Initialize form for react-hook-form
+  const methods = useForm({
+    defaultValues: {
+      ad: testAd,
+      companyInfo: companyInfo,
+      industry: industry,
+      adTheme: adTheme,
+      imageFormat: imageFormat
+    }
+  });
 
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
@@ -89,42 +101,44 @@ const LinkedInAdsTestArea: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>LinkedIn Ads Test</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
-            <LinkedInAdForm
-              testAd={testAd}
-              companyInfo={companyInfo}
-              industry={industry}
-              adTheme={adTheme}
-              imageFormat={imageFormat}
-              isGenerating={isGenerating}
-              onCompanyNameChange={handleCompanyNameChange}
-              onAdChange={handleAdChange}
-              onIndustryChange={setIndustry}
-              onAdThemeChange={setAdTheme}
-              onImageFormatChange={setImageFormat}
-              onGenerateImage={handleGenerateImage}
-              onReset={handleReset}
-            />
+    <FormProvider {...methods}>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>LinkedIn Ads Test</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              <LinkedInAdForm
+                testAd={testAd}
+                companyInfo={companyInfo}
+                industry={industry}
+                adTheme={adTheme}
+                imageFormat={imageFormat}
+                isGenerating={isGenerating}
+                onCompanyNameChange={handleCompanyNameChange}
+                onAdChange={handleAdChange}
+                onIndustryChange={setIndustry}
+                onAdThemeChange={setAdTheme}
+                onImageFormatChange={setImageFormat}
+                onGenerateImage={handleGenerateImage}
+                onReset={handleReset}
+              />
 
-            <LinkedInPreviewSection
-              testAd={testAd}
-              companyInfo={companyInfo}
-              isGenerating={isGenerating}
-              onGenerateImage={handleGenerateImage}
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-red-500 mt-2">{error}</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              <LinkedInPreviewSection
+                testAd={testAd}
+                companyInfo={companyInfo}
+                isGenerating={isGenerating}
+                onGenerateImage={handleGenerateImage}
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-red-500 mt-2">{error}</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </FormProvider>
   );
 };
 

@@ -6,6 +6,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { Loader2, Sparkles } from "lucide-react";
 import LinkedInAdsList from "./LinkedInAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useFormContext } from "react-hook-form";
 
 interface LinkedInAdsTabProps {
   linkedInAds: MetaAd[];
@@ -28,6 +29,9 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   onUpdateLinkedInAd,
   mindTrigger
 }) => {
+  // Make sure we have access to form context
+  const formMethods = useFormContext();
+
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
     onUpdateLinkedInAd(index, updatedAd);
   };

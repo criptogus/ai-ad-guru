@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import GoogleAdsTab from "./GoogleAdsTab";
 import MetaAdsTab from "./MetaAdsTab";
-import LinkedInAdsTab from "./LinkedInAdsTab";
+import LinkedInAdsTab from "./linkedin/LinkedInAdsTab";
 import MicrosoftAdsTab from "./MicrosoftAdsTab";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
@@ -58,7 +58,17 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
 }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
   const { campaignData } = useCampaign();
-  const methods = useForm(); // Initialize react-hook-form
+  
+  // Initialize the form with proper default values
+  const methods = useForm({
+    defaultValues: {
+      googleAds: googleAds || [],
+      metaAds: metaAds || [],
+      linkedInAds: linkedInAds || [],
+      microsoftAds: microsoftAds || [],
+      platform: "google"
+    }
+  });
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
