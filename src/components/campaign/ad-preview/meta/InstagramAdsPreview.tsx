@@ -23,10 +23,11 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<"feed" | "story" | "reel">("feed");
 
-  const handleGenerateImage = (index: number) => {
+  const handleGenerateImage = async (index: number): Promise<void> => {
     if (onGenerateImage) {
-      onGenerateImage(ads[index], index);
+      return onGenerateImage(ads[index], index);
     }
+    return Promise.resolve();
   };
 
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
