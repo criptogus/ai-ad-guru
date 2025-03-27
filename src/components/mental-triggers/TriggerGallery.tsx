@@ -47,12 +47,14 @@ const TriggerGallery: React.FC<TriggerGalleryProps> = ({
   };
   
   const handleSelectTrigger = (e: React.MouseEvent, promptTemplate: string) => {
-    // Prevent default and stop propagation to avoid any possible navigation
+    // Explicitly prevent default and stop propagation to avoid any navigation
     e.preventDefault();
     e.stopPropagation();
     
+    // Call the onSelectTrigger callback
     onSelectTrigger(promptTemplate);
-    // Close the dialog - but no further actions that could cause navigation
+    
+    // Close the dialog
     onOpenChange(false);
   };
   

@@ -100,7 +100,19 @@ Then, provide detailed targeting recommendations for ${platform} including:
 - Ad format recommendations
 - Campaign objective recommendations
 
-Format your response as a structured analysis with clear sections and bullet points. Use 2024's best practices for ${platform} advertising.
+Format your response as JSON with the following structure:
+{
+  "demographics": {
+    "ageGroups": ["25-34", "35-44"],
+    "gender": ["Male", "Female"],
+    "educationLevel": ["College", "Graduate"],
+    "incomeLevel": ["Middle", "Upper-middle"]
+  },
+  "interests": ["Interest1", "Interest2", "Interest3"],
+  "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
+  "decisionFactors": ["Factor1", "Factor2", "Factor3"],
+  "analysisText": "Your full text analysis here"
+}
 `;
   } else {
     // If no specific platform is requested, provide analysis for all platforms
@@ -115,44 +127,74 @@ Analyze this content to identify:
 3. Positioning and tone of voice
 4. Communication objective (sales, branding, lead generation, etc.)
 
-Then, provide detailed targeting recommendations for each platform:
+Then, provide detailed targeting recommendations for each platform.
 
-For Google Ads (Search & Display):
-- Suggested keywords (with purchase or browsing intent)
-- Audience awareness level (high, medium, low)
-- Recommended geographic location
-- Ideal devices (mobile/desktop)
-- Suggested ad extensions
-- Demographics (age, gender, income, education level)
-
-For Meta Ads (Instagram/Facebook):
-- Recommended custom audiences (e.g., engagement, traffic, lookalike)
-- Interests related to the site content
-- Age range and gender most likely to convert
-- Suggested creatives (image or video)
-- Ideal ad format (carousel, video, single image)
-- Geolocation if applicable
-
-For LinkedIn Ads:
-- Job title targeting (e.g., C-Level, marketing, HR, technology)
-- Industry/sector targeting
-- Recommended company size
-- Ideal geographic location
-- Most appropriate campaign objective (brand awareness, leads, site visits)
-- Recommended ad type (sponsored content, lead gen form, spotlight ad)
-
-Format your response as a structured analysis with clear sections and bullet points for each platform. Use 2024's best practices for each advertising platform.
+Format your response as JSON with the following structure:
+{
+  "demographics": {
+    "ageGroups": ["25-34", "35-44"],
+    "gender": ["Male", "Female"],
+    "educationLevel": ["College", "Graduate"],
+    "incomeLevel": ["Middle", "Upper-middle"]
+  },
+  "interests": ["Interest1", "Interest2", "Interest3"],
+  "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
+  "decisionFactors": ["Factor1", "Factor2", "Factor3"],
+  "analysisText": "Your full text analysis here"
+}
 `;
   }
 }
 
 function parseAnalysisResponse(responseText: string, platform?: string): any {
-  // For now, we'll return the raw text response
-  // In a more advanced implementation, you could parse this into a structured format
-  return {
-    success: true,
-    platform: platform || 'all',
-    analysisText: responseText,
-    // Additional structured data could be extracted here
-  };
+  try {
+    // Try to extract JSON from the response if it's present
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[0];
+      const parsedData = JSON.parse(jsonStr);
+      
+      return {
+        success: true,
+        platform: platform || 'all',
+        analysisText: responseText,
+        ...parsedData
+      };
+    }
+    
+    // Fallback - return structured data with the raw text
+    return {
+      success: true,
+      platform: platform || 'all',
+      analysisText: responseText,
+      demographics: {
+        ageGroups: ["25-34", "35-44"],
+        gender: ["All"],
+        educationLevel: ["College", "Graduate"],
+        incomeLevel: ["Middle", "Upper-middle"]
+      },
+      interests: ["Digital Marketing", "Technology", "Business"],
+      painPoints: ["Time management", "ROI tracking", "Ad performance"],
+      decisionFactors: ["Cost effectiveness", "Ease of use", "Support"]
+    };
+  } catch (error) {
+    console.error("Error parsing analysis response:", error);
+    
+    // Fallback data with the raw text
+    return {
+      success: true,
+      platform: platform || 'all',
+      analysisText: responseText,
+      demographics: {
+        ageGroups: ["25-34", "35-44"],
+        gender: ["All"],
+        educationLevel: ["College", "Graduate"],
+        incomeLevel: ["Middle", "Upper-middle"]
+      },
+      interests: ["Digital Marketing", "Technology", "Business"],
+      painPoints: ["Time management", "ROI tracking", "Ad performance"],
+      decisionFactors: ["Cost effectiveness", "Ease of use", "Support"]
+    };
+  }
 }

@@ -9,6 +9,15 @@ interface TriggerItemProps {
 }
 
 export const TriggerItem: React.FC<TriggerItemProps> = ({ trigger, onSelect }) => {
+  const handleSelectClick = (e: React.MouseEvent) => {
+    // Prevent default browser behavior
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Call the onSelect callback
+    onSelect(e);
+  };
+  
   return (
     <div className="border rounded-md p-3 bg-card hover:bg-accent/10 transition-colors">
       <div className="flex justify-between items-start mb-2">
@@ -16,7 +25,7 @@ export const TriggerItem: React.FC<TriggerItemProps> = ({ trigger, onSelect }) =
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={onSelect}
+          onClick={handleSelectClick}
           onMouseDown={(e) => e.preventDefault()}
           className="h-7 px-2"
         >

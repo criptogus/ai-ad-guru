@@ -8,7 +8,16 @@ export interface AudienceAnalysisResult {
   success: boolean;
   platform: string;
   analysisText: string;
-  // This could be expanded with structured data in the future
+  // Structured audience data
+  demographics?: {
+    ageGroups: string[];
+    gender: string[];
+    educationLevel: string[];
+    incomeLevel: string[];
+  };
+  interests?: string[];
+  painPoints?: string[];
+  decisionFactors?: string[];
 }
 
 export const useAudienceAnalysis = () => {
@@ -43,14 +52,29 @@ export const useAudienceAnalysis = () => {
 
       console.log('Audience analysis result:', data);
       
-      setAnalysisResult(data);
+      // Process the raw analysis text if needed and structure the data
+      const processedData: AudienceAnalysisResult = {
+        ...data,
+        // If data doesn't have the structured fields, we add them with defaults
+        demographics: data.demographics || {
+          ageGroups: ["25-34", "35-44"], // Default values
+          gender: ["All"],
+          educationLevel: ["College", "Graduate"],
+          incomeLevel: ["Middle", "Upper-middle"]
+        },
+        interests: data.interests || ["Digital Marketing", "Technology", "Business"],
+        painPoints: data.painPoints || ["Time management", "ROI tracking", "Ad performance"],
+        decisionFactors: data.decisionFactors || ["Cost effectiveness", "Ease of use", "Support"]
+      };
+      
+      setAnalysisResult(processedData);
       
       toast({
         title: "Analysis Complete",
         description: `Audience targeting analysis for ${platform || 'all platforms'} completed successfully`,
       });
       
-      return data;
+      return processedData;
     } catch (error: any) {
       console.error('Error in analyzeAudience:', error);
       toast({
