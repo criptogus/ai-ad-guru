@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import GoogleAdsTab from "./GoogleAdsTab";
@@ -59,16 +59,29 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
   const { campaignData } = useCampaign();
   
-  // Initialize the form with proper default values
+  // Initialize the form with proper default values for all ad types
   const methods = useForm({
     defaultValues: {
       googleAds: googleAds || [],
       metaAds: metaAds || [],
       linkedInAds: linkedInAds || [],
       microsoftAds: microsoftAds || [],
-      platform: "google"
+      platform: selectedPlatform
     }
   });
+
+  // Update form values when ads change
+  useEffect(() => {
+    methods.setValue("googleAds", googleAds);
+    methods.setValue("metaAds", metaAds);
+    methods.setValue("linkedInAds", linkedInAds);
+    methods.setValue("microsoftAds", microsoftAds);
+  }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
+
+  // Update form when selected platform changes
+  useEffect(() => {
+    methods.setValue("platform", selectedPlatform);
+  }, [selectedPlatform, methods]);
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;

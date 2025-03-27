@@ -22,19 +22,28 @@ const LinkedInAdsTestArea: React.FC = () => {
   const [imageFormat, setImageFormat] = useState("square"); // square (1080x1080) or landscape (1200x627)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
-  // Initialize form for react-hook-form
+  // Initialize form with explicit default values for all fields
   const methods = useForm({
     defaultValues: {
       ad: testAd,
       companyInfo: companyInfo,
       industry: industry,
       adTheme: adTheme,
-      imageFormat: imageFormat
+      imageFormat: imageFormat,
+      testAd: testAd, // Make sure this matches what might be used in components
+      companyName: companyInfo.companyName,
+      primaryText: testAd.primaryText || "",
+      headline: testAd.headline || "",
+      description: testAd.description || "",
+      imagePrompt: testAd.imagePrompt || ""
     }
   });
 
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
+    // Update the form value
+    methods.setValue("companyInfo", { ...companyInfo, companyName: value });
+    methods.setValue("companyName", value);
   };
 
   const handleAdChange = (field: keyof MetaAd, value: string) => {
@@ -48,7 +57,13 @@ const LinkedInAdsTestArea: React.FC = () => {
       }
     }
     
-    setTestAd({ ...testAd, [field]: value });
+    const updatedAd = { ...testAd, [field]: value };
+    setTestAd(updatedAd);
+    
+    // Update form values
+    methods.setValue("ad", updatedAd);
+    methods.setValue("testAd", updatedAd);
+    methods.setValue(field, value);
   };
 
   const handleReset = () => {
@@ -58,6 +73,22 @@ const LinkedInAdsTestArea: React.FC = () => {
     setAdTheme("Innovation & Technology");
     setImageFormat("square");
     setSelectedTemplateId(null);
+    
+    // Reset form values
+    methods.reset({
+      ad: defaultAd,
+      companyInfo: defaultAnalysisResult,
+      industry: "Technology",
+      adTheme: "Innovation & Technology",
+      imageFormat: "square",
+      testAd: defaultAd,
+      companyName: defaultAnalysisResult.companyName,
+      primaryText: defaultAd.primaryText || "",
+      headline: defaultAd.headline || "",
+      description: defaultAd.description || "",
+      imagePrompt: defaultAd.imagePrompt || ""
+    });
+    
     toast.info("Test ad reset to default values");
   };
 
@@ -85,7 +116,12 @@ const LinkedInAdsTestArea: React.FC = () => {
       const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
       
       if (imageUrl) {
-        setTestAd(prev => ({ ...prev, imageUrl }));
+        const updatedAd = { ...testAd, imageUrl };
+        setTestAd(updatedAd);
+        
+        // Update form value
+        methods.setValue("ad", updatedAd);
+        methods.setValue("testAd", updatedAd);
         
         // Show credit usage toast
         toast.success("LinkedIn ad image generated", {

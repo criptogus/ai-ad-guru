@@ -29,11 +29,25 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   onUpdateLinkedInAd,
   mindTrigger
 }) => {
-  // Make sure we have access to form context
+  // Get form context safely
   const formMethods = useFormContext();
+  
+  // If we have form context, ensure the linkedInAds field exists
+  if (formMethods && !formMethods.getValues("linkedInAds")) {
+    // Initialize linkedInAds field if it doesn't exist
+    formMethods.setValue("linkedInAds", linkedInAds || []);
+  }
 
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
     onUpdateLinkedInAd(index, updatedAd);
+    
+    // Update the form value if we have form context
+    if (formMethods) {
+      const currentAds = formMethods.getValues("linkedInAds") || [];
+      const updatedAds = [...currentAds];
+      updatedAds[index] = updatedAd;
+      formMethods.setValue("linkedInAds", updatedAds);
+    }
   };
 
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
