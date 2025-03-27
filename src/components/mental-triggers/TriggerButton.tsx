@@ -1,54 +1,57 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import React, { useState, MouseEvent } from "react";
+import { Button, ButtonProps } from "@/components/ui/button";
+import TriggerGallery from "./TriggerGallery";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import TriggerGallery from './TriggerGallery';
+import { Sparkles } from "lucide-react";
 
-interface TriggerButtonProps {
+interface TriggerButtonProps extends ButtonProps {
   onSelectTrigger: (trigger: string) => void;
   buttonText?: string;
   tooltip?: string;
-  variant?: 'default' | 'outline' | 'secondary' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
 export const TriggerButton: React.FC<TriggerButtonProps> = ({
   onSelectTrigger,
-  buttonText = "Mental Triggers",
-  tooltip = "Add psychological triggers to improve ad performance",
-  variant = 'outline',
-  size = 'default'
+  buttonText = "Add Mind Trigger",
+  tooltip = "Add psychological triggers to make your ad more effective",
+  size,
+  variant,
+  className,
+  ...props
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const handleSelectTrigger = (trigger: string) => {
-    onSelectTrigger(trigger);
-    setIsOpen(false);
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
   };
-  
+
+  const handleSelectTrigger = (trigger: string) => {
+    // Call the callback without any additional logic
+    onSelectTrigger(trigger);
+    setOpen(false);
+  };
+
   return (
     <>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant={variant}
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen(true);
+              }}
               size={size}
-              onClick={(e) => {
-                e.preventDefault(); // Prevent default behavior
-                e.stopPropagation(); // Stop propagation
-                setIsOpen(true);
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault(); // Prevent default behavior
-                e.stopPropagation(); // Stop propagation
-              }}
+              variant={variant}
+              className={className}
+              {...props}
             >
               <Sparkles className="h-4 w-4 mr-2" />
               {buttonText}
@@ -59,10 +62,10 @@ export const TriggerButton: React.FC<TriggerButtonProps> = ({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      
+
       <TriggerGallery
-        open={isOpen}
-        onOpenChange={setIsOpen}
+        open={open}
+        onOpenChange={handleOpenChange}
         onSelectTrigger={handleSelectTrigger}
       />
     </>
