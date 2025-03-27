@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis, AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
 import AudienceAnalysisPanel from "./AudienceAnalysisPanel";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, BarChart3 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AudienceAnalysisStepProps {
   analysisResult: WebsiteAnalysisResult | null;
@@ -18,28 +19,50 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   onNext
 }) => {
   const { analyzeAudience, isAnalyzing, analysisResult: audienceResult } = useAudienceAnalysis();
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
 
   const handleAnalyze = async (platform?: string) => {
     if (!analysisResult) return;
     
+    setSelectedPlatform(platform);
     await analyzeAudience(analysisResult, platform);
   };
 
   return (
     <div className="space-y-6">
-      <AudienceAnalysisPanel
-        websiteData={analysisResult!}
-        isAnalyzing={isAnalyzing}
-        analysisResult={audienceResult}
-        onAnalyze={handleAnalyze}
-      />
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            <CardTitle>Audience Analysis</CardTitle>
+          </div>
+          <CardDescription>
+            Let our AI analyze your website content to identify the perfect audience for your ads
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <AudienceAnalysisPanel
+            websiteData={analysisResult!}
+            isAnalyzing={isAnalyzing}
+            analysisResult={audienceResult}
+            onAnalyze={handleAnalyze}
+            selectedPlatform={selectedPlatform}
+          />
+        </CardContent>
+      </Card>
       
-      <div className="pt-4 border-t flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+      <div className="pt-4 border-t flex justify-between items-center">
+        <Button variant="outline" onClick={onBack} className="flex items-center">
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        <Button onClick={onNext}>
+        
+        <span className="text-sm text-muted-foreground">
+          Step 4 of 7
+        </span>
+        
+        <Button onClick={onNext} className="flex items-center" disabled={!audienceResult}>
           Next Step
           <ChevronRight className="ml-2 h-4 w-4" />
         </Button>

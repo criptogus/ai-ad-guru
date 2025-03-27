@@ -14,16 +14,22 @@ const Step: React.FC<StepProps> = ({ stepNumber, currentStep, title, icon }) => 
   const isActive = currentStep === stepNumber;
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center group mb-4">
       <div 
-        className={`flex items-center justify-center h-8 w-8 rounded-full ${
-          isCompleted ? "bg-green-500" : isActive ? "bg-primary" : "bg-muted"
-        } text-white`}
+        className={`flex items-center justify-center h-9 w-9 rounded-full transition-colors ${
+          isCompleted ? "bg-success text-success-foreground" : 
+          isActive ? "bg-primary text-primary-foreground" : 
+          "bg-muted text-muted-foreground"
+        }`}
       >
-        {isCompleted ? <Check className="h-4 w-4" /> : icon}
+        {isCompleted ? <Check className="h-5 w-5" /> : icon}
       </div>
       <div className="ml-3">
-        <p className={`text-sm font-medium ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+        <p className={`text-sm font-medium transition-colors ${
+          isActive ? "text-primary" : 
+          isCompleted ? "text-success" : 
+          "text-muted-foreground"
+        }`}>
           {title}
         </p>
       </div>
@@ -37,8 +43,10 @@ interface StepIndicatorProps {
 
 const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
   return (
-    <div className="flex justify-between items-center">
-      <div className="hidden sm:flex flex-col space-y-6 w-1/4">
+    <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+      <h3 className="text-base font-semibold mb-5 text-foreground">Campaign Progress</h3>
+      
+      <div className="space-y-1">
         <Step
           stepNumber={1}
           currentStep={currentStep}
@@ -63,8 +71,6 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
           title="Audience Analysis"
           icon={<BarChart className="h-4 w-4" />}
         />
-      </div>
-      <div className="hidden sm:flex flex-col space-y-6 w-1/4">
         <Step
           stepNumber={5}
           currentStep={currentStep}
@@ -84,10 +90,19 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
           icon={<Check className="h-4 w-4" />}
         />
       </div>
-      <div className="sm:hidden flex items-center justify-center w-full">
-        <p className="text-sm font-medium">
-          Step {currentStep} of 7
-        </p>
+      
+      <div className="mt-6 pt-4 border-t border-border">
+        <div className="flex items-center">
+          <div className="h-2 bg-muted rounded-full flex-1">
+            <div 
+              className="h-2 bg-primary rounded-full transition-all" 
+              style={{ width: `${Math.min(100, (currentStep / 7) * 100)}%` }}
+            />
+          </div>
+          <span className="ml-3 text-xs font-medium text-muted-foreground">
+            Step {currentStep} of 7
+          </span>
+        </div>
       </div>
     </div>
   );
