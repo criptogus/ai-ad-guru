@@ -1,23 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Chrome, Linkedin, Instagram, Target } from "lucide-react";
 
 interface PlatformSelectionStepProps {
-  selectedPlatforms: string[];
-  onPlatformsChange: (platforms: string[]) => void;
+  onNext: (data?: { platforms: string[] }) => void;
   onBack: () => void;
-  onNext: () => void;
 }
 
 const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
-  selectedPlatforms,
-  onPlatformsChange,
-  onBack,
   onNext,
+  onBack,
 }) => {
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+
   const platforms = [
     {
       id: "google",
@@ -51,9 +49,9 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
 
   const handlePlatformToggle = (platformId: string) => {
     if (selectedPlatforms.includes(platformId)) {
-      onPlatformsChange(selectedPlatforms.filter(id => id !== platformId));
+      setSelectedPlatforms(selectedPlatforms.filter(id => id !== platformId));
     } else {
-      onPlatformsChange([...selectedPlatforms, platformId]);
+      setSelectedPlatforms([...selectedPlatforms, platformId]);
     }
   };
 
@@ -122,7 +120,7 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
               Back
             </Button>
             <Button 
-              onClick={onNext} 
+              onClick={() => onNext({ platforms: selectedPlatforms })}
               disabled={showWarning}
             >
               Next Step

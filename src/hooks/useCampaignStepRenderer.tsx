@@ -81,7 +81,7 @@ const useCampaignStepRenderer = ({
       case 1:
         return (
           <PlatformSelectionStep 
-            onNext={(platforms) => handleNextWrapper({ platforms })}
+            onNext={(data) => handleNextWrapper(data)}
             onBack={handleBack}
           />
         );
