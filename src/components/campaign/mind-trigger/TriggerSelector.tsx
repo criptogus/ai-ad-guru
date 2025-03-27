@@ -28,7 +28,9 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
   };
   
   // Handle custom trigger addition without navigation
-  const handleAddCustom = () => {
+  const handleAddCustom = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any form submission
+    
     if (customTrigger.trim()) {
       onAddCustomTrigger(customTrigger);
       setCustomTrigger("");

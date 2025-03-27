@@ -27,7 +27,7 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
     const updatedTriggers = { ...localTriggers, [platform]: trigger };
     setLocalTriggers(updatedTriggers);
     
-    // Only update parent state, don't navigate
+    // Only update parent state, never navigate
     onTriggersChange(updatedTriggers);
   };
   

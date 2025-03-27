@@ -1,41 +1,32 @@
 
 import React from "react";
 import { useTriggerData } from "./useTriggerData";
-import { Button } from "@/components/ui/button";
 
 interface TemplateExamplesProps {
   platform: string;
-  onSelectTemplate?: (template: string) => void;
+  onSelectTemplate: (template: string) => void;
 }
 
-const TemplateExamples: React.FC<TemplateExamplesProps> = ({ 
-  platform,
-  onSelectTemplate
-}) => {
+const TemplateExamples: React.FC<TemplateExamplesProps> = ({ platform, onSelectTemplate }) => {
   const { getPlatformTemplates } = useTriggerData();
-  
-  const handleTemplateClick = (template: string) => {
-    if (onSelectTemplate) {
-      onSelectTemplate(template);
-    }
+
+  const handleTemplateClick = (e: React.MouseEvent, template: string) => {
+    e.preventDefault(); // Prevent any form submission
+    onSelectTemplate(template);
   };
-  
+
   return (
     <div className="mt-4">
       <h3 className="text-md font-medium mb-2">Template Examples</h3>
       <div className="bg-muted p-3 rounded-md space-y-2">
         {getPlatformTemplates(platform).map((template, idx) => (
-          <Button 
+          <div 
             key={idx} 
-            variant="ghost"
-            className="p-2 w-full h-auto justify-start font-normal text-left whitespace-normal hover:bg-muted-foreground/10"
-            onClick={() => handleTemplateClick(template)}
-            type="button"
+            className="p-2 bg-background rounded border cursor-pointer hover:border-primary transition-colors"
+            onClick={(e) => handleTemplateClick(e, template)}
           >
-            {template.length > 100 ? 
-              template.substring(0, 100) + "..." : 
-              template}
-          </Button>
+            {template}
+          </div>
         ))}
       </div>
       <p className="text-xs text-muted-foreground mt-2">
