@@ -40,12 +40,12 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
     <Card className="border-none shadow-none bg-transparent">
       <CardContent className="p-0">
         {/* Format Toggle Bar */}
-        <div className="flex justify-center mb-6">
-          <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <div className="flex justify-center mb-8">
+          <div className="flex gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <Button
               variant={viewMode === "feed" ? "default" : "ghost"}
               size="sm"
-              className={`h-9 rounded-md ${
+              className={`h-10 rounded-md px-4 ${
                 viewMode === "feed" 
                   ? "bg-primary text-primary-foreground" 
                   : "text-muted-foreground hover:text-foreground"
@@ -58,7 +58,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
             <Button
               variant={viewMode === "story" ? "default" : "ghost"}
               size="sm"
-              className={`h-9 rounded-md ${
+              className={`h-10 rounded-md px-4 ${
                 viewMode === "story" 
                   ? "bg-primary text-primary-foreground" 
                   : "text-muted-foreground hover:text-foreground"
@@ -71,7 +71,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
             <Button
               variant={viewMode === "reel" ? "default" : "ghost"}
               size="sm"
-              className={`h-9 rounded-md ${
+              className={`h-10 rounded-md px-4 ${
                 viewMode === "reel" 
                   ? "bg-primary text-primary-foreground" 
                   : "text-muted-foreground hover:text-foreground"
@@ -84,8 +84,8 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
           </div>
         </div>
 
-        {/* Mobile-style Preview Column */}
-        <div className="max-w-[384px] mx-auto space-y-6 overflow-y-auto max-h-[70vh] pb-4">
+        {/* Mobile-style Preview Column with improved spacing */}
+        <div className="max-w-[430px] mx-auto space-y-12 overflow-y-auto max-h-[75vh] pb-16 px-3">
           {ads.map((ad, index) => (
             <div 
               key={index} 
@@ -106,6 +106,3 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
       </CardContent>
     </Card>
   );
-};
-
-export default InstagramAdsPreview;

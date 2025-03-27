@@ -71,10 +71,11 @@ const ImageContent: React.FC<ImageContentProps> = ({
       {ad.imageUrl ? (
         <ImageDisplay
           imageUrl={ad.imageUrl}
-          alt={`Ad image ${imageKey}`}
+          alt={ad.imagePrompt || `Ad image ${imageKey}`}
           onGenerateImage={onGenerateImage}
           isLoading={isLoading}
           format={format}
+          imagePrompt={ad.imagePrompt}
         />
       ) : loadingItem ? (
         loadingItem

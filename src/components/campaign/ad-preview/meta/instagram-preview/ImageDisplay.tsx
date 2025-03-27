@@ -1,54 +1,58 @@
 
 import React from "react";
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCw } from "lucide-react";
 
-export interface ImageDisplayProps {
-  imageUrl?: string;
-  alt?: string;
+interface ImageDisplayProps {
+  imageUrl: string;
+  alt: string;
   onGenerateImage?: () => Promise<void>;
   isLoading?: boolean;
   format?: string;
+  imagePrompt?: string;
 }
 
-const ImageDisplay: React.FC<ImageDisplayProps> = ({ 
+const ImageDisplay: React.FC<ImageDisplayProps> = ({
   imageUrl,
-  alt = "Instagram ad",
+  alt,
   onGenerateImage,
   isLoading = false,
-  format = "feed"
+  format = "feed",
+  imagePrompt
 }) => {
-  // Determine the best object-fit style based on format
-  const getObjectFitStyle = () => {
-    switch (format) {
-      case "story":
-      case "reel":
-        return "object-cover";
-      default:
-        return "object-cover";
+  const handleRegenerateClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onGenerateImage && !isLoading) {
+      await onGenerateImage();
     }
   };
 
   return (
-    <div className={`w-full h-full relative overflow-hidden bg-gray-100 dark:bg-gray-800`}>
+    <div className="relative w-full h-full">
       <img
         src={imageUrl}
         alt={alt}
-        className={`w-full h-full ${getObjectFitStyle()}`}
+        className="w-full h-full object-cover"
       />
       
-      {onGenerateImage && (
-        <div className="absolute bottom-2 right-2">
-          <Button 
-            size="icon" 
-            variant="secondary" 
-            className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700"
-            onClick={onGenerateImage}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
+      {/* Overlay with image prompt */}
+      {imagePrompt && (
+        <div className="absolute top-2 left-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs p-1.5 rounded opacity-70 hover:opacity-100 transition-opacity">
+          <p className="line-clamp-2">{imagePrompt}</p>
         </div>
+      )}
+      
+      {onGenerateImage && (
+        <button
+          onClick={handleRegenerateClick}
+          disabled={isLoading}
+          className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+        </button>
       )}
     </div>
   );
