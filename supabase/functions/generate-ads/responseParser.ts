@@ -21,31 +21,7 @@ export function parseAdResponse(response: string, platform: string, campaignData
       jsonContent = jsonMatch[1].trim();
     }
     
-    // Look for array directly
-    const arrayMatch = jsonContent.match(/\[\s*{[\s\S]*}\s*\]/);
-    if (arrayMatch) {
-      jsonContent = arrayMatch[0];
-    }
-    
-    // Try to find a JSON object if no array was found
-    if (!arrayMatch) {
-      const jsonStart = jsonContent.indexOf('[');
-      const jsonEnd = jsonContent.lastIndexOf(']') + 1;
-      
-      if (jsonStart !== -1 && jsonEnd > jsonStart) {
-        jsonContent = jsonContent.substring(jsonStart, jsonEnd);
-      } else {
-        // Look for object format
-        const objStart = jsonContent.indexOf('{');
-        const objEnd = jsonContent.lastIndexOf('}') + 1;
-        
-        if (objStart !== -1 && objEnd > objStart) {
-          jsonContent = jsonContent.substring(objStart, objEnd);
-        }
-      }
-    }
-    
-    // Parse the JSON content
+    // Try to parse the JSON content
     let parsedData;
     try {
       parsedData = JSON.parse(jsonContent);
@@ -54,37 +30,44 @@ export function parseAdResponse(response: string, platform: string, campaignData
       throw new Error(`Invalid JSON format in response for ${platform} ads`);
     }
     
-    // Handle different response formats
+    // Handle different response formats based on platform
     let ads;
     
-    // Check if it's an array directly
-    if (Array.isArray(parsedData)) {
+    if (platform === 'google') {
+      ads = parsedData.google_ads || [];
+    }
+    else if (platform === 'linkedin') {
+      ads = parsedData.linkedin_ads || [];
+    }
+    else if (platform === 'microsoft') {
+      ads = parsedData.bing_ads || parsedData.microsoft_ads || [];
+    }
+    else if (platform === 'meta') {
+      ads = parsedData.meta_ads || parsedData.instagram_ads || [];
+    }
+    
+    // If we didn't find platform-specific ads, try a general "ads" array
+    if (!ads || ads.length === 0) {
+      ads = parsedData.ads || [];
+    }
+    
+    // If ads is still empty, check if the response is a direct array
+    if ((!ads || ads.length === 0) && Array.isArray(parsedData)) {
       ads = parsedData;
-    } 
-    // Check if it has an ads array
-    else if (parsedData.ads && Array.isArray(parsedData.ads)) {
-      ads = parsedData.ads;
     }
-    // Check platform-specific arrays in the response
-    else if (platform === 'google' && parsedData.google_ads) {
-      ads = parsedData.google_ads;
-    }
-    else if (platform === 'linkedin' && parsedData.linkedin_ads) {
-      ads = parsedData.linkedin_ads;
-    }
-    else if (platform === 'microsoft' && parsedData.bing_ads) {
-      ads = parsedData.bing_ads;
-    }
-    else if (platform === 'meta' && parsedData.meta_ads) {
-      ads = parsedData.meta_ads;
-    }
-    // If we have a single ad object
-    else if (!Array.isArray(parsedData) && typeof parsedData === 'object') {
-      ads = [parsedData];
-    }
-    else {
-      console.error(`Unexpected response format for ${platform} ads:`, parsedData);
-      throw new Error(`Unable to extract ads from response for ${platform}`);
+    
+    // If ads is still empty, check if the response is a single ad object
+    if ((!ads || ads.length === 0) && typeof parsedData === 'object' && !Array.isArray(parsedData)) {
+      // Look for ad-specific properties to confirm this is an ad object
+      const hasAdProperties = platform === 'google' 
+        ? (parsedData.headlines || parsedData.descriptions)
+        : (platform === 'meta' || platform === 'linkedin' 
+          ? (parsedData.headline || parsedData.primaryText) 
+          : false);
+      
+      if (hasAdProperties) {
+        ads = [parsedData];
+      }
     }
     
     if (!ads || ads.length === 0) {
@@ -96,6 +79,7 @@ export function parseAdResponse(response: string, platform: string, campaignData
     return ads;
   } catch (error) {
     console.error(`Error parsing ${platform} ad response:`, error);
+    console.log("Falling back to default ad templates");
     
     // Return fallback ads when parsing fails
     if (platform === 'google') {

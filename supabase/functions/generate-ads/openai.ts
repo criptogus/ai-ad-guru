@@ -23,11 +23,11 @@ export const generateWithOpenAI = async (prompt: string) => {
   
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the most capable model for better ad generation
+      model: "gpt-4o-mini", // Using efficient model for ad generation
       messages: [
         { 
           role: "system", 
-          content: "You are an expert advertising copywriter who creates high-converting, platform-specific ads based on marketing best practices. Return your response as properly formatted JSON only."
+          content: "You are an expert advertising copywriter who creates high-converting, platform-specific ads based on marketing best practices. Return your response as properly formatted JSON only, with no additional text or explanations."
         },
         { 
           role: "user", 

@@ -18,11 +18,8 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
   ### Platform-Specific Instructions - Google Ads (Search – Text Only)  
   - Objective: Drive clicks with emotional, high-intent copy
   - Format:  
-    - Headline 1 (30 char max)  
-    - Headline 2 (30 char max)  
-    - Headline 3 (optional, 30 char max)
-    - Description 1 (90 char max)  
-    - Description 2 (optional, 90 char max)
+    - Headlines: array of 3 strings (each 30 chars max)
+    - Descriptions: array of 2 strings (each 90 chars max)
   
   ### Proven Google Ads Hacks:  
   - Use questions or bold claims (e.g., "Struggling to Grow?")
@@ -86,9 +83,7 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
     - Headline (max 50 characters)
     - Primary text (main post content, 1-2 paragraphs)
     - Description (max 70 characters, serves as CTA)
-    - Image prompt (text-free, editable concept)
-    - Format (string, always use "single-image")
-    - Hashtags (array of 3 relevant hashtags without # symbol)
+    - Image prompt (detailed description for generating a relevant professional image)
   
   ### Proven LinkedIn Ads Hacks:  
   - Start with a stat or success hook (e.g., "80% Boost in Leads")
@@ -110,8 +105,7 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
   - headline: string (max 50 characters)
   - primaryText: string (main post content)
   - description: string (max 70 characters)
-  - imagePrompt: string (detailed prompt for generating a relevant image)
-  - format: string (always "single-image")
+  - imagePrompt: string (detailed prompt for generating a relevant professional image)
   - hashtags: array of 3 strings (relevant hashtags without # symbol)`;
   
   if (mindTrigger) {
@@ -153,11 +147,8 @@ export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mi
   ### Platform-Specific Instructions - Microsoft/Bing Ads (Search – Text Only)  
   - Objective: Attract clicks with formal, value-driven copy
   - Format:  
-    - Headline 1 (30 char max)  
-    - Headline 2 (30 char max)  
-    - Headline 3 (optional, 30 char max)
-    - Description 1 (90 char max)  
-    - Description 2 (optional, 90 char max)
+    - Headlines: array of 3 strings (each 30 chars max)
+    - Descriptions: array of 2 strings (each 90 chars max)
   
   ### Proven Microsoft/Bing Ads Hacks:  
   - Use trust signals (e.g., "Proven Results", "Since 2010")
@@ -221,9 +212,7 @@ export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTri
     - Headline (max 40 characters)
     - Primary text (120–200 chars preferred, engaging caption)
     - Description (max 30 characters, serves as CTA)
-    - Image prompt (text-free, editable concept)
-    - Format (string, always use "square")
-    - Hashtags (array of 3 relevant hashtags without # symbol)
+    - Image prompt (detailed description for generating a relevant eye-catching image)
   
   ### Proven Instagram/Meta Ads Hacks:  
   - Hook in first 3 seconds with attention-grabbing opening
@@ -247,7 +236,6 @@ export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTri
   - primaryText: string (main post content, 120-200 chars preferred)
   - description: string (max 30 characters)
   - imagePrompt: string (detailed prompt for generating an eye-catching image)
-  - format: string (always "square")
   - hashtags: array of 3 strings (relevant hashtags without # symbol)`;
   
   if (mindTrigger) {
