@@ -47,7 +47,13 @@ const CampaignContent: React.FC = () => {
     isGenerating
   } = useAdGeneration();
 
-  const { createCampaign, isCreating } = useCampaignCreation();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { createCampaign, isCreating } = useCampaignCreation(
+    user,
+    campaignData,
+    googleAds,
+    metaAds
+  );
   
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
