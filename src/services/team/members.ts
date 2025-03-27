@@ -1,4 +1,3 @@
-
 import { TeamMember, UserRole } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -44,5 +43,37 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
   } catch (error) {
     console.error("Error inviting user:", error);
     throw error;
+  }
+};
+
+// Function to update a team member
+export const updateTeamMember = async (id: string, updates: any): Promise<boolean> => {
+  try {
+    console.log(`Updating team member ${id} with:`, updates);
+    
+    // In a real app, would update the user in Supabase
+    // For now, just simulate a successful update
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating team member:", error);
+    return false;
+  }
+};
+
+// Function to remove a team member
+export const removeTeamMember = async (id: string): Promise<boolean> => {
+  try {
+    console.log(`Removing team member ${id}`);
+    
+    // In a real app, would remove the user from the team in Supabase
+    // For now, just simulate a successful removal
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return true;
+  } catch (error) {
+    console.error("Error removing team member:", error);
+    return false;
   }
 };

@@ -1,9 +1,9 @@
 
 import React from "react";
-import { getCreditCosts } from "@/services";
+import { getAllCreditCosts } from "@/services/credits/creditCosts";
 
 const CreditCostInfo = () => {
-  const creditCostsData = getCreditCosts();
+  const creditCostsData = getAllCreditCosts();
   
   return (
     <div className="space-y-3 my-2">
@@ -17,9 +17,9 @@ const CreditCostInfo = () => {
       <div className="border rounded-md p-3 dark:border-gray-700">
         <p className="font-medium mb-1">AI Optimization</p>
         <div className="space-y-1 text-sm text-muted-foreground">
-          <p>Daily: {creditCostsData.aiOptimization.daily} credits per cycle</p>
-          <p>Every 3 Days: {creditCostsData.aiOptimization.every3Days} credits per cycle</p>
-          <p>Weekly: {creditCostsData.aiOptimization.weekly} credits per cycle</p>
+          <p>Daily: {creditCostsData.adOptimization.daily} credits per cycle</p>
+          <p>Every 3 Days: {creditCostsData.adOptimization.every3Days} credits per cycle</p>
+          <p>Weekly: {creditCostsData.adOptimization.weekly} credits per cycle</p>
         </div>
       </div>
       

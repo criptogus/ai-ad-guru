@@ -11,7 +11,7 @@ const useMentalTriggers = () => {
     ? mentalTriggers.filter(trigger => 
         trigger.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         trigger.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        trigger.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase()))
+        (trigger.examples && trigger.examples.some(ex => ex.toLowerCase().includes(searchQuery.toLowerCase())))
       )
     : selectedCategory 
       ? getTriggersByCategory(selectedCategory)

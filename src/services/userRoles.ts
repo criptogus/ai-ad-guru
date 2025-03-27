@@ -1,8 +1,8 @@
 
 // Re-export from credits with different name to avoid ambiguity
-import { OptimizationCosts as CreditOptimizationCosts } from './credits';
+import { OptimizationCosts } from './credits/creditCosts';
 
-export { CreditOptimizationCosts };
+export type { OptimizationCosts as CreditOptimizationCosts };
 
 // Define user roles
 export type UserRole = 'admin' | 'editor' | 'viewer';

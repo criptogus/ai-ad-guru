@@ -21,3 +21,21 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
     throw error;
   }
 };
+
+// Get team invitations
+export const getTeamInvitations = async () => {
+  // Implementation...
+  return [];
+};
+
+// Resend invitation
+export const resendInvitation = async (id: string) => {
+  // Implementation...
+  return true;
+};
+
+// Revoke invitation
+export const revokeInvitation = async (id: string) => {
+  // Implementation...
+  return true;
+};

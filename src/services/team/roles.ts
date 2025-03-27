@@ -29,3 +29,8 @@ export const getRolePermissions = (): RolePermissions => {
     ],
   };
 };
+
+// Helper functions for role checks
+export const isAdmin = (role: string): boolean => role === 'Admin';
+export const isEditor = (role: string): boolean => role === 'Editor' || role === 'Admin';
+export const isViewer = (role: string): boolean => true; // Everyone can view

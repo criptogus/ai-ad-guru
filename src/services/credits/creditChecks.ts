@@ -1,8 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { consumeCredits } from "./creditUsage";
-import { CreditAction } from "../types";
-import { getCreditCost } from "./creditCosts";
+import { CreditAction, getCreditCost } from "./creditCosts";
 
 // Check if user has enough credits for an action
 export const checkUserCredits = async (userId: string, requiredCredits: number): Promise<boolean> => {

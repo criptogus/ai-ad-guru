@@ -1,66 +1,73 @@
 
-// Define cost structure 
+export type CreditAction = 
+  | 'google_ads_generation'
+  | 'meta_ads_generation'
+  | 'linkedin_ads_generation'
+  | 'microsoft_ads_generation'
+  | 'image_generation'
+  | 'website_analysis'
+  | 'ad_optimization'
+  | 'campaign_creation'
+  | 'banner_creation'
+  | 'smart_banner_creation'
+  | 'ai_insights_report';
+
 export interface OptimizationCosts {
   daily: number;
   every3Days: number;
   weekly: number;
 }
 
-// Credit usage action type
-export type CreditAction = 
-  | 'google_ads_generation' 
-  | 'meta_ads_generation' 
-  | 'linkedin_ads_generation' 
-  | 'microsoft_ads_generation' 
-  | 'image_generation' 
-  | 'website_analysis' 
-  | 'ai_optimization_daily' 
-  | 'ai_optimization_3days' 
-  | 'ai_optimization_weekly' 
-  | 'campaign_creation' 
-  | 'smart_banner_creation'
-  | 'credit_purchase'
-  | 'credit_refund';
+export interface CreditCosts {
+  googleAds: number;
+  metaAds: number;
+  linkedInAds: number;
+  microsoftAds: number;
+  imageGeneration: number;
+  websiteAnalysis: number;
+  adOptimization: OptimizationCosts;
+  campaignCreation: number;
+  bannerCreation: number;
+  smartBanner: number;
+  aiInsightsReport?: number;
+}
 
-// Define credit costs for various operations
-export const creditCosts = {
-  googleAds: 5, // 5 credits for Google Ad generation
-  metaAds: 5, // 5 credits for Meta/Instagram Ad generation
-  linkedInAds: 5, // 5 credits for LinkedIn Ad generation
-  microsoftAds: 5, // 5 credits for Microsoft Ad generation
-  imageGeneration: 2, // 2 credits per image generation
-  websiteAnalysis: 1, // 1 credit for website analysis
+// Create an alias for aiOptimization that points to adOptimization
+Object.defineProperty(creditCosts, 'aiOptimization', {
+  get: function() {
+    return this.adOptimization;
+  }
+});
+
+// Default credit costs
+export const creditCosts: CreditCosts = {
+  googleAds: 5,
+  metaAds: 5,
+  linkedInAds: 5,
+  microsoftAds: 5,
+  imageGeneration: 3,
+  websiteAnalysis: 1,
   adOptimization: {
     daily: 10,
     every3Days: 5,
     weekly: 2
-  } as OptimizationCosts, // Credits for different optimization frequencies
-  campaignCreation: 5, // 5 credits to finalize and launch a campaign
-  bannerCreation: 3, // 3 credits to create a smart banner
-  smartBanner: 3 // 3 credits to create a smart banner (alias for bannerCreation)
+  },
+  campaignCreation: 5,
+  bannerCreation: 5,
+  smartBanner: 10,
+  aiInsightsReport: 3
 };
 
-// Export a function to get all credit costs
-export const getAllCreditCosts = () => {
+// Function to get all credit costs
+export const getAllCreditCosts = (): CreditCosts => {
   return creditCosts;
 };
 
-// Add alias for better naming
+// Alias for backward compatibility
 export const getCreditCosts = getAllCreditCosts;
 
-// Export individual cost getters
-export const getGoogleAdsCost = () => creditCosts.googleAds;
-export const getMetaAdsCost = () => creditCosts.metaAds;
-export const getLinkedInAdsCost = () => creditCosts.linkedInAds;
-export const getMicrosoftAdsCost = () => creditCosts.microsoftAds;
-export const getImageGenerationCost = () => creditCosts.imageGeneration;
-export const getWebsiteAnalysisCost = () => creditCosts.websiteAnalysis;
-export const getAdOptimizationCost = () => creditCosts.adOptimization;
-export const getCampaignCreationCost = () => creditCosts.campaignCreation;
-export const getBannerCreationCost = () => creditCosts.bannerCreation;
-
-// Get credit cost by action type
-export const getCreditCost = (action: CreditAction): number => {
+// Function to get credit cost for a specific action
+export const getCreditCost = (action: CreditAction): number | null => {
   switch (action) {
     case 'google_ads_generation':
       return creditCosts.googleAds;
@@ -74,17 +81,17 @@ export const getCreditCost = (action: CreditAction): number => {
       return creditCosts.imageGeneration;
     case 'website_analysis':
       return creditCosts.websiteAnalysis;
-    case 'ai_optimization_daily':
-      return creditCosts.adOptimization.daily;
-    case 'ai_optimization_3days':
-      return creditCosts.adOptimization.every3Days;
-    case 'ai_optimization_weekly':
-      return creditCosts.adOptimization.weekly;
+    case 'ad_optimization':
+      return creditCosts.adOptimization.weekly; // Default to weekly
     case 'campaign_creation':
       return creditCosts.campaignCreation;
+    case 'banner_creation':
+      return creditCosts.bannerCreation;
     case 'smart_banner_creation':
       return creditCosts.smartBanner;
+    case 'ai_insights_report':
+      return creditCosts.aiInsightsReport || 3;
     default:
-      return 0;
+      return null;
   }
 };
