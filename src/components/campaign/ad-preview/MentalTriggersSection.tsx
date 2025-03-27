@@ -6,15 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Brain, Zap, Crosshair, Award, Clock, Heart, ArrowRight } from "lucide-react";
 import TriggerGallery from "./TriggerGallery";
 import { useMentalTriggers } from "@/hooks/useMentalTriggers";
-import { TriggerData } from "@/types/campaign";
-
-interface MentalTriggersSectionProps {
-  platform?: string;
-  activePlatform?: string;
-  onInsertTrigger?: (trigger: string) => void;
-  onSelectTrigger?: (trigger: string, platform: string) => void;
-  mindTriggers?: Record<string, string>;
-}
+import { MentalTriggersSectionProps } from "@/types/campaign";
 
 const MentalTriggersSection: React.FC<MentalTriggersSectionProps> = ({
   platform,

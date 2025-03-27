@@ -24,7 +24,7 @@ export interface CampaignTargeting {
   locations?: string[];
   languages?: string[];
   devices?: string[];
-  keywords?: string[];
+  keywords?: string;
 }
 
 export interface CampaignBasicInfo {
@@ -33,4 +33,12 @@ export interface CampaignBasicInfo {
   targetUrl: string;
   budget: number | string;
   objective: string;
+}
+
+export interface MentalTriggersSectionProps {
+  platform?: string;
+  activePlatform?: string;
+  onInsertTrigger?: (trigger: string) => void;
+  onSelectTrigger?: (trigger: string, platform: string) => void;
+  mindTriggers?: Record<string, string>;
 }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,9 @@ import { InfoIcon } from "lucide-react";
 import BasicInfoTab from "./setup/BasicInfoTab";
 import AudienceTab from "./setup/AudienceTab";
 import ScheduleTab from "./setup/ScheduleTab";
-
-interface ScheduleData {
-  startDate?: Date | null;
-  endDate?: Date | null;
-  optimizationFrequency?: string;
-}
+import AiFillButton from "./setup/AiFillButton";
+import { useAICampaignSetup } from "@/hooks/useAICampaignSetup";
+import { ScheduleData, CampaignBasicInfo, CampaignTargeting } from "@/types/campaign";
 
 const requiredFields = {
   basic: ["name", "description", "targetUrl", "budget", "objective"],
@@ -45,6 +43,7 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
   });
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const { generateCampaignSetup, isGenerating } = useAICampaignSetup();
 
   useEffect(() => {
     if (analysisResult?.websiteUrl && !campaignData.targetUrl) {
@@ -119,6 +118,35 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
     });
   };
 
+  const handleAIFill = async () => {
+    if (!analysisResult) return;
+    
+    // Determine active platform from campaign data, default to "google"
+    const platform = campaignData.platforms && campaignData.platforms.length > 0 
+      ? campaignData.platforms[0] 
+      : "google";
+      
+    const setupData = await generateCampaignSetup(analysisResult, platform);
+    
+    if (setupData) {
+      // Convert startDate and endDate strings to Date objects
+      const formattedData = {
+        ...setupData,
+        startDate: setupData.startDate ? new Date(setupData.startDate) : null,
+        endDate: setupData.endDate ? new Date(setupData.endDate) : null,
+      };
+      
+      handleUpdateCampaignData(formattedData);
+      
+      // Mark all fields as touched to trigger validation
+      const newTouchedFields: Record<string, boolean> = {};
+      Object.values(requiredFields).flat().forEach(field => {
+        newTouchedFields[field] = true;
+      });
+      setTouchedFields(prev => ({ ...prev, ...newTouchedFields }));
+    }
+  };
+
   const isFormValid = isValid.basic && isValid.audience && isValid.schedule;
 
   return (
@@ -128,6 +156,17 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
         <CardDescription>
           Configure your campaign details. Fields marked with <span className="text-red-500">*</span> are required.
         </CardDescription>
+        {analysisResult && (
+          <div className="mt-4">
+            <AiFillButton 
+              isGenerating={isGenerating}
+              onClick={handleAIFill}
+            />
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Let AI suggest campaign details based on your website analysis
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
