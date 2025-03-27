@@ -21,12 +21,26 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
   const [customTrigger, setCustomTrigger] = useState("");
   const { getPlatformTriggers } = useTriggerData();
   
+  // Ensure trigger selection doesn't cause navigation
+  const handleTriggerSelection = (value: string) => {
+    // Only update state, never navigate
+    onSelectTrigger(value);
+  };
+  
+  // Handle custom trigger addition without navigation
+  const handleAddCustom = () => {
+    if (customTrigger.trim()) {
+      onAddCustomTrigger(customTrigger);
+      setCustomTrigger("");
+    }
+  };
+  
   return (
     <div>
       <h3 className="text-md font-medium mb-2">Select a Mind Trigger</h3>
       <Select 
         value={selectedTrigger.startsWith("custom:") ? "" : selectedTrigger} 
-        onValueChange={onSelectTrigger}
+        onValueChange={handleTriggerSelection}
       >
         <SelectTrigger>
           <SelectValue placeholder="Choose a psychological trigger" />
@@ -49,10 +63,7 @@ const TriggerSelector: React.FC<TriggerSelectorProps> = ({
             placeholder="Enter a custom trigger or prompt instruction"
           />
           <Button 
-            onClick={() => {
-              onAddCustomTrigger(customTrigger);
-              setCustomTrigger("");
-            }} 
+            onClick={handleAddCustom} 
             type="button" 
             variant="secondary"
           >

@@ -22,16 +22,17 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
 }) => {
   const [localTriggers, setLocalTriggers] = useState<Record<string, string>>(selectedTriggers);
   
+  // This function should ONLY update the state, never trigger navigation
   const handleTriggerChange = (platform: string, trigger: string) => {
     const updatedTriggers = { ...localTriggers, [platform]: trigger };
     setLocalTriggers(updatedTriggers);
     
-    // Only update state, don't navigate
+    // Only update parent state, don't navigate
     onTriggersChange(updatedTriggers);
   };
   
+  // Only call onNext when the Next button is explicitly clicked
   const handleNext = () => {
-    // Only call onNext when the Next button is clicked
     onNext();
   };
   

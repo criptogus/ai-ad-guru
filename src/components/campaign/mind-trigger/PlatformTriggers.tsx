@@ -16,13 +16,16 @@ const PlatformTriggers: React.FC<PlatformTriggersProps> = ({
   selectedTrigger,
   onSelectTrigger
 }) => {
+  // Handle custom trigger addition without navigation
   const handleAddCustomTrigger = (value: string) => {
     if (value.trim()) {
       // Add a prefix to mark this as a custom trigger
+      // Only update state, don't navigate
       onSelectTrigger(`custom:${value.trim()}`);
     }
   };
 
+  // Handle template click without navigation
   const handleTemplateClick = (template: string) => {
     handleAddCustomTrigger(template);
   };
