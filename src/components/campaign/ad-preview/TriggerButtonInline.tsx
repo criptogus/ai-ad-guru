@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
@@ -77,6 +76,7 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [isOpen, setIsOpen] = useState(false);
   
   // Filter triggers based on search query and active tab
   const filteredTriggers = triggers.flatMap(category => {
@@ -96,15 +96,21 @@ export const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
     if (onInsert) {
       onInsert(trigger);
     }
+    setIsOpen(false); // Close the dialog after selection
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
           size="sm" 
           className={`${className} flex items-center gap-2`}
+          onClick={(e) => {
+            e.preventDefault(); // Prevent any form submission
+            e.stopPropagation(); // Stop event bubbling
+            setIsOpen(true);
+          }}
         >
           <Sparkles className="h-4 w-4" />
           {children || "Add Trigger"}

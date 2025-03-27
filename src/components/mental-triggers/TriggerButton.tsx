@@ -40,7 +40,11 @@ export const TriggerButton: React.FC<TriggerButtonProps> = ({
             <Button
               variant={variant}
               size={size}
-              onClick={() => setIsOpen(true)}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop propagation
+                setIsOpen(true);
+              }}
             >
               <Sparkles className="h-4 w-4 mr-2" />
               {buttonText}

@@ -27,7 +27,11 @@ const InsertTriggerButton: React.FC<InsertTriggerButtonProps> = ({
         variant={buttonVariant}
         size={buttonSize}
         className={className}
-        onClick={() => setIsOpen(true)}
+        onClick={(e) => {
+          e.preventDefault(); // Prevent default behavior
+          e.stopPropagation(); // Stop propagation
+          setIsOpen(true);
+        }}
       >
         <Sparkles className="h-4 w-4 mr-2" />
         {children || "Mental Triggers"}
@@ -36,7 +40,10 @@ const InsertTriggerButton: React.FC<InsertTriggerButtonProps> = ({
       <TriggerGallery 
         open={isOpen}
         onOpenChange={setIsOpen}
-        onSelectTrigger={onSelectTrigger}
+        onSelectTrigger={(trigger) => {
+          onSelectTrigger(trigger);
+          setIsOpen(false);
+        }}
       />
     </>
   );
