@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audience_analysis_cache: {
+        Row: {
+          analysis_result: Json
+          created_at: string
+          id: string
+          platform: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          analysis_result: Json
+          created_at?: string
+          id?: string
+          platform: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          analysis_result?: Json
+          created_at?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       campaign_performance: {
         Row: {
           campaign_id: string
