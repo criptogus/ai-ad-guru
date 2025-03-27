@@ -2,10 +2,10 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { useFormContext, Controller } from "react-hook-form";
 
 interface AdFormFieldsProps {
   testAd: MetaAd;
@@ -30,100 +30,183 @@ const AdFormFields: React.FC<AdFormFieldsProps> = ({
   onAdChange,
   onIndustryChange,
   onAdThemeChange,
-  onImageFormatChange
+  onImageFormatChange,
 }) => {
+  const { control } = useFormContext();
+
+  const industries = [
+    "Technology", "Finance", "Healthcare", "Education", "Retail", 
+    "Manufacturing", "Marketing", "Real Estate", "Travel", "Food & Beverage"
+  ];
+
+  const adThemes = [
+    "Innovation & Technology", "Growth & Success", "Professional Development",
+    "Problem Solving", "Networking & Connections", "Industry Leadership",
+    "Business Transformation", "Future Trends", "Sustainability"
+  ];
+
+  const imageFormats = [
+    "square", "landscape"
+  ];
+
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="companyName">Company Name</Label>
-        <Input
-          id="companyName"
-          value={companyInfo.companyName}
-          onChange={(e) => onCompanyNameChange(e.target.value)}
-          placeholder="Enter company name"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="companyName">Company Name</Label>
+          <Controller 
+            name="companyName"
+            control={control}
+            render={({ field }) => (
+              <Input 
+                id="companyName"
+                placeholder="Enter company name"
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                  onCompanyNameChange(e.target.value);
+                }}
+              />
+            )}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="headline">Headline</Label>
+          <Controller 
+            name="headline"
+            control={control}
+            render={({ field }) => (
+              <Input 
+                id="headline"
+                placeholder="Enter headline"
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+                  onAdChange("headline", e.target.value);
+                }}
+              />
+            )}
+          />
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="headline">Headline</Label>
-        <Input
-          id="headline"
-          value={testAd.headline || ""}
-          onChange={(e) => onAdChange("headline", e.target.value)}
-          placeholder="Enter headline (150 characters max)"
-          maxLength={150}
-        />
-      </div>
-
-      <div className="space-y-2">
+      <div>
         <Label htmlFor="primaryText">Primary Text</Label>
-        <Textarea
-          id="primaryText"
-          value={testAd.primaryText || ""}
-          onChange={(e) => onAdChange("primaryText", e.target.value)}
-          placeholder="Enter primary ad text (600 characters max)"
-          maxLength={600}
-          rows={4}
+        <Controller 
+          name="primaryText"
+          control={control}
+          render={({ field }) => (
+            <Input 
+              id="primaryText"
+              placeholder="Enter primary text"
+              value={field.value}
+              onChange={(e) => {
+                field.onChange(e);
+                onAdChange("primaryText", e.target.value);
+              }}
+            />
+          )}
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description / CTA</Label>
-        <Input
-          id="description"
-          value={testAd.description || ""}
-          onChange={(e) => onAdChange("description", e.target.value)}
-          placeholder="Enter description or call to action (150 characters max)"
-          maxLength={150}
+      <div>
+        <Label htmlFor="description">Description/CTA</Label>
+        <Controller 
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <Input 
+              id="description"
+              placeholder="Enter description or call-to-action"
+              value={field.value}
+              onChange={(e) => {
+                field.onChange(e);
+                onAdChange("description", e.target.value);
+              }}
+            />
+          )}
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="industry">Industry</Label>
-        <Select value={industry} onValueChange={onIndustryChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select industry" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Technology">Technology</SelectItem>
-            <SelectItem value="Finance">Finance</SelectItem>
-            <SelectItem value="Healthcare">Healthcare</SelectItem>
-            <SelectItem value="Education">Education</SelectItem>
-            <SelectItem value="Retail">Retail</SelectItem>
-            <SelectItem value="Marketing">Marketing</SelectItem>
-            <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="theme">Ad Theme</Label>
-        <Select value={adTheme} onValueChange={onAdThemeChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select ad theme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Innovation & Technology">Innovation & Technology</SelectItem>
-            <SelectItem value="Professional & Corporate">Professional & Corporate</SelectItem>
-            <SelectItem value="Trustworthy & Reliable">Trustworthy & Reliable</SelectItem>
-            <SelectItem value="Growth & Success">Growth & Success</SelectItem>
-            <SelectItem value="Leadership & Vision">Leadership & Vision</SelectItem>
-            <SelectItem value="Team & Collaboration">Team & Collaboration</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="format">Image Format</Label>
-        <Select value={imageFormat} onValueChange={onImageFormatChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select image format" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="square">Square (1:1)</SelectItem>
-            <SelectItem value="landscape">Landscape (16:9)</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="industry">Industry</Label>
+          <Controller 
+            name="industry"
+            control={control}
+            render={({ field }) => (
+              <Select 
+                value={field.value} 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  onIndustryChange(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="adTheme">Ad Theme</Label>
+          <Controller 
+            name="adTheme"
+            control={control}
+            render={({ field }) => (
+              <Select 
+                value={field.value} 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  onAdThemeChange(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  {adThemes.map((theme) => (
+                    <SelectItem key={theme} value={theme}>{theme}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="imageFormat">Image Format</Label>
+          <Controller 
+            name="imageFormat"
+            control={control}
+            render={({ field }) => (
+              <Select 
+                value={field.value} 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  onImageFormatChange(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Format" />
+                </SelectTrigger>
+                <SelectContent>
+                  {imageFormats.map((format) => (
+                    <SelectItem key={format} value={format}>{format === "square" ? "Square (1:1)" : "Landscape (1.91:1)"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
       </div>
     </div>
   );

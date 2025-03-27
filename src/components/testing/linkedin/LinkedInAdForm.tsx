@@ -10,6 +10,7 @@ import AdFormFields from "./AdFormFields";
 import AdFormActions from "./AdFormActions";
 import ImagePromptField from "./ImagePromptField";
 import TemplateVariablesForm from "./TemplateVariablesForm";
+import { useForm, FormProvider } from "react-hook-form";
 
 interface LinkedInAdFormProps {
   testAd: MetaAd;
@@ -46,6 +47,20 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
   const [mainText, setMainText] = useState("");
   const [subText, setSubText] = useState("");
+  
+  // Create a form instance that we'll provide to child components
+  const methods = useForm({
+    defaultValues: {
+      headline: testAd.headline || "",
+      primaryText: testAd.primaryText || "",
+      description: testAd.description || "",
+      imagePrompt: testAd.imagePrompt || "",
+      companyName: companyInfo.companyName || "",
+      industry: industry,
+      adTheme: adTheme,
+      imageFormat: imageFormat
+    }
+  });
 
   const handleSelectTemplate = (template: PromptTemplate) => {
     setSelectedTemplate(template);
@@ -124,64 +139,66 @@ const LinkedInAdForm: React.FC<LinkedInAdFormProps> = ({
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="mb-4 w-full">
-        <TabsTrigger value="form">Ad Details</TabsTrigger>
-        <TabsTrigger value="templates">Template Gallery</TabsTrigger>
-      </TabsList>
+    <FormProvider {...methods}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4 w-full">
+          <TabsTrigger value="form">Ad Details</TabsTrigger>
+          <TabsTrigger value="templates">Template Gallery</TabsTrigger>
+        </TabsList>
 
-      <TabsContent value="form">
-        <Card>
-          <CardContent className="p-4 pt-5 space-y-4">
-            <AdFormFields
-              testAd={testAd}
-              companyInfo={companyInfo}
-              industry={industry}
-              adTheme={adTheme}
-              imageFormat={imageFormat}
-              onCompanyNameChange={onCompanyNameChange}
-              onAdChange={onAdChange}
-              onIndustryChange={onIndustryChange}
-              onAdThemeChange={onAdThemeChange}
-              onImageFormatChange={onImageFormatChange}
-            />
-
-            {selectedTemplate ? (
-              <TemplateVariablesForm
-                selectedTemplate={selectedTemplate}
-                mainText={mainText}
-                subText={subText}
-                setMainText={setMainText}
-                setSubText={setSubText}
+        <TabsContent value="form">
+          <Card>
+            <CardContent className="p-4 pt-5 space-y-4">
+              <AdFormFields
+                testAd={testAd}
+                companyInfo={companyInfo}
+                industry={industry}
+                adTheme={adTheme}
+                imageFormat={imageFormat}
+                onCompanyNameChange={onCompanyNameChange}
+                onAdChange={onAdChange}
+                onIndustryChange={onIndustryChange}
+                onAdThemeChange={onAdThemeChange}
+                onImageFormatChange={onImageFormatChange}
               />
-            ) : (
-              <ImagePromptField
-                prompt={testAd.imagePrompt || ""}
-                onChange={(value) => onAdChange("imagePrompt", value)}
+
+              {selectedTemplate ? (
+                <TemplateVariablesForm
+                  selectedTemplate={selectedTemplate}
+                  mainText={mainText}
+                  subText={subText}
+                  setMainText={setMainText}
+                  setSubText={setSubText}
+                />
+              ) : (
+                <ImagePromptField
+                  prompt={testAd.imagePrompt || ""}
+                  onChange={(value) => onAdChange("imagePrompt", value)}
+                />
+              )}
+
+              <AdFormActions
+                isGenerating={isGenerating}
+                hasPromptContent={!!testAd.imagePrompt || !!selectedTemplate}
+                onGenerate={handleGenerateWithTemplate}
+                onReset={onReset}
               />
-            )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <AdFormActions
-              isGenerating={isGenerating}
-              hasPromptContent={!!testAd.imagePrompt || !!selectedTemplate}
-              onGenerate={handleGenerateWithTemplate}
-              onReset={onReset}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="templates">
-        <Card>
-          <CardContent className="p-4">
-            <PromptTemplates onSelectPrompt={(prompt) => {
-              onAdChange("imagePrompt", prompt);
-              setActiveTab("form");
-            }} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="templates">
+          <Card>
+            <CardContent className="p-4">
+              <PromptTemplates onSelectPrompt={(prompt) => {
+                onAdChange("imagePrompt", prompt);
+                setActiveTab("form");
+              }} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </FormProvider>
   );
 };
 
