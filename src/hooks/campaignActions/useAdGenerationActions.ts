@@ -1,94 +1,89 @@
-
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { LinkedInAd, MicrosoftAd } from "@/contexts/CampaignContext";
 import { 
-  useGoogleAdActions, 
-  useLinkedInAdActions,
-  useMicrosoftAdActions,
-  useImageGenerationActions,
-  useMetaAdActions
-} from "./adGeneration";
-import { getMindTrigger } from "./getMindTrigger";
-
-// Helper to convert LinkedInAd to MetaAd format for compatibility
-const convertToMetaAds = (linkedInAds: LinkedInAd[]): MetaAd[] => {
-  return linkedInAds.map(ad => ({
-    primaryText: ad.primaryText,
-    headline: ad.headline,
-    description: ad.description,
-    imagePrompt: ad.imagePrompt || '', // Ensure imagePrompt is never undefined
-    imageUrl: ad.imageUrl,
-    format: ad.format,
-    hashtags: ad.hashtags
-  }));
-};
+  useGoogleAdActions,
+  useMetaAdActions,
+  useImageGenerationActions
+} from "@/hooks/campaignActions/adGeneration";
 
 export const useAdGenerationActions = (
   analysisResult: WebsiteAnalysisResult | null,
   googleAds: GoogleAd[],
-  linkedInAds: LinkedInAd[],
-  microsoftAds: MicrosoftAd[],
+  linkedInAds: any[], // Keep type as is for compatibility
+  microsoftAds: any[], // Keep type as is for compatibility
   generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
-  generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<LinkedInAd[] | null>,
-  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<MicrosoftAd[] | null>,
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
+  generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<any[] | null>,
+  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<any[] | null>,
+  generateAdImage: (prompt: string) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  // Get the campaign data to access mind triggers
-  const campaignData = (window as any).campaignContext?.campaignData || {};
-
-  // Use the smaller, more focused hooks
-  const { handleGenerateGoogleAds } = useGoogleAdActions(
+  // Initialize Google ad actions
+  const { 
+    handleGenerateGoogleAds,
+    isGenerating: isGeneratingGoogleAds
+  } = useGoogleAdActions(
     analysisResult,
     googleAds,
-    (data) => generateGoogleAds(data, getMindTrigger(campaignData, "google")), 
+    generateGoogleAds,
     setCampaignData
   );
-  
-  const { handleGenerateLinkedInAds } = useLinkedInAdActions(
-    analysisResult,
-    linkedInAds,
-    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "linkedin")),
+
+  // Initialize Meta ad actions
+  const {
+    handleGenerateMetaAds,
+    isGenerating: isGeneratingMetaAds
+  } = useMetaAdActions(
+    analysisResult, 
+    [], // Initialize with empty array
+    async (campaignData: any, mindTrigger?: string) => {
+      // For compatibility, convert LinkedIn ads to Meta format
+      try {
+        const result = await generateLinkedInAds(campaignData, mindTrigger);
+        return result as unknown as MetaAd[];
+      } catch (error) {
+        console.error("Error in Meta ad generation:", error);
+        return null;
+      }
+    },
     setCampaignData
   );
-  
-  const { handleGenerateMicrosoftAds } = useMicrosoftAdActions(
-    analysisResult,
-    microsoftAds,
-    (data) => generateMicrosoftAds(data, getMindTrigger(campaignData, "microsoft")),
-    setCampaignData
-  );
-  
-  // Convert LinkedInAds to MetaAds for compatibility
-  const metaAds = convertToMetaAds(linkedInAds);
-  
-  const { handleGenerateMetaAds, handleGenerateImage: handleGenerateMetaImage } = useMetaAdActions(
-    analysisResult,
-    metaAds,
-    (data) => generateLinkedInAds(data, getMindTrigger(campaignData, "meta")),
-    generateAdImage,
-    setCampaignData
-  );
-  
+
+  const handleGenerateLinkedInAds = async () => {
+    // Placeholder function for LinkedIn ad generation
+    console.warn("LinkedIn ad generation not fully implemented");
+  };
+
+  const handleGenerateMicrosoftAds = async () => {
+    // Placeholder function for Microsoft ad generation
+    console.warn("Microsoft ad generation not fully implemented");
+  };
+
+  // Initialize image generation actions
   const { 
     handleGenerateImage,
-    imageGenerationError,
-    clearImageGenerationError 
+    loadingImageIndex,
+    error: imageGenerationError,
+    clearError: clearImageGenerationError
   } = useImageGenerationActions(
-    analysisResult,
-    metaAds,
     generateAdImage,
     setCampaignData
   );
+
+  // Track overall generation state
+  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds;
 
   return {
     handleGenerateGoogleAds,
-    handleGenerateLinkedInAds,
-    handleGenerateMetaAds,
-    handleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds: handleGenerateMetaAds, // Use Meta for LinkedIn for now
+    handleGenerateMetaAds, // Add explicit Meta ads handler
+    handleGenerateMicrosoftAds: async () => {
+      // Placeholder function for Microsoft ad generation
+      console.warn("Microsoft ad generation not fully implemented");
+    },
     handleGenerateImage,
+    loadingImageIndex,
     imageGenerationError,
-    clearImageGenerationError
+    clearImageGenerationError,
+    isGenerating
   };
 };

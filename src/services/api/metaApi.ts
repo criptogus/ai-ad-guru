@@ -7,16 +7,22 @@ import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
  * Generates Instagram/Meta ad suggestions based on website analysis results
  * 
  * @param campaignData The website analysis result data
+ * @param mindTrigger Optional mind trigger to enhance ad creation
  * @returns An array of MetaAd objects or null if generation fails
  */
-export const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
+export const generateMetaAds = async (
+  campaignData: WebsiteAnalysisResult,
+  mindTrigger?: string
+): Promise<MetaAd[] | null> => {
   try {
     console.log('Generating Meta ads for:', campaignData.companyName);
+    console.log('Using mind trigger:', mindTrigger || 'None');
     
     const { data, error } = await supabase.functions.invoke('generate-ads', {
       body: { 
         platform: 'meta',
-        campaignData 
+        campaignData,
+        mindTrigger
       },
     });
 
@@ -25,8 +31,8 @@ export const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Prom
       return null;
     }
 
-    if (!data.success) {
-      console.error('Meta ads generation failed:', data.error);
+    if (!data || !data.success) {
+      console.error('Meta ads generation failed:', data?.error || 'Unknown error');
       return null;
     }
 

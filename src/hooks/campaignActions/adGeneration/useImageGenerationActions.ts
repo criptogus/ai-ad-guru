@@ -1,117 +1,104 @@
+
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { MetaAd } from "@/hooks/adGeneration";
-import { checkUserCredits, deductUserCredits } from "@/services/credits/creditChecks";
-import { useAuth } from "@/contexts/AuthContext";
-import { getCreditCost } from "@/services/credits/creditCosts";
+import { toast } from "sonner";
+import { errorLogger } from "@/services/libs/error-handling";
 
 export const useImageGenerationActions = (
-  analysisResult: WebsiteAnalysisResult | null,
-  metaAds: MetaAd[],
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
+  generateAdImage: (prompt: string) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const clearImageGenerationError = () => setImageGenerationError(null);
-
-  const handleGenerateImage = async (prompt: string, indexOrOptions: number | any = 0) => {
-    const index = typeof indexOrOptions === 'number' ? indexOrOptions : 0;
-    const options = typeof indexOrOptions === 'object' ? indexOrOptions : {};
-    
-    if (!prompt) {
-      setImageGenerationError("Image prompt is required");
-      return null;
-    }
-
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to generate images",
-        variant: "destructive",
+  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+    if (!ad.imagePrompt) {
+      toast("Image prompt required", {
+        description: "Please provide an image prompt to generate an image"
       });
-      return null;
-    }
-
-    const imageCost = getCreditCost('imageGeneration');
-    const hasCredits = await checkUserCredits(user.id, imageCost);
-
-    if (!hasCredits) {
-      toast({
-        title: "Insufficient Credits",
-        description: `You need ${imageCost} credits to generate an image`,
-        variant: "destructive",
-      });
-      return null;
+      return;
     }
 
     try {
-      let enhancedPrompt = prompt;
-      if (analysisResult) {
-        enhancedPrompt += ` Style should match the brand tone: ${analysisResult.brandTone}.`;
-      }
+      setLoadingImageIndex(index);
+      setError(null);
 
-      if (options.platform) {
-        enhancedPrompt += ` Optimize for ${options.platform} platform.`;
-      }
-
-      console.log("Generating image with prompt:", enhancedPrompt);
-      
-      const creditSuccess = await deductUserCredits(
-        user.id,
-        imageCost,
-        'image_generation',
-        'Ad image generation'
-      );
-
-      if (!creditSuccess) {
-        setImageGenerationError("Failed to deduct credits for image generation");
-        return null;
-      }
-
-      const imageUrl = await generateAdImage(enhancedPrompt, options);
+      const imageUrl = await generateAdImage(ad.imagePrompt);
       
       if (!imageUrl) {
         throw new Error("Failed to generate image");
       }
 
-      const updatedAds = [...metaAds];
-      if (updatedAds[index]) {
+      // Update the campaign data with the new image URL
+      setCampaignData((prev: any) => {
+        const updatedAds = [...prev.metaAds];
         updatedAds[index] = {
           ...updatedAds[index],
           imageUrl
         };
-        
-        setCampaignData((prev: any) => ({
+        return {
           ...prev,
           metaAds: updatedAds
-        }));
-      }
-
-      toast({
-        title: "Image Generated",
-        description: "AI has created an image for your ad",
+        };
       });
 
-      return imageUrl;
+      toast("Image Generated", {
+        description: "AI-generated image created successfully"
+      });
     } catch (error) {
+      errorLogger.logError(error, "handleGenerateImage");
       console.error("Error generating image:", error);
-      setImageGenerationError(error instanceof Error ? error.message : "Unknown error occurred");
-      toast({
-        title: "Image Generation Failed",
-        description: "There was an error generating your image",
-        variant: "destructive",
+      
+      // Use a placeholder image instead
+      const placeholderImageUrl = getFallbackImageUrl(ad.imagePrompt || "brand image");
+      
+      setCampaignData((prev: any) => {
+        const updatedAds = [...prev.metaAds];
+        updatedAds[index] = {
+          ...updatedAds[index],
+          imageUrl: placeholderImageUrl
+        };
+        return {
+          ...prev,
+          metaAds: updatedAds
+        };
       });
-      return null;
+      
+      setError(error instanceof Error ? error.message : "Failed to generate image");
+      
+      toast("Using placeholder image", {
+        description: "Unable to generate custom image. Using a placeholder instead."
+      });
+    } finally {
+      setLoadingImageIndex(null);
     }
+  };
+
+  // Generate a placeholder image URL based on the prompt
+  const getFallbackImageUrl = (prompt: string): string => {
+    // Get a random placeholder image from a list of generic business images
+    const placeholders = [
+      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    ];
+    
+    // Use a consistent index based on the prompt to get a deterministic image
+    const index = Math.abs(prompt.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)) % placeholders.length;
+    
+    return placeholders[index];
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return {
     handleGenerateImage,
-    imageGenerationError,
-    clearImageGenerationError
+    loadingImageIndex,
+    error,
+    clearError
   };
 };

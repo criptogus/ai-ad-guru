@@ -23,3 +23,20 @@ export interface MetaAd {
   format?: string;
   hashtags?: string[];
 }
+
+// Define LinkedIn ads as a MetaAd for now for simplicity
+export interface LinkedInAd extends MetaAd {}
+
+// Define Microsoft ads as a GoogleAd for now for simplicity
+export interface MicrosoftAd extends GoogleAd {}
+
+export interface WebsiteAnalysisResult {
+  companyName: string;
+  websiteUrl: string;
+  businessDescription: string;
+  targetAudience: string;
+  uniqueSellingPoints: string[] | string;
+  callToAction: string[] | string;
+  keywords: string[] | string;
+  brandTone?: string;
+}
