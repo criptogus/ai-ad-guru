@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -11,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const LinkedInAdsTestArea: React.FC = () => {
   const [testAd, setTestAd] = useState<MetaAd>(defaultAd);
   const [companyInfo, setCompanyInfo] = useState(defaultAnalysisResult);
-  const { generateAdImage, isGenerating, lastError } = useImageGeneration();
+  const { generateAdImage, isGenerating, error } = useImageGeneration();
   const { user } = useAuth();
   
   // LinkedIn-specific image generation parameters
@@ -118,8 +119,8 @@ const LinkedInAdsTestArea: React.FC = () => {
               onGenerateImage={handleGenerateImage}
             />
           </div>
-          {lastError && (
-            <p className="text-sm text-red-500 mt-2">{lastError}</p>
+          {error && (
+            <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
         </CardContent>
       </Card>
