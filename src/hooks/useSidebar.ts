@@ -1,7 +1,12 @@
 
 import { useState } from "react";
 
-export const useSidebar = () => {
+export interface SidebarState {
+  isCollapsed: boolean;
+  setIsCollapsed: (value: boolean) => void;
+}
+
+export const useSidebar = (): SidebarState => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   return { isCollapsed, setIsCollapsed };
 };

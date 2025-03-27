@@ -34,7 +34,10 @@ export interface CreditCosts {
     every3Days: number;
     weekly: number;
   };
-  campaignCreation: number; // Adding this for backward compatibility
+  campaign_creation: number;
+  image_generation: number;
+  smart_banner: number;
+  daily_optimization: number;
 }
 
 /**

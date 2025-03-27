@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,13 +10,13 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard" }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
   
   // On mobile, sidebar should be collapsed by default
-  React.useEffect(() => {
+  useEffect(() => {
     if (isMobile) {
-      setCollapsed(true);
+      setIsCollapsed(true);
     }
   }, [isMobile]);
 
@@ -25,9 +25,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
       <div className="flex min-h-screen w-full bg-background">
         {/* Sidebar */}
         <Sidebar 
-          collapsed={collapsed} 
-          setCollapsed={setCollapsed} 
-          activePage={activePage} 
+          activePage={activePage}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
         >
           {/* Sidebar content goes here */}
         </Sidebar>
