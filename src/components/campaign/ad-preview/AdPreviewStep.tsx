@@ -10,9 +10,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoveRight } from "lucide-react";
-import MentalTriggersSection from "./MentalTriggersSection";
 import { useCampaign } from "@/contexts/CampaignContext";
-import { useToast } from "@/hooks/use-toast";
 
 interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult | null;
@@ -58,27 +56,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   mindTriggers = {}
 }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
-  const { campaignData, setCampaignData } = useCampaign();
-  const { toast } = useToast();
-
-  // This function should ONLY update the state and not trigger navigation
-  const handleSelectTrigger = (trigger: string, platform: string) => {
-    // Only update the state, do not call onNext or any navigation
-    const updatedMindTriggers = {
-      ...campaignData.mindTriggers || {},
-      [platform]: trigger
-    };
-    
-    setCampaignData((prev) => ({
-      ...prev,
-      mindTriggers: updatedMindTriggers
-    }));
-    
-    toast({
-      title: "Mind Trigger Updated",
-      description: `Mind trigger for ${platform} ads has been updated.`,
-    });
-  };
+  const { campaignData } = useCampaign();
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
@@ -90,73 +68,62 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         <CardTitle>Ad Creation & Preview</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
-              <TabsList className="w-full mb-4">
-                <TabsTrigger value="google">Google Ads</TabsTrigger>
-                <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
-                <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
-                <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
-              </TabsList>
+        <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="google">Google Ads</TabsTrigger>
+            <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
+            <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
+            <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="google">
-                <GoogleAdsTab
-                  googleAds={googleAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  onGenerateAds={onGenerateGoogleAds}
-                  onUpdateGoogleAd={onUpdateGoogleAd}
-                  mindTrigger={mindTriggers?.google}
-                />
-              </TabsContent>
-
-              <TabsContent value="meta">
-                <MetaAdsTab
-                  metaAds={metaAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  loadingImageIndex={loadingImageIndex}
-                  onGenerateAds={onGenerateMetaAds}
-                  onGenerateImage={onGenerateImage}
-                  onUpdateMetaAd={onUpdateMetaAd}
-                  mindTrigger={mindTriggers?.meta}
-                />
-              </TabsContent>
-
-              <TabsContent value="linkedin">
-                <LinkedInAdsTab
-                  linkedInAds={linkedInAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  loadingImageIndex={loadingImageIndex}
-                  onGenerateAds={onGenerateLinkedInAds}
-                  onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
-                  onUpdateLinkedInAd={onUpdateLinkedInAd}
-                  mindTrigger={mindTriggers?.linkedin}
-                />
-              </TabsContent>
-
-              <TabsContent value="microsoft">
-                <MicrosoftAdsTab
-                  microsoftAds={microsoftAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  onGenerateAds={onGenerateMicrosoftAds}
-                  onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-                  mindTrigger={mindTriggers?.microsoft}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          <div className="space-y-6">
-            <MentalTriggersSection 
-              onSelectTrigger={handleSelectTrigger} 
-              activePlatform={selectedPlatform}
+          <TabsContent value="google">
+            <GoogleAdsTab
+              googleAds={googleAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              onGenerateAds={onGenerateGoogleAds}
+              onUpdateGoogleAd={onUpdateGoogleAd}
+              mindTrigger={mindTriggers?.google}
             />
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="meta">
+            <MetaAdsTab
+              metaAds={metaAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateAds={onGenerateMetaAds}
+              onGenerateImage={onGenerateImage}
+              onUpdateMetaAd={onUpdateMetaAd}
+              mindTrigger={mindTriggers?.meta}
+            />
+          </TabsContent>
+
+          <TabsContent value="linkedin">
+            <LinkedInAdsTab
+              linkedInAds={linkedInAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              loadingImageIndex={loadingImageIndex}
+              onGenerateAds={onGenerateLinkedInAds}
+              onGenerateImage={(ad, index) => onGenerateImage(ad, index)}
+              onUpdateLinkedInAd={onUpdateLinkedInAd}
+              mindTrigger={mindTriggers?.linkedin}
+            />
+          </TabsContent>
+
+          <TabsContent value="microsoft">
+            <MicrosoftAdsTab
+              microsoftAds={microsoftAds}
+              analysisResult={analysisResult}
+              isGenerating={isGenerating}
+              onGenerateAds={onGenerateMicrosoftAds}
+              onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+              mindTrigger={mindTriggers?.microsoft}
+            />
+          </TabsContent>
+        </Tabs>
 
         <div className="mt-6 pt-4 border-t flex justify-between">
           <Button

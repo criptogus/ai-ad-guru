@@ -1,14 +1,14 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, RotateCw, Trash2, Copy } from "lucide-react";
+import { Edit, RotateCw, Trash2, Copy, Save, X } from "lucide-react";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
 const platformStyles = {
   google: {
-    headline: "text-[#1a0dab] font-medium text-lg",
-    url: "text-[#006621] text-sm",
-    description: "text-[#4d5156] text-base",
+    headline: "text-[#1a0dab] dark:text-blue-400 font-medium text-lg",
+    url: "text-[#006621] dark:text-green-400 text-sm",
+    description: "text-[#4d5156] dark:text-gray-300 text-base",
     background: "bg-white dark:bg-gray-800",
   },
   linkedin: {
@@ -164,9 +164,9 @@ export function AdVariationCard({
   };
 
   return (
-    <div className={`rounded-lg shadow-md overflow-hidden ${styles.background}`}>
+    <div className={`rounded-lg shadow-md overflow-hidden ${styles.background} border border-border`}>
       {/* Card Header */}
-      <div className="flex justify-between items-center bg-muted p-3 border-b">
+      <div className="flex justify-between items-center bg-muted p-3 border-b border-border">
         <h3 className="text-sm font-medium">
           {platform.charAt(0).toUpperCase() + platform.slice(1)} Ad Preview
         </h3>
@@ -178,6 +178,7 @@ export function AdVariationCard({
                 size="sm" 
                 onClick={onCancel}
               >
+                <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
               <Button 
@@ -185,6 +186,7 @@ export function AdVariationCard({
                 size="sm" 
                 onClick={onSave}
               >
+                <Save className="h-4 w-4 mr-1" />
                 Save
               </Button>
             </>
@@ -220,7 +222,7 @@ export function AdVariationCard({
 
       {/* Action Buttons */}
       {!isEditing && (
-        <div className="flex justify-between p-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between p-3 border-t border-border">
           {onRegenerate && (
             <Button 
               variant="outline" 
