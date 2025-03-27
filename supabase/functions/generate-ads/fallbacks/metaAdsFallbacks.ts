@@ -1,38 +1,59 @@
 
-import { MetaAd } from "./types.ts";
+import { MetaAd } from "../types.ts";
+import { WebsiteAnalysisResult } from "../types.ts";
 
 /**
- * Generates fallback Meta Ads when the AI generation fails
- * @param campaignData The campaign data used for generating the ads
- * @returns An array of MetaAd objects
+ * Generates fallback Meta/Instagram ads when AI generation fails
  */
-export function generateFallbackMetaAds(campaignData: any): MetaAd[] {
-  const companyName = campaignData.companyName || "Our Company";
-  const description = campaignData.businessDescription || "Our services";
-  const targetAudience = campaignData.targetAudience || "Our customers";
+export function generateFallbackMetaAds(campaignData: WebsiteAnalysisResult): MetaAd[] {
+  const { 
+    companyName, 
+    businessDescription, 
+    callToAction, 
+    uniqueSellingPoints 
+  } = campaignData;
   
-  // Generate 3 fallback Meta/Instagram ads
+  // Extract basic info for fallback content
+  const description = businessDescription || `${companyName} products and services`;
+  const cta = Array.isArray(callToAction) && callToAction.length > 0 
+    ? callToAction[0] 
+    : "Learn More";
+  
+  const usp = Array.isArray(uniqueSellingPoints) && uniqueSellingPoints.length > 0
+    ? uniqueSellingPoints[0]
+    : `Quality products from ${companyName}`;
+
+  // Create basic fallback ads
   return [
     {
-      headline: `Transform with ${companyName}`,
-      primaryText: `Looking for a change? ${description} We've helped countless ${targetAudience} achieve their goals. Tap to learn more!`,
-      description: "Learn More",
-      imagePrompt: `A professional, bright image showing ${companyName} services in action, with happy customers and a modern aesthetic. Inspirational and engaging.`,
-      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
+      headline: `Discover ${companyName}`,
+      primaryText: `Looking for quality solutions? ${companyName} offers everything you need. Our products are designed with you in mind. #quality #service #excellence`,
+      description: cta,
+      imagePrompt: `Professional image showcasing ${companyName} products or services`
     },
     {
-      headline: `${companyName} - Your Partner in Success`,
-      primaryText: `Don't settle for second best. Our proven solutions help ${targetAudience} get real results. Check out what we can do for you today!`,
+      headline: `Try ${companyName} Today`,
+      primaryText: `${description} - designed to exceed your expectations. See why customers love our solutions. #customer #satisfaction #products`,
       description: "Shop Now",
-      imagePrompt: `A before and after transformation showing the impact of ${companyName}'s solutions, visually striking and professional.`,
-      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
+      imagePrompt: `Lifestyle image of people using ${companyName} products`
+    },
+    {
+      headline: `${companyName} - Excellence Delivered`,
+      primaryText: `${usp}. We pride ourselves on delivering exceptional quality and service to each customer. Try us today and see the difference. #quality #service #premium`,
+      description: cta,
+      imagePrompt: `Professional and elegant product display for ${companyName}`
     },
     {
       headline: `Special Offer from ${companyName}`,
-      primaryText: `Limited time only! Take advantage of our exclusive offer designed specifically for ${targetAudience}. Don't miss out on this opportunity!`,
+      primaryText: `Limited time offer! Discover why our customers can't stop talking about our products. Quality and satisfaction guaranteed. #special #offer #limited`,
       description: "Get Offer",
-      imagePrompt: `An eye-catching promotional image for ${companyName} with vibrant colors, showing the product/service with a sense of urgency and excitement.`,
-      imageUrl: "https://placehold.co/1024x1024/3B82F6/FFFFFF/png?text=Instagram+Ad"
+      imagePrompt: `Promotional image showing ${companyName} products with a discount tag or special offer label`
+    },
+    {
+      headline: `${companyName} - Your Best Choice`,
+      primaryText: `When it comes to ${description}, we deliver the best. Our customers trust us for quality and reliability. Join them today! #best #trusted #reliable`,
+      description: cta,
+      imagePrompt: `Trustworthy professional image representing ${companyName}'s brand values`
     }
   ];
 }

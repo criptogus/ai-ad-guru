@@ -1,38 +1,59 @@
 
-import { MetaAd } from "./types.ts";
+import { MetaAd } from "../types.ts";
+import { WebsiteAnalysisResult } from "../types.ts";
 
 /**
- * Generates fallback LinkedIn Ads when the AI generation fails
- * @param campaignData The campaign data used for generating the ads
- * @returns An array of LinkedInAd objects (using MetaAd interface for compatibility)
+ * Generates fallback LinkedIn ads when AI generation fails
  */
-export function generateFallbackLinkedInAds(campaignData: any): MetaAd[] {
-  const companyName = campaignData.companyName || "Our Company";
-  const description = campaignData.businessDescription || "Our services";
-  const targetAudience = campaignData.targetAudience || "professionals";
+export function generateFallbackLinkedInAds(campaignData: WebsiteAnalysisResult): MetaAd[] {
+  const { 
+    companyName, 
+    businessDescription, 
+    callToAction, 
+    uniqueSellingPoints 
+  } = campaignData;
   
-  // Generate 3 fallback LinkedIn ads
+  // Extract basic info for fallback content
+  const description = businessDescription || `${companyName} professional solutions`;
+  const cta = Array.isArray(callToAction) && callToAction.length > 0 
+    ? callToAction[0] 
+    : "Learn More";
+  
+  const usp = Array.isArray(uniqueSellingPoints) && uniqueSellingPoints.length > 0
+    ? uniqueSellingPoints[0]
+    : `Industry-leading solutions from ${companyName}`;
+
+  // Create basic fallback ads for LinkedIn
   return [
     {
+      headline: `Enhance Your Business with ${companyName}`,
+      primaryText: `Looking to improve your business outcomes? ${companyName} provides professional solutions that deliver measurable results. Our team of experts is ready to help you achieve your business goals.`,
+      description: cta,
+      imagePrompt: `Professional business meeting with executives discussing strategy in a modern office setting`
+    },
+    {
+      headline: `${companyName}: Industry Expertise`,
+      primaryText: `${description}. With years of industry experience, we understand the challenges facing modern businesses. Our proven approach has helped organizations like yours overcome obstacles and achieve success.`,
+      description: "Connect With Us",
+      imagePrompt: `Professional portrait of a business expert or thought leader in a corporate environment`
+    },
+    {
       headline: `Grow Your Business with ${companyName}`,
-      primaryText: `Attention ${targetAudience}: ${description} Our proven approach has helped companies like yours achieve measurable results. Learn how we can support your professional growth.`,
-      description: "Learn More",
-      imagePrompt: `A professional business setting showing ${companyName}'s solutions in action, with corporate professionals in a meeting room environment discussing growth strategies.`,
-      imageUrl: "https://placehold.co/1024x1024/0077B5/FFFFFF/png?text=LinkedIn+Ad"
+      primaryText: `${usp}. Our data-driven approach ensures that your business receives the best possible solutions for your unique challenges. Join the thousands of satisfied clients who have transformed their operations.`,
+      description: cta,
+      imagePrompt: `Business growth graph or chart showing upward trajectory in a professional context`
     },
     {
-      headline: `${companyName}: Industry Leaders`,
-      primaryText: `Want to stay ahead of the competition? Our team of experts provides cutting-edge solutions for ${targetAudience}. Discover why leading companies trust us for their business needs.`,
-      description: "Connect Now",
-      imagePrompt: `A professional image showing thought leadership in action - perhaps a keynote speaker at a conference with ${companyName} branding, projecting authority and expertise.`,
-      imageUrl: "https://placehold.co/1024x1024/0077B5/FFFFFF/png?text=LinkedIn+Ad"
+      headline: `${companyName}: Professional Solutions`,
+      primaryText: `Optimize your business processes with our professional services. We specialize in delivering tailored solutions that address your specific needs and drive measurable results for your organization.`,
+      description: "Schedule Consultation",
+      imagePrompt: `Professional consultants working with clients in a modern office environment`
     },
     {
-      headline: `Unlock New Opportunities with ${companyName}`,
-      primaryText: `Looking to enhance your professional capabilities? ${description} Join thousands of ${targetAudience} who have already transformed their approach with our proven solutions.`,
-      description: "Request Demo",
-      imagePrompt: `A professional image showing data visualization or business growth charts with professionals analyzing results, conveying success and opportunity.`,
-      imageUrl: "https://placehold.co/1024x1024/0077B5/FFFFFF/png?text=LinkedIn+Ad"
+      headline: `Partner with ${companyName}`,
+      primaryText: `Looking for a strategic partner? ${companyName} offers comprehensive business solutions designed to enhance your competitive advantage. Our client-focused approach ensures we understand your unique requirements.`,
+      description: cta,
+      imagePrompt: `Business partnership handshake or collaboration in professional setting`
     }
   ];
 }
