@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import TestAdsPage from "./pages/TestAdsPage";
 import InstagramTemplateExamplePage from "./pages/InstagramTemplateExamplePage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
+import Index from "./pages/Index";
 
 function App() {
   return (
@@ -17,8 +18,8 @@ function App() {
       <div className="app">
         <Toaster />
         <Routes>
+          <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<DashboardPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/create-campaign" element={<CreateCampaignPage />} />
