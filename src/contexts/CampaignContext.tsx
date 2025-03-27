@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
 
 export type LinkedInAd = MetaAd;
 export type MicrosoftAd = GoogleAd;
@@ -18,6 +19,7 @@ export interface CampaignData {
   linkedInAds?: LinkedInAd[];
   microsoftAds?: MicrosoftAd[];
   mindTriggers?: Record<string, string>; // Platform to mind trigger mapping
+  audienceAnalysis?: AudienceAnalysisResult; // Added audience analysis field
   [key: string]: any;
 }
 
@@ -36,12 +38,14 @@ export interface CampaignContextType {
   setMicrosoftAds: React.Dispatch<React.SetStateAction<MicrosoftAd[]>>;
   metaAds: MetaAd[]; 
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  audienceAnalysisResult: AudienceAnalysisResult | null; // Added audience analysis result
+  setAudienceAnalysisResult: React.Dispatch<React.SetStateAction<AudienceAnalysisResult | null>>; // Added setter
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentStep, setCurrentStep] = useState(1); // Changed back from 0 to 1 to match the step indicator
+  const [currentStep, setCurrentStep] = useState(1);
   const [campaignData, setCampaignData] = useState<CampaignData>({
     platforms: [],
     name: "",
@@ -54,9 +58,9 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [linkedInAds, setLinkedInAds] = useState<LinkedInAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<MicrosoftAd[]>([]);
+  const [audienceAnalysisResult, setAudienceAnalysisResult] = useState<AudienceAnalysisResult | null>(null);
 
   // Make the campaign context available globally for direct access
-  // This allows hooks and components to access the context without having to drill props
   useEffect(() => {
     const contextValue = {
       currentStep,
@@ -65,7 +69,8 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       googleAds,
       metaAds,
       linkedInAds,
-      microsoftAds
+      microsoftAds,
+      audienceAnalysisResult
     };
     
     // Add the context to the window object for global access
@@ -75,7 +80,7 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => {
       delete (window as any).campaignContext;
     };
-  }, [currentStep, campaignData, analysisResult, googleAds, metaAds, linkedInAds, microsoftAds]);
+  }, [currentStep, campaignData, analysisResult, googleAds, metaAds, linkedInAds, microsoftAds, audienceAnalysisResult]);
 
   return (
     <CampaignContext.Provider
@@ -94,6 +99,8 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setLinkedInAds,
         microsoftAds,
         setMicrosoftAds,
+        audienceAnalysisResult,
+        setAudienceAnalysisResult
       }}
     >
       {children}

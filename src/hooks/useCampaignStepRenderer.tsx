@@ -4,6 +4,7 @@ import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
 import PlatformSelectionStep from "@/components/campaign/PlatformSelectionStep";
 import { MindTriggerSelectionStep } from "@/components/campaign/mind-trigger";
+import AudienceAnalysisStep from "@/components/campaign/audience-analysis/AudienceAnalysisStep";
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import AdPreviewStep from "@/components/campaign/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
@@ -97,6 +98,14 @@ const useCampaignStepRenderer = ({
         );
       case 4:
         return (
+          <AudienceAnalysisStep
+            analysisResult={analysisResult}
+            onBack={handleBack}
+            onNext={() => handleNextWrapper()}
+          />
+        );
+      case 5:
+        return (
           <CampaignSetupStep
             analysisResult={analysisResult}
             campaignData={campaignData}
@@ -105,7 +114,7 @@ const useCampaignStepRenderer = ({
             onNext={() => handleNextWrapper()}
           />
         );
-      case 5:
+      case 6:
         return (
           <AdPreviewStep
             analysisResult={analysisResult}
@@ -129,7 +138,7 @@ const useCampaignStepRenderer = ({
             mindTriggers={campaignData.mindTriggers}
           />
         );
-      case 6:
+      case 7:
         return (
           <CampaignSummary
             campaignName={campaignData.name || ""}
