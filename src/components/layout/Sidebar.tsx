@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Sheet,
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,12 +26,10 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CreditsHeaderDisplay from "./CreditsHeaderDisplay";
 
-// Update the CreateCampaignButton props interface to include collapsed
 interface CreateCampaignButtonProps {
   collapsed: boolean;
 }
 
-// Make sure CreateCampaignButton component accepts collapsed prop
 const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed }) => {
   return (
     <Button asChild variant="secondary" className="w-full justify-start">
@@ -44,12 +43,18 @@ const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed }
 };
 
 interface SidebarProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  activePage?: string;
 }
 
-const Sidebar = ({ children }: SidebarProps) => {
-  const [collapsed, setCollapsed] = React.useState(false);
-
+const Sidebar: React.FC<SidebarProps> = ({ 
+  children, 
+  collapsed, 
+  setCollapsed, 
+  activePage 
+}) => {
   return (
     <div className="flex h-screen">
       <Sheet>
@@ -205,7 +210,5 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
     </NavLink>
   );
 };
-
-import { useNavigate } from 'react-router-dom';
 
 export default Sidebar;

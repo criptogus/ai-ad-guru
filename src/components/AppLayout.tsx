@@ -28,7 +28,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
           collapsed={collapsed} 
           setCollapsed={setCollapsed} 
           activePage={activePage} 
-        />
+        >
+          {/* Sidebar content goes here */}
+        </Sidebar>
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">

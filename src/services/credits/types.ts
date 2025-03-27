@@ -15,13 +15,13 @@ export type CreditAction =
   | 'adOptimization.weekly'
   | 'campaign_creation'
   | 'image_generation'
-  | 'smart_banner';
+  | 'smart_banner'
+  | 'daily_optimization';
 
 /**
  * Credit cost structure
  */
 export interface CreditCosts {
-  campaignCreation: number;
   googleAds: number;
   metaAds: number;
   linkedInAds: number;
@@ -34,6 +34,7 @@ export interface CreditCosts {
     every3Days: number;
     weekly: number;
   };
+  campaignCreation: number; // Adding this for backward compatibility
 }
 
 /**

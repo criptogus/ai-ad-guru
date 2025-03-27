@@ -73,7 +73,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
         await deductUserCredits(
           user.id,
           optimizationCost,
-          'daily_optimization',
+          'adOptimization.daily',
           `Optimized ${optimizedAds.length} Google ads`
         );
         
@@ -150,7 +150,7 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
         await deductUserCredits(
           user.id,
           optimizationCost,
-          'daily_optimization',
+          'adOptimization.daily',
           `Optimized ${optimizedAds.length} Meta/Instagram ads`
         );
         

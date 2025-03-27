@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BannerTemplate, BannerFormat, BannerPlatform, TextElement, BannerElement } from "./types";
 import { getDefaultHeadline, getDefaultSubheadline, getDefaultCTA } from "./utils/defaultTextHelper";
 import { useUserImageBank } from "./useUserImageBank";
-import { useAIImageGeneration } from "./useAIImageGeneration";
+import { useUserAIImageGeneration } from "./useUserAIImageGeneration";
 import { useTextElements } from "./useTextElements";
 import { useBannerElements } from "./useBannerElements";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ export const useBannerEditor = (
 ) => {
   const { user } = useAuth();
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [brandTone, setBrandTone] = useState<string>("professional");
   
   const { 
     textElements, 
@@ -41,18 +42,10 @@ export const useBannerEditor = (
   } = useUserImageBank(user?.id);
   
   const {
-    isGeneratingImage,
-    generateAIImage,
-    regenerateImage,
-    brandTone,
-    setBrandTone
-  } = useAIImageGeneration(
-    selectedTemplate, 
-    selectedFormat, 
-    selectedPlatform, 
-    user?.id,
-    saveImageToUserBank
-  );
+    isGenerating: isGeneratingImage,
+    generateImage,
+    lastGeneratedImageUrl,
+  } = useUserAIImageGeneration();
 
   // Initialize default text elements when template changes
   useEffect(() => {
@@ -82,9 +75,25 @@ export const useBannerEditor = (
 
   // Handle AI image generation 
   const handleGenerateAIImage = async (prompt: string): Promise<void> => {
-    const imageUrl = await generateAIImage(prompt);
+    const imageUrl = await generateImage({
+      promptTemplate: prompt,
+      brandTone: brandTone
+    });
     if (imageUrl) {
       setBackgroundImage(imageUrl);
+    }
+  };
+
+  // Regenerate image with the same settings
+  const regenerateImage = async (): Promise<void> => {
+    if (lastGeneratedImageUrl) {
+      const newUrl = await generateImage({
+        promptTemplate: "Regenerate the previous image with a different variation",
+        brandTone: brandTone
+      });
+      if (newUrl) {
+        setBackgroundImage(newUrl);
+      }
     }
   };
 
