@@ -9,14 +9,12 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Extract user ID from various possible sources in the session
-const extractUserId = (session) => {
-  if (!session) return null;
-  return session.client_reference_id || 
-         (session.success_url && new URL(session.success_url).searchParams.get('client_reference_id')) || 
-         session.metadata?.userId || 
-         null;
-};
+// Extract user ID from session with fallbacks
+const extractUserId = (session) => 
+  session?.client_reference_id || 
+  (session?.success_url && new URL(session.success_url).searchParams.get('client_reference_id')) || 
+  session?.metadata?.userId || 
+  null;
 
 Deno.serve(async (req) => {
   // Handle preflight OPTIONS request
@@ -42,7 +40,7 @@ Deno.serve(async (req) => {
     
     if (!stripeKey) throw new Error("Stripe API key not configured");
     
-    // Initialize Stripe with minimal options
+    // Initialize Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
     
     // Verify webhook signature
@@ -67,11 +65,10 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle events more concisely
+    // Handle payment events
     if (event.type === 'checkout.session.completed' || 
         (event.type === 'payment_intent.succeeded' && event.data.object.metadata?.userId)) {
       
-      // Get userId from different places based on event type
       const userId = event.type === 'checkout.session.completed' 
         ? extractUserId(event.data.object)
         : event.data.object.metadata?.userId;

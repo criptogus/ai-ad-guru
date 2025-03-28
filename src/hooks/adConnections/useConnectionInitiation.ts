@@ -23,6 +23,7 @@ export const useConnectionInitiation = () => {
     }
     
     try {
+      // Clear previous errors
       setIsConnecting(true);
       setError(null);
       setErrorDetails(null);
@@ -44,7 +45,7 @@ export const useConnectionInitiation = () => {
         }
       });
       
-      // Direct call to initiateOAuth from oauthService
+      // Call OAuth service to get authorization URL
       const authUrl = await initiateOAuth({
         platform,
         userId,
@@ -52,9 +53,12 @@ export const useConnectionInitiation = () => {
       });
       
       // Redirect to the authorization URL
-      console.log(`Redirecting to ${platform} auth URL:`, authUrl);
-      window.location.href = authUrl;
-      
+      if (authUrl) {
+        console.log(`Redirecting to ${platform} auth URL:`, authUrl);
+        window.location.href = authUrl;
+      } else {
+        throw new Error(`Failed to get authorization URL for ${platform}`);
+      }
     } catch (error: any) {
       console.error(`Error in ${platform} connection initiation:`, error);
       

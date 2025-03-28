@@ -1,162 +1,132 @@
 
-import { corsHeaders } from "../utils/cors.ts";
-import { retrieveOAuthState, cleanupOAuthState } from "../utils/state.ts";
-import { storeTokens } from "../utils/token.ts";
-import { exchangeGoogleToken, getGoogleAccountId } from "../platforms/google.ts";
-import { exchangeLinkedInToken, getLinkedInAccountId } from "../platforms/linkedin.ts";
-import { exchangeMicrosoftToken, getMicrosoftAccountId } from "../platforms/microsoft.ts";
+import { corsHeaders } from '../utils/cors.ts';
+import { exchangeToken as exchangeTokenUtil } from '../utils/token-exchange.ts';
 
-export const exchangeToken = async (
-  supabaseClient: any,
-  requestBody: any
-) => {
-  const { code, state } = requestBody;
-  
-  if (!code) {
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: "Authorization code is required"
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-  
-  // Validate state parameter to prevent CSRF attacks
-  if (!state) {
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: "State parameter is missing"
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-  
-  // Retrieve and validate the state
-  let stateData;
-  try {
-    stateData = await retrieveOAuthState(supabaseClient, state);
-  } catch (error: any) {
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Invalid or expired OAuth state"
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-  
-  // Use the stored data from the state
-  const { userId, platform, redirectUri } = stateData;
-  
-  // Clean up the used state
-  await cleanupOAuthState(supabaseClient, state);
-  
-  let clientId, clientSecret;
-  
-  if (platform === 'google') {
-    clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-    console.log("Google credentials available:", !!clientId, !!clientSecret);
-  } else if (platform === 'linkedin') {
-    clientId = Deno.env.get('LINKEDIN_CLIENT_ID');
-    clientSecret = Deno.env.get('LINKEDIN_CLIENT_SECRET');
-    console.log("LinkedIn credentials available:", !!clientId, !!clientSecret);
-  } else if (platform === 'microsoft') {
-    clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
-    clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
-    console.log("Microsoft credentials available:", !!clientId, !!clientSecret);
-  }
-  
-  if (!clientId || !clientSecret) {
-    console.error(`${platform} OAuth credentials not configured`);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: `${platform} OAuth credentials not configured in server environment`
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
+/**
+ * Exchange OAuth authorization code for access token
+ */
+export async function exchangeToken(supabaseClient: any, requestData: any) {
+  const { code, state, redirectUri } = requestData;
   
   try {
-    // Exchange the code for tokens
-    let tokenData;
-    if (platform === 'google') {
-      tokenData = await exchangeGoogleToken(code, clientId, clientSecret, redirectUri);
-    } else if (platform === 'linkedin') {
-      tokenData = await exchangeLinkedInToken(code, clientId, clientSecret, redirectUri);
-    } else if (platform === 'microsoft') {
-      tokenData = await exchangeMicrosoftToken(code, clientId, clientSecret, redirectUri);
-    } else {
-      throw new Error(`Unsupported platform: ${platform}`);
+    // Validate required parameters
+    if (!code) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Authorization code is required'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
     }
     
-    console.log('Token exchange successful');
-    
-    // Retrieve account information based on platform
-    let accountId = '';
-    
-    if (platform === 'google') {
-      accountId = await getGoogleAccountId(tokenData.access_token);
-    } else if (platform === 'linkedin') {
-      accountId = await getLinkedInAccountId(tokenData.access_token);
-    } else if (platform === 'microsoft') {
-      accountId = await getMicrosoftAccountId(tokenData.access_token);
+    if (!state) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'State parameter is required'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
     }
     
-    // Calculate token expiration (if provided by the platform)
-    let expiresAt = null;
-    if (tokenData.expires_in) {
-      expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
+    // Verify the state parameter to prevent CSRF attacks
+    const { data: stateData, error: stateError } = await supabaseClient
+      .from('oauth_states')
+      .select('user_id, platform')
+      .eq('state', state)
+      .single();
+      
+    if (stateError || !stateData) {
+      console.error('Invalid or expired state parameter:', stateError);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Invalid or expired authorization state. Please try again.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
     }
     
-    // Store the tokens in Supabase
-    await storeTokens(
-      supabaseClient,
-      userId,
-      platform,
-      tokenData.access_token,
-      tokenData.refresh_token || null,
-      accountId,
-      expiresAt
-    );
+    const { user_id: userId, platform } = stateData;
+    
+    // Exchange the authorization code for tokens
+    const tokenResponse = await exchangeTokenUtil(platform, code, redirectUri);
+    
+    if (!tokenResponse) {
+      throw new Error(`Failed to exchange token for ${platform}`);
+    }
+    
+    // Save user tokens in the database
+    const { data: connectionData, error: connectionError } = await supabaseClient
+      .from('user_integrations')
+      .upsert(
+        {
+          user_id: userId,
+          platform,
+          access_token: tokenResponse.accessToken,
+          refresh_token: tokenResponse.refreshToken || null,
+          expires_at: tokenResponse.expiresIn 
+            ? new Date(Date.now() + tokenResponse.expiresIn * 1000).toISOString() 
+            : null,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'user_id,platform' }
+      )
+      .select('id');
+    
+    if (connectionError) {
+      console.error('Failed to save connection:', connectionError);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: `Failed to save connection: ${connectionError.message}`
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+    
+    // Clean up the used state
+    await supabaseClient
+      .from('oauth_states')
+      .delete()
+      .eq('state', state);
     
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Successfully connected to ${platform === 'google' ? 'Google' : platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'} Ads`,
-        accountId
+      JSON.stringify({
+        success: true,
+        connectionId: connectionData?.[0]?.id,
+        platform
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
-  } catch (error: any) {
-    console.error(`Error during token exchange:`, error);
+  } catch (error) {
+    console.error(`Error exchanging token:`, error);
+    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Token exchange failed"
+      JSON.stringify({
+        success: false,
+        error: `Failed to exchange token: ${error.message}`
       }),
       {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
-};
+}

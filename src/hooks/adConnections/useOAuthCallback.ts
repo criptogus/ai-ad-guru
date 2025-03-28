@@ -12,9 +12,11 @@ export const useOAuthCallback = () => {
   const [errorType, setErrorType] = useState<string | null>(null);
 
   const processOAuthCallback = async (userId: string | undefined, fetchConnections: () => Promise<void>) => {
+    // Check if this is an OAuth callback and user is authenticated
     if (!isOAuthCallback() || !userId) return;
     
     try {
+      // Start processing and clear any previous errors
       setIsConnecting(true);
       setError(null);
       setErrorDetails(null);
@@ -23,20 +25,21 @@ export const useOAuthCallback = () => {
       // Prepare redirect URI - use the same one we used for the initial request
       const redirectUri = `${window.location.origin}/config`;
       
-      // Security enhancement: Log OAuth callback attempt (minimal logging to save space)
+      // Log OAuth callback attempt for security
       await tokenSecurity.logSecurityEvent({
         event: 'oauth_callback_started',
         user_id: userId,
         timestamp: new Date().toISOString()
       });
       
+      // Handle the OAuth callback
       const result = await handleOAuthCallback(redirectUri);
       
       if (result) {
-        // Refresh the connections list
+        // If successful, refresh the connections list
         await fetchConnections();
         
-        // Security enhancement: Log successful OAuth connection (minimal logging)
+        // Log successful OAuth connection
         await tokenSecurity.logSecurityEvent({
           event: 'oauth_connection_success',
           user_id: userId,
@@ -44,6 +47,7 @@ export const useOAuthCallback = () => {
           timestamp: new Date().toISOString()
         });
         
+        // Show success message
         toast({
           title: "Account Connected Securely",
           description: `Successfully connected to ${
@@ -56,25 +60,25 @@ export const useOAuthCallback = () => {
     } catch (error: any) {
       console.error('Error completing OAuth flow:', error);
       
-      // Minimal security logging to save space
-      if (userId) {
-        await tokenSecurity.logSecurityEvent({
-          event: 'oauth_connection_error',
-          user_id: userId,
-          timestamp: new Date().toISOString(),
-          error: error.message || "Unknown error"
-        }).catch(e => console.warn("Failed to log security event"));
-      }
+      // Log error for security purposes
+      await tokenSecurity.logSecurityEvent({
+        event: 'oauth_connection_error',
+        user_id: userId,
+        timestamp: new Date().toISOString(),
+        error: error.message || "Unknown error"
+      }).catch(e => console.warn("Failed to log security event"));
       
+      // Show error toast
       toast({
         title: "Connection Failed",
         description: error.message || "There was an error connecting your account",
         variant: "destructive",
       });
       
+      // Set detailed error information
       setError(error.message || "There was an error connecting your account");
       
-      // Set more focused error information
+      // Set more focused error information for better troubleshooting
       if (error.message) {
         if (error.message.includes("token")) {
           setErrorType("credentials");
