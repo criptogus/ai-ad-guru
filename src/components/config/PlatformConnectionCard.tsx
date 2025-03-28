@@ -123,11 +123,15 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
                 </Button>
               )}
             </TooltipTrigger>
-            <TooltipContent>
-              {isConnected ? 
-                <p>Revokes all access tokens and permissions</p> :
-                <p>Securely connect via OAuth 2.0</p>
-              }
+            <TooltipContent side="top" className="bg-popover text-popover-foreground">
+              {isConnected ? (
+                <p className="text-sm px-1">Revokes all access tokens and permissions</p>
+              ) : (
+                <div className="flex items-center gap-1.5 text-sm px-1">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <p>Securely connect via OAuth 2.0</p>
+                </div>
+              )}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
