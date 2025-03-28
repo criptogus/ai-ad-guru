@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -32,8 +33,10 @@ export default defineConfig(({ mode }) => ({
         '@rollup/rollup-darwin-arm64',
         '@rollup/rollup-win32-x64-msvc',
       ],
-      onwarn(warning: RollupLog, warn) {
-        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message?.includes('@rollup/rollup-')) {
+      onwarn(warning, warn) {
+        // Use a safer check that doesn't rely on warning.source or warning.message
+        if (warning.code === 'UNRESOLVED_IMPORT' && 
+            warning.toString().includes('@rollup/rollup-')) {
           return; // Suppress native module warnings
         }
         warn(warning);
