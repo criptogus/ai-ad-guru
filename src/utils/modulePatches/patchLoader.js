@@ -5,7 +5,7 @@
  */
 
 // Import and immediately execute the Rollup native module patch
-import './rollupNativeModulePatch';
+import './rollupNativeModulePatch.js';
 
 console.info('[Module Patches] All patches loaded successfully');
 
