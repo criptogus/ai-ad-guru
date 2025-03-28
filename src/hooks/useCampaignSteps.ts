@@ -18,6 +18,8 @@ export const useCampaignSteps = (
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      // Scroll to top when going back
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       navigate("/dashboard");
     }
@@ -123,6 +125,8 @@ export const useCampaignSteps = (
 
     // Only advance to the next step when explicitly called with no data
     setCurrentStep(currentStep + 1);
+    // Scroll to top when advancing to next step
+    window.scrollTo({ top: 0, behavior: "smooth" });
     return false;
   };
 

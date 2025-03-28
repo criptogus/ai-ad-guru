@@ -56,8 +56,9 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onBack,
   mindTriggers = {}
 }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("google");
   const { campaignData } = useCampaign();
+  const selectedPlatforms = campaignData?.platforms || [];
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   
   // Initialize the form with proper default values for all ad types
   const methods = useForm({
@@ -78,8 +79,12 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     }
   });
 
-  // Get selected platforms from campaign data
-  const selectedPlatforms = campaignData?.selectedPlatforms || ["google", "meta", "linkedin", "microsoft"];
+  // Set the first selected platform as the default tab
+  useEffect(() => {
+    if (selectedPlatforms.length > 0 && !selectedPlatform) {
+      setSelectedPlatform(selectedPlatforms[0]);
+    }
+  }, [selectedPlatforms]);
   
   // Update form values when ads change
   useEffect(() => {
@@ -94,10 +99,16 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     methods.setValue("platform", selectedPlatform);
   }, [selectedPlatform, methods]);
   
-  // Scroll to top when tab changes
+  // Scroll to top when tab changes or step loads
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedPlatform]);
+  
+  const handleNextClick = () => {
+    onNext();
+    // Scroll to top when proceeding to next step
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
@@ -110,7 +121,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           <CardTitle>Ad Creation & Preview</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
+          <Tabs value={selectedPlatform} onValueChange={(value) => {
+            setSelectedPlatform(value);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }} className="w-full">
             <TabsList className="w-full mb-4">
               {selectedPlatforms.includes("google") && (
                 <TabsTrigger value="google">Google Ads</TabsTrigger>
@@ -193,11 +207,14 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             </span>
             
             <Button 
-              onClick={onNext} 
+              onClick={handleNextClick} 
               className="flex items-center gap-2"
               disabled={
-                (googleAds.length === 0 && metaAds.length === 0 && 
-                linkedInAds.length === 0 && microsoftAds.length === 0)
+                selectedPlatforms.length === 0 || 
+                (selectedPlatforms.includes("google") && googleAds.length === 0) &&
+                (selectedPlatforms.includes("meta") && metaAds.length === 0) &&
+                (selectedPlatforms.includes("linkedin") && linkedInAds.length === 0) &&
+                (selectedPlatforms.includes("microsoft") && microsoftAds.length === 0)
               }
             >
               Next Step
