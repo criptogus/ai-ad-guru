@@ -34,7 +34,7 @@ export const useImageGeneration = () => {
       });
 
       if (functionError) {
-        console.error("Error generating image:", functionError);
+        console.error("Supabase function error:", functionError);
         setError(functionError.message || "Failed to generate image");
         toast.error("Image generation failed", { 
           description: functionError.message || "An error occurred while generating the image" 
@@ -42,7 +42,14 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      if (!data || !data.imageUrl) {
+      if (!data || !data.success) {
+        console.error("API reported error:", data?.error || "Unknown error");
+        setError(data?.error || "API reported an error");
+        toast.error("Image generation failed", { description: data?.error || "API reported an error" });
+        return null;
+      }
+
+      if (!data.imageUrl) {
         console.error("No image URL returned from function");
         setError("No image was generated");
         toast.error("Image generation failed", { description: "No image was returned" });
