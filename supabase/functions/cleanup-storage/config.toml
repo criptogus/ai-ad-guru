@@ -2,3 +2,5 @@
 name = "cleanup-storage"
 entrypoint = "index.ts"
 envs = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+# Add a scheduled cron job to run daily
+schedule = { cron = "0 3 * * *" }  # Runs at 3 AM every day
