@@ -1,5 +1,6 @@
 
-// Apply module patches before anything else
+// Apply module patches before anything else loads
+// This must be the very first import
 import './utils/modulePatches/patchLoader';
 
 import React from "react";
@@ -12,15 +13,20 @@ import { ThemeProvider } from "./components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
-// Debug main execution
-console.log("Main script executing - initializing application");
+// Debug main execution with more detailed logging
+console.log("[Application] Main script executing - initializing application");
+console.log("[Application] Environment:", import.meta.env.MODE);
+console.log("[Application] React version:", React.version);
 
-// Create a client
+// Create a client with improved error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
+      onError: (error) => {
+        console.error("[QueryClient] Query error:", error);
+      }
     },
   },
 });
@@ -28,9 +34,9 @@ const queryClient = new QueryClient({
 // Mount React application with all providers
 const rootElement = document.getElementById("root");
 if (!rootElement) {
-  console.error("Root element not found! Cannot mount React application.");
+  console.error("[Application] Root element not found! Cannot mount React application.");
 } else {
-  console.log("Mounting React application to DOM");
+  console.log("[Application] Mounting React application to DOM");
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <HelmetProvider>
@@ -46,5 +52,5 @@ if (!rootElement) {
       </HelmetProvider>
     </React.StrictMode>
   );
-  console.log("React application mounted successfully");
+  console.log("[Application] React application mounted successfully");
 }
