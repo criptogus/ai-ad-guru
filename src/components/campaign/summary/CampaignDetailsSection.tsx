@@ -1,13 +1,14 @@
 
 import React from "react";
+import { format } from "date-fns";
 
 interface CampaignDetailsSectionProps {
-  campaignName: string; // Changed from name to campaignName
+  campaignName: string;
   platform: string;
   budget: number;
   budgetType: string;
-  startDate: string;
-  endDate: string;
+  startDate: string | Date;
+  endDate: string | Date | null | undefined;
   objective: string;
   websiteUrl: string;
 }
@@ -31,6 +32,18 @@ const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
     }
   };
 
+  // Format dates to strings if they are Date objects
+  const formatDate = (date: string | Date | null | undefined) => {
+    if (!date) return "N/A";
+    if (date instanceof Date) {
+      return format(date, "MMM d, yyyy");
+    }
+    return date;
+  };
+
+  const formattedStartDate = formatDate(startDate);
+  const formattedEndDate = formatDate(endDate) || "Ongoing";
+
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2">Campaign Details</h3>
@@ -49,7 +62,7 @@ const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Duration:</span>
-          <span className="font-medium">{startDate} to {endDate}</span>
+          <span className="font-medium">{formattedStartDate} to {formattedEndDate}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Objective:</span>

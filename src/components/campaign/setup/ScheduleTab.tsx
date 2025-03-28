@@ -18,6 +18,12 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
   handleSelectChange,
   errors,
 }) => {
+  // Parse dates if they are strings
+  const getDateValue = (dateValue: string | Date | null | undefined) => {
+    if (!dateValue) return null;
+    return typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -25,7 +31,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
           Start Date <span className="text-red-500 ml-1">*</span>
         </Label>
         <DatePicker
-          date={campaignData.startDate ? new Date(campaignData.startDate) : null}
+          date={getDateValue(campaignData.startDate)}
           onSelect={(date) => handleDateChange("startDate", date)}
           className={errors.startDate ? "border-red-500" : ""}
         />
@@ -37,7 +43,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
           End Date (Optional)
         </Label>
         <DatePicker
-          date={campaignData.endDate ? new Date(campaignData.endDate) : null}
+          date={getDateValue(campaignData.endDate)}
           onSelect={(date) => handleDateChange("endDate", date)}
         />
         <p className="text-xs text-muted-foreground">
