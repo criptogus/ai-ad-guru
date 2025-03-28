@@ -47,12 +47,6 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       active: activePage === "analytics" || currentPath === "/analytics"
     },
     {
-      name: "Smart Banner",
-      href: "/smart-banner",
-      icon: Image,
-      active: activePage === "smart-banner" || currentPath.includes("/smart-banner")
-    },
-    {
       name: "Assets",
       href: "/assets",
       icon: FileText,

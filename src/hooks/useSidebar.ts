@@ -1,12 +1,25 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface SidebarState {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 export const useSidebar = (): SidebarState => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  return { isCollapsed, setIsCollapsed };
+  const isMobile = useIsMobile();
+  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+
+  useEffect(() => {
+    // Update collapse state when mobile state changes
+    setIsCollapsed(isMobile);
+  }, [isMobile]);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  return { isCollapsed, setIsCollapsed, toggleSidebar };
 };

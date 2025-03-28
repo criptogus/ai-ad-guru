@@ -1,11 +1,11 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import SidebarHeader from "./SidebarHeader";
 import SidebarNavigationItems from "./SidebarNavigationItems";
 import SidebarCollapseButton from "./SidebarCollapseButton";
 import ThemeToggle from "./ThemeToggle";
-import { useSidebar } from "@/hooks/useSidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface SidebarProps {
   activePage?: string;
@@ -20,10 +20,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   setIsCollapsed
 }) => {
-  const sidebarState = useSidebar();
-  // Use the props if provided, otherwise use the hook state
-  const collapsed = isCollapsed !== undefined ? isCollapsed : sidebarState.isCollapsed;
-  const toggleCollapsed = setIsCollapsed || sidebarState.setIsCollapsed;
+  const isMobile = useIsMobile();
+  const [collapsed, setCollapsed] = React.useState(isCollapsed || false);
+  
+  // Sync with props if provided
+  useEffect(() => {
+    if (isCollapsed !== undefined) {
+      setCollapsed(isCollapsed);
+    }
+  }, [isCollapsed]);
+
+  // On mobile, sidebar should be collapsed by default
+  useEffect(() => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
+  }, [isMobile]);
+
+  // Handle toggle sidebar
+  const toggleSidebar = () => {
+    const newCollapsedState = !collapsed;
+    setCollapsed(newCollapsedState);
+    if (setIsCollapsed) {
+      setIsCollapsed(newCollapsedState);
+    }
+  };
 
   return (
     <div
@@ -44,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <ThemeToggle />
           <SidebarCollapseButton 
             collapsed={collapsed} 
-            onClick={() => toggleCollapsed(!collapsed)} 
+            onClick={toggleSidebar} 
           />
         </div>
       </div>

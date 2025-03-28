@@ -23,14 +23,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
-        {/* Sidebar */}
+        {/* Custom Sidebar */}
         <Sidebar 
           activePage={activePage}
           isCollapsed={isCollapsed}
           setIsCollapsed={setIsCollapsed}
-        >
-          {/* Sidebar content goes here */}
-        </Sidebar>
+        />
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">

@@ -9,19 +9,19 @@ interface SidebarHeaderProps {
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({ collapsed }) => {
   return (
     <div className={cn(
-      "flex items-center mb-6 transition-all",
-      collapsed ? "justify-center" : "px-2"
+      "flex items-center h-16 px-3 transition-all duration-300",
+      collapsed ? "justify-center" : "justify-start"
     )}>
       {collapsed ? (
         <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-white font-bold">
-          A
+          Z
         </div>
       ) : (
         <div className="flex items-center">
           <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-white font-bold mr-2">
-            A
+            Z
           </div>
-          <span className="text-xl font-bold">AI Ad Manager</span>
+          <span className="text-xl font-bold">Zero Ad Manager</span>
         </div>
       )}
     </div>
