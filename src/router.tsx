@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
@@ -54,13 +55,9 @@ const router = createBrowserRouter(
         
         <Route element={<SafeAppLayout />} >
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/prompts" element={<PromptEditorPage />} />
         </Route>
       </Route>
-
-      {
-        path: '/admin/prompts',
-        element: <PromptEditorPage />
-      },
       
       <Route path="*" element={<NotFoundPage />} />
     </>
