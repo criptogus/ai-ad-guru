@@ -54,14 +54,14 @@ serve(async (req) => {
       throw new Error('Failed to create invitation record');
     }
     
-    // Application URL for the invitation link - in production, use a real domain
+    // Application URL for the invitation link
     const appUrl = Deno.env.get('APP_URL') || 'http://localhost:3000';
     const invitationLink = `${appUrl}/accept-invitation?token=${token}`;
     
     // Prepare email content
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>You're invited to join our team!</h2>
+        <h2>You're invited to join AI Ad Manager!</h2>
         <p>You have been invited to join our team as a <strong>${role}</strong>.</p>
         <p>Click the button below to accept this invitation:</p>
         <a href="${invitationLink}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
@@ -73,13 +73,13 @@ serve(async (req) => {
     `;
     
     try {
-      // Send the actual email with Resend using the verified domain
+      // Send the actual email with Resend
       console.log('Sending invitation email to:', email);
       
       const emailResponse = await resend.emails.send({
-        from: 'AI Ad Manager <contact@zeroagency.ai>', // Updated to use the verified domain
+        from: 'AI Ad Manager <onboarding@resend.dev>', // Using default Resend domain
         to: [email],
-        subject: 'You have been invited to join our team',
+        subject: 'You have been invited to join AI Ad Manager',
         html: emailHtml,
       });
       
@@ -95,8 +95,7 @@ serve(async (req) => {
     } catch (emailError) {
       console.error('Email sending error:', emailError);
       
-      // Even if there's an error with sending the email, we'll return a detailed error
-      // but still consider the process partially successful since the invitation record exists
+      // Return a detailed error but still consider the process partially successful
       return new Response(
         JSON.stringify({ 
           success: false, 

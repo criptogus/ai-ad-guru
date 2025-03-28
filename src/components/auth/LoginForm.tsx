@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { EyeIcon, EyeOff, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<void>;
@@ -17,6 +16,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -27,14 +27,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
       setEmail(email);
       setPassword(password);
       
-      // Show toast notification to guide the user
       toast({
         title: "Test credentials loaded",
         description: "Click 'Sign in' to log in with the test account",
       });
     };
 
-    // Type casting is needed for CustomEvent with TypeScript
     const listener = ((e: Event) => {
       handleTestAccountCreated(e as CustomEvent<{ email: string, password: string }>);
     });
@@ -52,27 +50,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
     if (!email || !password) {
-      toast({
-        title: 'Required fields missing',
-        description: 'Please enter both email and password.',
-        variant: 'destructive',
-      });
+      setError('Please enter both email and password.');
       return;
     }
     
     try {
       console.log('Submitting login form with email:', email);
       await onSubmit(email, password);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in LoginForm handleSubmit:', error);
-      // Error handling is managed by the parent component
+      setError(error.message || 'Failed to sign in. Please try again.');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-destructive/15 p-3 rounded-md flex items-center text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          {error}
+        </div>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -86,6 +88,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
           data-testid="email-input"
         />
       </div>
+      
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="password">Password</Label>
@@ -110,10 +113,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
             onClick={togglePasswordVisibility}
             tabIndex={-1}
           >
-            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+            {showPassword ? <EyeOff size={18} /> : <EyeIcon size={18} />}
           </button>
         </div>
       </div>
+      
       <Button 
         type="submit" 
         className="w-full" 

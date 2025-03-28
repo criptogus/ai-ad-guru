@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserRole } from "@/services/types";
+import { AlertCircle } from "lucide-react";
 
 interface InviteUserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSendInvitation: (email: string, role: UserRole) => Promise<void>;
+  isSubmitting: boolean;
 }
 
 const InviteUserModal: React.FC<InviteUserModalProps> = ({ 
   open, 
   onOpenChange,
-  onSendInvitation
+  onSendInvitation,
+  isSubmitting
 }) => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("Editor");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState("");
 
   const validateEmail = (email: string) => {
@@ -45,16 +47,13 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
       return;
     }
     
-    setIsSubmitting(true);
     try {
       await onSendInvitation(email, role);
-      // Reset form after successful submission
+      // Reset form after successful submission (the modal will be closed by the parent)
       setEmail("");
       setRole("Editor");
     } catch (error) {
       console.error("Error sending invitation:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -80,7 +79,12 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
               required
               className={emailError ? "border-red-500" : ""}
             />
-            {emailError && <p className="text-sm text-red-500">{emailError}</p>}
+            {emailError && (
+              <div className="text-sm text-red-500 flex items-center">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                <span>{emailError}</span>
+              </div>
+            )}
           </div>
           
           <div className="space-y-2">

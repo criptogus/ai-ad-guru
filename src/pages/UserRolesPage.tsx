@@ -11,6 +11,7 @@ import RolesPermissionsCard from "@/components/roles/RolesPermissionsCard";
 import InviteUserModal from "@/components/roles/InviteUserModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const UserRolesPage: React.FC = () => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ const UserRolesPage: React.FC = () => {
   const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Define role permissions
   const rolePermissions = {
@@ -47,14 +49,14 @@ const UserRolesPage: React.FC = () => {
   const fetchRolesData = async () => {
     setIsLoading(true);
     try {
-      // In a real app, this would fetch from Supabase
+      // Fetch team members
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
         .select('*');
 
       if (membersError) throw membersError;
 
-      // Also fetch pending invitations
+      // Fetch pending invitations
       const { data: invitationsData, error: invitationsError } = await supabase
         .from('team_invitations')
         .select('*')
@@ -82,27 +84,27 @@ const UserRolesPage: React.FC = () => {
 
   // Handle sending invitation
   const handleSendInvitation = async (email: string, role: UserRole) => {
+    setIsSubmitting(true);
     try {
-      // Generate a random token and expiration date
-      const token = Math.random().toString(36).substring(2, 15);
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
-
-      // Store invitation in the database
-      const { error } = await supabase.from('team_invitations').insert({
-        email,
-        role,
-        invitation_token: token,
-        expires_at: expiresAt.toISOString(),
+      console.log(`Sending invitation to ${email} with role ${role}`);
+      
+      // Call the Supabase Edge Function to send the invitation
+      const { data, error } = await supabase.functions.invoke('send-team-invitation', {
+        body: { email, role }
       });
-
-      if (error) throw error;
-
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Even if email sending failed, the invitation record was created
       toast({
-        title: "Invitation sent",
-        description: `An invitation has been sent to ${email}`,
+        title: data.success ? "Invitation sent" : "Invitation created",
+        description: data.success 
+          ? `An invitation has been sent to ${email}` 
+          : `The invitation was created but the email couldn't be sent. The user can still join using the invitation link.`
       });
-
+      
       // Refresh data
       fetchRolesData();
       setShowInviteModal(false);
@@ -113,18 +115,38 @@ const UserRolesPage: React.FC = () => {
         description: "There was an error sending the invitation. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Handle resending invitation
   const handleResendInvitation = async (id: string) => {
     try {
-      // In a real app, this would resend the email
+      // Get the invitation details
+      const { data, error } = await supabase
+        .from('team_invitations')
+        .select('email, role')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      if (!data) throw new Error("Invitation not found");
+      
+      // Resend the invitation
+      setIsSubmitting(true);
+      const { error: invokeFunctionError } = await supabase.functions.invoke('send-team-invitation', {
+        body: { email: data.email, role: data.role }
+      });
+      
+      if (invokeFunctionError) throw invokeFunctionError;
+      
       toast({
         title: "Invitation resent",
-        description: "The invitation has been resent.",
+        description: `A new invitation email has been sent to ${data.email}`
       });
-      return Promise.resolve();
+      
+      return true;
     } catch (error) {
       console.error("Error resending invitation:", error);
       toast({
@@ -132,28 +154,32 @@ const UserRolesPage: React.FC = () => {
         description: "There was an error resending the invitation. Please try again.",
         variant: "destructive",
       });
-      return Promise.reject(error);
+      return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Handle revoking invitation
   const handleRevokeInvitation = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('team_invitations')
         .delete()
-        .eq('id', id);
-
+        .eq('id', id)
+        .select('email')
+        .single();
+      
       if (error) throw error;
-
+      
       toast({
         title: "Invitation revoked",
-        description: "The invitation has been revoked.",
+        description: data?.email ? `The invitation to ${data.email} has been revoked` : "The invitation has been revoked"
       });
-
+      
       // Refresh data
       fetchRolesData();
-      return Promise.resolve();
+      return true;
     } catch (error) {
       console.error("Error revoking invitation:", error);
       toast({
@@ -161,7 +187,7 @@ const UserRolesPage: React.FC = () => {
         description: "There was an error revoking the invitation. Please try again.",
         variant: "destructive",
       });
-      return Promise.reject(error);
+      return false;
     }
   };
 
@@ -200,6 +226,7 @@ const UserRolesPage: React.FC = () => {
           open={showInviteModal}
           onOpenChange={setShowInviteModal}
           onSendInvitation={handleSendInvitation}
+          isSubmitting={isSubmitting}
         />
       </div>
     </AppLayout>
