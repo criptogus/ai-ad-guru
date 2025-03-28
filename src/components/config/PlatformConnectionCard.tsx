@@ -2,11 +2,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideIcon, Globe, Goal } from "lucide-react";
-import { Connection } from "@/hooks/adConnections/types";
+import { Goal, Facebook, Linkedin, Windows, Loader2 } from "lucide-react";
+import { Connection, AdPlatform } from "@/hooks/adConnections/types";
 
 interface PlatformConnectionCardProps {
-  platform: 'google' | 'linkedin' | 'microsoft';
+  platform: AdPlatform;
   isConnecting: boolean;
   errorType?: string | null;
   errorDetails?: string | null;
@@ -24,31 +24,37 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   onConnect,
   onRemove,
 }) => {
-  const getPlatformDetails = (platform: string) => {
+  const getPlatformDetails = (platform: AdPlatform) => {
     switch (platform) {
       case 'google':
         return {
           title: 'Google Ads',
           description: 'Connect your Google Ads account to create and manage campaigns',
-          icon: Goal, // Using Goal icon instead of GoogleIcon which doesn't exist
+          icon: Goal,
         };
       case 'linkedin':
         return {
           title: 'LinkedIn Ads',
           description: 'Connect your LinkedIn Ads account to create and manage campaigns',
-          icon: Globe,
+          icon: Linkedin,
         };
       case 'microsoft':
         return {
           title: 'Microsoft Ads',
           description: 'Connect your Microsoft Ads account to create and manage campaigns',
-          icon: Globe,
+          icon: Windows,
+        };
+      case 'meta':
+        return {
+          title: 'Meta Ads',
+          description: 'Connect your Meta Ads account for Facebook and Instagram campaigns',
+          icon: Facebook,
         };
       default:
         return {
-          title: platform,
+          title: 'Connect Platform',
           description: 'Connect your account',
-          icon: Globe,
+          icon: Goal,
         };
     }
   };
@@ -59,15 +65,15 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   const isConnected = platformConnections.length > 0;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:-translate-y-0.5 transition-all duration-200">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex flex-col space-y-1.5">
           <CardTitle className="text-lg font-semibold">{platformDetails.title}</CardTitle>
           <CardDescription>{platformDetails.description}</CardDescription>
         </div>
-        <Icon size={22} />
+        <Icon size={24} className="text-primary" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="py-6">
         {isConnected ? (
           <div className="space-y-2">
             {platformConnections.map((connection) => (
@@ -88,7 +94,13 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
           </div>
         ) : (
           <div className="flex items-center justify-center">
-            <Button onClick={onConnect} disabled={isConnecting}>
+            <Button 
+              onClick={onConnect} 
+              disabled={isConnecting}
+              variant="outline"
+              className="w-full"
+            >
+              {isConnecting && <Loader2 size={16} className="mr-2 animate-spin" />}
               {isConnecting ? 'Connecting...' : `Connect ${platformDetails.title}`}
             </Button>
           </div>

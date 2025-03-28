@@ -99,6 +99,7 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
     initiateGoogleConnection: () => handleConnectionInitiation('google', user?.id),
     initiateLinkedInConnection: () => handleConnectionInitiation('linkedin', user?.id),
     initiateMicrosoftConnection: () => handleConnectionInitiation('microsoft', user?.id),
+    initiateMetaConnection: () => handleConnectionInitiation('meta', user?.id),
     removeConnection
   };
 };

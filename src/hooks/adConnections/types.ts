@@ -22,7 +22,7 @@ export interface AdConnectionsActions {
   initiateGoogleConnection: () => void;
   initiateLinkedInConnection: () => void;
   initiateMicrosoftConnection: () => void;
-  initiateMetaConnection?: () => void;
+  initiateMetaConnection: () => void;
   removeConnection: (id: string, platformName: string) => Promise<void>;
 }
 
