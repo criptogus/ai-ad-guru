@@ -138,7 +138,6 @@ const LinkedInAdDetails: React.FC<LinkedInAdDetailsProps> = ({
         )}
       </div>
       
-      {/* Add Image Prompt field that's always editable */}
       <div>
         <h4 className="text-md font-medium mb-2">Image Prompt</h4>
         {isEditing ? (
