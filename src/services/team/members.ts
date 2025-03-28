@@ -15,7 +15,14 @@ export const getTeamMembers = async (): Promise<TeamMember[]> => {
       throw error;
     }
     
-    return data || [];
+    // Map the snake_case properties from Supabase to camelCase for our TeamMember type
+    return data ? data.map(member => ({
+      id: member.id,
+      name: member.name || '',
+      email: member.email,
+      role: member.role as UserRole,
+      lastActive: member.last_active
+    })) : [];
   } catch (error) {
     console.error("Error in getTeamMembers:", error);
     throw error;
@@ -47,9 +54,16 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
 // Function to update a team member
 export const updateTeamMember = async (id: string, updates: Partial<TeamMember>): Promise<boolean> => {
   try {
+    // Convert camelCase to snake_case for the database
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.role !== undefined) dbUpdates.role = updates.role;
+    if (updates.lastActive !== undefined) dbUpdates.last_active = updates.lastActive;
+    
     const { error } = await supabase
       .from('team_members')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id);
     
     if (error) {

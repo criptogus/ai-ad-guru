@@ -124,7 +124,7 @@ const UserRolesPage = () => {
                           {member.role}
                         </Badge>
                       </TableCell>
-                      <TableCell>{member.last_active ? new Date(member.last_active).toLocaleString() : "Never"}</TableCell>
+                      <TableCell>{member.lastActive ? new Date(member.lastActive).toLocaleString() : "Never"}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm">Edit</Button>
                       </TableCell>
