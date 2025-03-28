@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -25,35 +24,34 @@ export default defineConfig(({ mode }) => ({
     exclude: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-*', '@rollup/rollup-win32-*'],
   },
   build: {
-    commonjsOptions: {
-      // Ensure CommonJS modules don't try to use native dependencies
-      transformMixedEsModules: true,
-      include: [/node_modules/],
-    },
+    // Completely disable native addons
     rollupOptions: {
-      // This ensures Rollup doesn't try to use native modules
-      context: 'globalThis',
-      // Explicitly disable native module usage
       external: [
         '@rollup/rollup-linux-x64-gnu',
         '@rollup/rollup-darwin-x64',
         '@rollup/rollup-darwin-arm64',
-        '@rollup/rollup-win32-x64-msvc'
+        '@rollup/rollup-win32-x64-msvc',
       ],
-      // Don't try to bundle native modules
       onwarn(warning: RollupLog, warn) {
-        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message.includes('@rollup/rollup-')) {
-          // Suppress warnings about unresolved native modules
-          return;
+        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message?.includes('@rollup/rollup-')) {
+          return; // Suppress native module warnings
         }
         warn(warning);
       },
     },
-    // Ensure sourcemaps are properly handled
+    // Use ES modules only to avoid native dependencies
+    modulePreload: {
+      polyfill: false,
+    },
+    // Set platform-neutral targets
+    target: 'esnext',
+    // Avoid minification issues with native code
+    minify: 'esbuild',
+    // Keep sourcemap for debugging
     sourcemap: true,
-    // Optimize chunks to avoid native module issues
-    target: 'es2015',
-    // Don't try to handle native modules
-    ssr: false,
+  },
+  // Force JS runtime compatibility
+  esbuild: {
+    target: 'esnext',
   },
 }));
