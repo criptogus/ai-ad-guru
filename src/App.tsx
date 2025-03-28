@@ -29,7 +29,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<Navigate to="/settings/company" replace />} />
         <Route path="/settings/:tab" element={<SettingsPage />} />
         <Route path="/connections" element={<ConnectionsPage />} />
         <Route path="/config" element={<ConfigPage />} />
