@@ -39,8 +39,8 @@ export const getAuthUrl = async (
           error: `Missing required Google Ads credentials: ${missingVars.join(', ')}`
         }),
         {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -63,8 +63,8 @@ export const getAuthUrl = async (
           error: `Missing required Meta Ads credentials: ${missingVars.join(', ')}`
         }),
         {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -87,8 +87,8 @@ export const getAuthUrl = async (
           error: `Missing required LinkedIn Ads credentials: ${missingVars.join(', ')}`
         }),
         {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -114,8 +114,8 @@ export const getAuthUrl = async (
           error: `Missing required Microsoft Ads credentials: ${missingVars.join(', ')}`
         }),
         {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -159,7 +159,7 @@ export const getAuthUrl = async (
     );
   }
   
-  let authUrl;
+  let authUrl = null;
   if (platform === 'google') {
     authUrl = getGoogleAuthUrl(clientId, redirectUri, stateParam);
   } else if (platform === 'meta') {
@@ -170,13 +170,32 @@ export const getAuthUrl = async (
     authUrl = getMicrosoftAuthUrl(clientId, redirectUri, stateParam);
   }
   
-  console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
+  // Enhanced logging to debug auth URL generation
+  console.log(`Generated ${platform} auth URL:`, authUrl ? 'URL generated successfully' : 'FAILED TO GENERATE URL');
+  if (authUrl) {
+    console.log(`Redirect URI used: ${redirectUri}`);
+  } else {
+    console.error(`Failed to generate auth URL for ${platform}`);
+  }
   
-  // Always use "authUrl" as the property name for consistency
+  // Verify we actually have a valid URL before returning
+  if (!authUrl) {
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: `Failed to generate valid authentication URL for ${platform}`
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
+  }
+  
   return new Response(
     JSON.stringify({ 
       success: true, 
-      authUrl: authUrl // Use consistent property name
+      authUrl: authUrl
     }),
     {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

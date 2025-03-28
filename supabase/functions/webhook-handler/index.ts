@@ -62,59 +62,9 @@ Deno.serve(async (req) => {
     const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
     const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
     
+    let event;
     try {
-      const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
-      
-      // Initialize the Supabase client
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-      
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Supabase configuration missing');
-      }
-      
-      const supabase = createClient(supabaseUrl, supabaseKey);
-  
-      // Handle specific webhook events
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const userId = extractUserId(session);
-        
-        if (!userId) {
-          console.error('No user ID found in session. Full session data:', JSON.stringify(session, null, 2));
-          throw new Error('User ID not found in session data');
-        }
-        
-        // Update user profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({ has_paid: true })
-          .eq('id', userId);
-      
-        if (error) {
-          console.error('Error updating profile:', error);
-          throw new Error(`Failed to update user profile: ${error.message}`);
-        }
-        
-        console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
-      } else if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object;
-        const userId = paymentIntent.metadata?.userId;
-        
-        if (userId) {
-          await supabase
-            .from('profiles')
-            .update({ has_paid: true })
-            .eq('id', userId);
-            
-          console.log(`Payment intent succeeded and profile updated for user: ${userId}`);
-        }
-      }
-  
-      return new Response(JSON.stringify({ received: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
+      event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
     } catch (verificationError) {
       console.error('Stripe signature validation failed:', verificationError);
       return new Response(
@@ -125,6 +75,57 @@ Deno.serve(async (req) => {
         }
       );
     }
+    
+    // Initialize the Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing');
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Handle specific webhook events
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = extractUserId(session);
+      
+      if (!userId) {
+        console.error('No user ID found in session:', JSON.stringify(session, null, 2).substring(0, 500));
+        throw new Error('User ID not found in session data');
+      }
+      
+      // Update user profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ has_paid: true })
+        .eq('id', userId);
+    
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw new Error(`Failed to update user profile: ${error.message}`);
+      }
+      
+      console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
+    } else if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object;
+      const userId = paymentIntent.metadata?.userId;
+      
+      if (userId) {
+        await supabase
+          .from('profiles')
+          .update({ has_paid: true })
+          .eq('id', userId);
+          
+        console.log(`Payment intent succeeded and profile updated for user: ${userId}`);
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
   } catch (error) {
     console.error('Webhook error:', error.message);
     return new Response(
