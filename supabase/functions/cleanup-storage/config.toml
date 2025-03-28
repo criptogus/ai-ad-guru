@@ -1,0 +1,4 @@
+
+name = "cleanup-storage"
+entrypoint = "index.ts"
+envs = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]

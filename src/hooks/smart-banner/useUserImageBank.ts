@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { uploadImageToSupabase } from "@/services/storage/imageStorage";
 
 export const useUserImageBank = (userId: string | undefined) => {
   const [userImages, setUserImages] = useState<string[]>([]);
@@ -15,8 +16,8 @@ export const useUserImageBank = (userId: string | undefined) => {
       try {
         const { data, error } = await supabase
           .storage
-          .from('banner-images')
-          .list(userId);
+          .from('ads-assets')
+          .list(`${userId}/banner-images`);
         
         if (error) {
           console.error('Error fetching user images:', error);
@@ -28,8 +29,8 @@ export const useUserImageBank = (userId: string | undefined) => {
             data.map(async (file) => {
               const { data: urlData } = await supabase
                 .storage
-                .from('banner-images')
-                .getPublicUrl(`${userId}/${file.name}`);
+                .from('ads-assets')
+                .getPublicUrl(`${userId}/banner-images/${file.name}`);
               
               return urlData.publicUrl;
             })
@@ -64,34 +65,19 @@ export const useUserImageBank = (userId: string | undefined) => {
         fileReader.readAsDataURL(file);
       });
       
-      // Then save to storage
-      const filename = `upload-${Date.now()}-${file.name}`;
+      // Upload to Supabase Storage
+      const imageUrl = await uploadImageToSupabase(file, userId, 'banner-images');
       
-      const { error } = await supabase
-        .storage
-        .from('banner-images')
-        .upload(`${userId}/${filename}`, file, {
-          contentType: file.type,
-          upsert: false
-        });
-      
-      if (error) {
-        console.error('Error uploading image:', error);
+      if (!imageUrl) {
         toast.error("Error saving image to your bank");
         return result; // Still return local file data URL
       }
       
-      // Get the public URL
-      const { data } = await supabase
-        .storage
-        .from('banner-images')
-        .getPublicUrl(`${userId}/${filename}`);
-      
       // Add to user images
-      setUserImages(prev => [...prev, data.publicUrl]);
+      setUserImages(prev => [...prev, imageUrl]);
       
       toast.success("Image uploaded successfully and saved to your bank");
-      return data.publicUrl;
+      return imageUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image");
@@ -114,27 +100,19 @@ export const useUserImageBank = (userId: string | undefined) => {
       const filename = `banner-${Date.now()}.png`;
       
       // Upload to Supabase Storage
-      const { error } = await supabase
-        .storage
-        .from('banner-images')
-        .upload(`${userId}/${filename}`, blob, {
-          contentType: 'image/png',
-          upsert: false
-        });
+      const savedImageUrl = await uploadImageToSupabase(
+        new File([blob], filename, { type: 'image/png' }),
+        userId,
+        'banner-images'
+      );
       
-      if (error) {
-        console.error('Error saving to image bank:', error);
+      if (!savedImageUrl) {
+        console.error('Error saving to image bank');
         return;
       }
       
-      // Get the public URL for the uploaded image
-      const { data } = await supabase
-        .storage
-        .from('banner-images')
-        .getPublicUrl(`${userId}/${filename}`);
-      
       // Add to user images array
-      setUserImages(prev => [...prev, data.publicUrl]);
+      setUserImages(prev => [...prev, savedImageUrl]);
       
       toast.success("Image saved to your bank", {
         description: "You can access it in your image library"

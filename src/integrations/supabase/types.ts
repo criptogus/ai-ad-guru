@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_results: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          input: string
+          metadata: Json | null
+          response: Json
+          type: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          input: string
+          metadata?: Json | null
+          response: Json
+          type: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          input?: string
+          metadata?: Json | null
+          response?: Json
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_prompts: {
         Row: {
           created_at: string | null

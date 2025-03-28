@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { storeAIResult } from '@/services/ai/aiResultsStorage';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const generateAdImage = async (
     prompt: string, 
@@ -47,9 +50,24 @@ export const useImageGeneration = () => {
         throw new Error(errorMessage);
       }
       
-      console.log("Successfully generated image:", data.imageUrl.substring(0, 50) + "...");
+      const imageUrl = data.imageUrl;
+      console.log("Successfully generated image:", imageUrl.substring(0, 50) + "...");
       
-      return data.imageUrl;
+      // Store the AI result if user is logged in
+      if (user?.id) {
+        await storeAIResult(user.id, {
+          input: prompt,
+          response: {
+            imageUrl: imageUrl,
+            platform,
+            format
+          },
+          type: 'image_generation',
+          metadata: additionalInfo
+        });
+      }
+      
+      return imageUrl;
     } catch (error) {
       console.error("Error in generateAdImage:", error);
       
