@@ -7,7 +7,7 @@
 console.log('[Mock] @rollup/rollup-linux-x64-gnu mock loaded');
 
 // Export a standard mock that satisfies Rollup's expectations
-module.exports = {
+const mockModule = {
   // Core native binding interface
   bindings: null,
   isLoaded: false,
@@ -32,3 +32,14 @@ module.exports = {
     return null;
   }
 };
+
+// Use ESM exports
+export const bindings = mockModule.bindings;
+export const isLoaded = mockModule.isLoaded;
+export const load = mockModule.load;
+export const needsRebuilding = mockModule.needsRebuilding;
+export const getUuid = mockModule.getUuid;
+export const loadBinding = mockModule.loadBinding;
+
+// Default export for compatibility
+export default mockModule;

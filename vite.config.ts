@@ -30,18 +30,10 @@ export default defineConfig(({ mode }) => {
   });
   
   // Create define object with proper typing
-  const defineOptions: Record<string, string> = {};
-  
-  // Add rollup native module defines with proper typing
-  Object.keys(mockNativeBindings).forEach((moduleName) => {
-    defineOptions[`require.resolve("${moduleName}")`] = '"./src/utils/modulePatches/rollup-linux-x64-gnu-mock.js"';
-    // Additional coverage for more complex module resolution patterns
-    defineOptions[`require("${moduleName}")`] = 'null';
-  });
-  
-  // Add direct coverage for problematic modules
-  defineOptions['process.env.ROLLUP_NATIVE_DISABLE'] = 'true';
-  defineOptions['global.__ROLLUP_NATIVE_DISABLED__'] = 'true';
+  const defineOptions: Record<string, string> = {
+    'process.env.ROLLUP_NATIVE_DISABLE': 'true',
+    'global.__ROLLUP_NATIVE_DISABLED__': 'true'
+  };
   
   return {
     server: {
@@ -72,7 +64,12 @@ export default defineConfig(({ mode }) => {
               code: `
                 console.log('[Vite Transform] Using pure JS implementation for: ${id}');
                 export default {}; 
-                module.exports = {};
+                export const bindings = null;
+                export const isLoaded = false;
+                export const load = () => null;
+                export const needsRebuilding = () => false;
+                export const getUuid = () => 'mocked-uuid';
+                export const loadBinding = () => null;
               `,
               map: null
             };

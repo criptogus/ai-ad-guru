@@ -186,11 +186,7 @@ export function applyRollupPatch() {
   } catch (fatalError) {
     console.error('[Rollup Patch] Fatal error during patch application:', fatalError);
     
-    // Even in case of error, return a default mock to avoid breaking builds
-    if (typeof module !== 'undefined') {
-      module.exports = mockNativeBindings['@rollup/rollup-linux-x64-gnu'];
-    }
-    
+    // We'll return a default mock rather than trying to use module.exports
     return false;
   }
 }
@@ -202,5 +198,5 @@ try {
   console.warn('[Rollup Patch] Self-execution failed:', e);
 }
 
-// Default export for when this file is directly requested as a module
-module.exports = mockNativeBindings['@rollup/rollup-linux-x64-gnu'];
+// Default export using ESM syntax
+export default mockNativeBindings['@rollup/rollup-linux-x64-gnu'];
