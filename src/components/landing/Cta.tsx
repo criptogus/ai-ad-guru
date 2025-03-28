@@ -1,92 +1,63 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, BarChart4 } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 
 export const Cta: React.FC = () => {
   const navigate = useNavigate();
-
+  
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 gradient-bg text-white">
-      <div className="container mx-auto max-w-5xl">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="text-left">
-            <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-white/20 text-white mb-6">
-              <Zap size={16} className="mr-1" />
-              BOOST YOUR ROAS
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">Ready to Transform Your Ad Performance?</h2>
-            <p className="text-xl mb-8">
-              Join businesses using AI Ad Guru to create high-converting ads across Google, Meta, LinkedIn, and Microsoft platforms, reducing their cost per acquisition by an average of 37%.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                className="text-lg px-8 bg-white text-brand-700 hover:bg-gray-100 shadow-lg"
-                onClick={() => navigate("/register")}
-              >
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 border-white text-white bg-white/10 hover:bg-white/30"
-                onClick={() => navigate("/pricing")}
-              >
-                View Pricing
-              </Button>
-            </div>
-            <p className="text-sm mt-4 text-white/70">
-              No credit card required • 14-day free trial • 5 credits included
-            </p>
-          </div>
+    <section className="py-16 px-4 bg-gradient-to-br from-brand-700 to-brand-900 text-white">
+      <div className="container mx-auto max-w-5xl relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Launch Winning Ads Today
+          </h2>
+          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+            Join 5K+ pros using the future of advertising. 
+            Save time, increase ROAS, and grow your business with AI.
+          </p>
           
-          <div className="bg-white/10 p-8 rounded-lg backdrop-blur-sm border border-white/20">
-            <div className="flex items-center mb-6">
-              <div className="p-3 bg-brand-500 rounded-full mr-4">
-                <BarChart4 className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Performance Impact</h3>
-                <p className="text-white/70">Average results from our customers</p>
-              </div>
-            </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="relative inline-block"
+          >
+            <Button 
+              size="lg" 
+              className="bg-white hover:bg-gray-100 text-brand-700 text-lg px-8 py-6 font-semibold relative z-10 overflow-hidden group"
+              onClick={() => navigate("/register")}
+            >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-brand-200 to-brand-300 opacity-0 group-hover:opacity-50 transition-opacity duration-300 z-0"></span>
+              <Zap className="mr-2 h-5 w-5 relative z-10" />
+              <span className="relative z-10">Start Free Trial Now</span>
+              <ArrowRight className="ml-2 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </Button>
             
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">Click-Through Rate</span>
-                  <span className="font-bold text-brand-400">+43%</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
-                  <div className="bg-brand-400 h-2 rounded-full" style={{ width: "43%" }}></div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">Conversion Rate</span>
-                  <span className="font-bold text-brand-400">+37%</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
-                  <div className="bg-brand-400 h-2 rounded-full" style={{ width: "37%" }}></div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">Time Saved</span>
-                  <span className="font-bold text-brand-400">+82%</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
-                  <div className="bg-brand-400 h-2 rounded-full" style={{ width: "82%" }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            {/* Animated ring */}
+            <span className="absolute inset-0 rounded-md ring-4 ring-white/30 animate-pulse"></span>
+          </motion.div>
+          
+          <p className="mt-6 text-sm opacity-80">
+            14-day free trial • 5 credits included • No credit card required
+          </p>
+        </motion.div>
+      </div>
+      
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
       </div>
     </section>
   );
