@@ -11,7 +11,6 @@ import {
   Users,
   FileText,
   ArrowRightLeft,
-  Image,
   Layers
 } from "lucide-react";
 
@@ -45,12 +44,6 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       href: "/analytics",
       icon: BarChart3,
       active: activePage === "analytics" || currentPath === "/analytics"
-    },
-    {
-      name: "Assets",
-      href: "/assets",
-      icon: FileText,
-      active: activePage === "assets" || currentPath === "/assets"
     },
     {
       name: "Credits",

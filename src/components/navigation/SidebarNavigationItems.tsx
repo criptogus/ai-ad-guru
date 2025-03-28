@@ -7,7 +7,6 @@ import {
   Settings, 
   Users,
   CreditCard,
-  Image, 
   Megaphone,
   Compass
 } from 'lucide-react';
@@ -39,12 +38,6 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
       icon: BarChart,
       path: '/analytics',
       active: currentPath.includes('/analytics'),
-    },
-    {
-      name: 'Assets',
-      icon: Image,
-      path: '/assets',
-      active: currentPath.includes('/assets'),
     },
     {
       name: 'Team',
