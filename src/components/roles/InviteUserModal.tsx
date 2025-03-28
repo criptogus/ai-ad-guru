@@ -1,69 +1,58 @@
 
 import React, { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserRole } from "@/services/types";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  role: z.enum(["Admin", "Editor", "Viewer", "Analyst"]),
-});
 
 interface InviteUserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onInvite: (email: string, role: UserRole) => Promise<void>;
+  onSendInvitation: (email: string, role: UserRole) => Promise<void>;
 }
 
-const InviteUserModal: React.FC<InviteUserModalProps> = ({
-  open,
+const InviteUserModal: React.FC<InviteUserModalProps> = ({ 
+  open, 
   onOpenChange,
-  onInvite,
+  onSendInvitation
 }) => {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<UserRole>("Editor");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      role: "Viewer",
-    },
-  });
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset error state
+    setEmailError("");
+    
+    // Validate email
+    if (!email.trim()) {
+      setEmailError("Email is required");
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      await onInvite(values.email, values.role as UserRole);
-      form.reset();
-      onOpenChange(false);
+      await onSendInvitation(email, role);
+      // Reset form after successful submission
+      setEmail("");
+      setRole("Editor");
     } catch (error) {
-      console.error("Error inviting user:", error);
+      console.error("Error sending invitation:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -75,67 +64,61 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
         <DialogHeader>
           <DialogTitle>Invite Team Member</DialogTitle>
           <DialogDescription>
-            Invite a new user to join your team with specific access permissions.
+            Send an invitation to collaborate on your ad campaigns.
           </DialogDescription>
         </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="user@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="colleague@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className={emailError ? "border-red-500" : ""}
             />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Editor">Editor</SelectItem>
-                      <SelectItem value="Viewer">Viewer</SelectItem>
-                      <SelectItem value="Analyst">Analyst</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Inviting..." : "Send Invitation"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            {emailError && <p className="text-sm text-red-500">{emailError}</p>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="Editor">Editor</SelectItem>
+                <SelectItem value="Analyst">Analyst</SelectItem>
+                <SelectItem value="Viewer">Viewer</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <p className="text-sm text-muted-foreground mt-2">
+              {role === "Admin" && "Full access to all features, including team management and billing."}
+              {role === "Editor" && "Can create and edit campaigns, but cannot manage the team or billing."}
+              {role === "Analyst" && "Can view analytics and create reports, but cannot modify campaigns."}
+              {role === "Viewer" && "Can only view campaigns and analytics. No editing permissions."}
+            </p>
+          </div>
+          
+          <DialogFooter className="mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send Invitation"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
