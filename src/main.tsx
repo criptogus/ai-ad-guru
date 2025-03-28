@@ -1,34 +1,24 @@
 
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { HelmetProvider } from 'react-helmet-async';
-import { LanguageProvider } from './contexts/LanguageContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+// Apply module patching before any other imports
+import './utils/patchLoader.js';
 
-// Create a React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from 'sonner';
+import { ThemeProvider } from '@/components/theme-provider';
+import App from './App';
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <LanguageProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </LanguageProvider>
-      </HelmetProvider>
-    </QueryClientProvider>
-  </React.StrictMode>,
-)
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
+        <App />
+        <Toaster />
+        <Sonner position="top-right" />
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);

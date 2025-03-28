@@ -18,10 +18,24 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Alias native modules to our patch
+      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./src/utils/modulePatch.js"),
+      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./src/utils/modulePatch.js"),
+      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./src/utils/modulePatch.js"),
+      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./src/utils/modulePatch.js"),
     },
   },
   optimizeDeps: {
     exclude: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-*', '@rollup/rollup-win32-*'],
+    esbuildOptions: {
+      // Define empty modules for native dependencies
+      define: {
+        'require.resolve("@rollup/rollup-linux-x64-gnu")': 'undefined',
+        'require.resolve("@rollup/rollup-darwin-x64")': 'undefined',
+        'require.resolve("@rollup/rollup-darwin-arm64")': 'undefined',
+        'require.resolve("@rollup/rollup-win32-x64-msvc")': 'undefined',
+      },
+    },
   },
   build: {
     // Completely disable native addons
