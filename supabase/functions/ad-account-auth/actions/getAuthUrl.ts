@@ -1,4 +1,3 @@
-
 import { corsHeaders } from "../utils/cors.ts";
 import { storeOAuthState } from "../utils/state.ts";
 import { getGoogleAuthUrl } from "../platforms/google.ts";
@@ -176,7 +175,7 @@ export const getAuthUrl = async (
   return new Response(
     JSON.stringify({ 
       success: true, 
-      authUrl: authUrl
+      authUrl 
     }),
     {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
