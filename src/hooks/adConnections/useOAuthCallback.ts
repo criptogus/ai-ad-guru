@@ -65,7 +65,7 @@ export const useOAuthCallback = () => {
         event: 'oauth_connection_error',
         user_id: userId,
         timestamp: new Date().toISOString(),
-        error: error.message || "Unknown error"
+        details: { errorMessage: error.message || "Unknown error" }
       }).catch(e => console.warn("Failed to log security event"));
       
       // Show error toast

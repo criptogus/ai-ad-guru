@@ -1,109 +1,113 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Triggers the cleanup-storage Edge Function to free up disk space
- * @param options Cleanup options
- * @returns Success status and details about the cleanup operation
+ * Service for cleaning up storage to free disk space
  */
-export const triggerStorageCleanup = async (options: {
-  days?: number;
-  bucket?: string;
-  folder?: string;
-  aggressive?: boolean;
-} = {}): Promise<{
-  success: boolean;
-  totalFilesRemoved?: number;
-  message?: string;
-  error?: string;
-}> => {
-  try {
-    // Default options
-    const cleanupOptions = {
-      days: options.days || 7,
-      bucket: options.bucket || 'ads-assets',
-      folder: options.folder || 'temp',
-      aggressive: options.aggressive || false
-    };
-    
-    // Call the cleanup-storage Edge Function
-    const { data, error } = await supabase.functions.invoke('cleanup-storage', {
-      body: cleanupOptions
-    });
-    
-    if (error) {
-      console.error('Error triggering storage cleanup:', error);
-      return {
-        success: false,
-        error: error.message || 'Unknown error occurred'
-      };
-    }
-    
-    return {
-      success: data.success,
-      totalFilesRemoved: data.totalFilesRemoved,
-      message: data.message,
-      error: data.error
-    };
-    
-  } catch (error) {
-    console.error('Unexpected error during storage cleanup:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
-  }
-};
-
-/**
- * Hook for managing storage cleanup operations
- */
-export const useStorageCleanup = () => {
-  const runCleanup = async (options: {
-    days?: number;
-    bucket?: string;
-    folder?: string;
-    aggressive?: boolean;
-    showToast?: boolean;
-  } = {}) => {
-    const showToast = options.showToast !== false;
-    
-    if (showToast) {
-      toast.loading('Cleaning up storage...');
-    }
-    
+export const storageCleanupService = {
+  /**
+   * Manually trigger storage cleanup on Supabase Edge Functions
+   */
+  triggerCleanup: async () => {
     try {
-      const result = await triggerStorageCleanup({
-        days: options.days,
-        bucket: options.bucket,
-        folder: options.folder,
-        aggressive: options.aggressive
+      console.log("Triggering storage cleanup...");
+      const { data, error } = await supabase.functions.invoke('cleanup-storage', {
+        body: { manual: true, aggressive: true }
       });
       
-      if (result.success) {
-        if (showToast) {
-          toast.success(result.message || `Successfully cleaned up ${result.totalFilesRemoved} files`);
-        }
-        return result;
-      } else {
-        if (showToast) {
-          toast.error(result.error || 'Failed to clean up storage');
-        }
-        return result;
+      if (error) {
+        console.error("Storage cleanup error:", error);
+        throw new Error(`Cleanup failed: ${error.message}`);
       }
+      
+      return data;
     } catch (error) {
-      if (showToast) {
-        toast.error('Error during storage cleanup');
-      }
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      };
+      console.error("Failed to trigger storage cleanup:", error);
+      throw error;
     }
-  };
+  },
   
-  return {
-    runCleanup
-  };
+  /**
+   * Clear temporary files from localStorage to free up space
+   */
+  clearTemporaryFiles: () => {
+    try {
+      // Clear any temporary files stored in localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('temp_') || key.includes('image_cache'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`Cleared ${keysToRemove.length} temporary files from localStorage`);
+      
+      return keysToRemove.length;
+    } catch (error) {
+      console.error("Failed to clear temporary files:", error);
+      return 0;
+    }
+  },
+  
+  /**
+   * Clear IndexedDB storage used by the application
+   */
+  clearIndexedDBStorage: async () => {
+    try {
+      const databases = await window.indexedDB.databases();
+      
+      // Close and delete any databases that might be using space
+      const deletionPromises = databases.map(db => {
+        return new Promise((resolve, reject) => {
+          if (!db.name) return resolve(false);
+          
+          const request = window.indexedDB.deleteDatabase(db.name);
+          
+          request.onsuccess = () => {
+            console.log(`Successfully deleted database: ${db.name}`);
+            resolve(true);
+          };
+          
+          request.onerror = () => {
+            console.error(`Failed to delete database: ${db.name}`);
+            resolve(false);
+          };
+        });
+      });
+      
+      const results = await Promise.all(deletionPromises);
+      return results.filter(Boolean).length;
+    } catch (error) {
+      console.error("Failed to clear IndexedDB storage:", error);
+      return 0;
+    }
+  },
+  
+  /**
+   * Perform a full local cleanup to free up space
+   */
+  fullLocalCleanup: async () => {
+    const tempFilesCleared = storageCleanupService.clearTemporaryFiles();
+    const dbsCleared = await storageCleanupService.clearIndexedDBStorage();
+    
+    // Also clear application cache if available
+    if ('caches' in window) {
+      try {
+        const cacheKeys = await window.caches.keys();
+        await Promise.all(
+          cacheKeys.map(cacheKey => window.caches.delete(cacheKey))
+        );
+        console.log(`Cleared ${cacheKeys.length} caches`);
+      } catch (e) {
+        console.error("Failed to clear caches:", e);
+      }
+    }
+    
+    return {
+      tempFilesCleared,
+      dbsCleared
+    };
+  }
 };

@@ -48,14 +48,14 @@ const DashboardPage: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         <DashboardHeader user={dashboardUser} />
         
+        {/* Storage Cleanup Card - Moved higher for more visibility */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+          <StorageCleanupCard />
+        </div>
+        
         {/* Full width Notifications */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <SmartNotifications />
-        </div>
-        
-        {/* Storage Cleanup Card */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          <StorageCleanupCard />
         </div>
         
         {/* Credits Status as a solo horizontal column */}

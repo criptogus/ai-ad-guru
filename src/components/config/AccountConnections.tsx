@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw } from "lucide-react";
-import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
+import { useAdAccountConnections } from "@/hooks/adConnections";
 
 import AccountErrorDisplay from "./AccountErrorDisplay";
 import PlatformConnectionCard from "./PlatformConnectionCard";

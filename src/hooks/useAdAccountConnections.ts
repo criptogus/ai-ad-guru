@@ -1,3 +1,4 @@
 
-import { useAdAccountConnections } from './adConnections';
+import { useAdAccountConnections } from './adConnections/useAdAccountConnections';
+export { useAdAccountConnections };
 export default useAdAccountConnections;

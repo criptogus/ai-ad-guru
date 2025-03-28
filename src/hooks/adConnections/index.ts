@@ -1,5 +1,5 @@
 
-export * from './useAdAccountConnections';
-export * from './useOAuthCallback';
-export * from './useConnectionInitiation';
+export { useAdAccountConnections } from './useAdAccountConnections';
+export { useOAuthCallback } from './useOAuthCallback';
+export { useConnectionInitiation } from './useConnectionInitiation';
 export * from './types';

@@ -1,11 +1,11 @@
 
 import React from "react";
-import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
+import { useAdAccountConnections } from "@/hooks/adConnections";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExclamationTriangleIcon, ShieldCheckIcon } from "@radix-ui/react-icons";
-import { Goal, Facebook, Linkedin, ServerIcon } from "lucide-react";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck } from "lucide-react";
 import PlatformConnectionCard from "./PlatformConnectionCard";
 import { toast } from "sonner";
 
@@ -43,7 +43,7 @@ const ConnectionsSection: React.FC = () => {
         
         {/* Security badge */}
         <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-3 py-1 rounded-full">
-          <ShieldCheckIcon className="h-4 w-4" />
+          <ShieldCheck className="h-4 w-4" />
           <span>Secure OAuth 2.0</span>
         </div>
       </div>
