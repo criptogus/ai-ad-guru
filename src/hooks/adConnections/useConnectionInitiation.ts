@@ -23,19 +23,15 @@ export const useConnectionInitiation = () => {
     }
     
     try {
-      // Clear previous errors
       setIsConnecting(true);
       setError(null);
       setErrorDetails(null);
       setErrorType(null);
       
-      // Prepare redirect URI - use the current page to handle the callback
       const redirectUri = `${window.location.origin}/config`;
       
-      // Only log essential information
       console.log(`Initiating ${platform} connection`);
       
-      // Log connection attempt for security purposes - optimized to reduce payload size
       await tokenSecurity.logSecurityEvent({
         event: 'oauth_initiated',
         user_id: userId,
@@ -43,14 +39,8 @@ export const useConnectionInitiation = () => {
         timestamp: new Date().toISOString()
       });
       
-      // Call OAuth service to get authorization URL
-      const authUrl = await initiateOAuth({
-        platform,
-        userId,
-        redirectUri
-      });
+      const authUrl = await initiateOAuth({ platform, userId, redirectUri });
       
-      // Redirect to the authorization URL
       if (authUrl) {
         window.location.href = authUrl;
       } else {

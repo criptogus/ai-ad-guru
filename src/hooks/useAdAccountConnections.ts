@@ -1,3 +1,3 @@
 
-// Direct export to reduce unnecessary wrapper code
-export { useAdAccountConnections } from './adConnections';
+import { useAdAccountConnections } from './adConnections';
+export default useAdAccountConnections;
