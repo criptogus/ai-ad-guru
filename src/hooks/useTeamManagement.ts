@@ -114,8 +114,7 @@ export const useTeamManagement = () => {
       const success = await updateTeamMemberRole(id, role);
       
       if (success) {
-        toast({
-          title: "Role updated",
+        toast.success("Role updated", {
           description: "The team member's role has been updated successfully."
         });
         
@@ -127,10 +126,8 @@ export const useTeamManagement = () => {
       }
     } catch (error) {
       console.error("Error updating team member role:", error);
-      toast({
-        title: "Failed to update role",
-        description: "There was an error updating the team member's role. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to update role", {
+        description: "There was an error updating the team member's role. Please try again."
       });
       return false;
     } finally {

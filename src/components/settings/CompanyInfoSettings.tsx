@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ImagePlus, Trash } from "lucide-react";
+import { ImagePlus, Trash, Save, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanyInfo } from "@/types/supabase";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const INDUSTRY_OPTIONS = [
   "Software & Technology",
@@ -327,7 +329,7 @@ const CompanyInfoSettings: React.FC = () => {
           <CardDescription>Loading your company details...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center p-6">
-          <div className="h-8 w-8 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
         </CardContent>
       </Card>
     );
@@ -341,12 +343,15 @@ const CompanyInfoSettings: React.FC = () => {
           Define your brand identity for AI-generated content
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Basic Information</h3>
+        <div className="space-y-5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-medium">Basic Information</h3>
+            <Separator className="flex-1" />
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="company-name">Company Name *</Label>
               <Input
@@ -355,6 +360,7 @@ const CompanyInfoSettings: React.FC = () => {
                 onChange={(e) => handleInputChange("company_name", e.target.value)}
                 placeholder="Your Company Inc."
                 required
+                className="input-focus"
               />
             </div>
             
@@ -365,21 +371,22 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.website || ""}
                 onChange={(e) => handleInputChange("website", e.target.value)}
                 placeholder="https://yourcompany.com"
+                className="input-focus"
               />
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Select 
                 value={companyInfo.industry || ""} 
                 onValueChange={(value) => handleInputChange("industry", value)}
               >
-                <SelectTrigger id="industry">
+                <SelectTrigger id="industry" className="focus-ring">
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {INDUSTRY_OPTIONS.map((industry) => (
                     <SelectItem key={industry} value={industry}>
                       {industry}
@@ -396,17 +403,21 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.target_market || ""}
                 onChange={(e) => handleInputChange("target_market", e.target.value)}
                 placeholder="Small businesses, enterprise, etc."
+                className="input-focus"
               />
             </div>
           </div>
         </div>
         
         {/* Logo Upload */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Logo</h3>
+        <div className="space-y-5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-medium">Logo</h3>
+            <Separator className="flex-1" />
+          </div>
           
-          <div className="flex items-start gap-4">
-            <div className="h-24 w-24 border rounded-md flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
+          <div className="flex items-start gap-6">
+            <div className="h-24 w-24 border rounded-lg flex items-center justify-center overflow-hidden bg-muted">
               {companyInfo.logo_url ? (
                 <img 
                   src={companyInfo.logo_url} 
@@ -414,26 +425,24 @@ const CompanyInfoSettings: React.FC = () => {
                   className="max-h-full max-w-full object-contain"
                 />
               ) : (
-                <ImagePlus className="h-8 w-8 text-gray-400" />
+                <ImagePlus className="h-8 w-8 text-muted-foreground" />
               )}
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3 flex-1">
               <Label>Upload Logo (Recommended: 500x500px, PNG/SVG)</Label>
               
-              <div className="flex flex-col xs:flex-row gap-2">
+              <div className="flex flex-wrap gap-3">
                 <Button 
                   variant="outline" 
                   onClick={() => document.getElementById('logo-upload')?.click()}
                   disabled={isUploading}
-                  className="relative"
+                  className="relative focus-ring"
                 >
                   {isUploading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                      <div className="h-5 w-5 border-t-2 border-current rounded-full animate-spin"></div>
-                    </div>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {!isUploading && <ImagePlus className="mr-2 h-4 w-4" />}
                   {companyInfo.logo_url ? "Change Logo" : "Upload Logo"}
                 </Button>
                 
@@ -442,6 +451,7 @@ const CompanyInfoSettings: React.FC = () => {
                     variant="outline" 
                     onClick={handleRemoveLogo}
                     disabled={isUploading}
+                    className="text-destructive hover:text-destructive focus-ring"
                   >
                     <Trash className="mr-2 h-4 w-4" />
                     Remove
@@ -458,27 +468,40 @@ const CompanyInfoSettings: React.FC = () => {
               </div>
               
               <p className="text-sm text-muted-foreground">
-                This logo will be used in your generated content
+                This logo will be used in your AI-generated ad creatives
               </p>
             </div>
           </div>
         </div>
         
         {/* Content Style */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Content Style</h3>
+        <div className="space-y-5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-medium">Content Style</h3>
+            <Separator className="flex-1" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-xs text-primary px-2 py-1 bg-primary/10 rounded-full">AI-Important</div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">These settings significantly impact how AI generates your ad content</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>
               <Select 
                 value={companyInfo.language || "English"} 
                 onValueChange={(value) => handleInputChange("language", value)}
               >
-                <SelectTrigger id="language">
+                <SelectTrigger id="language" className="focus-ring">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {LANGUAGE_OPTIONS.map((language) => (
                     <SelectItem key={language} value={language}>
                       {language}
@@ -494,10 +517,10 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.tone_of_voice || "Professional"} 
                 onValueChange={(value) => handleInputChange("tone_of_voice", value)}
               >
-                <SelectTrigger id="tone">
+                <SelectTrigger id="tone" className="focus-ring">
                   <SelectValue placeholder="Select tone" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {TONE_OPTIONS.map((tone) => (
                     <SelectItem key={tone} value={tone}>
                       {tone}
@@ -507,7 +530,7 @@ const CompanyInfoSettings: React.FC = () => {
               </Select>
               
               {companyInfo.tone_of_voice && companyInfo.tone_of_voice !== "Custom" && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   Example: "{TONE_EXAMPLES[companyInfo.tone_of_voice as keyof typeof TONE_EXAMPLES]}"
                 </p>
               )}
@@ -515,27 +538,30 @@ const CompanyInfoSettings: React.FC = () => {
           </div>
           
           {companyInfo.tone_of_voice === "Custom" && (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-2">
               <Label htmlFor="custom-tone">Custom Tone Description</Label>
               <Textarea
                 id="custom-tone"
                 value={companyInfo.custom_tone || ""}
                 onChange={(e) => handleInputChange("custom_tone", e.target.value)}
                 placeholder="Describe your brand's unique tone of voice..."
-                className="min-h-[100px]"
+                className="min-h-[100px] input-focus"
               />
             </div>
           )}
         </div>
         
         {/* Brand Colors */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Brand Colors</h3>
+        <div className="space-y-5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-medium">Brand Colors</h3>
+            <Separator className="flex-1" />
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="primary-color">Primary Color</Label>
-              <div className="flex gap-2">
+              <div className="flex gap-3 items-center">
                 <div 
                   className="h-10 w-10 rounded-md border"
                   style={{ backgroundColor: companyInfo.primary_color || "#0070f3" }}
@@ -545,14 +571,14 @@ const CompanyInfoSettings: React.FC = () => {
                   type="color"
                   value={companyInfo.primary_color || "#0070f3"}
                   onChange={(e) => handleInputChange("primary_color", e.target.value)}
-                  className="w-full h-10"
+                  className="w-full h-10 input-focus cursor-pointer"
                 />
               </div>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="secondary-color">Secondary Color (Optional)</Label>
-              <div className="flex gap-2">
+              <div className="flex gap-3 items-center">
                 <div 
                   className="h-10 w-10 rounded-md border"
                   style={{ backgroundColor: companyInfo.secondary_color || "" }}
@@ -562,7 +588,7 @@ const CompanyInfoSettings: React.FC = () => {
                   type="color"
                   value={companyInfo.secondary_color || "#ffffff"}
                   onChange={(e) => handleInputChange("secondary_color", e.target.value)}
-                  className="w-full h-10"
+                  className="w-full h-10 input-focus cursor-pointer"
                 />
               </div>
             </div>
@@ -578,10 +604,15 @@ const CompanyInfoSettings: React.FC = () => {
           >
             {isSaving ? (
               <>
-                <div className="h-4 w-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Saving...
               </>
-            ) : "Save Changes"}
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
           </Button>
         </div>
       </CardContent>

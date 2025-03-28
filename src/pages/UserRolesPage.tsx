@@ -1,14 +1,13 @@
 
 import React from "react";
-import AppLayout from "@/components/AppLayout";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import SafeAppLayout from "@/components/SafeAppLayout";
+import { Card } from "@/components/ui/card";
+import { useTeamManagement } from "@/hooks/useTeamManagement";
 import TeamMembersCard from "@/components/roles/TeamMembersCard";
 import PendingInvitationsCard from "@/components/roles/PendingInvitationsCard";
 import RolesPermissionsCard from "@/components/roles/RolesPermissionsCard";
 import InviteUserModal from "@/components/roles/InviteUserModal";
 import EditTeamMemberModal from "@/components/roles/EditTeamMemberModal";
-import { useTeamManagement } from "@/hooks/useTeamManagement";
 
 const UserRolesPage: React.FC = () => {
   const {
@@ -27,57 +26,57 @@ const UserRolesPage: React.FC = () => {
     handleResendInvitation,
     handleRevokeInvitation,
     handleUpdateTeamMemberRole,
-    handleEditMember
+    handleEditMember,
   } = useTeamManagement();
 
   return (
-    <AppLayout activePage="roles">
-      <div className="container px-4 py-6 mx-auto max-w-6xl">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Team Management</h1>
-            <p className="text-muted-foreground mt-1">Manage your team members and their permissions</p>
-          </div>
-          <Button onClick={() => setShowInviteModal(true)} className="flex items-center gap-2">
-            <PlusCircle className="h-4 w-4" />
-            Invite Team Member
-          </Button>
-        </div>
-
-        <div className="space-y-6">
-          <TeamMembersCard 
-            isLoading={isLoading} 
-            teamMembers={teamMembers} 
+    <SafeAppLayout activePage="settings">
+      <div className="container mx-auto py-6">
+        <h1 className="text-2xl font-bold mb-6">Team Roles & Permissions</h1>
+        
+        <div className="grid grid-cols-1 gap-6">
+          {/* Team Members Section */}
+          <TeamMembersCard
+            teamMembers={teamMembers}
+            isLoading={isLoading}
             getBadgeVariant={getBadgeVariant}
+            onInviteUser={() => setShowInviteModal(true)}
             onEditMember={handleEditMember}
           />
           
-          <PendingInvitationsCard 
-            invitations={invitations} 
+          {/* Pending Invitations Section */}
+          <PendingInvitationsCard
+            invitations={invitations}
+            isLoading={isLoading}
             getBadgeVariant={getBadgeVariant}
             onResendInvitation={handleResendInvitation}
             onRevokeInvitation={handleRevokeInvitation}
           />
           
+          {/* Roles & Permissions Explanation */}
           <RolesPermissionsCard rolePermissions={rolePermissions} />
         </div>
-
-        <InviteUserModal 
-          open={showInviteModal}
-          onOpenChange={setShowInviteModal}
+        
+        {/* Invite User Modal */}
+        <InviteUserModal
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
           onSendInvitation={handleSendInvitation}
           isSubmitting={isSubmitting}
         />
-
-        <EditTeamMemberModal
-          open={showEditModal}
-          onOpenChange={setShowEditModal}
-          onUpdateRole={handleUpdateTeamMemberRole}
-          isSubmitting={isSubmitting}
-          teamMember={selectedMember}
-        />
+        
+        {/* Edit Team Member Modal */}
+        {selectedMember && (
+          <EditTeamMemberModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            member={selectedMember}
+            onUpdateRole={handleUpdateTeamMemberRole}
+            isSubmitting={isSubmitting}
+          />
+        )}
       </div>
-    </AppLayout>
+    </SafeAppLayout>
   );
 };
 
