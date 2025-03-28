@@ -3,16 +3,18 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Sparkles } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { MicrosoftAdCard } from "./microsoft";
+import { GoogleAd } from "@/hooks/adGeneration";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MicrosoftAdsTabProps {
-  microsoftAds: any[];
+  microsoftAds: GoogleAd[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
-  onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   mindTrigger?: string;
 }
 
@@ -30,6 +32,18 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      {mindTrigger && (
+        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Active Mind Trigger
+          </AlertTitle>
+          <AlertDescription className="text-blue-600 dark:text-blue-300">
+            {mindTrigger}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Microsoft Ads</h3>
         <div className="flex gap-2">
@@ -89,6 +103,9 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
                 </>
               )}
             </Button>
+            <div className="text-xs text-muted-foreground mt-2">
+              This will use 5 credits
+            </div>
           </CardContent>
         </Card>
       )}
