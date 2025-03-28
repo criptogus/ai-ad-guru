@@ -55,10 +55,12 @@ const ConnectionsSection: React.FC = () => {
           <AlertDescription>
             {error}
             {errorDetails && (
-              <div className="mt-2 text-sm">
-                <details>
-                  <summary className="cursor-pointer font-medium">Details</summary>
-                  <p className="mt-2">{errorDetails}</p>
+              <div className="mt-2">
+                <details className="group">
+                  <summary className="cursor-pointer font-medium flex items-center gap-1 text-sm">
+                    <span className="underline-offset-4 group-hover:underline">Details</span>
+                  </summary>
+                  <p className="mt-2 text-sm font-mono bg-destructive/10 p-3 rounded">{errorDetails}</p>
                 </details>
               </div>
             )}

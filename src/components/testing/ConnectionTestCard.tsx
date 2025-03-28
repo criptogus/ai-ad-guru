@@ -28,13 +28,13 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader>
-        <CardTitle>{platformName} API Connection Test</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">{platformName} API Connection Test</CardTitle>
         <CardDescription>Verify your {platformName} API credentials</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="p-4 rounded-md bg-muted/50">
+          <div className="p-4 rounded-md bg-muted">
             <h4 className="text-sm font-medium mb-2">Connection Status</h4>
             <div className="flex items-center">
               {status === 'untested' && (
@@ -72,6 +72,7 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
                 onClick={onTest} 
                 disabled={isLoading}
                 className="w-full"
+                variant="default"
               >
                 {isLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
                 {isLoading ? 'Testing Connection...' : 'Test Connection'}

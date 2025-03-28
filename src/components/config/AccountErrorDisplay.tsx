@@ -20,13 +20,15 @@ const AccountErrorDisplay: React.FC<AccountErrorDisplayProps> = ({
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>Connection Error</AlertTitle>
-      <AlertDescription>
+      <AlertDescription className="mt-1">
         {error}
         {errorDetails && (
-          <div className="mt-2 text-sm">
-            <details>
-              <summary className="cursor-pointer font-medium">Technical Details</summary>
-              <p className="mt-2 text-xs font-mono bg-destructive/10 p-2 rounded">{errorDetails}</p>
+          <div className="mt-2">
+            <details className="group">
+              <summary className="cursor-pointer font-medium flex items-center gap-1 text-sm">
+                <span className="underline-offset-4 group-hover:underline">Technical Details</span>
+              </summary>
+              <p className="mt-2 text-xs font-mono bg-destructive/10 p-3 rounded">{errorDetails}</p>
             </details>
           </div>
         )}

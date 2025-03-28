@@ -44,25 +44,25 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   const platformConfigs = {
     google: {
       name: "Google Ads",
-      icon: <Goal className="h-10 w-10 text-blue-500" />,
+      icon: <Goal className="h-10 w-10 text-primary" />,
       connectText: "Connect Google Ads",
       disconnectText: "Disconnect Google Ads",
     },
     meta: {
       name: "Meta Ads",
-      icon: <Facebook className="h-10 w-10 text-blue-600" />,
+      icon: <Facebook className="h-10 w-10 text-primary" />,
       connectText: "Connect Meta Ads",
       disconnectText: "Disconnect Meta Ads",
     },
     linkedin: {
       name: "LinkedIn Ads",
-      icon: <Linkedin className="h-10 w-10 text-blue-700" />,
+      icon: <Linkedin className="h-10 w-10 text-primary" />,
       connectText: "Connect LinkedIn Ads",
       disconnectText: "Disconnect LinkedIn Ads",
     },
     microsoft: {
       name: "Microsoft Ads",
-      icon: <ServerIcon className="h-10 w-10 text-blue-500" />,
+      icon: <ServerIcon className="h-10 w-10 text-primary" />,
       connectText: "Connect Microsoft Ads",
       disconnectText: "Disconnect Microsoft Ads",
     }
@@ -71,10 +71,10 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   const config = platformConfigs[platform];
 
   return (
-    <Card className="relative overflow-hidden border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="flex items-center justify-center py-6">
+    <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="flex items-center justify-center py-6 space-y-1">
         {config.icon}
-        <h3 className="text-lg font-medium mt-2">{config.name}</h3>
+        <h3 className="text-lg font-medium">{config.name}</h3>
       </CardHeader>
       <CardContent className="text-center pb-2">
         {isConnected ? (
@@ -84,67 +84,62 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
               <span>Securely Connected</span>
             </div>
             {platformConnection.account_id && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Account: {platformConnection.account_id.substring(0, 6)}...
               </p>
             )}
             {platformConnection.updated_at && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Connected {getConnectionTime(platformConnection.updated_at)}
               </p>
             )}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 font-medium">
+          <div className="text-sm text-muted-foreground font-medium">
             Not connected
           </div>
         )}
       </CardContent>
       <CardFooter className="flex justify-center pt-2 pb-6">
-        {isConnected ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {isConnected ? (
                 <Button 
                   variant="outline" 
                   onClick={() => onRemove(platformConnection.id, platform)}
-                  className="border-red-300 hover:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600"
+                  className="border-destructive hover:border-destructive/90 hover:bg-destructive/10 text-destructive"
                   disabled={isConnecting}
                 >
                   {config.disconnectText}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Revokes all access tokens and permissions</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+              ) : (
                 <Button 
                   onClick={onConnect}
                   disabled={isConnecting}
+                  variant="default"
                 >
                   {isConnecting && errorType === platform ? "Connecting..." : config.connectText}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>
+              )}
+            </TooltipTrigger>
+            <TooltipContent>
+              {isConnected ? 
+                <p>Revokes all access tokens and permissions</p> :
                 <p>Securely connect via OAuth 2.0</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
+              }
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
       {isError && (
-        <div className="absolute inset-0 bg-red-100/90 dark:bg-red-900/90 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-xs">
+        <div className="absolute inset-0 bg-destructive/5 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card p-4 rounded-lg shadow-lg max-w-xs border border-border">
             <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <h4 className="font-bold text-red-600 dark:text-red-400">Connection Error</h4>
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <h4 className="font-bold text-destructive">Connection Error</h4>
             </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{errorDetails || "There was a problem connecting to the ad platform. Please try again."}</p>
+            <p className="text-sm text-muted-foreground mb-4">{errorDetails || "There was a problem connecting to the ad platform. Please try again."}</p>
             <Button size="sm" onClick={() => window.location.reload()}>
               Try Again
             </Button>
