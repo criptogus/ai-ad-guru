@@ -17,6 +17,7 @@ const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingTestAccount, setIsCreatingTestAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showRedirectHelp, setShowRedirectHelp] = useState(false);
   const { login, loginWithGoogle, isAuthenticated, createTestAccount } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,6 +27,24 @@ const LoginPage: React.FC = () => {
   
   // Check if we're in a payment verification flow
   const isPaymentVerification = location.search.includes('session_id=');
+
+  // Check for OAuth errors in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    
+    if (error === 'redirect_uri_mismatch' || 
+        (errorDescription && errorDescription.includes('redirect'))) {
+      setError('Google login failed: Redirect URI mismatch. Please see below for instructions.');
+      setShowRedirectHelp(true);
+      
+      // Clean up the URL to remove error parameters
+      if (window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     // Skip redirection if we're in a payment verification process
@@ -76,7 +95,13 @@ const LoginPage: React.FC = () => {
       // This will redirect to Google auth page
     } catch (error: any) {
       console.error('LoginPage: Google login error:', error);
-      setError(error?.message || 'Failed to sign in with Google. Please try again.');
+      
+      if (error.message && error.message.includes('redirect_uri_mismatch')) {
+        setError('Google login failed: Redirect URI mismatch. Please see below for instructions.');
+        setShowRedirectHelp(true);
+      } else {
+        setError(error?.message || 'Failed to sign in with Google. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +150,8 @@ const LoginPage: React.FC = () => {
 
             <SocialLoginButtons 
               onGoogleLogin={handleGoogleLogin} 
-              isSubmitting={isSubmitting} 
+              isSubmitting={isSubmitting}
+              showRedirectHelp={showRedirectHelp}
             />
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
