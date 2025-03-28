@@ -22,7 +22,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
           onClick={() => setActiveCategory("all")}
           className="rounded-full"
         >
-          All Templates
+          🔍 All Templates
         </Button>
         
         {categories.map((category) => (
