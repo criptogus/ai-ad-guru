@@ -6,7 +6,7 @@ import { UserRole } from "@/services/types";
 
 interface PendingInvitationsCardProps {
   invitations: any[];
-  isLoading?: boolean;
+  isLoading?: boolean; // Made optional
   getBadgeVariant: (role: UserRole) => "default" | "secondary" | "outline";
   onResendInvitation: (id: string) => Promise<boolean>;
   onRevokeInvitation: (id: string) => Promise<boolean>;
@@ -14,7 +14,7 @@ interface PendingInvitationsCardProps {
 
 const PendingInvitationsCard: React.FC<PendingInvitationsCardProps> = ({
   invitations,
-  isLoading,
+  isLoading = false, // Added default value
   getBadgeVariant,
   onResendInvitation,
   onRevokeInvitation
@@ -32,7 +32,6 @@ const PendingInvitationsCard: React.FC<PendingInvitationsCardProps> = ({
       <CardContent>
         <PendingInvitationsTable 
           invitations={invitations}
-          isLoading={isLoading}
           getBadgeVariant={getBadgeVariant}
           onResendInvitation={onResendInvitation}
           onRevokeInvitation={onRevokeInvitation}
