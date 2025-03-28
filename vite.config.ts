@@ -3,22 +3,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import type { PluginOption, Plugin, ConfigEnv, ResolvedConfig, UserConfig } from "vite";
+import type { PluginOption } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  console.log("[Vite Config] Initializing with enhanced configuration...");
+  console.log("[Vite Config] Initializing with deployment-safe configuration...");
   
-  // Set environment variables to disable native modules
+  // Force disable native modules
   process.env.ROLLUP_NATIVE_DISABLE = 'true';
   process.env.DISABLE_NATIVE_MODULES = 'true';
   
-  // Create aliasDefinitions object with proper typing
+  // Create path aliases
   const aliasDefinitions: Record<string, string> = {
     "@": path.resolve(__dirname, "./src"),
   };
   
-  // Complete list of all possible Rollup native modules to mock
+  // List all native modules to mock
   const nativeModules = [
     '@rollup/rollup-linux-x64-gnu',
     '@rollup/rollup-linux-x64-musl',
@@ -34,21 +34,19 @@ export default defineConfig(({ mode }) => {
     '@rollup/rollup-alpine-x64',
     '@rollup/rollup-android-arm64',
     '@rollup/rollup-android-arm-eabi',
-    '@rollup/rollup-native',
     'rollup/dist/native',
     'rollup/native'
   ];
   
-  // Add all native modules to alias object
+  // Add native module aliases
   nativeModules.forEach(moduleName => {
     aliasDefinitions[moduleName] = path.resolve(
       __dirname,
-      "./src/utils/modulePatches/rollup-linux-x64-gnu-mock.js"
+      "./src/utils/modulePatches/rollup-module-mock.js"
     );
-    console.log(`[Vite Config] Added alias for: ${moduleName}`);
   });
   
-  // Create define object with proper typing
+  // Define environment variables
   const defineOptions: Record<string, string> = {
     'process.env.ROLLUP_NATIVE_DISABLE': '"true"',
     'global.__ROLLUP_NATIVE_DISABLED__': 'true',
@@ -63,25 +61,25 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       mode === 'development' ? componentTagger() : false,
-      // Enhanced plugin to intercept Rollup module resolution attempts
+      // Plugin to intercept native module imports
       {
-        name: 'vite-plugin-rollup-native-patch',
+        name: 'vite-plugin-mock-native-modules',
         enforce: 'pre' as const,
         resolveId(source: string) {
           if (typeof source === 'string' && 
               (source.includes('@rollup/rollup-') || 
                source.includes('rollup') && source.includes('native'))) {
-            console.log(`[Vite Plugin] Intercepted Rollup native module: ${source}`);
-            return path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js');
+            console.log(`[Vite Plugin] Intercepting module: ${source}`);
+            return path.resolve(__dirname, './src/utils/modulePatches/rollup-module-mock.js');
           }
           return null;
         },
         transform(code: string, id: string) {
           if (id.includes('rollup') && id.includes('native')) {
-            console.log(`[Vite Plugin] Transforming native module code: ${id}`);
+            console.log(`[Vite Plugin] Transforming: ${id}`);
             return {
               code: `
-                console.log('[Vite Transform] Using pure JS implementation for: ${id}');
+                console.log('[Vite Transform] Using JS mock for: ${id}');
                 export default {}; 
                 export const bindings = null;
                 export const isLoaded = false;
@@ -92,34 +90,6 @@ export default defineConfig(({ mode }) => {
               `,
               map: null
             };
-          }
-          return null;
-        }
-      },
-      // Strengthen the missing module handler
-      {
-        name: 'vite-plugin-handle-missing-rollup-native',
-        configResolved(config: ResolvedConfig) {
-          console.log('[Vite Plugin] Config resolved with Rollup patching enabled');
-        },
-        buildStart() {
-          console.log('[Vite Plugin] Build starting with Rollup native module patching');
-        },
-        resolveImport(importInfo: { importee: string; importer: string }) {
-          const { importee } = importInfo;
-          if (importee && importee.includes('@rollup/rollup-')) {
-            return { id: path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js') };
-          }
-          return null;
-        }
-      },
-      // Add new plugin to completely prevent native module resolution
-      {
-        name: 'vite-plugin-prevent-native-modules',
-        resolveId(id: string, importer: string | undefined) {
-          if (id.includes('@rollup/rollup-') || (id.includes('rollup') && id.includes('native'))) {
-            console.log(`[Vite Plugin] Preventing native module resolution: ${id}`);
-            return path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js');
           }
           return null;
         }
@@ -135,51 +105,24 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      // Completely disable native addons
       rollupOptions: {
-        // Use our mocks when rollup tries to import native modules
-        shimMissingExports: true,
         external: nativeModules,
         onwarn(warning, warn) {
-          // Enhanced warning filter
           if (warning.code === 'UNRESOLVED_IMPORT' && 
               (String(warning).includes('@rollup/rollup-') || 
                String(warning).includes('native.js'))) {
-            console.log('[Build] Suppressing native module warning:', String(warning));
-            return; // Suppress native module warnings
+            console.log('[Build] Ignoring native module warning');
+            return;
           }
           warn(warning);
-        },
-        // Add new option to prevent error on missing external modules
-        output: {
-          manualChunks: {},
-          inlineDynamicImports: true
         }
       },
-      // Use ES modules only to avoid native dependencies
-      modulePreload: {
-        polyfill: false,
-      },
-      // Set platform-neutral targets
-      target: 'esnext',
-      // Avoid minification issues with native code
-      minify: 'esbuild',
-      // Keep sourcemap for debugging
-      sourcemap: true,
       commonjsOptions: {
-        // Improve CommonJS modules handling that might try to load natives
-        transformMixedEsModules: true,
-        strictRequires: false
+        transformMixedEsModules: true
       }
     },
-    // Force JS runtime compatibility
     esbuild: {
       target: 'esnext',
-      logOverride: {
-        // Suppress specific esbuild warnings
-        'unsupported-jsx-comment': 'silent',
-        'empty-import-meta': 'silent',
-      },
     },
   };
 });

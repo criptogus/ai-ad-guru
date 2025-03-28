@@ -3,12 +3,13 @@
 // This must be the very first import
 import './utils/modulePatches/patchLoader';
 
-// Force patch early loading with explicit runtime check
+// Additional safety measures for native module disabling
 if (typeof process !== 'undefined') {
   process.env.ROLLUP_NATIVE_DISABLE = '1';
+  process.env.DISABLE_NATIVE_MODULES = '1';
 }
 
-// Explicit console logs to verify patch loading
+// Log successful patch loading
 console.log("[Application] Patches loaded, initializing application");
 
 import React from "react";

@@ -1,37 +1,33 @@
 
 /**
- * Environment-agnostic module patching system
- * This file must be imported at the very start of the application
+ * Enhanced module patching system that runs before any other code
+ * Ensures native modules are properly mocked in all environments
  */
 
-// Apply patches early
-console.log('[Module System] Starting module patches application...');
+console.log('[Module System] Initializing critical module patches...');
 
-// Set environment variables to disable native bindings
+// Set environment variables to disable native module usage
 if (typeof process !== 'undefined' && process.env) {
   process.env.ROLLUP_NATIVE_DISABLE = '1';
   process.env.DISABLE_NATIVE_MODULES = '1';
-  process.env.npm_config_platform = 'neutral';
-  process.env.npm_config_optional = 'false';
   process.env.npm_config_build_from_source = 'false';
-  process.env.npm_config_ignore_scripts = 'true';
+  process.env.SKIP_NATIVE_MODULES = 'true';
 }
 
-// Create enhanced universal mock for native modules
-const createNativeMock = () => ({
-  bindings: null,
-  isLoaded: false,
-  load: () => null,
-  needsRebuilding: () => false,
-  getUuid: () => 'mocked-uuid',
-  loadBinding: () => null,
-  createDist: () => null,
-  nativeBuild: () => true,
-  isNativeSupported: () => false
-});
-
-// Mock all possible native modules
+// Global flags to ensure native modules are disabled
 if (typeof globalThis !== 'undefined') {
+  // @ts-ignore - Intentional assignment to global
+  globalThis.__ROLLUP_NATIVE_DISABLED__ = true;
+  // @ts-ignore - Intentional assignment to global
+  globalThis.__DISABLE_NATIVE_MODULES__ = true;
+}
+
+// Import our universal mock
+// Using dynamic import for wider compatibility
+import('./rollup-module-mock.js').then(mock => {
+  console.log('[Module System] Mock module loaded successfully');
+  
+  // Register the mock for all possible native module paths
   const nativeModules = [
     '@rollup/rollup-linux-x64-gnu',
     '@rollup/rollup-linux-x64-musl',
@@ -47,119 +43,70 @@ if (typeof globalThis !== 'undefined') {
     '@rollup/rollup-alpine-x64',
     '@rollup/rollup-android-arm64',
     '@rollup/rollup-android-arm-eabi',
-    '@rollup/rollup-native',
     'rollup/dist/native',
     'rollup/native'
   ];
   
-  nativeModules.forEach(moduleName => {
-    // @ts-ignore - Assign mock to global object
-    globalThis[moduleName] = createNativeMock();
-  });
-  
-  // Set flags to disable native modules
-  // @ts-ignore
-  globalThis.__ROLLUP_NATIVE_DISABLED__ = true;
-  // @ts-ignore
-  globalThis.__DISABLE_NATIVE_MODULES__ = true;
-  // @ts-ignore
-  globalThis.__SKIP_NATIVE_MODULES__ = true;
-}
-
-// Define a null getter function for missing properties
-const nullGetter = () => null;
-
-// Create a getter object to intercept any attempt to access native modules
-try {
-  if (typeof Object.defineProperty === 'function') {
-    // For each possible module path, add a getter that returns a mock
-    ['@rollup/rollup-linux-x64-gnu', 'rollup/native', 'rollup/dist/native'].forEach(modulePath => {
-      try {
-        Object.defineProperty(globalThis, modulePath, {
-          get: function() {
-            console.log(`[Module System] Intercepted access to ${modulePath}`);
-            return createNativeMock();
-          },
-          configurable: true
-        });
-      } catch (err) {
-        console.warn(`[Module System] Failed to define property for ${modulePath}:`, err);
-      }
+  // Register mock for each possible module path
+  if (typeof window !== 'undefined') {
+    nativeModules.forEach(moduleName => {
+      // @ts-ignore - Intentional window assignment
+      window[moduleName] = mock.default;
     });
+    console.log('[Module System] Registered mocks on window object');
   }
-} catch (err) {
-  console.warn('[Module System] Failed to define properties:', err);
-}
-
-// Import and apply patching - using import() for compatibility
-import('./rollupNativeModulePatch.js')
-  .then(module => {
-    console.log('[Module System] Imported rollupNativeModulePatch.js successfully');
-    
+  
+  if (typeof global !== 'undefined') {
+    nativeModules.forEach(moduleName => {
+      // @ts-ignore - Intentional global assignment
+      global[moduleName] = mock.default;
+    });
+    console.log('[Module System] Registered mocks on global object');
+  }
+  
+  // Override require if available
+  if (typeof require === 'function' && typeof module !== 'undefined') {
     try {
-      module.applyRollupPatch();
-      console.log('[Module System] Applied Rollup patch successfully');
-    } catch (err) {
-      console.error('[Module System] Failed to apply Rollup patch:', err);
-    }
-  })
-  .catch(err => {
-    console.error('[Module System] Failed to import rollupNativeModulePatch.js:', err);
-    
-    // Provide fallback if import fails
-    console.log('[Module System] Using fallback patch mechanism');
-    
-    if (typeof require === 'function') {
-      try {
-        // Attempt to patch require
-        const originalRequire = require;
-        // @ts-ignore
-        require = function(id) {
-          if (id.includes('@rollup/rollup-') || id.includes('rollup/native') || id.includes('native.js')) {
-            console.log(`[Module System] Intercepted require for ${id}`);
-            return createNativeMock();
+      const Module = module.constructor;
+      if (Module && Module.prototype && Module.prototype.require) {
+        const originalRequire = Module.prototype.require;
+        
+        // Override require to catch all Rollup native module requests
+        Module.prototype.require = function(path) {
+          if (typeof path === 'string' && (
+              path.includes('@rollup/rollup-') || 
+              path.includes('rollup/dist/native') ||
+              path.includes('rollup/native'))) {
+            console.log(`[Module System] Intercepted require for: ${path}`);
+            return mock.default;
           }
           return originalRequire.apply(this, arguments);
         };
-      } catch (e) {
-        console.warn('[Module System] Failed to patch require:', e);
+        console.log('[Module System] Successfully patched require()');
       }
+    } catch (err) {
+      console.warn('[Module System] Failed to patch require:', err);
     }
-  });
+  }
+}).catch(err => {
+  console.error('[Module System] Failed to load mock module:', err);
+});
 
-// Apply browser-specific fallbacks
+// Handle dynamic import errors specific to native modules
 if (typeof window !== 'undefined') {
-  // Add error handler for dynamic imports
   window.addEventListener('error', function(event) {
     if (event && event.message && typeof event.message === 'string' && 
         (event.message.includes('@rollup/rollup-') || 
          event.message.includes('native module'))) {
-      console.warn('[Module System] Caught runtime error related to native modules:', event.message);
-      event.preventDefault(); // Try to prevent the error from crashing the app
+      console.warn('[Module System] Intercepted native module error:', event.message);
+      event.preventDefault();
     }
   }, true);
-  
-  // Patch dynamic import for browser environments
-  if (window.fetch) {
-    const originalFetch = window.fetch;
-    window.fetch = function(input, init) {
-      const url = typeof input === 'string' ? input : input instanceof Request ? input.url : '';
-      if (url && (url.includes('@rollup/rollup-') || url.includes('rollup/native'))) {
-        console.log(`[Module System] Intercepted fetch for ${url}`);
-        return Promise.resolve(new Response('{}', {
-          status: 200,
-          headers: { 'Content-Type': 'application/javascript' }
-        }));
-      }
-      return originalFetch.apply(this, arguments);
-    };
-  }
 }
 
-// Export patch status
+// Export patch status function
 export function patchesApplied() {
-  return true; // Always return true to prevent conditional code paths
+  return true;
 }
 
-// Final confirmation
-console.log('[Module System] Module patching system initialized');
+console.log('[Module System] Module patching completed');
