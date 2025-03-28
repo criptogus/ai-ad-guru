@@ -4,6 +4,18 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { toast } from "sonner";
 import { errorLogger } from "@/services/libs/error-handling";
 
+// Define a type for the global window property
+declare global {
+  interface Window {
+    campaignContext?: {
+      analysisResult?: {
+        industry?: string;
+      };
+      [key: string]: any;
+    };
+  }
+}
+
 export const useImageGenerationActions = (
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
@@ -23,6 +35,9 @@ export const useImageGenerationActions = (
       setLoadingImageIndex(index);
       setError(null);
 
+      // Safely access window.campaignContext
+      const industry = window.campaignContext?.analysisResult?.industry || "";
+
       // Add detailed context information from the ad to improve relevance
       const additionalInfo = {
         imagePrompt: ad.imagePrompt,
@@ -31,7 +46,7 @@ export const useImageGenerationActions = (
         headline: ad.headline,
         primaryText: ad.primaryText,
         description: ad.description,
-        industry: window.campaignContext?.analysisResult?.industry || ""
+        industry
       };
 
       console.log(`Generating image with GPT-4o prompt: ${ad.imagePrompt}`);

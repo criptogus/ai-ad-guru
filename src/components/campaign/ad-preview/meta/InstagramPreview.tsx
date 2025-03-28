@@ -31,6 +31,15 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isLoading = loadingImageIndex === index;
 
+  // Ensure format is one of the allowed values
+  const normalizeFormat = (format: string | undefined): "feed" | "story" | "reel" => {
+    if (format === "story" || format === "reel") {
+      return format;
+    }
+    // Default to "feed" for any other value
+    return "feed";
+  };
+
   // Trigger file input dialog
   const triggerFileUpload = () => {
     if (fileInputRef.current) {
@@ -95,7 +104,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}
-        format={ad.format || "feed"}
+        format={normalizeFormat(ad.format)} // Use the normalized format here
         onTemplateSelect={handleTemplateSelect}
       />
       

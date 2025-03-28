@@ -9,13 +9,22 @@ interface ImageContentProps {
   isLoading: boolean;
   onGenerateImage?: () => Promise<void>;
   format?: "feed" | "story" | "reel";
+  // Add any other props used in the component
+  imageKey?: number;
+  isUploading?: boolean;
+  triggerFileUpload?: () => void;
+  onTemplateSelect?: (template: any) => void;
 }
 
 const ImageContent: React.FC<ImageContentProps> = ({
   ad,
   isLoading,
   onGenerateImage,
-  format = "feed"
+  format = "feed",
+  imageKey,
+  isUploading,
+  triggerFileUpload,
+  onTemplateSelect
 }) => {
   // Set the aspect ratio based on the format
   const getAspectRatio = () => {
