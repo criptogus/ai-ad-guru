@@ -18,6 +18,7 @@ import Index from "./pages/Index";
 import BillingPage from "./pages/BillingPage";
 import CreditsInfoPage from "./pages/CreditsInfoPage";
 import UserRolesPage from "./pages/UserRolesPage";
+import TestConnectionsPage from "./pages/TestConnectionsPage";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/credits-info" element={<CreditsInfoPage />} />
         <Route path="/roles" element={<UserRolesPage />} />
         <Route path="/team" element={<UserRolesPage />} />
+        <Route path="/test-connections" element={<TestConnectionsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster position="top-right" richColors closeButton />
