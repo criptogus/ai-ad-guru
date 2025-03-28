@@ -51,6 +51,26 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
   }
 };
 
+// Function to update a team member's role
+export const updateTeamMemberRole = async (id: string, role: UserRole): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('team_members')
+      .update({ role })
+      .eq('id', id);
+    
+    if (error) {
+      console.error("Error updating team member role:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in updateTeamMemberRole:", error);
+    return false;
+  }
+};
+
 // Function to update a team member
 export const updateTeamMember = async (id: string, updates: Partial<TeamMember>): Promise<boolean> => {
   try {

@@ -8,12 +8,14 @@ interface TeamMembersCardProps {
   isLoading: boolean;
   teamMembers: TeamMember[];
   getBadgeVariant: (role: UserRole) => "default" | "secondary" | "outline";
+  onEditMember: (member: TeamMember) => void;
 }
 
 const TeamMembersCard: React.FC<TeamMembersCardProps> = ({ 
   isLoading, 
   teamMembers, 
-  getBadgeVariant 
+  getBadgeVariant,
+  onEditMember
 }) => {
   return (
     <Card>
@@ -25,7 +27,8 @@ const TeamMembersCard: React.FC<TeamMembersCardProps> = ({
         <TeamMembersTable 
           isLoading={isLoading} 
           teamMembers={teamMembers} 
-          getBadgeVariant={getBadgeVariant} 
+          getBadgeVariant={getBadgeVariant}
+          onEditMember={onEditMember}
         />
       </CardContent>
     </Card>

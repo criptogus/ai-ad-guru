@@ -7,6 +7,7 @@ import TeamMembersCard from "@/components/roles/TeamMembersCard";
 import PendingInvitationsCard from "@/components/roles/PendingInvitationsCard";
 import RolesPermissionsCard from "@/components/roles/RolesPermissionsCard";
 import InviteUserModal from "@/components/roles/InviteUserModal";
+import EditTeamMemberModal from "@/components/roles/EditTeamMemberModal";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
 
 const UserRolesPage: React.FC = () => {
@@ -17,11 +18,16 @@ const UserRolesPage: React.FC = () => {
     isSubmitting,
     showInviteModal,
     setShowInviteModal,
+    showEditModal,
+    setShowEditModal,
+    selectedMember,
     rolePermissions,
     getBadgeVariant,
     handleSendInvitation,
     handleResendInvitation,
-    handleRevokeInvitation
+    handleRevokeInvitation,
+    handleUpdateTeamMemberRole,
+    handleEditMember
   } = useTeamManagement();
 
   return (
@@ -42,7 +48,8 @@ const UserRolesPage: React.FC = () => {
           <TeamMembersCard 
             isLoading={isLoading} 
             teamMembers={teamMembers} 
-            getBadgeVariant={getBadgeVariant} 
+            getBadgeVariant={getBadgeVariant}
+            onEditMember={handleEditMember}
           />
           
           <PendingInvitationsCard 
@@ -60,6 +67,14 @@ const UserRolesPage: React.FC = () => {
           onOpenChange={setShowInviteModal}
           onSendInvitation={handleSendInvitation}
           isSubmitting={isSubmitting}
+        />
+
+        <EditTeamMemberModal
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          onUpdateRole={handleUpdateTeamMemberRole}
+          isSubmitting={isSubmitting}
+          teamMember={selectedMember}
         />
       </div>
     </AppLayout>

@@ -4,17 +4,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TeamMember, UserRole } from "@/services/types";
+import { Edit } from "lucide-react";
 
 interface TeamMembersTableProps {
   isLoading: boolean;
   teamMembers: TeamMember[];
   getBadgeVariant: (role: UserRole) => "default" | "secondary" | "outline";
+  onEditMember: (member: TeamMember) => void;
 }
 
 const TeamMembersTable: React.FC<TeamMembersTableProps> = ({
   isLoading,
   teamMembers,
   getBadgeVariant,
+  onEditMember,
 }) => {
   return (
     <Table>
@@ -52,7 +55,14 @@ const TeamMembersTable: React.FC<TeamMembersTableProps> = ({
               </TableCell>
               <TableCell>{member.lastActive ? new Date(member.lastActive).toLocaleString() : "Never"}</TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="sm">Edit</Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => onEditMember(member)}
+                >
+                  <Edit size={14} className="mr-1" />
+                  Edit
+                </Button>
               </TableCell>
             </TableRow>
           ))

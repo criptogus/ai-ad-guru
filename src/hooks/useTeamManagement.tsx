@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/services/types";
 import { toast } from "sonner";
+import { updateTeamMemberRole } from "@/services/team/members";
 
 export const useTeamManagement = () => {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -10,6 +11,8 @@ export const useTeamManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
 
   // Define role permissions
   const rolePermissions = {
@@ -97,6 +100,7 @@ export const useTeamManagement = () => {
       // Refresh data
       fetchRolesData();
       setShowInviteModal(false);
+      return true;
     } catch (error) {
       console.error("Error sending invitation:", error);
       toast({
@@ -104,6 +108,7 @@ export const useTeamManagement = () => {
         description: "There was an error sending the invitation. Please try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -180,6 +185,43 @@ export const useTeamManagement = () => {
     }
   };
 
+  // Handle updating team member role
+  const handleUpdateTeamMemberRole = async (id: string, role: UserRole): Promise<boolean> => {
+    setIsSubmitting(true);
+    try {
+      const success = await updateTeamMemberRole(id, role);
+      
+      if (success) {
+        toast({
+          title: "Role updated",
+          description: "The team member's role has been updated successfully."
+        });
+        
+        // Refresh data
+        fetchRolesData();
+        return true;
+      } else {
+        throw new Error("Failed to update role");
+      }
+    } catch (error) {
+      console.error("Error updating team member role:", error);
+      toast({
+        title: "Failed to update role",
+        description: "There was an error updating the team member's role. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle selecting a member for editing
+  const handleEditMember = (member: any) => {
+    setSelectedMember(member);
+    setShowEditModal(true);
+  };
+
   return {
     teamMembers,
     invitations,
@@ -187,10 +229,16 @@ export const useTeamManagement = () => {
     isSubmitting,
     showInviteModal,
     setShowInviteModal,
+    showEditModal,
+    setShowEditModal,
+    selectedMember,
+    setSelectedMember,
     rolePermissions,
     getBadgeVariant,
     handleSendInvitation,
     handleResendInvitation,
-    handleRevokeInvitation
+    handleRevokeInvitation,
+    handleUpdateTeamMemberRole,
+    handleEditMember
   };
 };
