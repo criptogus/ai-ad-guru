@@ -1,23 +1,20 @@
 
 import React from "react";
-import { TemplateCard } from "./TemplateCard";
 import { InstagramTemplate } from "./InstagramTemplateGallery";
+import { TemplateCard } from "./TemplateCard";
 
 interface FilteredTemplateGridProps {
   templates: InstagramTemplate[];
   onSelectTemplate: (template: InstagramTemplate) => void;
 }
 
-const FilteredTemplateGrid: React.FC<FilteredTemplateGridProps> = ({
-  templates,
-  onSelectTemplate
-}) => {
+const FilteredTemplateGrid: React.FC<FilteredTemplateGridProps> = ({ templates, onSelectTemplate }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {templates.map((template) => (
         <TemplateCard 
-          key={template.id}
-          template={template}
+          key={template.id} 
+          template={template} 
           onSelect={onSelectTemplate}
         />
       ))}

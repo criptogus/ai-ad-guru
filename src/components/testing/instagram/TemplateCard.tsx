@@ -1,57 +1,65 @@
 
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import React from "react";
+import { InstagramTemplate } from "./InstagramTemplateGallery";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
-import { InstagramTemplate } from './InstagramTemplateGallery';
+import { Check, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TemplateCardProps {
   template: InstagramTemplate;
   onSelect: (template: InstagramTemplate) => void;
+  isSelected?: boolean;
 }
 
-export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect }) => {
-  // Find the category emoji
-  const getCategoryEmoji = (categoryId: string) => {
-    const emojiMap: Record<string, string> = {
-      "urgency": "🔥",
-      "personal-branding": "👤",
-      "e-commerce": "🛍️",
-      "education": "📚",
-      "social": "💬"
-    };
-    
-    return emojiMap[categoryId] || "✨";
-  };
-  
+export const TemplateCard: React.FC<TemplateCardProps> = ({ 
+  template, 
+  onSelect,
+  isSelected = false
+}) => {
   return (
-    <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow border-border/80">
-      <CardHeader className="p-5 pb-3 border-b">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">{getCategoryEmoji(template.category)}</span>
-            <h4 className="text-base font-medium">{template.title}</h4>
+    <Card 
+      className={`overflow-hidden cursor-pointer transition-all hover:shadow-md ${
+        isSelected ? "ring-2 ring-primary" : "hover:border-primary"
+      }`}
+      onClick={() => onSelect(template)}
+    >
+      <div className="aspect-square bg-muted/20 flex items-center justify-center text-4xl">
+        {/* Placeholder for template preview image */}
+        <span className="opacity-60">{template.category.charAt(0)}</span>
+      </div>
+      
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium text-sm">{template.title}</h3>
+            <div className="text-xs text-muted-foreground capitalize">
+              {template.category}
+            </div>
+          </div>
+          
+          <div className="flex gap-1">
+            {isSelected && <Check className="h-4 w-4 text-primary" />}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Info className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="text-xs max-w-[200px]">{template.prompt}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
-      </CardHeader>
-      
-      <CardContent className="p-5 flex-grow">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {template.prompt}
-        </p>
       </CardContent>
-      
-      <CardFooter className="p-5 pt-3 bg-muted/10">
-        <Button 
-          size="sm" 
-          variant="secondary" 
-          className="w-full h-10 text-sm"
-          onClick={() => onSelect(template)}
-        >
-          <Sparkles className="h-4 w-4 mr-2" />
-          Use Template
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

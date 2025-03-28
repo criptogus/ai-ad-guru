@@ -1,17 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles } from "lucide-react";
-
-export interface Category {
-  id: string;
-  name: string;
-  emoji: string;
-}
 
 interface CategoryFilterProps {
-  categories: Category[];
+  categories: { id: string; name: string; emoji: string }[];
   activeCategory: string;
   setActiveCategory: (category: string) => void;
 }
@@ -19,36 +11,33 @@ interface CategoryFilterProps {
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categories,
   activeCategory,
-  setActiveCategory
+  setActiveCategory,
 }) => {
   return (
-    <div className="mb-8">
-      <ScrollArea className="w-full pb-4">
-        <div className="flex gap-3 pb-2">
+    <div className="mb-6">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={activeCategory === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveCategory("all")}
+          className="rounded-full"
+        >
+          All Templates
+        </Button>
+        
+        {categories.map((category) => (
           <Button
-            variant={activeCategory === "all" ? "secondary" : "outline"}
+            key={category.id}
+            variant={activeCategory === category.id ? "default" : "outline"}
             size="sm"
-            className="text-xs whitespace-nowrap"
-            onClick={() => setActiveCategory("all")}
+            onClick={() => setActiveCategory(category.id)}
+            className="rounded-full"
           >
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            All Templates
+            <span className="mr-1.5">{category.emoji}</span>
+            {category.name}
           </Button>
-          
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "secondary" : "outline"}
-              size="sm"
-              className="text-xs whitespace-nowrap"
-              onClick={() => setActiveCategory(category.id)}
-            >
-              <span className="mr-1.5">{category.emoji}</span>
-              {category.name}
-            </Button>
-          ))}
-        </div>
-      </ScrollArea>
+        ))}
+      </div>
     </div>
   );
 };

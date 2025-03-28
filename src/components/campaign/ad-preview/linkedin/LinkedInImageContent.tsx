@@ -35,7 +35,7 @@ const LinkedInImageContent: React.FC<LinkedInImageContentProps> = ({
       setIsImageLoaded(false);
       setRetryCount(0);
       
-      // Add cache buster to URL
+      // Add cache buster to URL to prevent stale images
       const cacheBuster = `t=${Date.now()}`;
       const newSrc = ad.imageUrl.includes('?') 
         ? `${ad.imageUrl}&${cacheBuster}` 
@@ -67,6 +67,7 @@ const LinkedInImageContent: React.FC<LinkedInImageContentProps> = ({
       setTimeout(() => {
         const withoutQuery = ad.imageUrl!.split('?')[0];
         const newSrc = `${withoutQuery}?nocache=${Date.now()}-retry-${nextRetry}`;
+        console.log("Retrying image load with:", newSrc);
         setImageSrc(newSrc);
       }, delay);
     } else {

@@ -2,7 +2,7 @@
 import React from "react";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Save, X, Copy } from "lucide-react";
+import { Copy, Edit, Save, X } from "lucide-react";
 
 interface MicrosoftAdCardHeaderProps {
   adIndex: number;
@@ -22,25 +22,31 @@ const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   onCopy
 }) => {
   return (
-    <CardHeader className="flex flex-row items-center justify-between p-4">
-      <CardTitle className="text-sm">Microsoft Ad Variation {adIndex + 1}</CardTitle>
-      <div className="flex space-x-2">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-md font-medium">
+        Microsoft Ad {adIndex + 1}
+      </CardTitle>
+      <div className="flex gap-2">
         {isEditing ? (
           <>
-            <Button size="sm" variant="outline" onClick={onCancel}>
-              <X className="h-4 w-4" />
+            <Button onClick={onSave} size="sm" variant="outline" className="h-8 px-2">
+              <Save className="h-4 w-4 mr-1" />
+              Save
             </Button>
-            <Button size="sm" onClick={onSave}>
-              <Save className="h-4 w-4" />
+            <Button onClick={onCancel} size="sm" variant="outline" className="h-8 px-2">
+              <X className="h-4 w-4 mr-1" />
+              Cancel
             </Button>
           </>
         ) : (
           <>
-            <Button size="sm" variant="outline" onClick={onCopy}>
-              <Copy className="h-4 w-4" />
+            <Button onClick={onEdit} size="sm" variant="outline" className="h-8 px-2">
+              <Edit className="h-4 w-4 mr-1" />
+              Edit
             </Button>
-            <Button size="sm" onClick={onEdit}>
-              <Edit2 className="h-4 w-4" />
+            <Button onClick={onCopy} size="sm" variant="outline" className="h-8 px-2">
+              <Copy className="h-4 w-4 mr-1" />
+              Copy
             </Button>
           </>
         )}
