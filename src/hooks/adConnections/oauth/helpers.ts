@@ -70,5 +70,12 @@ export const oauthHelpers = {
       case 'microsoft': return 'Microsoft';
       default: return platform;
     }
+  },
+
+  /**
+   * Clear stored OAuth flow data (proxies to storage)
+   */
+  clearOAuthState: (): boolean => {
+    return oauthStorage.clearOAuthState();
   }
 };

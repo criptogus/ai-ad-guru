@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { isOAuthCallback, handleOAuthCallback } from './oauth';
+import { handleOAuthCallback, isOAuthCallback } from './oauthService';
 import { tokenSecurity } from '@/services/security/tokenSecurity';
 import { oauthHelpers } from './oauth';
 

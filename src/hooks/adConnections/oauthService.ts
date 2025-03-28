@@ -3,13 +3,13 @@
 import { 
   initiateOAuth, 
   handleOAuthCallback, 
-  oauthHelpers 
+  isOAuthCallback,
+  clearOAuthState
 } from './oauth';
 
 export { 
   initiateOAuth, 
-  handleOAuthCallback 
+  handleOAuthCallback,
+  isOAuthCallback,
+  clearOAuthState
 };
-
-export const isOAuthCallback = oauthHelpers.isOAuthCallback;
-export const clearOAuthState = oauthHelpers.clearOAuthState;
