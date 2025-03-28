@@ -21,7 +21,7 @@ export const getTeamInvitations = async () => {
 };
 
 // Function to invite a user to the team
-export const inviteUser = async (email: string, role: UserRole): Promise<void> => {
+export const inviteUser = async (email: string, role: UserRole): Promise<boolean> => {
   console.log(`Inviting ${email} as ${role}`);
   
   try {
@@ -44,15 +44,18 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
       });
     }
     
-    return Promise.resolve();
+    return true;
   } catch (error) {
     console.error("Error inviting user:", error);
-    throw error;
+    toast.error("Failed to send invitation", {
+      description: error.message || "An error occurred while sending the invitation"
+    });
+    return false;
   }
 };
 
 // Resend invitation
-export const resendInvitation = async (id: string) => {
+export const resendInvitation = async (id: string): Promise<boolean> => {
   try {
     // Get the invitation details
     const { data, error } = await supabase
@@ -65,13 +68,15 @@ export const resendInvitation = async (id: string) => {
     if (!data) throw new Error("Invitation not found");
     
     // Resend the invitation
-    await inviteUser(data.email, data.role as UserRole);
+    const result = await inviteUser(data.email, data.role as UserRole);
     
-    toast.success("Invitation resent", {
-      description: `A new invitation email has been sent to ${data.email}`
-    });
+    if (result) {
+      toast.success("Invitation resent", {
+        description: `A new invitation email has been sent to ${data.email}`
+      });
+    }
     
-    return true;
+    return result;
   } catch (error) {
     console.error("Error resending invitation:", error);
     toast.error("Failed to resend invitation", {
@@ -82,7 +87,7 @@ export const resendInvitation = async (id: string) => {
 };
 
 // Revoke invitation
-export const revokeInvitation = async (id: string) => {
+export const revokeInvitation = async (id: string): Promise<boolean> => {
   try {
     const { error, data } = await supabase
       .from('team_invitations')

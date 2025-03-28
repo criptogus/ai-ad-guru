@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,20 @@ const PendingInvitationsTable: React.FC<PendingInvitationsTableProps> = ({
   onResendInvitation,
   onRevokeInvitation,
 }) => {
+  const [processingIds, setProcessingIds] = useState<Record<string, boolean>>({});
+
+  const handleResend = async (id: string) => {
+    setProcessingIds(prev => ({ ...prev, [id]: true }));
+    await onResendInvitation(id);
+    setProcessingIds(prev => ({ ...prev, [id]: false }));
+  };
+
+  const handleRevoke = async (id: string) => {
+    setProcessingIds(prev => ({ ...prev, [id]: true }));
+    await onRevokeInvitation(id);
+    setProcessingIds(prev => ({ ...prev, [id]: false }));
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -45,16 +59,18 @@ const PendingInvitationsTable: React.FC<PendingInvitationsTableProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => onResendInvitation(invitation.id)}
+                onClick={() => handleResend(invitation.id)}
+                disabled={processingIds[invitation.id]}
               >
-                <RefreshCw size={14} className="mr-1" />
-                Resend
+                <RefreshCw size={14} className={`mr-1 ${processingIds[invitation.id] ? "animate-spin" : ""}`} />
+                {processingIds[invitation.id] ? "Sending..." : "Resend"}
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="text-destructive"
-                onClick={() => onRevokeInvitation(invitation.id)}
+                onClick={() => handleRevoke(invitation.id)}
+                disabled={processingIds[invitation.id]}
               >
                 <X size={14} className="mr-1" />
                 Revoke

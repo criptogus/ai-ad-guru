@@ -9,6 +9,7 @@ export const getRolePermissions = (): RolePermissions => {
       "Manage billing",
       "Create campaigns",
       "Edit campaigns",
+      "Delete campaigns",
       "View analytics",
       "Configure integrations",
     ],
@@ -19,9 +20,9 @@ export const getRolePermissions = (): RolePermissions => {
       "Configure platforms",
     ],
     Analyst: [
-      "Create campaigns",
-      "Edit campaigns",
       "View analytics",
+      "Export reports",
+      "Create insights",
     ],
     Viewer: [
       "View campaigns",

@@ -1,6 +1,7 @@
 
 import { TeamMember, UserRole } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Get team members from the database
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
@@ -29,28 +30,6 @@ export const getTeamMembers = async (): Promise<TeamMember[]> => {
   }
 };
 
-// Function to invite a user to the team
-export const inviteUser = async (email: string, role: UserRole): Promise<void> => {
-  try {
-    console.log(`Inviting ${email} with role ${role}`);
-    
-    // Call the Supabase Edge Function to send the invitation email
-    const { error } = await supabase.functions.invoke('send-team-invitation', {
-      body: { email, role }
-    });
-    
-    if (error) {
-      console.error("Error invoking send-team-invitation function:", error);
-      throw error;
-    }
-    
-    console.log(`Invitation to ${email} with role ${role} sent successfully`);
-  } catch (error) {
-    console.error("Error inviting user:", error);
-    throw error;
-  }
-};
-
 // Function to update a team member's role
 export const updateTeamMemberRole = async (id: string, role: UserRole): Promise<boolean> => {
   try {
@@ -61,12 +40,18 @@ export const updateTeamMemberRole = async (id: string, role: UserRole): Promise<
     
     if (error) {
       console.error("Error updating team member role:", error);
+      toast.error("Failed to update role", {
+        description: error.message || "An unexpected error occurred"
+      });
       return false;
     }
     
     return true;
   } catch (error) {
     console.error("Error in updateTeamMemberRole:", error);
+    toast.error("Failed to update role", {
+      description: "An unexpected error occurred while updating the role"
+    });
     return false;
   }
 };
