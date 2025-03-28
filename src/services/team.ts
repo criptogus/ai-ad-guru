@@ -58,13 +58,13 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
 export const getRolePermissions = (): RolePermissions => {
   return {
     Admin: [
-      "Manage users",
+      "Manage team",
       "Create campaigns",
       "Edit campaigns",
       "Delete campaigns",
       "View analytics",
       "Manage billing",
-      "Configure platforms",
+      "Configure integrations",
       "Manage company settings",
     ],
     Editor: [
@@ -87,7 +87,7 @@ export const getRolePermissions = (): RolePermissions => {
 };
 
 // Function to check if a user has a specific permission
-export const hasPermission = (userRole: UserRole, permission: string): boolean => {
+export const hasPermission = (userRole: UserRole, permission: Permission): boolean => {
   const permissions = getRolePermissions();
   return permissions[userRole]?.includes(permission) ?? false;
 };

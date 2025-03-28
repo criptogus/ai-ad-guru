@@ -10,7 +10,11 @@ export type Permission =
   | "Manage billing" 
   | "Configure integrations" 
   | "Export reports" 
-  | "View campaigns";
+  | "View campaigns"
+  | "Create campaigns"
+  | "Configure platforms"
+  | "Manage company settings"
+  | "Create insights";
 
 // Role Permissions Map
 export interface RolePermissions {
