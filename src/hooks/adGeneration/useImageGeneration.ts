@@ -29,7 +29,13 @@ export const useImageGeneration = () => {
       const { data, error: functionError } = await supabase.functions.invoke('generate-image-gpt4o', {
         body: {
           imagePrompt: prompt,
-          ...additionalInfo
+          platform: additionalInfo?.platform || 'meta',
+          format: additionalInfo?.format || 'feed',
+          adContext: {
+            headline: additionalInfo?.headline,
+            primaryText: additionalInfo?.primaryText,
+            industry: additionalInfo?.industry
+          }
         }
       });
 
@@ -57,6 +63,12 @@ export const useImageGeneration = () => {
       }
 
       console.log("Successfully generated image URL with GPT-4o:", data.imageUrl);
+      console.log("Prompt used by DALL-E:", data.promptUsed);
+      
+      toast.success("Image generated successfully", {
+        description: "5 credits were used for AI image generation with GPT-4o"
+      });
+      
       return data.imageUrl;
     } catch (err) {
       console.error("Exception in generateAdImage:", err);

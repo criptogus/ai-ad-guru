@@ -4,7 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { toast } from "sonner";
 
 interface UseImageGenerationHandlerProps {
-  handleGenerateImage: (imagePrompt: string, index: number) => Promise<string | null>;
+  handleGenerateImage: (imagePrompt: string, index: number, additionalInfo?: any) => Promise<string | null>;
 }
 
 export const useImageGenerationHandler = ({ 
@@ -26,7 +26,17 @@ export const useImageGenerationHandler = ({
       setIsGenerating(true);
       
       console.log(`Generating image for ad at index ${index} with prompt: ${ad.imagePrompt}`);
-      const imageUrl = await handleGenerateImage(ad.imagePrompt, index);
+      
+      // Pass additional context from the ad to help with image generation
+      const additionalInfo = {
+        headline: ad.headline,
+        primaryText: ad.primaryText,
+        description: ad.description,
+        format: ad.format || "feed",
+        platform: "meta"
+      };
+      
+      const imageUrl = await handleGenerateImage(ad.imagePrompt, index, additionalInfo);
       
       if (imageUrl) {
         toast.success("Image generated successfully", {

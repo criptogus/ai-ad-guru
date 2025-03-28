@@ -23,14 +23,20 @@ export const useImageGenerationActions = (
       setLoadingImageIndex(index);
       setError(null);
 
-      // Add the image prompt directly to ensure it's used for generation
+      // Add detailed context information from the ad to improve relevance
       const additionalInfo = {
         imagePrompt: ad.imagePrompt,
         format: ad.format || "feed",
-        platform: "meta"  // Specify platform for context-aware image generation
+        platform: "meta",
+        headline: ad.headline,
+        primaryText: ad.primaryText,
+        description: ad.description,
+        industry: window.campaignContext?.analysisResult?.industry || ""
       };
 
       console.log(`Generating image with GPT-4o prompt: ${ad.imagePrompt}`);
+      console.log("With additional context:", JSON.stringify(additionalInfo));
+      
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (!imageUrl) {

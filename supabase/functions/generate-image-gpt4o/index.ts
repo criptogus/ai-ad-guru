@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Set up CORS headers
@@ -24,22 +23,24 @@ serve(async (req) => {
     
     // Parse request body
     const requestData = await req.json();
-    const { imagePrompt } = requestData;
+    const { imagePrompt, platform = 'meta', format = 'feed', adContext = {} } = requestData;
     
     console.log("Received image generation request:", JSON.stringify({
       imagePrompt: imagePrompt?.substring(0, 100) + "...",
+      platform,
+      format
     }));
     
     if (!imagePrompt) {
       throw new Error('No image prompt provided');
     }
     
-    // Enhance the prompt for better results
-    let finalPrompt = imagePrompt + " High quality, photorealistic, detailed, professional photography style.";
+    // Enhance the prompt with platform-specific context
+    let enhancedPrompt = enhancePromptWithContext(imagePrompt, platform, format, adContext);
     
-    console.log("Sending prompt to GPT-4o:", finalPrompt.substring(0, 100) + "...");
+    console.log("Enhanced prompt for GPT-4o:", enhancedPrompt.substring(0, 100) + "...");
     
-    // Call OpenAI API with GPT-4o model and tool calling for image generation
+    // Step 1: Call OpenAI API with GPT-4o model to generate the DALL-E prompt and invoke the tool
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -51,11 +52,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a professional image generator. When asked to create an image, use the DALL-E tool to generate it based on the description provided."
+            content: "You are a professional ad image generator. Create high-quality, eye-catching images for digital advertising campaigns. When asked to generate an image, use the DALL-E tool with an enhanced version of the user's prompt to create the perfect marketing visual."
           },
           {
             role: "user",
-            content: `Generate an image of: ${finalPrompt}`
+            content: `Generate an advertisement image based on this description: ${enhancedPrompt}`
           }
         ],
         tools: [
@@ -94,13 +95,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenAI API error response:", errorText);
-      
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(`OpenAI API error: ${JSON.stringify(errorData)}`);
-      } catch (e) {
-        throw new Error(`OpenAI API error: ${errorText}`);
-      }
+      throw new Error(`OpenAI API error: ${errorText}`);
     }
     
     const data = await response.json();
@@ -129,8 +124,8 @@ serve(async (req) => {
       throw new Error("Failed to parse DALLE arguments");
     }
     
-    // Now we need to use the tool output by making a second request
-    console.log("Making second request to get the image...");
+    // Step 2: Use the tool output by making a second request
+    console.log("Making second request to get the image using tool call with prompt:", dalleArgs.prompt.substring(0, 100) + "...");
     
     const secondResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -143,11 +138,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a professional image generator. When asked to create an image, use the DALL-E tool to generate it based on the description provided."
+            content: "You are a professional ad image generator specializing in creating high-quality marketing visuals."
           },
           {
             role: "user",
-            content: `Generate an image of: ${finalPrompt}`
+            content: `Generate an advertisement image based on this description: ${enhancedPrompt}`
           },
           {
             role: "assistant",
@@ -171,24 +166,47 @@ serve(async (req) => {
     
     const secondData = await secondResponse.json();
     
-    // The image URL should be in the content of the response
+    // Extract the image URL from the response content
     const contentWithImageUrl = secondData.choices?.[0]?.message?.content;
     
-    if (!contentWithImageUrl || !contentWithImageUrl.includes("http")) {
-      console.error("No image URL in second response:", secondData);
-      throw new Error("No image URL found in the OpenAI response");
+    if (!contentWithImageUrl) {
+      console.error("No content in second response:", secondData);
+      throw new Error("Empty response from OpenAI");
     }
     
-    // Extract the URL from the content
-    const urlMatch = contentWithImageUrl.match(/(https?:\/\/[^\s"]+)/);
+    console.log("Received content with image URL:", contentWithImageUrl.substring(0, 100) + "...");
+    
+    // Extract the URL using regex
+    const urlMatch = contentWithImageUrl.match(/(https:\/\/[^\s"]+\.(png|jpg|jpeg|webp))/i);
     
     if (!urlMatch || !urlMatch[0]) {
-      console.error("Could not extract URL from content:", contentWithImageUrl);
-      throw new Error("Could not extract URL from content");
+      // Try a more general URL match if specific image extensions don't match
+      const generalUrlMatch = contentWithImageUrl.match(/(https:\/\/oaidalleapiprodscus\.blob\.core\.windows\.net\/[^\s"]+)/i);
+      
+      if (!generalUrlMatch || !generalUrlMatch[0]) {
+        console.error("Could not extract URL from content:", contentWithImageUrl);
+        throw new Error("Could not extract image URL from content");
+      }
+      
+      console.log("Found image URL with general pattern:", generalUrlMatch[0]);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          imageUrl: generalUrlMatch[0],
+          promptUsed: dalleArgs.prompt
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
+          },
+          status: 200
+        }
+      );
     }
     
-    const imageUrl = urlMatch[0].replace(/\.$/, ""); // Remove trailing period if present
-    
+    const imageUrl = urlMatch[0];
     console.log("Successfully extracted image URL:", imageUrl.substring(0, 50) + "...");
     
     return new Response(
@@ -224,3 +242,51 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Enhances the prompt with platform-specific and format-specific context
+ */
+function enhancePromptWithContext(prompt: string, platform: string, format: string, adContext: any = {}) {
+  let enhancedPrompt = prompt;
+  
+  // Add platform-specific context
+  if (platform === 'meta' || platform === 'instagram') {
+    enhancedPrompt += ' Create a vibrant, attention-grabbing image suitable for Instagram advertising.';
+  } else if (platform === 'linkedin') {
+    enhancedPrompt += ' Create a professional, business-oriented image suitable for LinkedIn advertising.';
+  } else if (platform === 'google') {
+    enhancedPrompt += ' Create a clean, high-quality image suitable for Google search advertising.';
+  }
+  
+  // Add format-specific context
+  if (format === 'feed') {
+    enhancedPrompt += ' Format should be square or 4:5 aspect ratio for social media feed.';
+  } else if (format === 'story' || format === 'reel') {
+    enhancedPrompt += ' Format should be 9:16 vertical for social media stories or reels.';
+  } else if (format === 'landscape') {
+    enhancedPrompt += ' Format should be 16:9 landscape.';
+  }
+  
+  // Add ad headline and primary text for additional context if available
+  if (adContext.headline) {
+    enhancedPrompt += ` The ad headline is: "${adContext.headline}".`;
+  }
+  
+  if (adContext.primaryText && adContext.primaryText.length > 0) {
+    // Extract the first sentence or part to keep the context concise
+    const firstSentence = adContext.primaryText.split('.')[0];
+    enhancedPrompt += ` The ad message is about: "${firstSentence}".`;
+  }
+  
+  if (adContext.industry) {
+    enhancedPrompt += ` The industry context is: ${adContext.industry}.`;
+  }
+  
+  // Add quality guidance
+  enhancedPrompt += ' High quality, photorealistic, detailed, professional advertising imagery with excellent lighting and composition.';
+  
+  // Add restrictions for advertising compliance
+  enhancedPrompt += ' The image should not contain any text, numbers, logos, or watermarks as these will be added separately.';
+  
+  return enhancedPrompt;
+}
