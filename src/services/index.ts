@@ -15,14 +15,29 @@ export { mediaService };
 
 // Shared libraries exports
 export * from './libs/supabase-client';
-export * from './libs/auth-helpers';
 export * from './libs/error-handling';
 export * from './libs/api-client';
 
-// Team-related exports (fixed imports)
-export * from './team/roles';
-export * from './team/members';
-export * from './team/invitations';
+// Team-related exports (explicitly naming exports to avoid ambiguity)
+export { 
+  getRolePermissions,
+  isAdmin,
+  isEditor,
+  isViewer 
+} from './team/roles';
+
+export {
+  getTeamMembers,
+  updateTeamMember,
+  removeTeamMember,
+  updateTeamMemberRole
+} from './team/members';
+
+export {
+  getTeamInvitations,
+  resendInvitation,
+  revokeInvitation
+} from './team/invitations';
 
 // Export CreditUsage type to avoid import errors
 export type { CreditUsage } from './credits/creditHistory';

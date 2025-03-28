@@ -1,113 +1,77 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { UserRole } from "@/services/types";
-import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
+import { UserRole } from '../types';
 
-// Function to get all team invitations
-export const getTeamInvitations = async () => {
+export const getTeamInvitations = async (teamId: string) => {
+  const { data, error } = await supabase
+    .from('team_invitations')
+    .select('*')
+    .eq('team_id', teamId);
+
+  if (error) {
+    console.error('Error fetching team invitations:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const inviteUser = async (email: string, role: UserRole, teamId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('team_invitations')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
+    // Create a new invitation in the database
+    const { data, error } = await supabase.functions.invoke('send-team-invitation', {
+      body: {
+        email,
+        role,
+        teamId
+      }
+    });
+
     if (error) throw error;
-    
-    return data || [];
+    return data;
   } catch (error) {
-    console.error("Error fetching team invitations:", error);
+    console.error('Error inviting user:', error);
     throw error;
   }
 };
 
-// Function to invite a user to the team
-export const inviteUser = async (email: string, role: UserRole): Promise<boolean> => {
-  console.log(`Inviting ${email} as ${role}`);
-  
+export const resendInvitation = async (invitationId: string) => {
   try {
-    // Call the Supabase Edge Function to send an invitation email
-    const { error, data } = await supabase.functions.invoke("send-team-invitation", {
-      body: { email, role }
-    });
-    
-    if (error) throw error;
-    
-    if (!data.success) {
-      // The invitation record was created but the email failed to send
-      toast.warning("Invitation created but email delivery failed", {
-        description: data.error || "The invitation was recorded but we couldn't send the email. The user can still accept via the invitation link."
-      });
-    } else {
-      // Show success message when everything works
-      toast.success("Invitation sent successfully", {
-        description: `An invitation email has been sent to ${email}`
-      });
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Error inviting user:", error);
-    toast.error("Failed to send invitation", {
-      description: error.message || "An error occurred while sending the invitation"
-    });
-    return false;
-  }
-};
-
-// Resend invitation
-export const resendInvitation = async (id: string): Promise<boolean> => {
-  try {
-    // Get the invitation details
     const { data, error } = await supabase
       .from('team_invitations')
-      .select('email, role')
-      .eq('id', id)
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', invitationId)
+      .select()
       .single();
-    
+
     if (error) throw error;
-    if (!data) throw new Error("Invitation not found");
-    
-    // Resend the invitation
-    const result = await inviteUser(data.email, data.role as UserRole);
-    
-    if (result) {
-      toast.success("Invitation resent", {
-        description: `A new invitation email has been sent to ${data.email}`
-      });
-    }
-    
-    return result;
-  } catch (error) {
-    console.error("Error resending invitation:", error);
-    toast.error("Failed to resend invitation", {
-      description: error.message || "An error occurred while resending the invitation"
+
+    // Call the email sending function again
+    await supabase.functions.invoke('send-team-invitation', {
+      body: { 
+        invitationId: data.id,
+        resend: true
+      }
     });
+
+    return true;
+  } catch (error) {
+    console.error('Error resending invitation:', error);
     return false;
   }
 };
 
-// Revoke invitation
-export const revokeInvitation = async (id: string): Promise<boolean> => {
+export const revokeInvitation = async (invitationId: string) => {
   try {
-    const { error, data } = await supabase
+    const { error } = await supabase
       .from('team_invitations')
       .delete()
-      .eq('id', id)
-      .select('email')
-      .single();
-    
+      .eq('id', invitationId);
+
     if (error) throw error;
-    
-    toast.success("Invitation revoked", {
-      description: data?.email ? `The invitation to ${data.email} has been revoked` : "The invitation has been revoked"
-    });
-    
     return true;
   } catch (error) {
-    console.error("Error revoking invitation:", error);
-    toast.error("Failed to revoke invitation", {
-      description: error.message || "An error occurred while revoking the invitation"
-    });
+    console.error('Error revoking invitation:', error);
     return false;
   }
 };

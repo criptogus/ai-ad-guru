@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, X } from "lucide-react";
+import { Send, XCircle } from "lucide-react";
 import { UserRole } from "@/services/types";
 
 interface PendingInvitationsTableProps {
@@ -17,21 +17,11 @@ const PendingInvitationsTable: React.FC<PendingInvitationsTableProps> = ({
   invitations,
   getBadgeVariant,
   onResendInvitation,
-  onRevokeInvitation,
+  onRevokeInvitation
 }) => {
-  const [processingIds, setProcessingIds] = useState<Record<string, boolean>>({});
-
-  const handleResend = async (id: string) => {
-    setProcessingIds(prev => ({ ...prev, [id]: true }));
-    await onResendInvitation(id);
-    setProcessingIds(prev => ({ ...prev, [id]: false }));
-  };
-
-  const handleRevoke = async (id: string) => {
-    setProcessingIds(prev => ({ ...prev, [id]: true }));
-    await onRevokeInvitation(id);
-    setProcessingIds(prev => ({ ...prev, [id]: false }));
-  };
+  if (!invitations || invitations.length === 0) {
+    return <div className="text-center py-4 text-muted-foreground">No pending invitations</div>;
+  }
 
   return (
     <Table>
@@ -39,8 +29,7 @@ const PendingInvitationsTable: React.FC<PendingInvitationsTableProps> = ({
         <TableRow>
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
-          <TableHead>Sent</TableHead>
-          <TableHead>Expires</TableHead>
+          <TableHead>Date Sent</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -49,32 +38,33 @@ const PendingInvitationsTable: React.FC<PendingInvitationsTableProps> = ({
           <TableRow key={invitation.id}>
             <TableCell>{invitation.email}</TableCell>
             <TableCell>
-              <Badge variant={getBadgeVariant(invitation.role as UserRole)}>
+              <Badge variant={getBadgeVariant(invitation.role)}>
                 {invitation.role}
               </Badge>
             </TableCell>
-            <TableCell>{new Date(invitation.created_at).toLocaleString()}</TableCell>
-            <TableCell>{new Date(invitation.expires_at).toLocaleString()}</TableCell>
-            <TableCell className="text-right space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleResend(invitation.id)}
-                disabled={processingIds[invitation.id]}
-              >
-                <RefreshCw size={14} className={`mr-1 ${processingIds[invitation.id] ? "animate-spin" : ""}`} />
-                {processingIds[invitation.id] ? "Sending..." : "Resend"}
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-destructive"
-                onClick={() => handleRevoke(invitation.id)}
-                disabled={processingIds[invitation.id]}
-              >
-                <X size={14} className="mr-1" />
-                Revoke
-              </Button>
+            <TableCell>
+              {new Date(invitation.created_at).toLocaleDateString()}
+            </TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onResendInvitation(invitation.id)}
+                >
+                  <Send className="h-4 w-4 mr-1" />
+                  Resend
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => onRevokeInvitation(invitation.id)}
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Revoke
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}

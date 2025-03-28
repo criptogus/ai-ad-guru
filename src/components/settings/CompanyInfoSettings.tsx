@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ImagePlus, Trash, Save, Loader2 } from "lucide-react";
@@ -63,7 +63,6 @@ const TONE_EXAMPLES = {
 };
 
 const CompanyInfoSettings: React.FC = () => {
-  const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -124,8 +123,7 @@ const CompanyInfoSettings: React.FC = () => {
       console.error("Error fetching company info:", error);
       toast({
         title: "Failed to load company information",
-        description: "There was an error loading your company details",
-        variant: "destructive",
+        description: "There was an error loading your company details"
       });
     } finally {
       setIsLoading(false);
@@ -154,8 +152,7 @@ const CompanyInfoSettings: React.FC = () => {
     if (!companyInfo.company_name.trim()) {
       toast({
         title: "Company name required",
-        description: "Please enter your company name",
-        variant: "destructive",
+        description: "Please enter your company name"
       });
       return;
     }
@@ -199,7 +196,7 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Changes saved",
-        description: "Your company information has been updated",
+        description: "Your company information has been updated"
       });
       
       // Refresh data
@@ -209,8 +206,7 @@ const CompanyInfoSettings: React.FC = () => {
       console.error("Error saving company info:", error);
       toast({
         title: "Failed to save changes",
-        description: "There was an error updating your company information",
-        variant: "destructive",
+        description: "There was an error updating your company information"
       });
     } finally {
       setIsSaving(false);
@@ -226,8 +222,7 @@ const CompanyInfoSettings: React.FC = () => {
     if (!fileType.match(/image\/(png|jpeg|jpg|svg\+xml)/)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PNG, JPG, or SVG image",
-        variant: "destructive",
+        description: "Please upload a PNG, JPG, or SVG image"
       });
       return;
     }
@@ -236,8 +231,7 @@ const CompanyInfoSettings: React.FC = () => {
     if (file.size > 2 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Logo image must be less than 2MB",
-        variant: "destructive",
+        description: "Logo image must be less than 2MB"
       });
       return;
     }
@@ -275,15 +269,14 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Logo uploaded",
-        description: "Your company logo has been uploaded",
+        description: "Your company logo has been uploaded"
       });
       
     } catch (error) {
       console.error("Error uploading logo:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your logo",
-        variant: "destructive",
+        description: "There was an error uploading your logo"
       });
     } finally {
       setIsUploading(false);
@@ -308,15 +301,14 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Logo removed",
-        description: "Your company logo has been removed",
+        description: "Your company logo has been removed"
       });
       
     } catch (error) {
       console.error("Error removing logo:", error);
       toast({
         title: "Failed to remove logo",
-        description: "There was an error removing your logo",
-        variant: "destructive",
+        description: "There was an error removing your logo"
       });
     }
   };
