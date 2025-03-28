@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -12,6 +11,10 @@ import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModule
 export default defineConfig(({ mode }) => {
   console.log("[Vite Config] Initializing with enhanced Rollup patching...");
   
+  // Set environment variables to disable native modules
+  process.env.ROLLUP_NATIVE_DISABLE = 'true';
+  process.env.DISABLE_NATIVE_MODULES = 'true';
+  
   // Create aliasDefinitions object with proper typing
   const aliasDefinitions: Record<string, string> = {
     "@": path.resolve(__dirname, "./src"),
@@ -21,7 +24,7 @@ export default defineConfig(({ mode }) => {
   Object.keys(mockNativeBindings).forEach((moduleName) => {
     aliasDefinitions[moduleName] = path.resolve(
       __dirname,
-      "./src/utils/modulePatches/rollupNativeModulePatch.js"
+      "./src/utils/modulePatches/rollup-linux-x64-gnu-mock.js"
     );
     console.log(`[Vite Config] Added alias for: ${moduleName}`);
   });
@@ -31,13 +34,14 @@ export default defineConfig(({ mode }) => {
   
   // Add rollup native module defines with proper typing
   Object.keys(mockNativeBindings).forEach((moduleName) => {
-    defineOptions[`require.resolve("${moduleName}")`] = '"undefined"';
+    defineOptions[`require.resolve("${moduleName}")`] = '"./src/utils/modulePatches/rollup-linux-x64-gnu-mock.js"';
     // Additional coverage for more complex module resolution patterns
-    defineOptions[`require("${moduleName}")`] = 'undefined';
+    defineOptions[`require("${moduleName}")`] = 'null';
   });
   
-  // Add direct coverage for the most problematic module
+  // Add direct coverage for problematic modules
   defineOptions['process.env.ROLLUP_NATIVE_DISABLE'] = 'true';
+  defineOptions['global.__ROLLUP_NATIVE_DISABLED__'] = 'true';
   
   return {
     server: {
@@ -47,14 +51,31 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       mode === 'development' ? componentTagger() : false,
-      // Add custom plugin to intercept Rollup module resolution attempts
+      // Enhanced plugin to intercept Rollup module resolution attempts
       {
         name: 'vite-plugin-rollup-native-patch',
         enforce: 'pre' as const,
         resolveId(source: string) {
-          if (source.includes('@rollup/rollup-')) {
+          if (typeof source === 'string' && 
+              (source.includes('@rollup/rollup-') || 
+               source.includes('rollup') && source.includes('native'))) {
             console.log(`[Vite Plugin] Intercepted Rollup native module: ${source}`);
-            return path.resolve(__dirname, './src/utils/modulePatches/rollupNativeModulePatch.js');
+            return path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js');
+          }
+          return null;
+        },
+        // Additional hook to transform any code that might try to load native modules
+        transform(code: string, id: string) {
+          if (id.includes('rollup') && id.includes('native')) {
+            console.log(`[Vite Plugin] Transforming native module code: ${id}`);
+            return {
+              code: `
+                console.log('[Vite Transform] Using pure JS implementation for: ${id}');
+                export default {}; 
+                module.exports = {};
+              `,
+              map: null
+            };
           }
           return null;
         }

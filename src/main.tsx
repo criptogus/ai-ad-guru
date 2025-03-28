@@ -3,6 +3,11 @@
 // This must be the very first import
 import './utils/modulePatches/patchLoader';
 
+// Force patch early loading with explicit runtime check
+if (typeof process !== 'undefined') {
+  process.env.ROLLUP_NATIVE_DISABLE = '1';
+}
+
 // Explicit console logs to verify patch loading
 console.log("[Application] Patches loaded, initializing application");
 
