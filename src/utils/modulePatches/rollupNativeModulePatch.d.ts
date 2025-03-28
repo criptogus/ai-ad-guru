@@ -1,16 +1,25 @@
 
-declare const mockNativeBindings: {
-  '@rollup/rollup-linux-x64-gnu': any;
-  '@rollup/rollup-linux-x64-musl': any;
-  '@rollup/rollup-darwin-x64': any;
-  '@rollup/rollup-darwin-arm64': any;
-  '@rollup/rollup-win32-x64-msvc': any;
-  '@rollup/rollup-win32-ia32-msvc': any;
-  '@rollup/rollup-win32-arm64-msvc': any;
-  '@rollup/rollup-freebsd-x64': any;
+export interface NativeBindingMock {
+  bindings?: any | null;
+  isLoaded?: boolean;
+  load?: () => any | null;
+  needsRebuilding?: () => boolean;
+  getUuid?: () => string;
+  loadBinding?: () => any | null;
   [key: string]: any;
-};
+}
 
-declare function applyRollupPatch(): boolean;
+export interface MockNativeBindings {
+  '@rollup/rollup-linux-x64-gnu': NativeBindingMock;
+  '@rollup/rollup-linux-x64-musl': NativeBindingMock;
+  '@rollup/rollup-darwin-x64': NativeBindingMock;
+  '@rollup/rollup-darwin-arm64': NativeBindingMock;
+  '@rollup/rollup-win32-x64-msvc': NativeBindingMock;
+  '@rollup/rollup-win32-ia32-msvc': NativeBindingMock;
+  '@rollup/rollup-win32-arm64-msvc': NativeBindingMock;
+  '@rollup/rollup-freebsd-x64': NativeBindingMock;
+  [key: string]: NativeBindingMock;
+}
 
-export { mockNativeBindings, applyRollupPatch };
+export const mockNativeBindings: MockNativeBindings;
+export function applyRollupPatch(): boolean;

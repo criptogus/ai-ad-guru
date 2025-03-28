@@ -24,8 +24,11 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
-      onError: (error) => {
-        console.error("[QueryClient] Query error:", error);
+      // Use meta for error handling (compatible with latest Tanstack Query)
+      meta: {
+        onError: (error: Error) => {
+          console.error("[QueryClient] Query error:", error);
+        }
       }
     },
   },
