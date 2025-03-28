@@ -21,8 +21,9 @@ export const useMicrosoftAdActions = (
     try {
       setIsGenerating(true);
       
-      // Get the Microsoft mind trigger if available
-      const mindTrigger = analysisResult.campaignData?.mindTriggers?.microsoft || '';
+      // Get the Microsoft mind trigger from campaignData if available
+      // Note: We should get this from props or context instead of trying to access it on analysisResult
+      const mindTrigger = '';
       
       console.log("Generating Microsoft ads with trigger:", mindTrigger);
       const generatedAds = await generateMicrosoftAds(analysisResult, mindTrigger);

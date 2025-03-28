@@ -1,20 +1,18 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { getDomainFromUrl } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import MicrosoftAdCard from "./MicrosoftAdCard";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Plus } from "lucide-react";
+import { useCampaign } from "@/contexts/CampaignContext";
+import { MicrosoftAdCard } from "./microsoft";
 
 interface MicrosoftAdsTabProps {
-  microsoftAds: GoogleAd[];
+  microsoftAds: any[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
-  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
   mindTrigger?: string;
 }
 
@@ -26,80 +24,73 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   onUpdateMicrosoftAd,
   mindTrigger
 }) => {
-  const domain = getDomainFromUrl(analysisResult.websiteUrl || "example.com");
-
-  const handleUpdateAd = (index: number) => (updatedAd: GoogleAd) => {
-    onUpdateMicrosoftAd(index, updatedAd);
-  };
+  const { campaignData } = useCampaign();
+  const websiteUrl = campaignData?.targetUrl || analysisResult?.websiteUrl || "example.com";
+  const domain = websiteUrl.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
 
   return (
-    <div className="space-y-6">
-      {mindTrigger && (
-        <Alert className="mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-          <AlertTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
-            Active Mind Trigger
-          </AlertTitle>
-          <AlertDescription className="text-blue-600 dark:text-blue-300">
-            {mindTrigger}
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {microsoftAds.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-6">
-              <h3 className="text-lg font-medium mb-2">No Microsoft Ads Generated Yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Generate Microsoft text ads based on your website analysis
-              </p>
-              <Button 
-                onClick={onGenerateAds} 
-                disabled={isGenerating}
-                className="mx-auto"
-              >
-                {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Generate Microsoft Ads
-              </Button>
-              <div className="text-xs text-muted-foreground mt-2">
-                This will use 5 credits
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Microsoft Ads</h3>
+        <div className="flex gap-2">
+          <Button
+            onClick={onGenerateAds}
+            disabled={isGenerating}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Generate Ads
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {microsoftAds.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4">
+          {microsoftAds.map((ad, index) => (
+            <MicrosoftAdCard
+              key={index}
+              ad={ad}
+              domain={domain}
+              index={index}
+              onUpdate={(updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
+            />
+          ))}
+        </div>
       ) : (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-medium">Microsoft Ad Variations</h2>
-            <Button
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-6">
+            <p className="text-muted-foreground mb-2">No Microsoft ads generated yet</p>
+            <Button 
+              onClick={onGenerateAds} 
+              disabled={isGenerating}
               variant="outline"
               size="sm"
-              onClick={onGenerateAds}
-              disabled={isGenerating}
+              className="flex items-center gap-2"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Regenerating...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
                 </>
               ) : (
-                "Regenerate Ads"
+                <>
+                  <Plus className="h-4 w-4" />
+                  Generate Microsoft Ads
+                </>
               )}
             </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6">
-            {microsoftAds.map((ad, index) => (
-              <MicrosoftAdCard
-                key={`microsoft-ad-${index}`}
-                ad={ad}
-                index={index}
-                analysisResult={analysisResult}
-                onUpdate={handleUpdateAd(index)}
-              />
-            ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
