@@ -1,4 +1,3 @@
-
 import { corsHeaders } from "../utils/cors.ts";
 import { storeOAuthState } from "../utils/state.ts";
 import { getGoogleAuthUrl } from "../platforms/google.ts";
@@ -45,16 +44,15 @@ export const getAuthUrl = async (
       );
     }
   } else if (platform === 'meta') {
-    clientId = Deno.env.get('META_CLIENT_ID');
     const clientSecret = Deno.env.get('META_CLIENT_SECRET');
     
     console.log("Meta credentials available:", 
-      `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+      `Client ID: ${Deno.env.get('META_CLIENT_ID') ? 'Yes' : 'No'}`, 
       `Client Secret: ${clientSecret ? 'Yes' : 'No'}`);
     
-    if (!clientId || !clientSecret) {
+    if (!Deno.env.get('META_CLIENT_ID') || !clientSecret) {
       const missingVars = [];
-      if (!clientId) missingVars.push('META_CLIENT_ID');
+      if (!Deno.env.get('META_CLIENT_ID')) missingVars.push('META_CLIENT_ID');
       if (!clientSecret) missingVars.push('META_CLIENT_SECRET');
       
       return new Response(
@@ -69,16 +67,15 @@ export const getAuthUrl = async (
       );
     }
   } else if (platform === 'linkedin') {
-    clientId = Deno.env.get('LINKEDIN_CLIENT_ID');
     const clientSecret = Deno.env.get('LINKEDIN_CLIENT_SECRET');
     
     console.log("LinkedIn credentials available:", 
-      `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+      `Client ID: ${Deno.env.get('LINKEDIN_CLIENT_ID') ? 'Yes' : 'No'}`, 
       `Client Secret: ${clientSecret ? 'Yes' : 'No'}`);
     
-    if (!clientId || !clientSecret) {
+    if (!Deno.env.get('LINKEDIN_CLIENT_ID') || !clientSecret) {
       const missingVars = [];
-      if (!clientId) missingVars.push('LINKEDIN_CLIENT_ID');
+      if (!Deno.env.get('LINKEDIN_CLIENT_ID')) missingVars.push('LINKEDIN_CLIENT_ID');
       if (!clientSecret) missingVars.push('LINKEDIN_CLIENT_SECRET');
       
       return new Response(
@@ -93,18 +90,17 @@ export const getAuthUrl = async (
       );
     }
   } else if (platform === 'microsoft') {
-    clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
     const developerToken = Deno.env.get('MICROSOFT_DEVELOPER_TOKEN');
     
     console.log("Microsoft credentials available:", 
-      `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+      `Client ID: ${Deno.env.get('MICROSOFT_CLIENT_ID') ? 'Yes' : 'No'}`, 
       `Client Secret: ${clientSecret ? 'Yes' : 'No'}`,
       `Developer Token: ${developerToken ? 'Yes' : 'No'}`);
     
-    if (!clientId || !clientSecret || !developerToken) {
+    if (!Deno.env.get('MICROSOFT_CLIENT_ID') || !clientSecret || !developerToken) {
       const missingVars = [];
-      if (!clientId) missingVars.push('MICROSOFT_CLIENT_ID');
+      if (!Deno.env.get('MICROSOFT_CLIENT_ID')) missingVars.push('MICROSOFT_CLIENT_ID');
       if (!clientSecret) missingVars.push('MICROSOFT_CLIENT_SECRET');
       if (!developerToken) missingVars.push('MICROSOFT_DEVELOPER_TOKEN');
       
@@ -147,6 +143,7 @@ export const getAuthUrl = async (
   try {
     await storeOAuthState(supabaseClient, stateParam, tempState);
   } catch (error: any) {
+    console.error("Failed to store OAuth state:", error);
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -159,15 +156,32 @@ export const getAuthUrl = async (
     );
   }
   
-  let authUrl = null;
-  if (platform === 'google') {
-    authUrl = getGoogleAuthUrl(clientId, redirectUri, stateParam);
-  } else if (platform === 'meta') {
-    authUrl = getMetaAuthUrl(clientId, redirectUri, stateParam);
-  } else if (platform === 'linkedin') {
-    authUrl = getLinkedInAuthUrl(clientId, redirectUri, stateParam);
-  } else if (platform === 'microsoft') {
-    authUrl = getMicrosoftAuthUrl(clientId, redirectUri, stateParam);
+  let authUrl: string | null = null;
+  try {
+    if (platform === 'google') {
+      authUrl = getGoogleAuthUrl(clientId!, redirectUri, stateParam);
+    } else if (platform === 'meta') {
+      const metaClientId = Deno.env.get('META_CLIENT_ID');
+      authUrl = getMetaAuthUrl(metaClientId!, redirectUri, stateParam);
+    } else if (platform === 'linkedin') {
+      const linkedInClientId = Deno.env.get('LINKEDIN_CLIENT_ID');
+      authUrl = getLinkedInAuthUrl(linkedInClientId!, redirectUri, stateParam);
+    } else if (platform === 'microsoft') {
+      const microsoftClientId = Deno.env.get('MICROSOFT_CLIENT_ID');
+      authUrl = getMicrosoftAuthUrl(microsoftClientId!, redirectUri, stateParam);
+    }
+  } catch (error: any) {
+    console.error(`Error generating ${platform} auth URL:`, error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: `Failed to generate auth URL: ${error.message}` 
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
   }
   
   // Enhanced logging to debug auth URL generation
@@ -176,10 +190,6 @@ export const getAuthUrl = async (
     console.log(`Redirect URI used: ${redirectUri}`);
   } else {
     console.error(`Failed to generate auth URL for ${platform}`);
-  }
-  
-  // Verify we actually have a valid URL before returning
-  if (!authUrl) {
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -195,7 +205,7 @@ export const getAuthUrl = async (
   return new Response(
     JSON.stringify({ 
       success: true, 
-      authUrl: authUrl
+      authUrl
     }),
     {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

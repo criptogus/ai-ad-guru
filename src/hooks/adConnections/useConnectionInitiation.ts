@@ -59,17 +59,13 @@ export const useConnectionInitiation = () => {
       if (response.error) {
         console.error(`Error initiating ${platform} connection:`, response.error);
         
-        let errorMessage = `Failed to connect to ${platform}: ${response.error.message || 'Unknown error'}`;
-        let errorType = 'edge_function';
-        let errorDetails = response.error.message || null;
-        
-        setError(errorMessage);
-        setErrorType(errorType);
-        setErrorDetails(errorDetails);
+        setError(`Failed to connect to ${platform}: ${response.error.message || 'Unknown error'}`);
+        setErrorType('edge_function');
+        setErrorDetails(response.error.message || null);
         
         toast({
           title: "Connection Failed",
-          description: errorMessage,
+          description: `Failed to connect to ${platform}: ${response.error.message || 'Unknown error'}`,
           variant: "destructive",
         });
         
