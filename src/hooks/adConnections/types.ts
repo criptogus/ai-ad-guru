@@ -1,11 +1,16 @@
 
-import { Session } from "@supabase/supabase-js";
+export type AdPlatform = 'google' | 'meta' | 'linkedin' | 'microsoft';
 
 export interface Connection {
   id: string;
-  platform: string;
-  account_id: string;
-  created_at: string;
+  user_id: string;
+  platform: AdPlatform;
+  access_token?: string;
+  refresh_token?: string;
+  account_id?: string;
+  expires_at?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AdConnectionsState {
@@ -19,17 +24,24 @@ export interface AdConnectionsState {
 
 export interface AdConnectionsActions {
   fetchConnections: () => Promise<void>;
-  initiateGoogleConnection: () => void;
-  initiateLinkedInConnection: () => void;
-  initiateMicrosoftConnection: () => void;
-  initiateMetaConnection: () => void;
+  initiateGoogleConnection: () => Promise<void>;
+  initiateLinkedInConnection: () => Promise<void>;
+  initiateMicrosoftConnection: () => Promise<void>;
+  initiateMetaConnection: () => Promise<void>;
   removeConnection: (id: string, platformName: string) => Promise<void>;
 }
 
-export type AdPlatform = 'google' | 'linkedin' | 'microsoft' | 'meta';
-
 export interface OAuthParams {
   platform: AdPlatform;
-  userId: string;
+  userId: string | undefined;
   redirectUri: string;
+}
+
+export interface SecurityLogEntry {
+  event: string;
+  user_id: string | undefined;
+  platform?: AdPlatform;
+  timestamp: string;
+  ip_address?: string;
+  details?: Record<string, any>;
 }
