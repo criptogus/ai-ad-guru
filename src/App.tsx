@@ -13,12 +13,15 @@ import ConfigPage from "./pages/ConfigPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
+import LandingPage from "./pages/LandingPage";
+import Index from "./pages/Index";
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
