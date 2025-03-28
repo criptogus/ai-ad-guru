@@ -8,7 +8,8 @@ import {
 
 export { 
   initiateOAuth, 
-  handleOAuthCallback,
-  isOAuthCallback: oauthHelpers.isOAuthCallback,
-  clearOAuthState: oauthHelpers.clearOAuthState
+  handleOAuthCallback 
 };
+
+export const isOAuthCallback = oauthHelpers.isOAuthCallback;
+export const clearOAuthState = oauthHelpers.clearOAuthState;
