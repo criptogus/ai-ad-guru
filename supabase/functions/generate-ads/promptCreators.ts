@@ -29,7 +29,8 @@ async function fetchPromptTemplate(key: string): Promise<string | null> {
   }
   
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/app_prompts?key=eq.${key}&select=prompt`, {
+    // Fetch active prompt with highest version
+    const response = await fetch(`${supabaseUrl}/rest/v1/app_prompts?key=eq.${key}&is_active=eq.true&order=version.desc&limit=1&select=prompt`, {
       headers: {
         'Authorization': `Bearer ${supabaseServiceKey}`,
         'apikey': supabaseServiceKey
@@ -42,9 +43,11 @@ async function fetchPromptTemplate(key: string): Promise<string | null> {
     
     const data = await response.json();
     if (data && data.length > 0) {
+      console.log(`Using prompt from database for ${key}, version ${data[0].version || 'unknown'}`);
       return data[0].prompt;
     }
     
+    console.log(`No prompt found in database for ${key}, using default`);
     return null;
   } catch (error) {
     console.error('Error fetching prompt template:', error);
@@ -222,6 +225,34 @@ export async function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResu
   
   if (mindTrigger) {
     prompt += `\n\nAdditional creative direction: ${mindTrigger}`;
+  }
+  
+  return prompt;
+}
+
+// Create Image Generation prompt
+export async function createImageGenerationPrompt(campaignData: WebsiteAnalysisResult, platform: string, mindTrigger?: string): Promise<string> {
+  const basePrompt = await getPromptTemplate('openai_image_generator');
+  
+  const templateData = {
+    platform: platform,
+    companyName: campaignData.companyName || '',
+    industry: campaignData.industry || '',
+    targetAudience: campaignData.targetAudience || '',
+    brandTone: campaignData.brandTone || 'professional',
+    mindTrigger: mindTrigger || 'engagement',
+    uniqueSellingPoints: campaignData.uniqueSellingPoints?.join(', ') || ''
+  };
+  
+  let prompt = templateReplace(basePrompt, templateData);
+  
+  // Add platform-specific formatting
+  if (platform.toLowerCase().includes('instagram')) {
+    prompt += ' Format: 1080x1080px, optimize for mobile feed viewing.';
+  } else if (platform.toLowerCase().includes('linkedin')) {
+    prompt += ' Format: 1200x627px, professional context, desktop optimized.';
+  } else if (platform.toLowerCase().includes('facebook')) {
+    prompt += ' Format: 1080x1080px, optimize for social feed viewing.';
   }
   
   return prompt;

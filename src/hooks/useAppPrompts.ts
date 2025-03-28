@@ -12,6 +12,8 @@ export interface AppPrompt {
   read_only: boolean;
   created_at: string;
   updated_at: string;
+  is_active?: boolean;
+  metadata?: Record<string, any> | null;
 }
 
 interface UseAppPromptsReturn {
@@ -21,6 +23,7 @@ interface UseAppPromptsReturn {
   getPrompt: (key: string) => AppPrompt | null;
   getPromptText: (key: string) => string;
   updatePrompt: (key: string, newPrompt: string, description?: string) => Promise<boolean>;
+  createPrompt: (key: string, prompt: string, description?: string) => Promise<boolean>;
 }
 
 // Default prompts as fallback if database retrieval fails
@@ -29,6 +32,13 @@ const DEFAULT_PROMPTS: Record<string, Omit<AppPrompt, 'id' | 'created_at' | 'upd
     key: 'openai_ad_generator',
     prompt: 'You are an AI assistant specialized in creating effective advertising content. Generate compelling ad copy for {{platform}} that highlights the unique value proposition of {{companyName}} in the {{industry}} industry. The target audience is {{targetAudience}}. Use a {{brandTone}} tone and incorporate these keywords: {{keywords}}. The primary call to action should be: {{callToAction}}. Focus on these unique selling points: {{uniqueSellingPoints}}.',
     description: 'Primary prompt used for generating ad content across all platforms',
+    version: 1,
+    read_only: true
+  },
+  openai_image_generator: {
+    key: 'openai_image_generator',
+    prompt: 'Generate a cinematic, high-end advertising image for an {{platform}} campaign targeting {{targetAudience}} in {{industry}}. The visual must evoke {{mindTrigger}} and drive conversions, styled like a top-tier NYC creative agency\'s work. Use photorealistic rendering with soft lighting, shallow depth of field, and a clean, persuasive composition. Reflect {{companyName}}\'s value through a central subject. Incorporate modern branding with clean, bold visuals. Format: 1080x1080px for Instagram, 1200x627px for LinkedIn. Ensure mobile-friendly visuals with no text overlay.',
+    description: 'Enhanced prompt template for generating ad images across platforms',
     version: 1,
     read_only: true
   }
@@ -47,16 +57,27 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
 
         const { data, error: fetchError } = await supabase
           .from('app_prompts')
-          .select('*');
+          .select('*')
+          .eq('is_active', true)
+          .order('version', { ascending: false });
 
         if (fetchError) {
           throw fetchError;
         }
 
         const promptsRecord: Record<string, AppPrompt> = {};
-        data.forEach((prompt: AppPrompt) => {
-          promptsRecord[prompt.key] = prompt;
-        });
+        
+        // Group by key and take the latest version of each key
+        const processedKeys = new Set<string>();
+        
+        if (data) {
+          data.forEach((prompt: AppPrompt) => {
+            if (!processedKeys.has(prompt.key)) {
+              promptsRecord[prompt.key] = prompt;
+              processedKeys.add(prompt.key);
+            }
+          });
+        }
 
         setPrompts(promptsRecord);
         console.log('Loaded prompts from database:', Object.keys(promptsRecord));
@@ -115,52 +136,77 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
       }
       
       if (existingPrompt) {
-        // Update existing prompt
-        const { error: updateError } = await supabase
+        // Mark the existing prompt as inactive (soft-delete for versioning)
+        const { error: deactivateError } = await supabase
           .from('app_prompts')
-          .update({
-            prompt: newPrompt,
-            description: description || existingPrompt.description,
-            version: existingPrompt.version + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('key', key);
+          .update({ is_active: false })
+          .eq('id', existingPrompt.id);
           
-        if (updateError) throw updateError;
-      } else {
-        // Create new prompt
-        const { error: insertError } = await supabase
+        if (deactivateError) throw deactivateError;
+        
+        // Create a new version
+        const { error: insertError, data: newPromptData } = await supabase
           .from('app_prompts')
           .insert({
             key,
             prompt: newPrompt,
-            description,
-            version: 1
-          });
+            description: description || existingPrompt.description,
+            version: existingPrompt.version + 1,
+            is_active: true,
+            read_only: existingPrompt.read_only
+          })
+          .select()
+          .single();
           
         if (insertError) throw insertError;
+        
+        // Update local state
+        setPrompts(prev => ({
+          ...prev,
+          [key]: newPromptData
+        }));
+      } else {
+        // Create new prompt
+        return await createPrompt(key, newPrompt, description);
       }
-      
-      // Update local state
-      const updatedPrompt = {
-        ...existingPrompt,
-        key,
-        prompt: newPrompt,
-        description: description || (existingPrompt ? existingPrompt.description : null),
-        version: existingPrompt ? existingPrompt.version + 1 : 1,
-        updated_at: new Date().toISOString()
-      } as AppPrompt;
-      
-      setPrompts(prev => ({
-        ...prev,
-        [key]: updatedPrompt
-      }));
       
       toast.success("Prompt updated successfully");
       return true;
     } catch (err) {
       console.error('Error updating prompt:', err);
       toast.error("Failed to update prompt");
+      return false;
+    }
+  };
+  
+  const createPrompt = async (key: string, prompt: string, description?: string): Promise<boolean> => {
+    try {
+      const { error: insertError, data: newPromptData } = await supabase
+        .from('app_prompts')
+        .insert({
+          key,
+          prompt,
+          description,
+          version: 1,
+          is_active: true,
+          read_only: false
+        })
+        .select()
+        .single();
+        
+      if (insertError) throw insertError;
+      
+      // Update local state
+      setPrompts(prev => ({
+        ...prev,
+        [key]: newPromptData
+      }));
+      
+      toast.success("New prompt created successfully");
+      return true;
+    } catch (err) {
+      console.error('Error creating prompt:', err);
+      toast.error("Failed to create prompt");
       return false;
     }
   };
@@ -171,6 +217,7 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
     error,
     getPrompt,
     getPromptText,
-    updatePrompt
+    updatePrompt,
+    createPrompt
   };
 };
