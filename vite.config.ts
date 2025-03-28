@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -17,6 +18,13 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    // Use the pure JS build of Rollup to avoid native module issues
+    rollupOptions: {
+      // This ensures Rollup doesn't try to use native modules
+      context: 'globalThis',
     },
   },
 }));
