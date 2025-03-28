@@ -1,11 +1,10 @@
-
 import React from "react";
 import { useAdAccountConnections } from "@/hooks/useAdAccountConnections";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { Goal, Facebook, Linkedin, Microsoft } from "lucide-react";
+import { Goal, Facebook, Linkedin, ServerIcon } from "lucide-react";
 import PlatformConnectionCard from "./PlatformConnectionCard";
 
 const ConnectionsSection: React.FC = () => {
