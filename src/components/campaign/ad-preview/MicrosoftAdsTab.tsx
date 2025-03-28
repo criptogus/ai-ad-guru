@@ -7,6 +7,7 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { getDomainFromUrl } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import MicrosoftAdCard from "./MicrosoftAdCard";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -26,6 +27,10 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   mindTrigger
 }) => {
   const domain = getDomainFromUrl(analysisResult.websiteUrl || "example.com");
+
+  const handleUpdateAd = (index: number) => (updatedAd: GoogleAd) => {
+    onUpdateMicrosoftAd(index, updatedAd);
+  };
 
   return (
     <div className="space-y-6">
@@ -83,27 +88,17 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
             </Button>
           </div>
           
-          {microsoftAds.map((ad, index) => (
-            <div key={`microsoft-ad-${index}`} className="border rounded-md p-4">
-              <div className="mb-2">
-                <div className="font-medium text-blue-600">{ad.headline1} | {ad.headline2} | {ad.headline3}</div>
-                <div className="text-green-700 text-sm">{domain}</div>
-                <div className="text-sm">{ad.description1}</div>
-                <div className="text-sm">{ad.description2}</div>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs"
-                onClick={() => {
-                  const updatedAd = { ...ad };
-                  onUpdateMicrosoftAd(index, updatedAd);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 gap-6">
+            {microsoftAds.map((ad, index) => (
+              <MicrosoftAdCard
+                key={`microsoft-ad-${index}`}
+                ad={ad}
+                index={index}
+                analysisResult={analysisResult}
+                onUpdate={handleUpdateAd(index)}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

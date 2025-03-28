@@ -1,65 +1,51 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MicrosoftAd } from "@/contexts/CampaignContext";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
+import { GoogleAd } from '@/hooks/adGeneration';
 
 export const useMicrosoftAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
-  microsoftAds: MicrosoftAd[],
-  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<MicrosoftAd[] | null>,
+  microsoftAds: GoogleAd[],
+  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
   const handleGenerateMicrosoftAds = async () => {
     if (!analysisResult) {
-      toast({
-        title: "Analysis Required",
-        description: "Please analyze a website before generating ads",
-        variant: "destructive",
-      });
+      toast.error("Website analysis required before generating ads");
       return;
     }
-    
-    setIsGenerating(true);
-    
+
     try {
-      toast({
-        title: "Generating Ads",
-        description: "Creating Microsoft ads based on your website analysis"
-      });
+      setIsGenerating(true);
       
-      // Get the campaign data from context
-      const result = await generateMicrosoftAds(analysisResult);
+      // Get the Microsoft mind trigger if available
+      const mindTrigger = analysisResult.campaignData?.mindTriggers?.microsoft || '';
       
-      if (result && result.length > 0) {
-        // Update the campaign data with the generated ads
-        setCampaignData((prev: any) => ({
-          ...prev,
-          microsoftAds: result
-        }));
+      console.log("Generating Microsoft ads with trigger:", mindTrigger);
+      const generatedAds = await generateMicrosoftAds(analysisResult, mindTrigger);
+      
+      if (generatedAds) {
+        toast.success(`Generated ${generatedAds.length} Microsoft ad variations`);
         
-        toast({
-          title: "Ads Generated",
-          description: `Successfully created ${result.length} Microsoft ads`
-        });
+        // Update campaign data with the new ads
+        setCampaignData(prev => ({
+          ...prev,
+          microsoftAds: generatedAds
+        }));
       } else {
-        throw new Error("No ads were generated");
+        toast.error("Failed to generate Microsoft ads");
       }
     } catch (error) {
       console.error("Error generating Microsoft ads:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate Microsoft ads",
-        variant: "destructive",
-      });
+      toast.error("An error occurred while generating Microsoft ads");
     } finally {
       setIsGenerating(false);
     }
   };
-  
+
   return {
     handleGenerateMicrosoftAds,
     isGenerating

@@ -10,7 +10,7 @@ interface MicrosoftAdCardHeaderProps {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
-  onCopy?: () => void;
+  onCopy: () => void;
 }
 
 const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
@@ -22,55 +22,25 @@ const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
   onCopy
 }) => {
   return (
-    <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
-      <CardTitle className="text-lg flex items-center gap-2">
-        <img src="/microsoft-logo.png" alt="Microsoft" className="h-5 w-5" onError={(e) => {e.currentTarget.style.display = 'none'}} />
-        <span>Microsoft Ad {adIndex + 1}</span>
-      </CardTitle>
-      
-      <div className="flex items-center gap-2">
+    <CardHeader className="flex flex-row items-center justify-between p-4">
+      <CardTitle className="text-sm">Microsoft Ad Variation {adIndex + 1}</CardTitle>
+      <div className="flex space-x-2">
         {isEditing ? (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCancel}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Cancel
+            <Button size="sm" variant="outline" onClick={onCancel}>
+              <X className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSave}
-              className="text-green-600 hover:text-green-700"
-            >
-              <Save className="h-4 w-4 mr-1" />
-              Save
+            <Button size="sm" onClick={onSave}>
+              <Save className="h-4 w-4" />
             </Button>
           </>
         ) : (
           <>
-            {onCopy && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCopy}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Copy className="h-4 w-4 mr-1" />
-                Copy
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="text-blue-600 hover:text-blue-700"
-            >
-              <Edit2 className="h-4 w-4 mr-1" />
-              Edit
+            <Button size="sm" variant="outline" onClick={onCopy}>
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={onEdit}>
+              <Edit2 className="h-4 w-4" />
             </Button>
           </>
         )}

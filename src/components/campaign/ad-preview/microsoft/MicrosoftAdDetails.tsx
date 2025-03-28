@@ -1,10 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 import { GoogleAd } from "@/hooks/adGeneration";
-import TriggerButtonInline from "@/components/campaign/ad-preview/TriggerButtonInline";
+import TextAdTemplateGallery from "../text/TextAdTemplateGallery";
 
 interface MicrosoftAdDetailsProps {
   ad: GoogleAd;
@@ -17,113 +19,253 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
   isEditing,
   onUpdate
 }) => {
-  const [editedAd, setEditedAd] = useState<GoogleAd>({ ...ad });
+  const [headline1, setHeadline1] = useState(ad.headline1 || "");
+  const [headline2, setHeadline2] = useState(ad.headline2 || "");
+  const [headline3, setHeadline3] = useState(ad.headline3 || "");
+  const [description1, setDescription1] = useState(ad.description1 || "");
+  const [description2, setDescription2] = useState(ad.description2 || "");
+  const [path1, setPath1] = useState(ad.path1 || "");
+  const [path2, setPath2] = useState(ad.path2 || "");
+  const [showTemplates, setShowTemplates] = useState(false);
 
-  const handleHeadlineChange = (index: number, value: string) => {
-    if (!isEditing || !onUpdate) return;
-    
-    const newHeadlines = [...(editedAd.headlines || [])];
-    newHeadlines[index] = value;
-    
-    const updatedAd = { ...editedAd, headlines: newHeadlines };
-    setEditedAd(updatedAd);
+  // Update local state when ad prop changes
+  useEffect(() => {
+    setHeadline1(ad.headline1 || "");
+    setHeadline2(ad.headline2 || "");
+    setHeadline3(ad.headline3 || "");
+    setDescription1(ad.description1 || "");
+    setDescription2(ad.description2 || "");
+    setPath1(ad.path1 || "");
+    setPath2(ad.path2 || "");
+  }, [ad]);
+
+  // Handle saving the updated ad
+  const handleSave = () => {
+    if (!onUpdate) return;
+
+    const updatedAd: GoogleAd = {
+      ...ad,
+      headline1,
+      headline2,
+      headline3,
+      description1,
+      description2,
+      path1,
+      path2,
+      headlines: [headline1, headline2, headline3],
+      descriptions: [description1, description2],
+    };
+
     onUpdate(updatedAd);
   };
 
-  const handleDescriptionChange = (index: number, value: string) => {
-    if (!isEditing || !onUpdate) return;
-    
-    const newDescriptions = [...(editedAd.descriptions || [])];
-    newDescriptions[index] = value;
-    
-    const updatedAd = { ...editedAd, descriptions: newDescriptions };
-    setEditedAd(updatedAd);
-    onUpdate(updatedAd);
-  };
+  // Handle template selection
+  const handleSelectTemplate = (template: any) => {
+    setHeadline1(template.headline1 || "");
+    setHeadline2(template.headline2 || "");
+    setHeadline3(template.headline3 || "");
+    setDescription1(template.description1 || "");
+    setDescription2(template.description2 || "");
+    setShowTemplates(false);
 
-  const insertTrigger = (text: string, fieldType: 'headline' | 'description', index: number) => {
-    if (!isEditing || !onUpdate) return;
-    
-    if (fieldType === 'headline') {
-      const newHeadlines = [...(editedAd.headlines || [])];
-      newHeadlines[index] = `${newHeadlines[index] || ''} ${text}`.trim();
+    if (onUpdate) {
+      const updatedAd: GoogleAd = {
+        ...ad,
+        headline1: template.headline1 || "",
+        headline2: template.headline2 || "",
+        headline3: template.headline3 || "",
+        description1: template.description1 || "",
+        description2: template.description2 || "",
+        headlines: [template.headline1, template.headline2, template.headline3].filter(Boolean),
+        descriptions: [template.description1, template.description2].filter(Boolean),
+        path1,
+        path2
+      };
       
-      const updatedAd = { ...editedAd, headlines: newHeadlines };
-      setEditedAd(updatedAd);
-      onUpdate(updatedAd);
-    } else {
-      const newDescriptions = [...(editedAd.descriptions || [])];
-      newDescriptions[index] = `${newDescriptions[index] || ''} ${text}`.trim();
-      
-      const updatedAd = { ...editedAd, descriptions: newDescriptions };
-      setEditedAd(updatedAd);
       onUpdate(updatedAd);
     }
   };
 
+  // Read-only view
+  if (!isEditing) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-medium mb-2">Headlines</h3>
+          <div className="space-y-2">
+            <div className="text-sm">1. {headline1}</div>
+            <div className="text-sm">2. {headline2}</div>
+            <div className="text-sm">3. {headline3}</div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-sm font-medium mb-2">Descriptions</h3>
+          <div className="space-y-2">
+            <div className="text-sm">1. {description1}</div>
+            <div className="text-sm">2. {description2}</div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-sm font-medium mb-2">Paths</h3>
+          <div className="text-sm">
+            {path1}{path2 ? `/${path2}` : ""}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Editing view
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium">Headlines (30 chars max)</h4>
-        {isEditing ? (
-          (editedAd.headlines || []).map((headline, index) => (
-            <div key={`headline-${index}`} className="relative">
-              <Input
-                value={headline || ''}
-                onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                maxLength={30}
-                placeholder={`Headline ${index + 1}`}
-                className="pr-20"
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">
-                  {(headline || '').length}/30
-                </span>
-                <TriggerButtonInline
-                  onInsert={(text) => insertTrigger(text, 'headline', index)}
-                />
-              </div>
-            </div>
-          ))
-        ) : (
-          (ad.headlines || []).map((headline, index) => (
-            <div key={`headline-${index}`} className="border p-2 rounded-md">
-              {headline || `Headline ${index + 1} (empty)`}
-            </div>
-          ))
-        )}
-      </div>
+      {showTemplates ? (
+        <div className="mb-4">
+          <TextAdTemplateGallery
+            initialHeadline1={headline1}
+            initialHeadline2={headline2}
+            initialHeadline3={headline3}
+            initialDescription1={description1}
+            initialDescription2={description2}
+            platform="microsoft"
+            onSelectTemplate={handleSelectTemplate}
+          />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="w-full mt-2"
+            onClick={() => setShowTemplates(false)}
+          >
+            Hide Templates
+          </Button>
+        </div>
+      ) : (
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="w-full"
+          onClick={() => setShowTemplates(true)}
+        >
+          Browse Ad Templates
+        </Button>
+      )}
 
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium">Descriptions (90 chars max)</h4>
-        {isEditing ? (
-          (editedAd.descriptions || []).map((description, index) => (
-            <div key={`description-${index}`} className="relative">
-              <Textarea
-                value={description || ''}
-                onChange={(e) => handleDescriptionChange(index, e.target.value)}
-                maxLength={90}
-                placeholder={`Description ${index + 1}`}
-                className="min-h-[80px] pr-20"
-              />
-              <div className="absolute right-2 top-2 flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">
-                  {(description || '').length}/90
-                </span>
-                <TriggerButtonInline
-                  onInsert={(text) => insertTrigger(text, 'description', index)}
-                />
-              </div>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="headline1">Headline 1 (30 chars max)</Label>
+          <div className="flex items-center mt-1 gap-1">
+            <Input
+              id="headline1"
+              value={headline1}
+              onChange={(e) => setHeadline1(e.target.value)}
+              maxLength={30}
+              className="flex-1"
+            />
+            <div className="text-xs text-muted-foreground w-10 text-right">
+              {headline1.length}/30
             </div>
-          ))
-        ) : (
-          (ad.descriptions || []).map((description, index) => (
-            <div key={`description-${index}`} className="border p-2 rounded-md">
-              {description || `Description ${index + 1} (empty)`}
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="headline2">Headline 2 (30 chars max)</Label>
+          <div className="flex items-center mt-1 gap-1">
+            <Input
+              id="headline2"
+              value={headline2}
+              onChange={(e) => setHeadline2(e.target.value)}
+              maxLength={30}
+              className="flex-1"
+            />
+            <div className="text-xs text-muted-foreground w-10 text-right">
+              {headline2.length}/30
             </div>
-          ))
-        )}
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="headline3">Headline 3 (30 chars max)</Label>
+          <div className="flex items-center mt-1 gap-1">
+            <Input
+              id="headline3"
+              value={headline3}
+              onChange={(e) => setHeadline3(e.target.value)}
+              maxLength={30}
+              className="flex-1"
+            />
+            <div className="text-xs text-muted-foreground w-10 text-right">
+              {headline3.length}/30
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="description1">Description 1 (90 chars max)</Label>
+          <div className="flex items-center mt-1 gap-1">
+            <Textarea
+              id="description1"
+              value={description1}
+              onChange={(e) => setDescription1(e.target.value)}
+              maxLength={90}
+              rows={2}
+              className="flex-1"
+            />
+            <div className="text-xs text-muted-foreground w-10 text-right">
+              {description1.length}/90
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="description2">Description 2 (90 chars max)</Label>
+          <div className="flex items-center mt-1 gap-1">
+            <Textarea
+              id="description2"
+              value={description2}
+              onChange={(e) => setDescription2(e.target.value)}
+              maxLength={90}
+              rows={2}
+              className="flex-1"
+            />
+            <div className="text-xs text-muted-foreground w-10 text-right">
+              {description2.length}/90
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="path1">Path 1 (Optional)</Label>
+            <Input
+              id="path1"
+              value={path1}
+              onChange={(e) => setPath1(e.target.value)}
+              placeholder="e.g., services"
+              maxLength={15}
+            />
+          </div>
+          <div>
+            <Label htmlFor="path2">Path 2 (Optional)</Label>
+            <Input
+              id="path2"
+              value={path2}
+              onChange={(e) => setPath2(e.target.value)}
+              placeholder="e.g., premium"
+              maxLength={15}
+            />
+          </div>
+        </div>
       </div>
+      
+      <Button 
+        onClick={handleSave} 
+        size="sm" 
+        className="w-full"
+      >
+        <Check className="w-4 h-4 mr-2" />
+        Save Changes
+      </Button>
     </div>
   );
 };

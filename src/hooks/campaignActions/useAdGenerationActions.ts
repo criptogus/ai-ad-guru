@@ -1,9 +1,11 @@
+
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { 
   useGoogleAdActions,
   useMetaAdActions,
-  useImageGenerationActions
+  useImageGenerationActions,
+  useMicrosoftAdActions
 } from "@/hooks/campaignActions/adGeneration";
 
 export const useAdGenerationActions = (
@@ -25,6 +27,17 @@ export const useAdGenerationActions = (
     analysisResult,
     googleAds,
     generateGoogleAds,
+    setCampaignData
+  );
+
+  // Initialize Microsoft ad actions
+  const {
+    handleGenerateMicrosoftAds,
+    isGenerating: isGeneratingMicrosoftAds
+  } = useMicrosoftAdActions(
+    analysisResult,
+    microsoftAds,
+    generateMicrosoftAds,
     setCampaignData
   );
 
@@ -53,11 +66,6 @@ export const useAdGenerationActions = (
     console.warn("LinkedIn ad generation not fully implemented");
   };
 
-  const handleGenerateMicrosoftAds = async () => {
-    // Placeholder function for Microsoft ad generation
-    console.warn("Microsoft ad generation not fully implemented");
-  };
-
   // Initialize image generation actions
   const { 
     handleGenerateImage,
@@ -70,16 +78,13 @@ export const useAdGenerationActions = (
   );
 
   // Track overall generation state
-  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds;
+  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || isGeneratingMicrosoftAds;
 
   return {
     handleGenerateGoogleAds,
     handleGenerateLinkedInAds: handleGenerateMetaAds, // Use Meta for LinkedIn for now
     handleGenerateMetaAds, // Add explicit Meta ads handler
-    handleGenerateMicrosoftAds: async () => {
-      // Placeholder function for Microsoft ad generation
-      console.warn("Microsoft ad generation not fully implemented");
-    },
+    handleGenerateMicrosoftAds,
     handleGenerateImage,
     loadingImageIndex,
     imageGenerationError,
