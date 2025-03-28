@@ -13,8 +13,9 @@ const SidebarCollapseButton: React.FC<SidebarCollapseButtonProps> = ({
 }) => {
   return (
     <button 
-      className="absolute -right-3 top-12 rounded-full bg-blue-600 text-white p-1 shadow-md hover:bg-blue-700 transition-colors"
+      className="rounded-full bg-primary text-primary-foreground p-1 hover:bg-primary/90 transition-colors"
       onClick={onClick}
+      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
       {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
     </button>
