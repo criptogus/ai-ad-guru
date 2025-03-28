@@ -1,8 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { triggerStorageCleanup } from './storageCleanup';
+import { storageCleanupService } from './storageCleanup';
 
 /**
  * Uploads an image to Supabase storage
@@ -54,10 +53,7 @@ export const uploadImageToSupabase = async (
     // If disk space is a concern, we can trigger cleanup of old files
     if (isTemp) {
       // Run a cleanup in the background for old temp files (older than 7 days)
-      triggerStorageCleanup({
-        days: 7,
-        folder: 'temp'
-      }).catch(error => {
+      storageCleanupService.fullLocalCleanup().catch(error => {
         console.error('Background cleanup failed:', error);
       });
     }
@@ -116,13 +112,10 @@ export const useImageUpload = () => {
     const toastId = toast.loading("Cleaning up temporary images...");
     
     try {
-      const result = await triggerStorageCleanup({
-        days,
-        folder: 'temp'
-      });
+      const result = await storageCleanupService.triggerCleanup();
       
-      if (result.success) {
-        toast.success(`Cleaned up ${result.totalFilesRemoved} temporary image(s)`, { id: toastId });
+      if (result) {
+        toast.success(`Temporary images cleaned up successfully`, { id: toastId });
         return true;
       } else {
         toast.error("Failed to clean up temporary images", { id: toastId });
