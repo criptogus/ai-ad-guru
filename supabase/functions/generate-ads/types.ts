@@ -1,24 +1,13 @@
 
 export interface WebsiteAnalysisResult {
-  companyName: string;
+  companyName?: string;
   businessDescription?: string;
+  industry?: string;
   targetAudience?: string;
   brandTone?: string;
-  keywords?: string[] | string;
+  keywords?: string[];
   callToAction?: string[] | string;
-  uniqueSellingPoints?: string[] | string;
+  uniqueSellingPoints?: string[];
   websiteUrl?: string;
-}
-
-export interface GoogleAd {
-  headlines: string[];
-  descriptions: string[];
-}
-
-export interface MetaAd {
-  headline: string;
-  primaryText: string;
-  description: string;
-  imagePrompt?: string;
-  imageUrl?: string;
+  [key: string]: any;
 }

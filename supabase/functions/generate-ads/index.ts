@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "./utils.ts";
 import { createOpenAIClient } from "./openai.ts";
-import { generateGoogleAdsPrompt, generateMetaAdsPrompt, generateLinkedInAdsPrompt, generateMicrosoftAdsPrompt } from "./promptCreators.ts";
+import { createGoogleAdsPrompt, createMetaAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createImageGenerationPrompt } from "./promptCreators.ts";
 import { parseAdResponse } from "./responseParser.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
@@ -51,13 +51,13 @@ serve(async (req) => {
     // Generate prompt based on platform
     let prompt;
     if (platform === 'google') {
-      prompt = generateGoogleAdsPrompt(campaignData, mindTrigger);
+      prompt = await createGoogleAdsPrompt(campaignData, mindTrigger);
     } else if (platform === 'meta') {
-      prompt = generateMetaAdsPrompt(campaignData, mindTrigger);
+      prompt = await createMetaAdsPrompt(campaignData, mindTrigger);
     } else if (platform === 'linkedin') {
-      prompt = generateLinkedInAdsPrompt(campaignData, mindTrigger);
+      prompt = await createLinkedInAdsPrompt(campaignData, mindTrigger);
     } else if (platform === 'microsoft') {
-      prompt = generateMicrosoftAdsPrompt(campaignData, mindTrigger);
+      prompt = await createMicrosoftAdsPrompt(campaignData, mindTrigger);
     } else {
       console.error(`Unsupported platform: ${platform}`);
       return new Response(
