@@ -171,11 +171,11 @@ export const getAuthUrl = async (
   
   console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
   
-  // Using authUrl consistently in the response
+  // Always use "authUrl" as the property name for consistency
   return new Response(
     JSON.stringify({ 
       success: true, 
-      authUrl 
+      authUrl: authUrl // Explicitly use authUrl property name
     }),
     {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

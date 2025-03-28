@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -73,11 +74,11 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(data.error || `Failed to initialize ${platform} OAuth flow`);
     }
     
-    // Ensure we're working with the correct property name
-    const authUrlValue = data.authUrl;
+    // Explicitly log the full response to debug property name issues
+    console.log('Full response from edge function:', data);
     
-    if (!authUrlValue) {
-      // Log the actual response for debugging
+    // Check specifically for authUrl property
+    if (!data.authUrl) {
       console.error('Response missing authUrl:', data);
       throw new Error(`Failed to get valid auth URL for ${platform}`);
     }
@@ -97,7 +98,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
     }
     
     // Return the OAuth URL for redirection
-    return authUrlValue;
+    return data.authUrl;
   } catch (error) {
     console.error(`Error in initiateOAuth:`, error);
     throw error;
