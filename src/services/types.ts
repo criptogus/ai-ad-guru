@@ -12,6 +12,11 @@ export type Permission =
   | "Export reports" 
   | "View campaigns";
 
+// Role Permissions Map
+export interface RolePermissions {
+  [role: string]: Permission[];
+}
+
 // Team Member
 export interface TeamMember {
   id: string;
