@@ -8,7 +8,8 @@ export interface InstagramTemplate {
   name: string;
   description: string;
   category: string;
-  imagePrompt: string;  // Add the imagePrompt property here
+  imagePrompt: string;
+  thumbnailUrl?: string; // Add the thumbnailUrl property as optional
 }
 
 interface InstagramTemplateCardProps {
