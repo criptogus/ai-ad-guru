@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
+import { tokenSecurity } from "@/services/security/tokenSecurity";
 
 const OAUTH_STORAGE_KEY = 'adPlatformAuth';
 
@@ -63,9 +65,18 @@ export const initiateOAuth = async (params: OAuthParams) => {
     
     const data = response.data;
     
-    if (!data || !data.success || !data.authUrl) {
-      console.error(`Invalid response from edge function:`, data);
-      throw new Error(data?.error || `Failed to get valid auth URL for ${platform}`);
+    // Enhanced validation for authUrl
+    if (!data) {
+      throw new Error(`Empty response from edge function for ${platform} OAuth URL generation`);
+    }
+    
+    if (!data.success) {
+      throw new Error(data.error || `Failed to initialize ${platform} OAuth flow`);
+    }
+    
+    if (!data.authUrl) {
+      console.error(`Response missing authUrl:`, data);
+      throw new Error(`Failed to get valid auth URL for ${platform}`);
     }
     
     // Store that we're in the middle of an OAuth flow

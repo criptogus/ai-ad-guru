@@ -1,7 +1,7 @@
-
 import { corsHeaders } from "../utils/cors.ts";
 import { storeOAuthState } from "../utils/state.ts";
 import { getGoogleAuthUrl } from "../platforms/google.ts";
+import { getMetaAuthUrl } from "../platforms/meta.ts";
 import { getLinkedInAuthUrl } from "../platforms/linkedin.ts";
 import { getMicrosoftAuthUrl } from "../platforms/microsoft.ts";
 
@@ -36,6 +36,30 @@ export const getAuthUrl = async (
         JSON.stringify({ 
           success: false, 
           error: `Missing required Google Ads credentials: ${missingVars.join(', ')}`
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+  } else if (platform === 'meta') {
+    clientId = Deno.env.get('META_CLIENT_ID');
+    const clientSecret = Deno.env.get('META_CLIENT_SECRET');
+    
+    console.log("Meta credentials available:", 
+      `Client ID: ${clientId ? 'Yes' : 'No'}`, 
+      `Client Secret: ${clientSecret ? 'Yes' : 'No'}`);
+    
+    if (!clientId || !clientSecret) {
+      const missingVars = [];
+      if (!clientId) missingVars.push('META_CLIENT_ID');
+      if (!clientSecret) missingVars.push('META_CLIENT_SECRET');
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Missing required Meta Ads credentials: ${missingVars.join(', ')}`
         }),
         {
           status: 400,
@@ -137,6 +161,8 @@ export const getAuthUrl = async (
   let authUrl;
   if (platform === 'google') {
     authUrl = getGoogleAuthUrl(clientId, redirectUri, stateParam);
+  } else if (platform === 'meta') {
+    authUrl = getMetaAuthUrl(clientId, redirectUri, stateParam);
   } else if (platform === 'linkedin') {
     authUrl = getLinkedInAuthUrl(clientId, redirectUri, stateParam);
   } else if (platform === 'microsoft') {
