@@ -1,13 +1,12 @@
 
-/**
- * This file imports and executes all module patches
- * to ensure proper application functionality in different environments
- */
+// Import all patches
+import { applyRollupPatch } from './rollupNativeModulePatch.js';
 
-// Import and immediately execute the Rollup native module patch
-import './rollupNativeModulePatch.js';
-
-console.info('[Module Patches] All patches loaded successfully');
-
-// Export a dummy function for modules that might need to import something
-export const patchesLoaded = true;
+// Apply patches
+try {
+  console.log('Applying module patches...');
+  applyRollupPatch();
+  console.log('Module patches applied successfully');
+} catch (error) {
+  console.error('Failed to apply module patches:', error);
+}
