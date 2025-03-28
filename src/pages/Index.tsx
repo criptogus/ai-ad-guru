@@ -8,14 +8,18 @@ const Index = () => {
   const { currentLanguage } = useLanguage();
   
   useEffect(() => {
-    // Debug log to verify the component is mounting
+    // Enhanced debug logging
     console.log("Index component mounted");
-  }, []);
+    console.log("Current language:", currentLanguage);
+    document.documentElement.lang = currentLanguage;
+  }, [currentLanguage]);
 
   return (
     <>
       <Helmet>
         <html lang={currentLanguage} />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="X-Frame-Options" content="DENY" />
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />

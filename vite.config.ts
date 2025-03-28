@@ -56,6 +56,7 @@ export default defineConfig(({ mode }) => ({
         if (warning.code === 'UNRESOLVED_IMPORT' && 
             (warningString.includes('@rollup/rollup-') || 
              warningString.includes('native.js'))) {
+          console.log('[Build] Suppressing native module warning:', warningString);
           return; // Suppress native module warnings
         }
         warn(warning);
@@ -75,5 +76,10 @@ export default defineConfig(({ mode }) => ({
   // Force JS runtime compatibility
   esbuild: {
     target: 'esnext',
+    logOverride: {
+      // Suppress specific esbuild warnings
+      'unsupported-jsx-comment': 'silent',
+      'empty-import-meta': 'silent',
+    },
   },
 }));

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { Route, Routes, Navigate } from "react-router-dom"
 import "./App.css";
 
@@ -21,15 +21,21 @@ import TestConnectionsPage from "./pages/TestConnectionsPage";
 
 function App() {
   useEffect(() => {
-    // Debug log to verify App is mounting
+    // Debug logs for component mounting
     console.log("App component mounted");
+    
+    // Log the current location to help with debugging routing issues
+    console.log("Current pathname:", window.location.pathname);
   }, []);
 
   return (
     <AuthProvider>
       <Routes>
+        {/* Landing and authentication routes */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
+        
+        {/* Application routes */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
@@ -42,6 +48,8 @@ function App() {
         <Route path="/roles" element={<UserRolesPage />} />
         <Route path="/team" element={<UserRolesPage />} />
         <Route path="/test-connections" element={<TestConnectionsPage />} />
+        
+        {/* Fallback route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster position="top-right" richColors closeButton />

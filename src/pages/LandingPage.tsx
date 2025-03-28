@@ -16,12 +16,16 @@ const LandingPage: React.FC = () => {
   const { t } = useLanguage();
   
   useEffect(() => {
-    // Debug log to verify the component is mounting
+    // Enhanced debug logging
     console.log("LandingPage component mounted");
+    console.log("DOM ready:", document.readyState);
+    
+    // Force a layout recalculation
+    document.body.offsetHeight;
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Nav />
       
       <main className="flex-grow">
