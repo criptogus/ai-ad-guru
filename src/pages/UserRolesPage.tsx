@@ -10,13 +10,12 @@ import InviteUserModal from "@/components/roles/InviteUserModal";
 import { getTeamMembers, inviteUser } from "@/services/team/members";
 import { getRolePermissions } from "@/services/team/roles";
 import { TeamMember, UserRole } from "@/services/types";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const UserRolesPage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
   
   const rolePermissions = getRolePermissions();
 
@@ -27,22 +26,31 @@ const UserRolesPage = () => {
         const members = await getTeamMembers();
         setTeamMembers(members);
       } catch (error) {
-        toast({
-          title: "Failed to load team members",
-          description: "There was an error loading the team members. Please try again.",
-          variant: "destructive",
+        toast.error("Failed to load team members", {
+          description: "There was an error loading the team members. Please try again."
         });
+        console.error("Error loading team members:", error);
       } finally {
         setIsLoading(false);
       }
     };
     
     loadTeamMembers();
-  }, [toast]);
+  }, []);
 
   const handleInviteUser = async (email: string, role: UserRole) => {
-    await inviteUser(email, role);
-    // In a real app, we would refresh the team members list here
+    try {
+      await inviteUser(email, role);
+      toast.success("Invitation sent successfully", {
+        description: `An invitation email has been sent to ${email}`
+      });
+      // In a real app, we would refresh the team members list here
+    } catch (error) {
+      toast.error("Failed to send invitation", {
+        description: "There was an error sending the invitation. Please try again."
+      });
+      console.error("Error inviting user:", error);
+    }
   };
 
   const getBadgeVariant = (role: UserRole) => {
@@ -51,6 +59,8 @@ const UserRolesPage = () => {
         return "default";
       case "Analyst":
         return "secondary";
+      case "Editor":
+        return "outline";
       case "Viewer":
         return "outline";
       default:
@@ -59,13 +69,13 @@ const UserRolesPage = () => {
   };
 
   return (
-    <AppLayout activePage="roles">
-      <div className="space-y-6">
+    <AppLayout activePage="team">
+      <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">User Roles</h1>
+            <h1 className="text-2xl font-bold tracking-tight">User Roles & Permissions</h1>
             <p className="text-muted-foreground">
-              Manage user access and permissions
+              Manage team members, assign roles, and control access permissions
             </p>
           </div>
           <Button onClick={() => setIsInviteModalOpen(true)}>
@@ -137,7 +147,8 @@ const UserRolesPage = () => {
                   <h3 className="text-lg font-medium">{role}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {role === "Admin" ? "Full access to all features and settings" : 
-                     role === "Analyst" ? "Can create and edit campaigns, view analytics" : 
+                     role === "Analyst" ? "Can view analytics and create reports" : 
+                     role === "Editor" ? "Can create and edit campaigns" :
                      "Can only view campaigns and analytics"}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
