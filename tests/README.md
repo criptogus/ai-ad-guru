@@ -59,3 +59,4 @@ The tests use:
 1. For login tests to pass, ensure the test user exists
 2. The tests handle both development and production environments
 3. Adjust selectors if your UI changes
+

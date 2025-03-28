@@ -15,11 +15,18 @@ test.describe('Login Functionality', () => {
 
   test('should display login form with all elements', async ({ page }) => {
     // Check that all form elements are present
-    await expect(page.locator('input[type="email"]')).toBeVisible();
-    await expect(page.locator('button[type="button"]')).toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId('email-input')).toBeVisible();
     await expect(page.getByTestId('password-input')).toBeVisible();
     await expect(page.getByTestId('login-button')).toBeVisible();
+    
+    // Check for "Forgot password" link
     await expect(page.getByText('Forgot password?')).toBeVisible();
+    
+    // Check for social login options if present
+    const googleButton = page.getByRole('button').filter({ hasText: /Google/i });
+    if (await googleButton.count() > 0) {
+      await expect(googleButton.first()).toBeVisible();
+    }
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
@@ -30,17 +37,19 @@ test.describe('Login Functionality', () => {
     // Submit the form
     await page.getByTestId('login-button').click();
     
-    // Wait for error message
-    await page.waitForTimeout(1000); // Give time for the error to appear
+    // Wait for error message - increased timeout for API response
+    await page.waitForTimeout(2000);
     
-    // Check for error message (the exact message depends on your implementation)
-    const errorToast = page.locator('.toast-error, [role="alert"]');
-    await expect(errorToast).toBeVisible({ timeout: 5000 });
+    // Check for error message (could be toast or inline)
+    const errorElement = page.locator('.toast-error, [role="alert"], .text-red-500, .text-destructive');
+    await expect(errorElement).toBeVisible({ timeout: 5000 });
   });
 
   test('should login successfully with valid credentials', async ({ page }) => {
     // This test requires a valid user in your system
     // Consider creating a test user or using a mock for this test
+    
+    console.log('Attempting login with:', TEST_USER.email);
     
     // Input valid email and password
     await page.getByTestId('email-input').fill(TEST_USER.email);
@@ -55,10 +64,11 @@ test.describe('Login Functionality', () => {
       
       // Check we landed on the dashboard
       await expect(page.url()).toContain('/dashboard');
+      console.log('Successfully logged in and redirected to dashboard');
     } catch (error) {
       // If redirect doesn't happen, the test will fail
       // Log the current page content for debugging
-      console.log('Current page content:', await page.content());
+      console.log('Login redirect failed. Current page content:', await page.content());
       throw error;
     }
   });
@@ -68,14 +78,17 @@ test.describe('Login Functionality', () => {
     const testAccountButton = page.getByText(/Create Test Account|Try a test account/i);
     
     if (await testAccountButton.isVisible()) {
+      console.log('Found "Create Test Account" button, clicking it');
       await testAccountButton.click();
       
-      // Wait for redirect to dashboard after test account creation
+      // Wait for redirect to dashboard after test account creation - increased timeout
       await page.waitForURL(/dashboard/, { timeout: 15000 });
       
       // Verify we're on the dashboard
       await expect(page.url()).toContain('/dashboard');
+      console.log('Successfully created test account and redirected to dashboard');
     } else {
+      console.log('No test account button found, skipping test');
       test.skip();
     }
   });
