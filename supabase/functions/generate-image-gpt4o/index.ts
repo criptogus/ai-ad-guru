@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Set up CORS headers
@@ -129,7 +130,9 @@ function enhancePromptWithContext(prompt: string, platform: string, format: stri
   } else if (format === 'story' || format === 'reel') {
     enhancedPrompt += ' Format should be 9:16 vertical for social media stories or reels.';
   } else if (format === 'landscape') {
-    enhancedPrompt += ' Format should be 16:9 landscape.';
+    enhancedPrompt += ' Format should be 16:9 landscape for LinkedIn or wider displays.';
+  } else if (format === 'square') {
+    enhancedPrompt += ' Format should be 1:1 square for versatile social media use.';
   }
   
   // Add ad headline and primary text for additional context if available
@@ -145,6 +148,10 @@ function enhancePromptWithContext(prompt: string, platform: string, format: stri
   
   if (adContext.industry) {
     enhancedPrompt += ` The industry context is: ${adContext.industry}.`;
+  }
+  
+  if (adContext.adTheme) {
+    enhancedPrompt += ` The advertising theme is: ${adContext.adTheme}.`;
   }
   
   // Add quality guidance

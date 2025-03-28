@@ -100,7 +100,6 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
             <SelectContent>
               <SelectItem value="square">Square (1:1)</SelectItem>
               <SelectItem value="landscape">Landscape (1.91:1)</SelectItem>
-              <SelectItem value="portrait">Portrait (9:16)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -111,7 +110,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
         disabled={isGenerating || !testAd.imagePrompt || isPromptTooLong}
         className="w-full group relative overflow-hidden"
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
         <span className="relative flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
           {isGenerating ? 'Generating Image...' : 'Generate LinkedIn Ad Image'}
@@ -119,7 +118,7 @@ const ImageGenerationTab: React.FC<ImageGenerationTabProps> = ({
       </Button>
       
       <div className="text-xs text-center text-muted-foreground">
-        Using GPT-4o for high-quality ad imagery with text integration.
+        Using DALL-E 3 for high-quality ad imagery. 5 credits per image.
       </div>
     </div>
   );
