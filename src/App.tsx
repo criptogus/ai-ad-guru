@@ -15,6 +15,8 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
+import BillingPage from "./pages/BillingPage";
+import CreditsInfoPage from "./pages/CreditsInfoPage";
 
 function App() {
   return (
@@ -27,8 +29,11 @@ function App() {
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings/:tab" element={<SettingsPage />} />
         <Route path="/connections" element={<ConnectionsPage />} />
         <Route path="/config" element={<ConfigPage />} />
+        <Route path="/billing" element={<BillingPage />} />
+        <Route path="/credits-info" element={<CreditsInfoPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster position="top-right" richColors closeButton />
