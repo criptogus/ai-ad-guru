@@ -18,6 +18,7 @@ import BillingPage from "./pages/BillingPage";
 import CreditsInfoPage from "./pages/CreditsInfoPage";
 import UserRolesPage from "./pages/UserRolesPage";
 import TestConnectionsPage from "./pages/TestConnectionsPage";
+import CreateCampaignPage from "./pages/CreateCampaignPage";
 
 function App() {
   useEffect(() => {
@@ -38,6 +39,7 @@ function App() {
         {/* Application routes */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
+        <Route path="/create-campaign" element={<CreateCampaignPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/settings" element={<Navigate to="/settings/company" replace />} />
         <Route path="/settings/:tab" element={<SettingsPage />} />

@@ -35,7 +35,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       name: "Campaigns",
       href: "/campaigns",
       icon: Layers,
-      active: activePage === "campaigns" || currentPath.includes("/campaigns")
+      active: activePage === "campaigns" || currentPath.includes("/campaigns") || currentPath === "/create-campaign"
     },
     {
       name: "Analytics",
@@ -65,7 +65,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       name: "Settings",
       href: "/settings",
       icon: Settings,
-      active: activePage === "settings" || currentPath === "/settings"
+      active: activePage === "settings" || currentPath === "/settings" || currentPath.includes("/settings/")
     }
   ];
 
