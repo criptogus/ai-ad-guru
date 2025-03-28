@@ -1,18 +1,15 @@
 
 /**
- * Direct mock for @rollup/rollup-linux-x64-gnu
- * This file gets directly loaded when the native module is required
+ * Pure ESM mock for @rollup/rollup-linux-x64-gnu
  */
 
-console.log('[Mock] @rollup/rollup-linux-x64-gnu mock loaded');
+console.log('[Mock] ESM @rollup/rollup-linux-x64-gnu mock loaded');
 
-// Export a standard mock that satisfies Rollup's expectations
+// Create a standard mock implementation
 const mockModule = {
-  // Core native binding interface
   bindings: null,
   isLoaded: false,
   
-  // Standard methods expected by Rollup
   load: function() {
     console.log('[Mock] Native module load() called - using JavaScript fallback');
     return null;
@@ -26,14 +23,13 @@ const mockModule = {
     return 'mocked-uuid-00000000-0000-0000-0000-000000000000';
   },
   
-  // Required for native functionality
   loadBinding: function() {
     console.log('[Mock] Native module loadBinding() called - using JavaScript fallback');
     return null;
   }
 };
 
-// Use ESM exports
+// ESM exports
 export const bindings = mockModule.bindings;
 export const isLoaded = mockModule.isLoaded;
 export const load = mockModule.load;
@@ -41,5 +37,5 @@ export const needsRebuilding = mockModule.needsRebuilding;
 export const getUuid = mockModule.getUuid;
 export const loadBinding = mockModule.loadBinding;
 
-// Default export for compatibility
+// Default export
 export default mockModule;

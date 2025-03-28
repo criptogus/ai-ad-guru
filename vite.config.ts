@@ -4,12 +4,9 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { PluginOption, Plugin } from "vite";
 
-// Import the rollup patch directly from the JS file
-import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModulePatch.js";
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  console.log("[Vite Config] Initializing with enhanced Rollup patching...");
+  console.log("[Vite Config] Initializing with enhanced configuration...");
   
   // Set environment variables to disable native modules
   process.env.ROLLUP_NATIVE_DISABLE = 'true';
@@ -20,8 +17,26 @@ export default defineConfig(({ mode }) => {
     "@": path.resolve(__dirname, "./src"),
   };
   
-  // Add rollup native module aliases with proper typing
-  Object.keys(mockNativeBindings).forEach((moduleName) => {
+  // Add rollup native module aliases
+  const nativeModules = [
+    '@rollup/rollup-linux-x64-gnu',
+    '@rollup/rollup-linux-x64-musl',
+    '@rollup/rollup-linux-arm64-gnu',
+    '@rollup/rollup-linux-arm64-musl',
+    '@rollup/rollup-linux-arm-gnueabihf',
+    '@rollup/rollup-darwin-x64',
+    '@rollup/rollup-darwin-arm64',
+    '@rollup/rollup-win32-x64-msvc',
+    '@rollup/rollup-win32-ia32-msvc',
+    '@rollup/rollup-win32-arm64-msvc',
+    '@rollup/rollup-freebsd-x64',
+    '@rollup/rollup-alpine-x64',
+    '@rollup/rollup-android-arm64',
+    '@rollup/rollup-android-arm-eabi',
+    '@rollup/rollup-native'
+  ];
+  
+  nativeModules.forEach(moduleName => {
     aliasDefinitions[moduleName] = path.resolve(
       __dirname,
       "./src/utils/modulePatches/rollup-linux-x64-gnu-mock.js"
@@ -31,7 +46,7 @@ export default defineConfig(({ mode }) => {
   
   // Create define object with proper typing
   const defineOptions: Record<string, string> = {
-    'process.env.ROLLUP_NATIVE_DISABLE': 'true',
+    'process.env.ROLLUP_NATIVE_DISABLE': '"true"',
     'global.__ROLLUP_NATIVE_DISABLED__': 'true'
   };
   
@@ -56,7 +71,6 @@ export default defineConfig(({ mode }) => {
           }
           return null;
         },
-        // Additional hook to transform any code that might try to load native modules
         transform(code: string, id: string) {
           if (id.includes('rollup') && id.includes('native')) {
             console.log(`[Vite Plugin] Transforming native module code: ${id}`);
@@ -82,7 +96,7 @@ export default defineConfig(({ mode }) => {
       alias: aliasDefinitions,
     },
     optimizeDeps: {
-      exclude: Object.keys(mockNativeBindings),
+      exclude: nativeModules,
       esbuildOptions: {
         define: defineOptions,
       },
@@ -92,7 +106,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         // Use our mocks when rollup tries to import native modules
         shimMissingExports: true,
-        external: Object.keys(mockNativeBindings),
+        external: nativeModules,
         onwarn(warning, warn) {
           // Enhanced warning filter
           if (warning.code === 'UNRESOLVED_IMPORT' && 
