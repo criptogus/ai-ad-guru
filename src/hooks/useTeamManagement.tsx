@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { UserRole } from "@/services/types";
+import { TeamMember, UserRole } from "@/services/types";
 import { toast } from "sonner";
 import { updateTeamMemberRole } from "@/services/team/members";
 
 export const useTeamManagement = () => {
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +38,7 @@ export const useTeamManagement = () => {
   };
 
   // Fetch team members and invitations
-  const fetchRolesData = async () => {
+  const loadData = async () => {
     setIsLoading(true);
     try {
       // Fetch team members
@@ -71,11 +71,11 @@ export const useTeamManagement = () => {
   };
 
   useEffect(() => {
-    fetchRolesData();
+    loadData();
   }, []);
 
   // Handle sending invitation
-  const handleSendInvitation = async (email: string, role: UserRole) => {
+  const handleSendInvitation = async (email: string, role: UserRole): Promise<boolean> => {
     setIsSubmitting(true);
     try {
       console.log(`Sending invitation to ${email} with role ${role}`);
@@ -98,7 +98,7 @@ export const useTeamManagement = () => {
       });
       
       // Refresh data
-      fetchRolesData();
+      loadData();
       setShowInviteModal(false);
       return true;
     } catch (error) {
@@ -172,7 +172,7 @@ export const useTeamManagement = () => {
       });
       
       // Refresh data
-      fetchRolesData();
+      loadData();
       return true;
     } catch (error) {
       console.error("Error revoking invitation:", error);
@@ -198,7 +198,7 @@ export const useTeamManagement = () => {
         });
         
         // Refresh data
-        fetchRolesData();
+        loadData();
         return true;
       } else {
         throw new Error("Failed to update role");
@@ -239,6 +239,7 @@ export const useTeamManagement = () => {
     handleResendInvitation,
     handleRevokeInvitation,
     handleUpdateTeamMemberRole,
-    handleEditMember
+    handleEditMember,
+    loadData
   };
 };
