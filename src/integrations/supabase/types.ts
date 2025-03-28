@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_prompts: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          prompt: string
+          read_only: boolean | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          prompt: string
+          read_only?: boolean | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          prompt?: string
+          read_only?: boolean | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       audience_analysis_cache: {
         Row: {
           analysis_result: Json
