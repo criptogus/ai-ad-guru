@@ -4,8 +4,8 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// Import the rollup patch using a correct path
-import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModulePatch";
+// Import the rollup patch directly from the JS file
+import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModulePatch.js";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
