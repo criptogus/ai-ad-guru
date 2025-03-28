@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { UserPlus } from "lucide-react";
 import InviteUserModal from "@/components/roles/InviteUserModal";
-import { getTeamMembers, inviteUser } from "@/services/team/members";
+import { getTeamMembers } from "@/services/team/members";
+import { inviteUser, getTeamInvitations } from "@/services/team/invitations";
 import { getRolePermissions } from "@/services/team/roles";
 import { TeamMember, UserRole } from "@/services/types";
 import { toast } from "sonner";
@@ -15,40 +16,46 @@ import { toast } from "sonner";
 const UserRolesPage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const rolePermissions = getRolePermissions();
 
-  const loadTeamMembers = async () => {
+  const loadData = async () => {
     try {
       setIsLoading(true);
+      // Load team members
       const members = await getTeamMembers();
       setTeamMembers(members);
+      
+      // Load pending invitations
+      const pendingInvitations = await getTeamInvitations();
+      setInvitations(pendingInvitations);
     } catch (error) {
-      toast.error("Failed to load team members", {
-        description: "There was an error loading the team members. Please try again."
+      toast.error("Failed to load team data", {
+        description: "There was an error loading the team members and invitations. Please try again."
       });
-      console.error("Error loading team members:", error);
+      console.error("Error loading team data:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadTeamMembers();
+    loadData();
   }, []);
 
   const handleInviteUser = async (email: string, role: UserRole) => {
     try {
       await inviteUser(email, role);
-      toast.success("Invitation sent successfully", {
-        description: `An invitation email has been sent to ${email}`
+      toast.success("Invitation process completed", {
+        description: `An invitation has been processed for ${email}`
       });
-      // Refresh the team members list after successful invitation
-      loadTeamMembers();
+      // Refresh the team members and invitations list after successful invitation
+      loadData();
     } catch (error) {
       toast.error("Failed to send invitation", {
-        description: "There was an error sending the invitation. Please try again."
+        description: "There was an error processing the invitation. Please try again."
       });
       console.error("Error inviting user:", error);
     }
@@ -135,6 +142,46 @@ const UserRolesPage = () => {
             </Table>
           </CardContent>
         </Card>
+
+        {invitations.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Invitations</CardTitle>
+              <CardDescription>Invitations that have been sent but not yet accepted</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Sent</TableHead>
+                    <TableHead>Expires</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invitations.map((invitation) => (
+                    <TableRow key={invitation.id}>
+                      <TableCell>{invitation.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={getBadgeVariant(invitation.role as UserRole)}>
+                          {invitation.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(invitation.created_at).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(invitation.expires_at).toLocaleString()}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="ghost" size="sm">Resend</Button>
+                        <Button variant="ghost" size="sm" className="text-destructive">Revoke</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
