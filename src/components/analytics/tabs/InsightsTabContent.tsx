@@ -8,9 +8,13 @@ import PerformanceAnalysis from "@/components/analytics/PerformanceAnalysis";
 const InsightsTabContent: React.FC = () => {
   return (
     <div className="space-y-6">
-      {/* Notifications and AI Optimization in a horizontal row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Smart Notifications in a full width row */}
+      <div className="grid grid-cols-1 gap-6">
         <SmartNotifications />
+      </div>
+      
+      {/* AI Optimization in a full width row */}
+      <div className="grid grid-cols-1 gap-6">
         <AIOptimizationCard />
       </div>
       
