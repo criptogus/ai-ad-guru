@@ -5,10 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Coins, Info } from "lucide-react";
 
 interface ActionButtonsProps {
-  isLowCredits: boolean;
+  isLowCredits?: boolean;
+  hasPaid?: boolean;
+  userId?: string;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ isLowCredits }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ 
+  isLowCredits = false, 
+  hasPaid, 
+  userId 
+}) => {
   const navigate = useNavigate();
   
   return (
