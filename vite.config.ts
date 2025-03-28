@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -8,6 +9,8 @@ import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModule
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  console.log("[Vite Config] Initializing with enhanced Rollup patching...");
+  
   // Create aliasDefinitions object with proper typing
   const aliasDefinitions: Record<string, string> = {
     "@": path.resolve(__dirname, "./src"),
@@ -19,6 +22,7 @@ export default defineConfig(({ mode }) => {
       __dirname,
       "./src/utils/modulePatches/rollupNativeModulePatch.js"
     );
+    console.log(`[Vite Config] Added alias for: ${moduleName}`);
   });
   
   // Create define object with proper typing
@@ -27,7 +31,12 @@ export default defineConfig(({ mode }) => {
   // Add rollup native module defines with proper typing
   Object.keys(mockNativeBindings).forEach((moduleName) => {
     defineOptions[`require.resolve("${moduleName}")`] = '"undefined"';
+    // Additional coverage for more complex module resolution patterns
+    defineOptions[`require("${moduleName}")`] = 'undefined';
   });
+  
+  // Add direct coverage for the most problematic module
+  defineOptions['process.env.ROLLUP_NATIVE_DISABLE'] = 'true';
   
   return {
     server: {
@@ -37,6 +46,18 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       mode === 'development' && componentTagger(),
+      // Add custom plugin to intercept Rollup module resolution attempts
+      {
+        name: 'vite-plugin-rollup-native-patch',
+        enforce: 'pre',
+        resolveId(source) {
+          if (source.includes('@rollup/rollup-')) {
+            console.log(`[Vite Plugin] Intercepted Rollup native module: ${source}`);
+            return path.resolve(__dirname, './src/utils/modulePatches/rollupNativeModulePatch.js');
+          }
+          return null;
+        }
+      }
     ].filter(Boolean),
     resolve: {
       alias: aliasDefinitions,

@@ -1,6 +1,12 @@
 
 /**
  * This module serves as the central export point for all module patches
+ * Ensures consistent access to patch functionality
  */
 
-export * from './rollupNativeModulePatch.js';
+export { 
+  applyRollupPatch, 
+  mockNativeBindings 
+} from './rollupNativeModulePatch.js';
+
+export { patchesApplied } from './patchLoader.js';

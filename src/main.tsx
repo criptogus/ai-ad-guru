@@ -3,6 +3,9 @@
 // This must be the very first import
 import './utils/modulePatches/patchLoader';
 
+// Explicit console logs to verify patch loading
+console.log("[Application] Patches loaded, initializing application");
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
