@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, UserRole, RolePermissions } from "./types";
+import { TeamMember, UserRole, RolePermissions, Permission } from "./types";
 
 // Mock function to get team members (would connect to Supabase in production)
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
