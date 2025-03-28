@@ -121,7 +121,7 @@ const UserRolesPage: React.FC = () => {
   };
 
   // Handle resending invitation
-  const handleResendInvitation = async (id: string) => {
+  const handleResendInvitation = async (id: string): Promise<boolean> => {
     try {
       // Get the invitation details
       const { data, error } = await supabase
@@ -161,7 +161,7 @@ const UserRolesPage: React.FC = () => {
   };
 
   // Handle revoking invitation
-  const handleRevokeInvitation = async (id: string) => {
+  const handleRevokeInvitation = async (id: string): Promise<boolean> => {
     try {
       const { error, data } = await supabase
         .from('team_invitations')

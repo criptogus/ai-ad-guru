@@ -7,8 +7,8 @@ import { UserRole } from "@/services/types";
 interface PendingInvitationsCardProps {
   invitations: any[];
   getBadgeVariant: (role: UserRole) => "default" | "secondary" | "outline";
-  onResendInvitation: (id: string) => Promise<void>;
-  onRevokeInvitation: (id: string) => Promise<void>;
+  onResendInvitation: (id: string) => Promise<boolean>;
+  onRevokeInvitation: (id: string) => Promise<boolean>;
 }
 
 const PendingInvitationsCard: React.FC<PendingInvitationsCardProps> = ({
