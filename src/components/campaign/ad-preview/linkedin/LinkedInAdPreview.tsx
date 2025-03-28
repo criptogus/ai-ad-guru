@@ -11,7 +11,7 @@ interface LinkedInAdPreviewProps {
   isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
-  previewType?: "feed" | "spotlight";
+  previewType?: "feed" | "spotlight" | "sidebar" | "message";
   deviceView?: "mobile" | "desktop";
   imageFormat?: "square" | "landscape";
 }
@@ -33,8 +33,23 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
     return imageFormat === "landscape" ? "aspect-video" : "aspect-square";
   };
 
+  // Adjust layout based on preview type
+  const getPreviewLayout = () => {
+    switch (previewType) {
+      case "sidebar":
+        return "max-w-[300px] mx-auto";
+      case "message":
+        return "max-w-sm mx-auto";
+      case "spotlight":
+        return "max-w-md mx-auto";
+      case "feed":
+      default:
+        return deviceView === "mobile" ? "max-w-sm mx-auto" : "w-full";
+    }
+  };
+
   return (
-    <div className={`linkedin-preview bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden ${deviceView === "mobile" ? "max-w-sm mx-auto" : "w-full"}`}>
+    <div className={`linkedin-preview bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden ${getPreviewLayout()}`}>
       <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center gap-2">
         <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 font-semibold">
           {analysisResult?.companyName?.substring(0, 1) || "C"}
