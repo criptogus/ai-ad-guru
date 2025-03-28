@@ -19,22 +19,22 @@ const UserRolesPage = () => {
   
   const rolePermissions = getRolePermissions();
 
+  const loadTeamMembers = async () => {
+    try {
+      setIsLoading(true);
+      const members = await getTeamMembers();
+      setTeamMembers(members);
+    } catch (error) {
+      toast.error("Failed to load team members", {
+        description: "There was an error loading the team members. Please try again."
+      });
+      console.error("Error loading team members:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTeamMembers = async () => {
-      try {
-        setIsLoading(true);
-        const members = await getTeamMembers();
-        setTeamMembers(members);
-      } catch (error) {
-        toast.error("Failed to load team members", {
-          description: "There was an error loading the team members. Please try again."
-        });
-        console.error("Error loading team members:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     loadTeamMembers();
   }, []);
 
@@ -44,7 +44,8 @@ const UserRolesPage = () => {
       toast.success("Invitation sent successfully", {
         description: `An invitation email has been sent to ${email}`
       });
-      // In a real app, we would refresh the team members list here
+      // Refresh the team members list after successful invitation
+      loadTeamMembers();
     } catch (error) {
       toast.error("Failed to send invitation", {
         description: "There was an error sending the invitation. Please try again."
@@ -116,14 +117,14 @@ const UserRolesPage = () => {
                 ) : (
                   teamMembers.map((member) => (
                     <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.name}</TableCell>
+                      <TableCell className="font-medium">{member.name || "No name"}</TableCell>
                       <TableCell>{member.email}</TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(member.role)}>
+                        <Badge variant={getBadgeVariant(member.role as UserRole)}>
                           {member.role}
                         </Badge>
                       </TableCell>
-                      <TableCell>{member.lastActive}</TableCell>
+                      <TableCell>{member.last_active ? new Date(member.last_active).toLocaleString() : "Never"}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm">Edit</Button>
                       </TableCell>

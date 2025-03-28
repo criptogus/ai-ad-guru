@@ -62,7 +62,7 @@ serve(async (req) => {
     console.log('Sending invitation email to:', email);
     
     const emailResponse = await resend.emails.send({
-      from: 'Acme <onboarding@resend.dev>', // Update with your verified domain
+      from: 'AI Ad Manager <onboarding@resend.dev>', // Update with your verified domain
       to: [email],
       subject: 'You have been invited to join our team',
       html: `
