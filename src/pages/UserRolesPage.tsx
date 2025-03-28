@@ -1,49 +1,31 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { UserPlus, RefreshCw, X } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import InviteUserModal from "@/components/roles/InviteUserModal";
-import { getTeamMembers } from "@/services/team/members";
-import { inviteUser, getTeamInvitations, resendInvitation, revokeInvitation } from "@/services/team/invitations";
+import { inviteUser } from "@/services/team/invitations";
 import { getRolePermissions } from "@/services/team/roles";
-import { TeamMember, UserRole } from "@/services/types";
+import { UserRole } from "@/services/types";
 import { toast } from "sonner";
+import { useTeamManagement } from "@/hooks/useTeamManagement";
+import TeamMembersCard from "@/components/roles/TeamMembersCard";
+import PendingInvitationsCard from "@/components/roles/PendingInvitationsCard";
+import RolesPermissionsCard from "@/components/roles/RolesPermissionsCard";
 
 const UserRolesPage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [invitations, setInvitations] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    teamMembers, 
+    invitations, 
+    isLoading, 
+    loadData, 
+    handleResendInvitation, 
+    handleRevokeInvitation, 
+    getBadgeVariant 
+  } = useTeamManagement();
   
   const rolePermissions = getRolePermissions();
-
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      // Load team members
-      const members = await getTeamMembers();
-      setTeamMembers(members);
-      
-      // Load pending invitations
-      const pendingInvitations = await getTeamInvitations();
-      setInvitations(pendingInvitations);
-    } catch (error) {
-      toast.error("Failed to load team data", {
-        description: "There was an error loading the team members and invitations. Please try again."
-      });
-      console.error("Error loading team data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const handleInviteUser = async (email: string, role: UserRole) => {
     try {
@@ -55,43 +37,6 @@ const UserRolesPage = () => {
         description: "There was an error processing the invitation. Please try again."
       });
       console.error("Error inviting user:", error);
-    }
-  };
-
-  const handleResendInvitation = async (id: string) => {
-    try {
-      const success = await resendInvitation(id);
-      if (success) {
-        loadData(); // Refresh the data
-      }
-    } catch (error) {
-      console.error("Error resending invitation:", error);
-    }
-  };
-
-  const handleRevokeInvitation = async (id: string) => {
-    try {
-      const success = await revokeInvitation(id);
-      if (success) {
-        loadData(); // Refresh the data
-      }
-    } catch (error) {
-      console.error("Error revoking invitation:", error);
-    }
-  };
-
-  const getBadgeVariant = (role: UserRole) => {
-    switch (role) {
-      case "Admin":
-        return "default";
-      case "Analyst":
-        return "secondary";
-      case "Editor":
-        return "outline";
-      case "Viewer":
-        return "outline";
-      default:
-        return "outline";
     }
   };
 
@@ -111,138 +56,20 @@ const UserRolesPage = () => {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Team Members</CardTitle>
-            <CardDescription>Manage your team members and their roles</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Loading team members...
-                    </TableCell>
-                  </TableRow>
-                ) : teamMembers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      No team members yet. Invite someone to get started.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  teamMembers.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.name || "No name"}</TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getBadgeVariant(member.role as UserRole)}>
-                          {member.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{member.lastActive ? new Date(member.lastActive).toLocaleString() : "Never"}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <TeamMembersCard 
+          isLoading={isLoading} 
+          teamMembers={teamMembers} 
+          getBadgeVariant={getBadgeVariant} 
+        />
 
-        {invitations.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Invitations</CardTitle>
-              <CardDescription>Invitations that have been sent but not yet accepted</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Sent</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invitations.map((invitation) => (
-                    <TableRow key={invitation.id}>
-                      <TableCell>{invitation.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getBadgeVariant(invitation.role as UserRole)}>
-                          {invitation.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{new Date(invitation.created_at).toLocaleString()}</TableCell>
-                      <TableCell>{new Date(invitation.expires_at).toLocaleString()}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleResendInvitation(invitation.id)}
-                        >
-                          <RefreshCw size={14} className="mr-1" />
-                          Resend
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-destructive"
-                          onClick={() => handleRevokeInvitation(invitation.id)}
-                        >
-                          <X size={14} className="mr-1" />
-                          Revoke
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+        <PendingInvitationsCard 
+          invitations={invitations}
+          getBadgeVariant={getBadgeVariant}
+          onResendInvitation={handleResendInvitation}
+          onRevokeInvitation={handleRevokeInvitation}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Roles & Permissions</CardTitle>
-            <CardDescription>Define what each role can do</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(rolePermissions).map(([role, permissions]) => (
-                <div key={role} className="border rounded-lg p-4">
-                  <h3 className="text-lg font-medium">{role}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {role === "Admin" ? "Full access to all features and settings" : 
-                     role === "Analyst" ? "Can view analytics and create reports" : 
-                     role === "Editor" ? "Can create and edit campaigns" :
-                     "Can only view campaigns and analytics"}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {permissions.map((permission) => (
-                      <Badge key={permission} variant="outline">{permission}</Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <RolesPermissionsCard rolePermissions={rolePermissions} />
       </div>
       
       <InviteUserModal 
