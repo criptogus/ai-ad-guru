@@ -4,6 +4,9 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+// Import the rollup patch
+import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModulePatch";
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -18,11 +21,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Alias native modules to our patch
-      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./src/utils/modulePatch.js"),
-      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./src/utils/modulePatch.js"),
-      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./src/utils/modulePatch.js"),
-      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./src/utils/modulePatch.js"),
+      // Alias native modules to our mock implementations
+      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./src/utils/modulePatches/rollupNativeModulePatch.js"),
+      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./src/utils/modulePatches/rollupNativeModulePatch.js"),
+      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./src/utils/modulePatches/rollupNativeModulePatch.js"),
+      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./src/utils/modulePatches/rollupNativeModulePatch.js"),
     },
   },
   optimizeDeps: {
@@ -40,6 +43,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Completely disable native addons
     rollupOptions: {
+      // Use our mocks when rollup tries to import native modules
+      shimMissingExports: true,
       external: [
         '@rollup/rollup-linux-x64-gnu',
         '@rollup/rollup-darwin-x64',
