@@ -2,13 +2,13 @@
 {
   "overrides": {
     "rollup": {
-      "@rollup/rollup-linux-x64-gnu": "npm:@rollup/rollup-js",
-      "@rollup/rollup-linux-x64-musl": "npm:@rollup/rollup-js",
-      "@rollup/rollup-linux-arm64-gnu": "npm:@rollup/rollup-js",
-      "@rollup/rollup-linux-arm64-musl": "npm:@rollup/rollup-js",
-      "@rollup/rollup-darwin-x64": "npm:@rollup/rollup-js",
-      "@rollup/rollup-darwin-arm64": "npm:@rollup/rollup-js",
-      "@rollup/rollup-win32-x64-msvc": "npm:@rollup/rollup-js"
+      "@rollup/rollup-linux-x64-gnu": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-linux-x64-musl": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-linux-arm64-gnu": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-linux-arm64-musl": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-darwin-x64": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-darwin-arm64": "./src/utils/modulePatches/rollup-module-mock.js",
+      "@rollup/rollup-win32-x64-msvc": "./src/utils/modulePatches/rollup-module-mock.js"
     }
   }
 }

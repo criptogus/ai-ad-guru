@@ -11,8 +11,8 @@ export default defineConfig(({ mode }) => {
   console.log("[Vite Config] Initializing with deployment-safe configuration...");
   
   // Force disable native modules
-  process.env.ROLLUP_NATIVE_DISABLE = 'true';
-  process.env.DISABLE_NATIVE_MODULES = 'true';
+  process.env.ROLLUP_NATIVE_DISABLE = '1';
+  process.env.DISABLE_NATIVE_MODULES = '1';
   
   // Create path aliases
   const aliasDefinitions: Record<string, string> = {

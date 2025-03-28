@@ -1,11 +1,9 @@
 
 /**
  * Vite plugin to fix native module issues during build
- * This is a standalone solution that doesn't rely on runtime patching
  */
 
-// This plugin completely blocks native module imports
-// and replaces them with empty module implementations
+// This plugin blocks native module imports and replaces them with our mock
 const nativeModuleFixPlugin = () => {
   console.log('🔧 Native Module Fix Plugin: Activated');
   
@@ -65,53 +63,17 @@ const nativeModuleFixPlugin = () => {
       return null;
     },
     
-    // Apply transformations to code that might try to require native modules
-    transform(code, id) {
-      // Only process JavaScript files that might try to load native modules
-      if (id.includes('node_modules/rollup') && 
-          (id.endsWith('.js') || id.endsWith('.mjs') || id.endsWith('.cjs'))) {
-        
-        // Replace require statements for native modules
-        const modifiedCode = code.replace(
-          /(require\s*\(\s*['"])(@rollup\/rollup-[^'"]+|rollup\/(?:dist\/)?native)(['"])/g,
-          (_, start, moduleName, end) => {
-            console.log(`🔧 Native Module Fix: Replacing require for ${moduleName} in ${id}`);
-            return `${start}${end} /* replaced native module */`;
-          }
-        );
-        
-        // Replace dynamic import() calls
-        const finalCode = modifiedCode.replace(
-          /(import\s*\(\s*['"])(@rollup\/rollup-[^'"]+|rollup\/(?:dist\/)?native)(['"])/g,
-          (_, start, moduleName, end) => {
-            console.log(`🔧 Native Module Fix: Replacing import() for ${moduleName} in ${id}`);
-            return `Promise.resolve({}) /* replaced native module */`;
-          }
-        );
-        
-        if (code !== finalCode) {
-          console.log(`✅ Native Module Fix: Transformed code in ${id}`);
-          return {
-            code: finalCode,
-            map: null
-          };
-        }
-      }
-      return null;
-    },
-    
-    // Add global configuration to ensure ESBuild doesn't try to use native modules either
+    // Apply global configuration to ensure ESBuild doesn't try to use native modules
     config(config) {
       // Set environment variables to disable native modules
       config.define = config.define || {};
       config.define['process.env.ROLLUP_NATIVE_DISABLE'] = JSON.stringify('1');
       config.define['global.__ROLLUP_NATIVE_DISABLED__'] = 'true';
       
-      // Add build options
+      // Exclude native modules from the build process
       if (!config.build) config.build = {};
       if (!config.build.rollupOptions) config.build.rollupOptions = {};
       
-      // Tell Rollup to completely ignore native modules
       const nativeModulesToExclude = [
         '@rollup/rollup-linux-x64-gnu',
         '@rollup/rollup-linux-x64-musl',
@@ -124,7 +86,6 @@ const nativeModuleFixPlugin = () => {
         'rollup/native'
       ];
       
-      // Exclude native modules from the build process
       config.build.rollupOptions.external = [
         ...(config.build.rollupOptions.external || []),
         ...nativeModulesToExclude
