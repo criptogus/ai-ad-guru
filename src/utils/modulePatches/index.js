@@ -8,11 +8,12 @@
 export { 
   applyRollupPatch,
   mockNativeBindings
-} from './rollupNativeModulePatch.js';
+} from './rollup/index.js';
 
 export { patchesApplied } from './patchLoader.js';
 
 // Force immediate patch execution
 import './patchLoader.js';
+import './rollup/index.js';
 
 console.log('[Module Patches] All patches loaded and ready for use');

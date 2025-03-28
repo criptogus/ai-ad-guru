@@ -10,6 +10,9 @@ export interface NativeBindingMock {
   needsRebuilding: () => boolean;
   getUuid: () => string;
   loadBinding: () => null;
+  createDist: () => null;
+  nativeBuild: () => boolean;
+  isNativeSupported: () => boolean;
   [key: string]: any;
 }
 
@@ -29,8 +32,24 @@ export interface MockNativeBindings {
   '@rollup/rollup-android-arm64': NativeBindingMock;
   '@rollup/rollup-android-arm-eabi': NativeBindingMock;
   '@rollup/rollup-native': NativeBindingMock;
-  [key: string]: NativeBindingMock;
+  'rollup/dist/native': NativeBindingMock;
+  'rollup/native': NativeBindingMock;
+  'rollup/native.js': NativeBindingMock;
+  [key: string]: any;
 }
 
-export const mockNativeBindings: MockNativeBindings;
+// Function to create standard mock objects
+export function createStandardMock(moduleName: string): NativeBindingMock;
+
+// Function to create all mock bindings
+export function createAllMockBindings(): MockNativeBindings;
+
+// Function to apply Rollup patches
 export function applyRollupPatch(): boolean;
+
+// Mock native bindings collection
+export const mockNativeBindings: MockNativeBindings;
+
+// Default export (a single mock instance)
+declare const defaultMock: NativeBindingMock;
+export default defaultMock;
