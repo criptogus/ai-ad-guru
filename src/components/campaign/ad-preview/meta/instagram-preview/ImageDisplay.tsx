@@ -27,7 +27,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full group">
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -37,7 +37,10 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
           {isLoading ? (
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <span className="text-gray-400 text-sm">Generating with GPT-4o...</span>
+            </div>
           ) : (
             <span className="text-gray-400 text-sm">No image generated yet</span>
           )}
@@ -55,7 +58,8 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
         <button
           onClick={handleRegenerateClick}
           disabled={isLoading}
-          className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
+          className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors opacity-0 group-hover:opacity-100 hover:opacity-100"
+          title={isLoading ? "Generating..." : "Regenerate image with GPT-4o"}
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

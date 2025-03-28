@@ -31,6 +31,22 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
 };
 
 /**
+ * Generate an image using GPT-4o
+ */
+export const generateImageWithGPT4o = async (prompt: string, platform: string, format?: string): Promise<string | null> => {
+  try {
+    const enhancedPrompt = enhanceImagePrompt(prompt, platform);
+    console.log('Generating image with GPT-4o:', enhancedPrompt.substring(0, 100) + '...');
+    
+    // In a real implementation, this would call the GPT-4o edge function
+    return null;
+  } catch (error) {
+    errorLogger.logError(error, 'generateImageWithGPT4o');
+    return null;
+  }
+};
+
+/**
  * Enhance an image prompt with platform-specific details
  */
 export const enhanceImagePrompt = (prompt: string, platform: string, style?: string): string => {

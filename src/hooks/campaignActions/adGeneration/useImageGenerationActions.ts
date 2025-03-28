@@ -26,17 +26,18 @@ export const useImageGenerationActions = (
       // Add the image prompt directly to ensure it's used for generation
       const additionalInfo = {
         imagePrompt: ad.imagePrompt,
-        format: ad.format || "feed"
+        format: ad.format || "feed",
+        platform: "meta"  // Specify platform for context-aware image generation
       };
 
-      console.log(`Generating image with prompt: ${ad.imagePrompt}`);
+      console.log(`Generating image with GPT-4o prompt: ${ad.imagePrompt}`);
       const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (!imageUrl) {
-        throw new Error("Failed to generate image");
+        throw new Error("Failed to generate image with GPT-4o");
       }
 
-      console.log(`Generated image URL: ${imageUrl}`);
+      console.log(`Generated image URL with GPT-4o: ${imageUrl}`);
 
       // Update the campaign data with the new image URL
       setCampaignData((prev: any) => {
@@ -51,7 +52,7 @@ export const useImageGenerationActions = (
         };
       });
 
-      toast.success("Image Generated", {
+      toast.success("Image Generated with GPT-4o", {
         description: "AI-generated image created successfully. 5 credits used."
       });
     } catch (error) {
@@ -73,10 +74,10 @@ export const useImageGenerationActions = (
         };
       });
       
-      setError(error instanceof Error ? error.message : "Failed to generate image");
+      setError(error instanceof Error ? error.message : "Failed to generate image with GPT-4o");
       
       toast.error("Using placeholder image", {
-        description: "Unable to generate custom image. Using a placeholder instead."
+        description: "Unable to generate custom image with GPT-4o. Using a placeholder instead."
       });
     } finally {
       setLoadingImageIndex(null);

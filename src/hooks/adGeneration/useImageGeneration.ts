@@ -15,7 +15,7 @@ export const useImageGeneration = () => {
     setError(null);
 
     try {
-      console.log("Generating image with prompt:", prompt);
+      console.log("Generating image with GPT-4o, prompt:", prompt);
       
       // Make sure we have a valid prompt
       if (!prompt || prompt.trim().length === 0) {
@@ -25,7 +25,7 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      // Call the edge function to generate the image
+      // Call the edge function to generate the image using GPT-4o
       const { data, error: functionError } = await supabase.functions.invoke('generate-image-gpt4o', {
         body: {
           imagePrompt: prompt,
@@ -49,7 +49,7 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      console.log("Successfully generated image URL:", data.imageUrl);
+      console.log("Successfully generated image URL with GPT-4o:", data.imageUrl);
       return data.imageUrl;
     } catch (err) {
       console.error("Exception in generateAdImage:", err);

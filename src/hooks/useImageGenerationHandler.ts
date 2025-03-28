@@ -30,7 +30,7 @@ export const useImageGenerationHandler = ({
       
       if (imageUrl) {
         toast.success("Image generated successfully", {
-          description: "5 credits were used for AI image generation"
+          description: "5 credits were used for AI image generation with GPT-4o"
         });
       } else {
         toast.error("Failed to generate image", {
