@@ -98,5 +98,5 @@ const nativeModuleFixPlugin = () => {
   };
 };
 
-// Export the plugin
-module.exports = nativeModuleFixPlugin;
+// Export the plugin using ESM syntax
+export default nativeModuleFixPlugin;

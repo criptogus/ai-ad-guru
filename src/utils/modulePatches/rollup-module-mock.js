@@ -15,10 +15,17 @@ const createMock = () => ({
   isNativeSupported: () => false
 });
 
+// Create a single mock instance to export
+const mockInstance = createMock();
+
 // Support both CommonJS and ESM
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = createMock();
-  module.exports.default = createMock();
+  try {
+    module.exports = mockInstance;
+    module.exports.default = mockInstance;
+  } catch (e) {
+    console.warn('Module export failed (CommonJS)', e);
+  }
 }
 
 // ESM exports
@@ -33,4 +40,4 @@ export const nativeBuild = () => true;
 export const isNativeSupported = () => false;
 
 // Default export
-export default createMock();
+export default mockInstance;
