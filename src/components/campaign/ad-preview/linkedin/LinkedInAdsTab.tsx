@@ -17,6 +17,7 @@ interface LinkedInAdsTabProps {
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   mindTrigger?: string;
+  onMindTriggerChange?: (trigger: string) => void;
 }
 
 const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
@@ -27,7 +28,8 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   onGenerateAds,
   onGenerateImage,
   onUpdateLinkedInAd,
-  mindTrigger
+  mindTrigger,
+  onMindTriggerChange
 }) => {
   // Get form context safely
   const formMethods = useFormContext();
@@ -48,10 +50,6 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
       updatedAds[index] = updatedAd;
       formMethods.setValue("linkedInAds", updatedAds);
     }
-  };
-
-  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
-    return onGenerateImage(ad, index);
   };
 
   return (
@@ -95,11 +93,37 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
         </div>
       ) : (
         <LinkedInAdsList
-          linkedInAds={linkedInAds}
+          ads={linkedInAds}
           analysisResult={analysisResult}
           loadingImageIndex={loadingImageIndex}
-          onGenerateImage={handleGenerateImage}
+          isGeneratingImage={isGenerating}
+          onGenerateImage={onGenerateImage}
           onUpdateAd={handleUpdateAd}
+          onDuplicate={(index) => {
+            if (linkedInAds && linkedInAds.length > 0) {
+              const adToDuplicate = linkedInAds[index];
+              const newAd = { ...adToDuplicate };
+              const newAds = [...linkedInAds, newAd];
+              
+              // Update form if available
+              if (formMethods) {
+                formMethods.setValue("linkedInAds", newAds);
+              }
+            }
+          }}
+          onDelete={(index) => {
+            if (linkedInAds && linkedInAds.length > 0) {
+              const newAds = [...linkedInAds];
+              newAds.splice(index, 1);
+              
+              // Update form if available
+              if (formMethods) {
+                formMethods.setValue("linkedInAds", newAds);
+              }
+            }
+          }}
+          mindTrigger={mindTrigger}
+          onMindTriggerChange={onMindTriggerChange}
         />
       )}
     </div>

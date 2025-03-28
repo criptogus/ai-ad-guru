@@ -12,7 +12,7 @@ interface LinkedInAdsListProps {
   analysisResult: WebsiteAnalysisResult;
   isGeneratingImage: boolean;
   loadingImageIndex: number | null;
-  onGenerateImage: (index: number) => Promise<void>;
+  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateAd: (index: number, updatedAd: MetaAd) => void;
   onDuplicate?: (index: number) => void;
   onDelete?: (index: number) => void;
@@ -48,8 +48,8 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
     setEditingIndex(null);
   };
 
-  const handleGenerateImage = (index: number) => {
-    return onGenerateImage(index);
+  const handleGenerateImage = (ad: MetaAd, index: number) => {
+    return onGenerateImage(ad, index);
   };
 
   const handleSelectTrigger = (trigger: string) => {
@@ -84,7 +84,7 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
           analysisResult={analysisResult}
           isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
           isEditing={editingIndex === index}
-          onGenerateImage={() => handleGenerateImage(index)}
+          onGenerateImage={() => handleGenerateImage(ad, index)}
           onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
           onEdit={() => handleEdit(index)}
           onSave={(updatedAd) => handleSave(index, updatedAd)}
