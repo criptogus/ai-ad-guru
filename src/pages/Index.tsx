@@ -16,6 +16,7 @@ const Index = () => {
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
         <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
         <title>AI Ad Guru | Create High-Converting Ads with AI</title>
+        <meta name="description" content="Generate, optimize, and manage your Google, Meta, LinkedIn & Microsoft ads with the power of AI. Less effort, better results." />
       </Helmet>
       <LandingPage />
     </>
