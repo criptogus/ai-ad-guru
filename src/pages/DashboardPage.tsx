@@ -11,7 +11,6 @@ import AiInsights from "@/components/dashboard/AiInsights";
 import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
 import SmartNotifications from "@/components/dashboard/SmartNotifications";
 import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
-import StorageCleanupCard from "@/components/dashboard/StorageCleanupCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Create an interface that matches what the dashboard components expect
@@ -47,11 +46,6 @@ const DashboardPage: React.FC = () => {
     <AppLayout activePage="dashboard">
       <div className="space-y-4 sm:space-y-6">
         <DashboardHeader user={dashboardUser} />
-        
-        {/* Storage Cleanup Card - Moved higher for more visibility */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          <StorageCleanupCard />
-        </div>
         
         {/* Full width Notifications */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
