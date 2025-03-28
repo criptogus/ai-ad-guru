@@ -3,7 +3,7 @@ import React from "react";
 import { Connection } from "@/hooks/adConnections/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Goal, Facebook, Linkedin, MicrosoftIcon } from "lucide-react";
+import { Goal, Facebook, Linkedin, Microsoft } from "lucide-react";
 
 interface PlatformConnectionCardProps {
   platform: 'google' | 'meta' | 'linkedin' | 'microsoft';
@@ -50,7 +50,7 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
     },
     microsoft: {
       name: "Microsoft Ads",
-      icon: <MicrosoftIcon className="h-10 w-10 text-blue-500" />,
+      icon: <Microsoft className="h-10 w-10 text-blue-500" />,
       connectText: "Connect Microsoft Ads",
       disconnectText: "Disconnect Microsoft Ads",
     }
