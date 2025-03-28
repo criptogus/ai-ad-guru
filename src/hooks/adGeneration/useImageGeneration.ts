@@ -15,7 +15,7 @@ export const useImageGeneration = () => {
     setError(null);
 
     try {
-      console.log("Generating image with GPT-4o, prompt:", prompt);
+      console.log("Generating image with DALL-E, prompt:", prompt);
       
       // Make sure we have a valid prompt
       if (!prompt || prompt.trim().length === 0) {
@@ -25,7 +25,7 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      // Call the edge function to generate the image using GPT-4o
+      // Call the edge function to generate the image using DALL-E
       const { data, error: functionError } = await supabase.functions.invoke('generate-image-gpt4o', {
         body: {
           imagePrompt: prompt,
@@ -62,11 +62,11 @@ export const useImageGeneration = () => {
         return null;
       }
 
-      console.log("Successfully generated image URL with GPT-4o:", data.imageUrl);
-      console.log("Prompt used by DALL-E:", data.promptUsed);
+      console.log("Successfully generated image URL:", data.imageUrl.substring(0, 50) + "...");
+      console.log("Prompt used by DALL-E:", data.promptUsed?.substring(0, 100) + "...");
       
       toast.success("Image generated successfully", {
-        description: "5 credits were used for AI image generation with GPT-4o"
+        description: "5 credits were used for AI image generation"
       });
       
       return data.imageUrl;
