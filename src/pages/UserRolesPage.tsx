@@ -40,14 +40,12 @@ const UserRolesPage: React.FC = () => {
             teamMembers={teamMembers}
             isLoading={isLoading}
             getBadgeVariant={getBadgeVariant}
-            onInviteUser={() => setShowInviteModal(true)}
             onEditMember={handleEditMember}
           />
           
           {/* Pending Invitations Section */}
           <PendingInvitationsCard
             invitations={invitations}
-            isLoading={isLoading}
             getBadgeVariant={getBadgeVariant}
             onResendInvitation={handleResendInvitation}
             onRevokeInvitation={handleRevokeInvitation}
@@ -59,8 +57,8 @@ const UserRolesPage: React.FC = () => {
         
         {/* Invite User Modal */}
         <InviteUserModal
-          isOpen={showInviteModal}
-          onClose={() => setShowInviteModal(false)}
+          open={showInviteModal}
+          onOpenChange={setShowInviteModal}
           onSendInvitation={handleSendInvitation}
           isSubmitting={isSubmitting}
         />
@@ -68,9 +66,9 @@ const UserRolesPage: React.FC = () => {
         {/* Edit Team Member Modal */}
         {selectedMember && (
           <EditTeamMemberModal
-            isOpen={showEditModal}
-            onClose={() => setShowEditModal(false)}
-            member={selectedMember}
+            open={showEditModal}
+            onOpenChange={setShowEditModal}
+            teamMember={selectedMember}
             onUpdateRole={handleUpdateTeamMemberRole}
             isSubmitting={isSubmitting}
           />

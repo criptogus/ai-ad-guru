@@ -9,14 +9,18 @@ import { UserRole } from "@/services/types";
 import { AlertCircle } from "lucide-react";
 
 interface InviteUserModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSendInvitation: (email: string, role: UserRole) => Promise<void>;
+  isOpen?: boolean;
+  open?: boolean;
+  onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
+  onSendInvitation: (email: string, role: UserRole) => Promise<boolean>;
   isSubmitting: boolean;
 }
 
 const InviteUserModal: React.FC<InviteUserModalProps> = ({ 
-  open, 
+  isOpen, 
+  open,
+  onClose,
   onOpenChange,
   onSendInvitation,
   isSubmitting
@@ -24,6 +28,10 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("Editor");
   const [emailError, setEmailError] = useState("");
+
+  // Use either isOpen or open prop for backward compatibility
+  const isModalOpen = isOpen !== undefined ? isOpen : open;
+  const handleCloseModal = onClose || (() => onOpenChange && onOpenChange(false));
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,17 +56,21 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
     }
     
     try {
-      await onSendInvitation(email, role);
-      // Reset form after successful submission (the modal will be closed by the parent)
-      setEmail("");
-      setRole("Editor");
+      const success = await onSendInvitation(email, role);
+      if (success) {
+        // Reset form after successful submission (the modal will be closed by the parent)
+        setEmail("");
+        setRole("Editor");
+        // Close the modal
+        handleCloseModal();
+      }
     } catch (error) {
       console.error("Error sending invitation:", error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isModalOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Invite Team Member</DialogTitle>
@@ -113,7 +125,7 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={handleCloseModal}
               disabled={isSubmitting}
             >
               Cancel

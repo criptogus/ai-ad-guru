@@ -29,9 +29,9 @@ export {
 
 export { 
   getTeamMembers,
-  inviteUser as inviteTeamMember,
   updateTeamMember,
-  removeTeamMember
+  removeTeamMember,
+  updateTeamMemberRole
 } from './team/members';
 
 export { 

@@ -3,57 +3,65 @@ import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserRole } from "@/services/types";
+import { UserRole, TeamMember } from "@/services/types";
 import { Label } from "@/components/ui/label";
 
 interface EditTeamMemberModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   onUpdateRole: (id: string, role: UserRole) => Promise<boolean>;
   isSubmitting: boolean;
-  teamMember: {
-    id: string;
-    name?: string;
-    email: string;
-    role: UserRole;
-  } | null;
+  teamMember: TeamMember;
+  member?: TeamMember;
 }
 
 const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
   open,
+  isOpen,
   onOpenChange,
+  onClose,
   onUpdateRole,
   isSubmitting,
-  teamMember
+  teamMember,
+  member
 }) => {
-  const [selectedRole, setSelectedRole] = React.useState<UserRole | undefined>(
-    teamMember?.role
+  const actualMember = teamMember || member;
+  const [selectedRole, setSelectedRole] = React.useState<UserRole>(
+    actualMember?.role || "Editor"
   );
 
-  // Update selected role when the teamMember changes
+  // Use either isOpen or open prop for backward compatibility
+  const isModalOpen = isOpen !== undefined ? isOpen : open;
+  const handleCloseModal = onClose || (() => onOpenChange && onOpenChange(false));
+
+  // Update selected role when the member changes
   React.useEffect(() => {
-    if (teamMember) {
-      setSelectedRole(teamMember.role);
+    if (actualMember) {
+      setSelectedRole(actualMember.role);
     }
-  }, [teamMember]);
+  }, [actualMember]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teamMember || !selectedRole) return;
+    if (!actualMember) return;
     
-    const success = await onUpdateRole(teamMember.id, selectedRole);
+    const success = await onUpdateRole(actualMember.id, selectedRole);
     if (success) {
-      onOpenChange(false);
+      handleCloseModal();
     }
   };
 
+  if (!actualMember) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isModalOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Team Member Role</DialogTitle>
           <DialogDescription>
-            Update the role for {teamMember?.name || teamMember?.email}
+            Update the role for {actualMember?.name || actualMember?.email}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -79,12 +87,12 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={handleCloseModal}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !selectedRole}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Updating..." : "Update Role"}
             </Button>
           </DialogFooter>
