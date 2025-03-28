@@ -1,0 +1,14 @@
+
+{
+  "overrides": {
+    "rollup": {
+      "@rollup/rollup-linux-x64-gnu": "npm:@rollup/rollup-js",
+      "@rollup/rollup-linux-x64-musl": "npm:@rollup/rollup-js",
+      "@rollup/rollup-linux-arm64-gnu": "npm:@rollup/rollup-js",
+      "@rollup/rollup-linux-arm64-musl": "npm:@rollup/rollup-js",
+      "@rollup/rollup-darwin-x64": "npm:@rollup/rollup-js",
+      "@rollup/rollup-darwin-arm64": "npm:@rollup/rollup-js",
+      "@rollup/rollup-win32-x64-msvc": "npm:@rollup/rollup-js"
+    }
+  }
+}

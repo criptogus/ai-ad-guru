@@ -1,16 +1,17 @@
 
-// Apply module patches before anything else loads
-// This must be the very first import
-import './utils/modulePatches/patchLoader';
-
-// Additional safety measures for native module disabling
+// Set environment variables before anything else
 if (typeof process !== 'undefined') {
   process.env.ROLLUP_NATIVE_DISABLE = '1';
   process.env.DISABLE_NATIVE_MODULES = '1';
 }
 
-// Log successful patch loading
-console.log("[Application] Patches loaded, initializing application");
+// Mark native modules as disabled globally
+if (typeof globalThis !== 'undefined') {
+  // @ts-ignore - Intentional global assignment
+  globalThis.__ROLLUP_NATIVE_DISABLED__ = true;
+}
+
+console.log("[Application] Environment variables set, initializing application");
 
 import React from "react";
 import ReactDOM from "react-dom/client";
