@@ -15,6 +15,5 @@ export const mockNativeBindings = {
 // Apply the patch
 export function applyRollupPatch() {
   // This function would typically patch the native module system
-  // For now, we'll just log that it's been applied
   console.log('Rollup native module patch applied');
 }

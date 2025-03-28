@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -9,11 +9,17 @@ import { Process } from "@/components/landing/Process";
 import { Trust } from "@/components/landing/Trust";
 import { Cta } from "@/components/landing/Cta";
 import { Footer } from "@/components/landing/Footer";
+import { Pricing } from "@/components/landing/Pricing";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   
+  useEffect(() => {
+    // Debug log to verify the component is mounting
+    console.log("LandingPage component mounted");
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
@@ -29,19 +35,20 @@ const LandingPage: React.FC = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" onClick={() => navigate("/login")}>
-                Start Free Trial
+                {t('common.startFreeTrial')}
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/credits-info")}>
-                Learn About Credits
+                {t('common.learnMore')}
               </Button>
             </div>
           </div>
         </section>
         
-        {/* Include all our landing page sections */}
+        {/* Include all landing page sections */}
         <Features />
         <Process />
         <Trust />
+        <Pricing />
         <Cta />
       </main>
       
