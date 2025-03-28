@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import type { PluginOption, Plugin } from "vite";
 
 // Import the rollup patch directly from the JS file
 import { mockNativeBindings } from "./src/utils/modulePatches/rollupNativeModulePatch.js";
@@ -45,12 +46,12 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      mode === 'development' && componentTagger(),
+      mode === 'development' ? componentTagger() : false,
       // Add custom plugin to intercept Rollup module resolution attempts
       {
         name: 'vite-plugin-rollup-native-patch',
-        enforce: 'pre',
-        resolveId(source) {
+        enforce: 'pre' as const,
+        resolveId(source: string) {
           if (source.includes('@rollup/rollup-')) {
             console.log(`[Vite Plugin] Intercepted Rollup native module: ${source}`);
             return path.resolve(__dirname, './src/utils/modulePatches/rollupNativeModulePatch.js');
@@ -58,7 +59,7 @@ export default defineConfig(({ mode }) => {
           return null;
         }
       }
-    ].filter(Boolean),
+    ].filter(Boolean) as PluginOption[],
     resolve: {
       alias: aliasDefinitions,
     },
