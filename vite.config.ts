@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import type { RollupLog } from 'rollup';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -40,8 +41,8 @@ export default defineConfig(({ mode }) => ({
         '@rollup/rollup-win32-x64-msvc'
       ],
       // Don't try to bundle native modules
-      onwarn(warning, warn) {
-        if (warning.code === 'UNRESOLVED_IMPORT' && warning.source.includes('@rollup/rollup-')) {
+      onwarn(warning: RollupLog, warn) {
+        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message.includes('@rollup/rollup-')) {
           // Suppress warnings about unresolved native modules
           return;
         }
