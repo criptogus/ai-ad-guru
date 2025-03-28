@@ -1,18 +1,16 @@
 
 import React from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const MetaAdTab: React.FC = () => {
   const createABTest = () => {
-    toast({
-      title: "A/B Test Created",
+    toast("A/B Test Created", {
       description: "A duplicate of this ad has been created for A/B testing."
     });
   };
 
   const copyAdToClipboard = () => {
-    toast({
-      title: "Ad Copied",
+    toast("Ad Copied", {
       description: "Ad content has been copied to clipboard."
     });
   };

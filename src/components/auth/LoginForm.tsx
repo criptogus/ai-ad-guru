@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOff, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<void>;
@@ -17,7 +17,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const { toast } = useToast();
 
   useEffect(() => {
     // Listen for the custom event to update form values
@@ -27,9 +26,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
       setEmail(email);
       setPassword(password);
       
-      toast({
-        title: "Test credentials loaded",
-        description: "Click 'Sign in' to log in with the test account",
+      toast("Test credentials loaded", {
+        description: "Click 'Sign in' to log in with the test account"
       });
     };
 
@@ -42,7 +40,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
     return () => {
       window.removeEventListener('testAccountCreated', listener);
     };
-  }, [toast]);
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -111,21 +109,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
             type="button" 
             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
             onClick={togglePasswordVisibility}
-            tabIndex={-1}
           >
-            {showPassword ? <EyeOff size={18} /> : <EyeIcon size={18} />}
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <EyeIcon className="h-4 w-4" />
+            )}
           </button>
         </div>
       </div>
       
-      <Button 
-        type="submit" 
-        className="w-full" 
+      <Button
+        type="submit"
+        className="w-full"
         disabled={isSubmitting}
         data-testid="login-button"
       >
-        {isSubmitting ? 'Signing in...' : 'Sign in'}
+        {isSubmitting ? 'Signing In...' : 'Sign In'}
       </Button>
+      
+      <div className="text-center text-sm">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-brand-600 hover:underline">
+          Sign up
+        </Link>
+      </div>
     </form>
   );
 };
