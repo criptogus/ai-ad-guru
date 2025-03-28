@@ -1,18 +1,18 @@
 
 import React, { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import LinkedInAdCard from "./LinkedInAdCard";
+import MetaAdCard from "./card/MetaAdCard";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
 
-interface LinkedInAdsListProps {
+interface InstagramAdsListProps {
   ads: MetaAd[];
   analysisResult: WebsiteAnalysisResult;
   isGeneratingImage: boolean;
   loadingImageIndex: number | null;
-  onGenerateImage: (index: number) => Promise<void>;
+  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateAd: (index: number, updatedAd: MetaAd) => void;
   onDuplicate?: (index: number) => void;
   onDelete?: (index: number) => void;
@@ -20,7 +20,7 @@ interface LinkedInAdsListProps {
   onMindTriggerChange?: (trigger: string) => void;
 }
 
-const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
+const InstagramAdsList: React.FC<InstagramAdsListProps> = ({
   ads,
   analysisResult,
   isGeneratingImage,
@@ -48,10 +48,6 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
     setEditingIndex(null);
   };
 
-  const handleGenerateImage = (index: number) => {
-    return onGenerateImage(index);
-  };
-
   const handleSelectTrigger = (trigger: string) => {
     if (onMindTriggerChange) {
       onMindTriggerChange(trigger);
@@ -74,22 +70,25 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
           </Button>
         </div>
       )}
-      
-      {/* LinkedIn Ads List */}
+
+      {/* Meta Ads List */}
       {ads.map((ad, index) => (
-        <LinkedInAdCard
-          key={`linkedin-ad-${index}`}
+        <MetaAdCard
+          key={`instagram-ad-${index}`}
           ad={ad}
           index={index}
           analysisResult={analysisResult}
-          isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
           isEditing={editingIndex === index}
-          onGenerateImage={() => handleGenerateImage(index)}
-          onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
+          isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
+          loadingImageIndex={loadingImageIndex}
           onEdit={() => handleEdit(index)}
           onSave={(updatedAd) => handleSave(index, updatedAd)}
           onCancel={handleCancel}
           onCopy={() => onDuplicate && onDuplicate(index)}
+          onGenerateImage={() => onGenerateImage(ad, index)}
+          onUpdate={(updatedAd) => onUpdateAd(index, updatedAd)}
+          onDuplicate={() => onDuplicate && onDuplicate(index)}
+          onDelete={() => onDelete && onDelete(index)}
         />
       ))}
 
@@ -101,14 +100,14 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
           onClick={() => onDuplicate(ads.length - 1)}
         >
           <PlusCircle className="w-4 h-4 mr-2" />
-          Add New LinkedIn Ad Variation
+          Add New Instagram Ad Variation
         </Button>
       )}
 
       {/* Placeholder when no ads */}
       {ads.length === 0 && !isGeneratingImage && (
         <div className="border border-dashed rounded-md p-8 text-center">
-          <p className="text-muted-foreground">No LinkedIn ads generated yet</p>
+          <p className="text-muted-foreground">No Instagram ads generated yet</p>
         </div>
       )}
 
@@ -116,7 +115,7 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
       {isGeneratingImage && loadingImageIndex === null && (
         <div className="flex items-center justify-center p-8">
           <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          <span>Generating LinkedIn ads...</span>
+          <span>Generating Instagram ads...</span>
         </div>
       )}
 
@@ -130,4 +129,4 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
   );
 };
 
-export default LinkedInAdsList;
+export default InstagramAdsList;

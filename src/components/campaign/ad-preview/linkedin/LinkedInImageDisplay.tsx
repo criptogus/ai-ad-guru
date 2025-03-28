@@ -23,6 +23,8 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
   onTemplateSelect
 }) => {
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const getFormatClass = () => {
     if (format === "landscape") return "aspect-video";
@@ -36,6 +38,27 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
     setShowTemplateGallery(false);
   };
 
+  const handleImageError = () => {
+    console.error("LinkedIn image failed to load:", ad.imageUrl);
+    setImageError(true);
+    
+    // Retry loading if we have less than 3 attempts
+    if (retryCount < 3 && ad.imageUrl) {
+      const nextRetry = retryCount + 1;
+      setRetryCount(nextRetry);
+      
+      setTimeout(() => {
+        // Force image reload with cache busting
+        const img = document.querySelector(`img[src^="${ad.imageUrl}"]`) as HTMLImageElement;
+        if (img) {
+          const newSrc = `${ad.imageUrl}?retry=${Date.now()}`;
+          img.src = newSrc;
+        }
+        setImageError(false);
+      }, 1000 * nextRetry); // Increase delay with each retry
+    }
+  };
+
   return (
     <div className="relative">
       <div className={`w-full ${getFormatClass()} bg-gray-100 dark:bg-gray-800 overflow-hidden`}>
@@ -45,9 +68,23 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
               src={ad.imageUrl} 
               alt="LinkedIn Ad" 
               className="w-full h-full object-cover"
+              onError={handleImageError}
             />
             
-            {onGenerateImage && (
+            {(imageError && retryCount >= 3) && (
+              <div className="absolute inset-0 bg-red-50/20 dark:bg-red-900/20 flex items-center justify-center">
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg text-center">
+                  <p className="text-sm text-red-500 mb-2">Image failed to load</p>
+                  {onGenerateImage && (
+                    <Button size="sm" onClick={onGenerateImage}>
+                      <RefreshCw className="h-4 w-4 mr-1" /> Regenerate
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {onGenerateImage && !imageError && (
               <div className="absolute bottom-2 right-2">
                 <Button 
                   size="icon" 

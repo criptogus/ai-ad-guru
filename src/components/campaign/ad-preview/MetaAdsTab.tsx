@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import InstagramAdsPreview from "./meta/InstagramAdsPreview";
+import InstagramAdsList from "./meta/InstagramAdsList";
 
 interface MetaAdsTabProps {
   metaAds: MetaAd[];
@@ -14,7 +14,10 @@ interface MetaAdsTabProps {
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
+  onDuplicateAd?: (index: number) => void;
+  onDeleteAd?: (index: number) => void;
   mindTrigger?: string;
+  onMindTriggerChange?: (trigger: string) => void;
 }
 
 const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
@@ -25,10 +28,11 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
   onGenerateAds,
   onGenerateImage,
   onUpdateMetaAd,
-  mindTrigger
+  onDuplicateAd,
+  onDeleteAd,
+  mindTrigger,
+  onMindTriggerChange
 }) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
   return (
     <div className="space-y-6">
       {/* Generate Ads Button */}
@@ -59,14 +63,19 @@ const MetaAdsTab: React.FC<MetaAdsTabProps> = ({
         </Button>
       </div>
 
-      {/* Mobile-First Instagram Ads Preview */}
+      {/* Instagram Ads List */}
       {metaAds.length > 0 ? (
-        <InstagramAdsPreview
+        <InstagramAdsList
           ads={metaAds}
-          companyName={analysisResult.companyName}
+          analysisResult={analysisResult}
+          isGeneratingImage={isGenerating}
           loadingImageIndex={loadingImageIndex}
           onGenerateImage={onGenerateImage}
           onUpdateAd={onUpdateMetaAd}
+          onDuplicate={onDuplicateAd}
+          onDelete={onDeleteAd}
+          mindTrigger={mindTrigger}
+          onMindTriggerChange={onMindTriggerChange}
         />
       ) : !isGenerating ? (
         <div className="border border-dashed rounded-md p-8 text-center bg-background">

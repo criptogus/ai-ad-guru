@@ -41,6 +41,19 @@ serve(async (req) => {
     
     console.log("Enhanced prompt for GPT-4o:", enhancedPrompt.substring(0, 100) + "...");
     
+    // Determine the appropriate size based on platform and format
+    let size = "1024x1024"; // Default square
+    if (platform === 'linkedin' && format === 'landscape') {
+      // Use a 16:9 ratio for LinkedIn landscape
+      size = "1792x1024"; // Maintains the aspect ratio while staying within DALL-E's limits
+    } else if (platform === 'meta' && format === 'portrait') {
+      // Use a 4:5 ratio for Instagram portrait
+      size = "1024x1280";
+    } else if (format === 'story' || format === 'reel') {
+      // Use a 9:16 ratio for stories/reels
+      size = "1024x1792"; // Maintains the aspect ratio while staying within DALL-E's limits
+    }
+    
     // Use DALL-E 3 directly rather than through the GPT-4o tools
     const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
@@ -52,7 +65,9 @@ serve(async (req) => {
         model: "dall-e-3",
         prompt: enhancedPrompt,
         n: 1,
-        size: "1024x1024"
+        size: size,
+        quality: "standard",
+        response_format: "url"
       })
     });
     
