@@ -11,10 +11,13 @@ interface ImagePromptTemplate {
   title: string;
   prompt: string;
   category: string;
+  industry?: string;
   thumbnail?: string;
 }
 
+// Enhanced templates with industry-specific premium templates
 const imagePromptTemplates: ImagePromptTemplate[] = [
+  // Original templates
   {
     id: "professional",
     title: "Professional",
@@ -43,6 +46,57 @@ const imagePromptTemplates: ImagePromptTemplate[] = [
     prompt: "Product-focused image with clean background, professional lighting, showcasing features and benefits",
     thumbnail: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
   },
+  
+  // New industry-specific premium templates
+  {
+    id: "services_consulting",
+    title: "Consulting Services",
+    category: "premium",
+    industry: "services",
+    prompt: "Create a professional Instagram ad image (1080x1080px) for a consulting service targeting business owners (30-50), inspired by Microsoft's sleek professionalism and Google's innovative clarity. Feature a confident consultant in a modern office, pointing at a glowing digital whiteboard with vibrant data visuals. Use crisp studio lighting (softbox glow), a clean glass-walled backdrop, and a tight rule-of-thirds composition. Add #3B82F6 as a dynamic screen accent and #10B981 for a subtle growth vibe (e.g., plant on desk). Ensure textures (e.g., suit fabric, glass reflections) feel tactile and real—no AI smoothing.",
+    thumbnail: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+  },
+  {
+    id: "health_wellness",
+    title: "Health & Wellness",
+    category: "premium",
+    industry: "health",
+    prompt: "Generate a vibrant Instagram ad image (1080x1080px) for a wellness brand targeting health-conscious adults (25-45), blending Nestlé's wholesome realism with Nike's empowering energy. Show a fit individual drinking from a sleek water bottle post-workout, sweat glistening under golden-hour sunlight, with a serene park backdrop. Use a macro shot for crisp details (e.g., water droplets, breathable fabric), dynamic diagonals for motion, and shallow depth of field to blur the background. Integrate #10B981 as a fresh, healthy accent (e.g., bottle cap) and #3B82F6 for a modern touch (e.g., sky hue).",
+    thumbnail: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b"
+  },
+  {
+    id: "education_tech",
+    title: "Education Tech",
+    category: "premium",
+    industry: "education",
+    prompt: "Design a sleek Instagram ad image (1080x1080px) for an online learning platform targeting students and professionals (18-35), inspired by Apple's minimalist elegance and Netflix's immersive storytelling. Feature a diverse student using a tablet in a cozy, modern study nook, illuminated by a warm desk lamp with a glowing screen reflecting their focus. Use soft, even lighting, a clean white background with #3B82F6 as a tech accent (e.g., tablet edge), and #10B981 for an inspiring touch (e.g., notebook).",
+    thumbnail: "https://images.unsplash.com/photo-1501504905252-473c47e087f8"
+  },
+  {
+    id: "fintech_app",
+    title: "Fintech Innovation",
+    category: "premium",
+    industry: "fintech",
+    prompt: "Produce a futuristic Instagram ad image (1080x1080px) for a fintech app targeting tech-savvy investors (25-45), blending Tesla's visionary sleekness with Google's playful innovation. Show a young professional interacting with a holographic financial dashboard in a dark, minimalist loft, neon #3B82F6 charts glowing against a matte black wall. Use dramatic sidelight for a high-tech sheen, wide-angle composition for depth, and #10B981 as a subtle prosperity cue (e.g., plant reflection).",
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f"
+  },
+  {
+    id: "law_firm",
+    title: "Legal Services",
+    category: "premium",
+    industry: "law",
+    prompt: "Craft a dramatic Instagram ad image (1080x1080px) for a law firm targeting clients (30-60) seeking justice, inspired by HBO's intense storytelling and Microsoft's professional polish. Feature a sharp attorney in a tailored suit standing in a dimly lit courtroom, a gavel resting on a polished oak table in soft focus. Use moody, low-key lighting with a golden accent, a centered composition for authority, and #3B82F6 as a subtle tie or folder accent, paired with #10B981 for a calming touch (e.g., window light).",
+    thumbnail: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f"
+  },
+  {
+    id: "pet_products",
+    title: "Pet Products",
+    category: "premium",
+    industry: "pet",
+    prompt: "Generate a heartwarming Instagram ad image (1080x1080px) for a pet brand targeting pet owners (25-50), blending Nestlé's wholesome charm with Coca-Cola's joyful connection. Show a playful puppy chasing a premium pet toy in a sunlit backyard, grass blades catching the light with a shallow depth of field blur. Use golden-hour glow for warmth, a dynamic off-center composition, and #10B981 as a fresh, natural accent (e.g., toy color), with #3B82F6 for a modern pop (e.g., collar).",
+    thumbnail: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e"
+  },
+  // Original templates continued
   {
     id: "premium_card",
     title: "Premium Card Visual",
@@ -92,12 +146,17 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
   const [customPrompt, setCustomPrompt] = useState(initialPrompt || "");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeIndustry, setActiveIndustry] = useState<string>("all");
   
-  const categories = ["all", "product", "lifestyle", "business", "promo", "testimonial", "hiring", "abstract"];
+  const categories = ["all", "premium", "product", "lifestyle", "business", "promo", "testimonial", "hiring", "abstract"];
+  const industries = ["all", "services", "health", "education", "fintech", "law", "pet"];
   
-  const filteredTemplates = activeCategory === "all" 
-    ? imagePromptTemplates 
-    : imagePromptTemplates.filter(template => template.category === activeCategory);
+  const filteredTemplates = imagePromptTemplates.filter(template => {
+    const matchesCategory = activeCategory === "all" || template.category === activeCategory;
+    const matchesIndustry = activeIndustry === "all" || template.industry === activeIndustry;
+    
+    return matchesCategory && matchesIndustry;
+  });
   
   const handleSelectTemplate = (template: ImagePromptTemplate) => {
     setSelectedTemplate(template.id);
@@ -144,6 +203,23 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
                 </Button>
               ))}
             </div>
+            
+            {activeCategory === "premium" && (
+              <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-2">
+                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                {industries.map(industry => (
+                  <Button
+                    key={industry}
+                    variant={activeIndustry === industry ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setActiveIndustry(industry)}
+                  >
+                    {industry.charAt(0).toUpperCase() + industry.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            )}
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
               {filteredTemplates.map((template) => (
