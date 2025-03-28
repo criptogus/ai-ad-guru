@@ -550,28 +550,13 @@ export const useAdGeneration = (): UseAdGenerationReturn => {
     }
   };
 
-  // Generate ad image
-  const generateImage = async (prompt: string, platform: string = 'meta'): Promise<string | null> => {
-    try {
-      return await generateAdImage(prompt, platform);
-    } catch (error) {
-      console.error("Error generating image:", error);
-      toast({
-        title: "Image Generation Failed",
-        description: "Could not generate the requested image. Using a placeholder instead.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
   return {
     isGenerating,
     generateGoogleAds,
     generateMetaAds,
     generateLinkedInAds,
     generateMicrosoftAds,
-    generateImage
+    generateAdImage
   };
 };
 
