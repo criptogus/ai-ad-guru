@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { AdPlatform } from "@/hooks/adConnections/types";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ConnectionTestCardProps {
   platform: AdPlatform;
@@ -26,7 +27,7 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
     platform === 'meta' ? 'Meta Ads' : 'LinkedIn Ads';
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>{platformName} API Connection Test</CardTitle>
         <CardDescription>Verify your {platformName} API credentials</CardDescription>
@@ -41,7 +42,7 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
               )}
               
               {status === 'success' && (
-                <div className="flex items-center text-green-500 gap-1">
+                <div className="flex items-center text-green-600 dark:text-green-400 gap-1">
                   <CheckCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">Connection successful</span>
                 </div>
@@ -64,14 +65,23 @@ const ConnectionTestCard: React.FC<ConnectionTestCardProps> = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
-          onClick={onTest} 
-          disabled={isLoading}
-          className="w-full"
-        >
-          {isLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? 'Testing Connection...' : 'Test Connection'}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={onTest} 
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Testing Connection...' : 'Test Connection'}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Sends a test request to verify API connectivity</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );

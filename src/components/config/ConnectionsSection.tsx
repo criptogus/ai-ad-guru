@@ -66,7 +66,7 @@ const ConnectionsSection: React.FC = () => {
         </Alert>
       )}
 
-      <Card className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
+      <Card className="bg-card border-border shadow-sm mb-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Security Information</CardTitle>
           <CardDescription>

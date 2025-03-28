@@ -21,6 +21,7 @@ const AccountConnections: React.FC = () => {
     initiateGoogleConnection,
     initiateLinkedInConnection,
     initiateMicrosoftConnection,
+    initiateMetaConnection,
     removeConnection,
     fetchConnections
   } = useAdAccountConnections();
@@ -30,43 +31,13 @@ const AccountConnections: React.FC = () => {
     console.log("Connections updated:", connections);
   }, [connections]);
 
-  const handleGoogleConnection = async () => {
-    try {
-      console.log("Initiating Google connection...");
-      await initiateGoogleConnection();
-    } catch (err: any) {
-      console.error("Google connection error:", err);
-      // Error is already handled in the hook
-    }
-  };
-
-  const handleLinkedInConnection = async () => {
-    try {
-      console.log("Initiating LinkedIn connection...");
-      await initiateLinkedInConnection();
-    } catch (err: any) {
-      console.error("LinkedIn connection error:", err);
-      // Error is already handled in the hook
-    }
-  };
-
-  const handleMicrosoftConnection = async () => {
-    try {
-      console.log("Initiating Microsoft Ads connection...");
-      await initiateMicrosoftConnection();
-    } catch (err: any) {
-      console.error("Microsoft Ads connection error:", err);
-      // Error is already handled in the hook
-    }
-  };
-
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Ad Platform Connections</CardTitle>
           <CardDescription>
-            Connect your Google Ads, LinkedIn Ads, and Microsoft Ads accounts to manage campaigns
+            Connect your ad accounts to manage campaigns
           </CardDescription>
         </div>
         <Button 
@@ -96,7 +67,7 @@ const AccountConnections: React.FC = () => {
               platform="google"
               connections={connections}
               isConnecting={isConnecting}
-              onConnect={handleGoogleConnection}
+              onConnect={initiateGoogleConnection}
               onRemove={removeConnection}
               errorType={errorType}
               errorDetails={errorDetails}
@@ -105,10 +76,22 @@ const AccountConnections: React.FC = () => {
             <Separator />
 
             <PlatformConnectionCard
+              platform="meta"
+              connections={connections}
+              isConnecting={isConnecting}
+              onConnect={initiateMetaConnection}
+              onRemove={removeConnection}
+              errorType={errorType}
+              errorDetails={errorDetails}
+            />
+
+            <Separator />
+            
+            <PlatformConnectionCard
               platform="linkedin"
               connections={connections}
               isConnecting={isConnecting}
-              onConnect={handleLinkedInConnection}
+              onConnect={initiateLinkedInConnection}
               onRemove={removeConnection}
               errorType={errorType}
               errorDetails={errorDetails}
@@ -120,7 +103,7 @@ const AccountConnections: React.FC = () => {
               platform="microsoft"
               connections={connections}
               isConnecting={isConnecting}
-              onConnect={handleMicrosoftConnection}
+              onConnect={initiateMicrosoftConnection}
               onRemove={removeConnection}
               errorType={errorType}
               errorDetails={errorDetails}
