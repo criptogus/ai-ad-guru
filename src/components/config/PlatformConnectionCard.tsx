@@ -1,15 +1,15 @@
 
 import React from "react";
+import { Connection } from "@/hooks/adConnections/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Goal, Facebook, Linkedin, Windows, Loader2 } from "lucide-react";
-import { Connection, AdPlatform } from "@/hooks/adConnections/types";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Goal, Facebook, Linkedin, MicrosoftIcon } from "lucide-react";
 
 interface PlatformConnectionCardProps {
-  platform: AdPlatform;
+  platform: 'google' | 'meta' | 'linkedin' | 'microsoft';
   isConnecting: boolean;
-  errorType?: string | null;
-  errorDetails?: string | null;
+  errorType: string | null;
+  errorDetails: string | null;
   connections: Connection[];
   onConnect: () => void;
   onRemove: (id: string, platformName: string) => Promise<void>;
@@ -22,97 +22,91 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   errorDetails,
   connections,
   onConnect,
-  onRemove,
+  onRemove
 }) => {
-  const getPlatformDetails = (platform: AdPlatform) => {
-    switch (platform) {
-      case 'google':
-        return {
-          title: 'Google Ads',
-          description: 'Connect your Google Ads account to create and manage campaigns',
-          icon: Goal,
-        };
-      case 'linkedin':
-        return {
-          title: 'LinkedIn Ads',
-          description: 'Connect your LinkedIn Ads account to create and manage campaigns',
-          icon: Linkedin,
-        };
-      case 'microsoft':
-        return {
-          title: 'Microsoft Ads',
-          description: 'Connect your Microsoft Ads account to create and manage campaigns',
-          icon: Windows,
-        };
-      case 'meta':
-        return {
-          title: 'Meta Ads',
-          description: 'Connect your Meta Ads account for Facebook and Instagram campaigns',
-          icon: Facebook,
-        };
-      default:
-        return {
-          title: 'Connect Platform',
-          description: 'Connect your account',
-          icon: Goal,
-        };
+  const platformConnection = connections.find(conn => conn.platform === platform);
+  const isConnected = !!platformConnection;
+  const isError = errorType === platform;
+
+  // Platform-specific configurations
+  const platformConfigs = {
+    google: {
+      name: "Google Ads",
+      icon: <Goal className="h-10 w-10 text-blue-500" />,
+      connectText: "Connect Google Ads",
+      disconnectText: "Disconnect Google Ads",
+    },
+    meta: {
+      name: "Meta Ads",
+      icon: <Facebook className="h-10 w-10 text-blue-600" />,
+      connectText: "Connect Meta Ads",
+      disconnectText: "Disconnect Meta Ads",
+    },
+    linkedin: {
+      name: "LinkedIn Ads",
+      icon: <Linkedin className="h-10 w-10 text-blue-700" />,
+      connectText: "Connect LinkedIn Ads",
+      disconnectText: "Disconnect LinkedIn Ads",
+    },
+    microsoft: {
+      name: "Microsoft Ads",
+      icon: <MicrosoftIcon className="h-10 w-10 text-blue-500" />,
+      connectText: "Connect Microsoft Ads",
+      disconnectText: "Disconnect Microsoft Ads",
     }
   };
 
-  const platformDetails = getPlatformDetails(platform);
-  const Icon = platformDetails.icon;
-  const platformConnections = connections.filter(conn => conn.platform === platform);
-  const isConnected = platformConnections.length > 0;
+  const config = platformConfigs[platform];
 
   return (
-    <Card className="overflow-hidden hover:-translate-y-0.5 transition-all duration-200">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex flex-col space-y-1.5">
-          <CardTitle className="text-lg font-semibold">{platformDetails.title}</CardTitle>
-          <CardDescription>{platformDetails.description}</CardDescription>
-        </div>
-        <Icon size={24} className="text-primary" />
+    <Card className="relative overflow-hidden">
+      <CardHeader className="flex items-center justify-center py-6">
+        {config.icon}
+        <h3 className="text-lg font-medium mt-2">{config.name}</h3>
       </CardHeader>
-      <CardContent className="py-6">
+      <CardContent className="text-center pb-2">
         {isConnected ? (
-          <div className="space-y-2">
-            {platformConnections.map((connection) => (
-              <div key={connection.id} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">Account ID: {connection.account_id}</span>
-                  <span className="text-xs text-muted-foreground">Connected on {new Date(connection.created_at).toLocaleDateString()}</span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => onRemove(connection.id, platformDetails.title)}
-                >
-                  Disconnect
-                </Button>
-              </div>
-            ))}
+          <div className="text-sm text-green-600 font-medium">
+            Connected
+            {platformConnection.account_id && (
+              <p className="text-xs text-gray-500 mt-1">Account: {platformConnection.account_id}</p>
+            )}
           </div>
         ) : (
-          <div className="flex items-center justify-center">
-            <Button 
-              onClick={onConnect} 
-              disabled={isConnecting}
-              variant="outline"
-              className="w-full"
-            >
-              {isConnecting && <Loader2 size={16} className="mr-2 animate-spin" />}
-              {isConnecting ? 'Connecting...' : `Connect ${platformDetails.title}`}
-            </Button>
+          <div className="text-sm text-gray-500 font-medium">
+            Not connected
           </div>
         )}
       </CardContent>
-      {errorType && (
-        <CardFooter className="bg-destructive/10 p-3">
-          <div className="text-sm text-destructive">
-            <p className="font-semibold">{errorType === 'credentials' ? 'Configuration Error' : 'Connection Error'}</p>
-            <p>{errorDetails}</p>
+      <CardFooter className="flex justify-center pt-2 pb-6">
+        {isConnected ? (
+          <Button 
+            variant="outline" 
+            onClick={() => onRemove(platformConnection.id, platform)}
+            className="border-red-300 hover:border-red-600 hover:bg-red-50 text-red-600"
+            disabled={isConnecting}
+          >
+            {config.disconnectText}
+          </Button>
+        ) : (
+          <Button 
+            onClick={onConnect}
+            disabled={isConnecting}
+          >
+            {isConnecting && errorType === platform ? "Connecting..." : config.connectText}
+          </Button>
+        )}
+      </CardFooter>
+      {isError && (
+        <div className="absolute inset-0 bg-red-100/90 dark:bg-red-900/90 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-xs">
+            <h4 className="font-bold text-red-600 dark:text-red-400 mb-2">Connection Error</h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{errorDetails}</p>
+            <Button size="sm" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
           </div>
-        </CardFooter>
+        </div>
       )}
     </Card>
   );

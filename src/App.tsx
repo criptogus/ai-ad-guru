@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
 import "./App.css";
 
-import AuthLayout from "./components/auth/AuthLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import CampaignsPage from "./pages/CampaignsPage";
@@ -11,7 +10,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ConnectionsPage from "./pages/ConnectionsPage";
 import ConfigPage from "./pages/ConfigPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -28,7 +27,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/connections" element={<ConnectionsPage />} />
           <Route path="/config" element={<ConfigPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors closeButton />
