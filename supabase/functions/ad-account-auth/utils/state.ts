@@ -1,55 +1,63 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
-import { corsHeaders } from "./cors.ts";
 
-// Type for state data
-export interface OAuthStateData {
-  userId: string;
-  platform: string;
-  redirectUri: string;
-  created: string;
-}
-
-// Store state in Supabase
+// Store OAuth state in Supabase for validation during the callback
 export const storeOAuthState = async (
-  supabaseClient: any, 
-  stateParam: string, 
-  stateData: OAuthStateData
+  supabaseClient: any,
+  stateId: string,
+  stateData: any
 ) => {
-  const { error } = await supabaseClient
-    .from('oauth_states')
-    .insert({
-      state: stateParam,
-      data: stateData,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minute expiry
-    });
-  
-  if (error) {
-    console.error("Error storing OAuth state:", error);
-    throw new Error("Failed to prepare OAuth flow: " + error.message);
+  try {
+    const { data, error } = await supabaseClient
+      .from('oauth_states')
+      .insert({
+        id: stateId,
+        user_id: stateData.userId,
+        platform: stateData.platform,
+        redirect_uri: stateData.redirectUri,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes expiry
+      });
+    
+    if (error) {
+      console.error('Error storing OAuth state:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in storeOAuthState:', error);
+    throw error;
   }
 };
 
-// Retrieve and validate state
-export const retrieveOAuthState = async (supabaseClient: any, state: string) => {
-  const { data, error } = await supabaseClient
-    .from('oauth_states')
-    .select('data')
-    .eq('state', state)
-    .single();
-  
-  if (error || !data) {
-    console.error("Error retrieving OAuth state:", error);
-    throw new Error("Invalid or expired OAuth state");
+// Validate the state parameter during the callback
+export const validateOAuthState = async (
+  supabaseClient: any,
+  stateId: string
+) => {
+  try {
+    const { data, error } = await supabaseClient
+      .from('oauth_states')
+      .select('*')
+      .eq('id', stateId)
+      .single();
+    
+    if (error || !data) {
+      console.error('Error validating OAuth state or state not found:', error);
+      return null;
+    }
+    
+    // Check if the state has expired (10 minutes)
+    const expiresAt = new Date(data.expires_at);
+    if (expiresAt < new Date()) {
+      console.error('OAuth state has expired');
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in validateOAuthState:', error);
+    return null;
   }
-  
-  return data.data as OAuthStateData;
-};
-
-// Clean up used state
-export const cleanupOAuthState = async (supabaseClient: any, state: string) => {
-  await supabaseClient
-    .from('oauth_states')
-    .delete()
-    .eq('state', state);
 };
