@@ -116,7 +116,7 @@ export default defineConfig(({ mode }) => {
       // Add new plugin to completely prevent native module resolution
       {
         name: 'vite-plugin-prevent-native-modules',
-        resolveId(id, importer) {
+        resolveId(id: string, importer: string | undefined) {
           if (id.includes('@rollup/rollup-') || (id.includes('rollup') && id.includes('native'))) {
             console.log(`[Vite Plugin] Preventing native module resolution: ${id}`);
             return path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js');
