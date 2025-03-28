@@ -1,5 +1,7 @@
 
 import React from 'react';
+// Comment out the router imports to prevent conflicts
+/*
 import {
   createBrowserRouter,
   RouterProvider,
@@ -7,6 +9,7 @@ import {
   createRoutesFromElements,
   Outlet,
 } from 'react-router-dom';
+*/
 import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
@@ -28,6 +31,7 @@ import PromptEditorPage from './pages/admin/PromptEditorPage';
 // Since we don't have actual admin page, create a placeholder
 const AdminPage = () => <div>Admin Dashboard</div>;
 
+/*
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -56,9 +60,12 @@ const router = createBrowserRouter(
     </>
   )
 );
+*/
 
+// Comment out the Router component to prevent router duplication
 const Router = () => {
-  return <RouterProvider router={router} />;
+  // return <RouterProvider router={router} />;
+  return <div>Router disabled to prevent duplicate router instances</div>;
 };
 
 export default Router;
