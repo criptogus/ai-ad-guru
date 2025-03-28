@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import type { PluginOption, Plugin } from "vite";
+import type { PluginOption, Plugin, ConfigEnv, ResolvedConfig, UserConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -95,13 +95,13 @@ export default defineConfig(({ mode }) => {
       // Add new plugin to prevent errors during builds
       {
         name: 'vite-plugin-handle-missing-rollup-native',
-        configResolved(config) {
+        configResolved(config: ResolvedConfig) {
           console.log('[Vite Plugin] Config resolved with Rollup patching enabled');
         },
         buildStart() {
           console.log('[Vite Plugin] Build starting with Rollup native module patching');
         },
-        resolveImport(importInfo) {
+        resolveImport(importInfo: { importee: string; importer: string }) {
           const { importee } = importInfo;
           if (importee && importee.includes('@rollup/rollup-')) {
             return { id: path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js') };
