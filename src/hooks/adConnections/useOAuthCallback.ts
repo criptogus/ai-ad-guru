@@ -32,8 +32,8 @@ export const useOAuthCallback = () => {
         timestamp: new Date().toISOString(),
         details: {
           origin: window.location.origin,
-          referrer: document.referrer,
-          has_code: new URL(window.location.href).searchParams.has('code')
+          referrer: document.referrer || 'no-referrer',
+          has_code: window.location.href && new URL(window.location.href).searchParams.has('code')
         }
       });
       
@@ -64,15 +64,17 @@ export const useOAuthCallback = () => {
       console.error('Error completing OAuth flow:', error);
       
       // Security enhancement: Log OAuth errors
-      await tokenSecurity.logSecurityEvent({
-        event: 'oauth_connection_error',
-        user_id: userId,
-        timestamp: new Date().toISOString(),
-        details: {
-          error: error.message || "Unknown error",
-          errorType: error.name || "Unspecified"
-        }
-      });
+      if (userId) {
+        await tokenSecurity.logSecurityEvent({
+          event: 'oauth_connection_error',
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+          details: {
+            error: error.message || "Unknown error",
+            errorType: error.name || "Unspecified"
+          }
+        }).catch(e => console.warn("Failed to log security event:", e));
+      }
       
       toast({
         title: "Connection Failed",
@@ -83,15 +85,17 @@ export const useOAuthCallback = () => {
       setError(error.message || "There was an error connecting your account");
       
       // Set more detailed error information
-      if (error.message && error.message.includes("token")) {
-        setErrorType("credentials");
-        setErrorDetails("There was a secure error exchanging the authorization code. This could be due to misconfigured credentials or redirect URIs.");
-      } else if (error.message && error.message.includes("Invalid") || error.message.includes("expired")) {
-        setErrorType("credentials");
-        setErrorDetails("The authorization response was invalid or expired. Please try connecting again.");
-      } else {
-        setErrorType("edge_function");
-        setErrorDetails("There was an error completing the secure OAuth flow. Check the Edge Function logs for more details.");
+      if (error.message) {
+        if (error.message.includes("token")) {
+          setErrorType("credentials");
+          setErrorDetails("There was a secure error exchanging the authorization code. This could be due to misconfigured credentials or redirect URIs.");
+        } else if (error.message.includes("Invalid") || error.message.includes("expired")) {
+          setErrorType("credentials");
+          setErrorDetails("The authorization response was invalid or expired. Please try connecting again.");
+        } else {
+          setErrorType("edge_function");
+          setErrorDetails("There was an error completing the secure OAuth flow. Check the Edge Function logs for more details.");
+        }
       }
     } finally {
       setIsConnecting(false);

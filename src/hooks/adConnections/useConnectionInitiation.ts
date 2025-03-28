@@ -74,8 +74,26 @@ export const useConnectionInitiation = () => {
       
       const data = response.data;
       
-      if (!data || !data.success || !data.authUrl) {
-        const errorMessage = data?.error || `Failed to get valid auth URL for ${platform}`;
+      if (!data || !data.success) {
+        const errorMessage = data?.error || `Failed to get auth URL for ${platform}`;
+        console.error(errorMessage, data);
+        
+        setError(errorMessage);
+        setErrorType('invalid_response');
+        setErrorDetails('The server response did not indicate success');
+        
+        toast({
+          title: "Connection Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
+        return;
+      }
+      
+      // Make sure we have an authUrl
+      if (!data.authUrl) {
+        const errorMessage = `Failed to get valid auth URL for ${platform}`;
         console.error(errorMessage, data);
         
         setError(errorMessage);

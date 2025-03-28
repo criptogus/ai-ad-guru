@@ -11,13 +11,11 @@ const corsHeaders = {
 
 // Extract user ID from various possible sources in the session
 const extractUserId = (session) => {
-  if (session.client_reference_id) return session.client_reference_id;
-  
-  if (session.success_url && session.success_url.includes('client_reference_id=')) {
-    return new URL(session.success_url).searchParams.get('client_reference_id');
-  }
-  
-  return session.metadata?.userId || null;
+  if (!session) return null;
+  return session.client_reference_id || 
+         (session.success_url && new URL(session.success_url).searchParams.get('client_reference_id')) || 
+         session.metadata?.userId || 
+         null;
 };
 
 Deno.serve(async (req) => {
