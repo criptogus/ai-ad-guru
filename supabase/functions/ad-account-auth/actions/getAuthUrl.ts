@@ -1,3 +1,4 @@
+
 import { corsHeaders } from "../utils/cors.ts";
 import { storeOAuthState } from "../utils/state.ts";
 import { getGoogleAuthUrl } from "../platforms/google.ts";
@@ -171,6 +172,7 @@ export const getAuthUrl = async (
   
   console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
   
+  // FIXED: Using authUrl instead of url property in the response 
   return new Response(
     JSON.stringify({ 
       success: true, 
