@@ -78,6 +78,9 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     }
   });
 
+  // Get selected platforms from campaign data
+  const selectedPlatforms = campaignData?.selectedPlatforms || ["google", "meta", "linkedin", "microsoft"];
+  
   // Update form values when ads change
   useEffect(() => {
     methods.setValue("googleAds", googleAds);
@@ -90,6 +93,11 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   useEffect(() => {
     methods.setValue("platform", selectedPlatform);
   }, [selectedPlatform, methods]);
+  
+  // Scroll to top when tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedPlatform]);
 
   if (!analysisResult) {
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
@@ -104,59 +112,75 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         <CardContent>
           <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform} className="w-full">
             <TabsList className="w-full mb-4">
-              <TabsTrigger value="google">Google Ads</TabsTrigger>
-              <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
-              <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
-              <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
+              {selectedPlatforms.includes("google") && (
+                <TabsTrigger value="google">Google Ads</TabsTrigger>
+              )}
+              {selectedPlatforms.includes("meta") && (
+                <TabsTrigger value="meta">Instagram Ads</TabsTrigger>
+              )}
+              {selectedPlatforms.includes("linkedin") && (
+                <TabsTrigger value="linkedin">LinkedIn Ads</TabsTrigger>
+              )}
+              {selectedPlatforms.includes("microsoft") && (
+                <TabsTrigger value="microsoft">Microsoft Ads</TabsTrigger>
+              )}
             </TabsList>
 
-            <TabsContent value="google">
-              <GoogleAdsTab
-                googleAds={googleAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={onUpdateGoogleAd}
-                mindTrigger={mindTriggers['google']}
-              />
-            </TabsContent>
+            {selectedPlatforms.includes("google") && (
+              <TabsContent value="google">
+                <GoogleAdsTab
+                  googleAds={googleAds}
+                  analysisResult={analysisResult}
+                  isGenerating={isGenerating}
+                  onGenerateAds={onGenerateGoogleAds}
+                  onUpdateGoogleAd={onUpdateGoogleAd}
+                  mindTrigger={mindTriggers['google']}
+                />
+              </TabsContent>
+            )}
 
-            <TabsContent value="meta">
-              <MetaAdsTab
-                metaAds={metaAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateMetaAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateMetaAd={onUpdateMetaAd}
-                mindTrigger={mindTriggers['meta']}
-              />
-            </TabsContent>
+            {selectedPlatforms.includes("meta") && (
+              <TabsContent value="meta">
+                <MetaAdsTab
+                  metaAds={metaAds}
+                  analysisResult={analysisResult}
+                  isGenerating={isGenerating}
+                  loadingImageIndex={loadingImageIndex}
+                  onGenerateAds={onGenerateMetaAds}
+                  onGenerateImage={onGenerateImage}
+                  onUpdateMetaAd={onUpdateMetaAd}
+                  mindTrigger={mindTriggers['meta']}
+                />
+              </TabsContent>
+            )}
 
-            <TabsContent value="linkedin">
-              <LinkedInAdsTab
-                linkedInAds={linkedInAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateLinkedInAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateLinkedInAd={onUpdateLinkedInAd}
-                mindTrigger={mindTriggers['linkedin']}
-              />
-            </TabsContent>
+            {selectedPlatforms.includes("linkedin") && (
+              <TabsContent value="linkedin">
+                <LinkedInAdsTab
+                  linkedInAds={linkedInAds}
+                  analysisResult={analysisResult}
+                  isGenerating={isGenerating}
+                  loadingImageIndex={loadingImageIndex}
+                  onGenerateAds={onGenerateLinkedInAds}
+                  onGenerateImage={onGenerateImage}
+                  onUpdateLinkedInAd={onUpdateLinkedInAd}
+                  mindTrigger={mindTriggers['linkedin']}
+                />
+              </TabsContent>
+            )}
 
-            <TabsContent value="microsoft">
-              <MicrosoftAdsTab
-                microsoftAds={microsoftAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                onGenerateAds={onGenerateMicrosoftAds}
-                onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-                mindTrigger={mindTriggers['microsoft']}
-              />
-            </TabsContent>
+            {selectedPlatforms.includes("microsoft") && (
+              <TabsContent value="microsoft">
+                <MicrosoftAdsTab
+                  microsoftAds={microsoftAds}
+                  analysisResult={analysisResult}
+                  isGenerating={isGenerating}
+                  onGenerateAds={onGenerateMicrosoftAds}
+                  onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+                  mindTrigger={mindTriggers['microsoft']}
+                />
+              </TabsContent>
+            )}
           </Tabs>
 
           <div className="mt-6 pt-4 border-t flex justify-between items-center">

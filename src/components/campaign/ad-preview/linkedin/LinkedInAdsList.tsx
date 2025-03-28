@@ -6,6 +6,7 @@ import LinkedInAdCard from "./LinkedInAdCard";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LinkedInAdsListProps {
   ads: MetaAd[];
@@ -34,6 +35,7 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
 }) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showTriggerGallery, setShowTriggerGallery] = useState(false);
+  const [previewType, setPreviewType] = useState<"feed" | "message" | "sidebar">("feed");
 
   const handleEdit = (index: number) => {
     setEditingIndex(index);
@@ -75,23 +77,38 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
         </div>
       )}
       
+      {/* LinkedIn Preview Type Selector */}
+      <div className="mb-4">
+        <h3 className="text-sm font-medium mb-2">Preview Type</h3>
+        <Tabs value={previewType} onValueChange={(value: "feed" | "message" | "sidebar") => setPreviewType(value)} className="w-full">
+          <TabsList className="grid grid-cols-3 w-full max-w-md mb-4">
+            <TabsTrigger value="feed">Feed</TabsTrigger>
+            <TabsTrigger value="message">Message</TabsTrigger>
+            <TabsTrigger value="sidebar">Sidebar</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      
       {/* LinkedIn Ads List */}
-      {ads.map((ad, index) => (
-        <LinkedInAdCard
-          key={`linkedin-ad-${index}`}
-          ad={ad}
-          index={index}
-          analysisResult={analysisResult}
-          isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
-          isEditing={editingIndex === index}
-          onGenerateImage={() => handleGenerateImage(ad, index)}
-          onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
-          onEdit={() => handleEdit(index)}
-          onSave={(updatedAd) => handleSave(index, updatedAd)}
-          onCancel={handleCancel}
-          onCopy={() => onDuplicate && onDuplicate(index)}
-        />
-      ))}
+      <div className="space-y-6">
+        {ads.map((ad, index) => (
+          <LinkedInAdCard
+            key={`linkedin-ad-${index}`}
+            ad={ad}
+            index={index}
+            analysisResult={analysisResult}
+            isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
+            isEditing={editingIndex === index}
+            onGenerateImage={() => handleGenerateImage(ad, index)}
+            onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
+            onEdit={() => handleEdit(index)}
+            onSave={(updatedAd) => handleSave(index, updatedAd)}
+            onCancel={handleCancel}
+            onCopy={() => onDuplicate && onDuplicate(index)}
+            previewType={previewType === "message" ? "feed" : previewType}
+          />
+        ))}
+      </div>
 
       {/* Add New Ad Button */}
       {onDuplicate && ads.length > 0 && (

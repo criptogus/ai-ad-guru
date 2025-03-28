@@ -1,9 +1,9 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { MetaAd } from "@/hooks/adGeneration";
 import { Loader2, Sparkles } from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdsList from "./LinkedInAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFormContext } from "react-hook-form";
