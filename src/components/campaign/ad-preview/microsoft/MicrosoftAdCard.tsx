@@ -1,94 +1,45 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { GoogleAd } from "@/hooks/adGeneration";
-import MicrosoftAdCardHeader from "./MicrosoftAdCardHeader";
-import MicrosoftAdDetails from "./MicrosoftAdDetails";
-import MicrosoftAdPreview from "./MicrosoftAdPreview";
+import { MicrosoftAdCardHeader } from "./MicrosoftAdCardHeader";
+import { MicrosoftAdPreview } from "./MicrosoftAdPreview";
 
 interface MicrosoftAdCardProps {
   ad: GoogleAd;
-  domain: string;
   index: number;
-  onUpdate: (updatedAd: GoogleAd) => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
-const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({ 
-  ad, 
-  domain, 
-  index, 
-  onUpdate 
+export const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
+  ad,
+  index,
+  isSelected = false,
+  onSelect,
+  onUpdate,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
-
-  const handleEdit = () => {
-    setEditedAd({...ad});
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    onUpdate(editedAd);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedAd({...ad});
-    setIsEditing(false);
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(ad, null, 2));
-  };
-
-  const handleHeadlineChange = (index: number, value: string) => {
-    const updatedHeadlines = [...editedAd.headlines];
-    updatedHeadlines[index] = value;
-    setEditedAd({
-      ...editedAd,
-      headlines: updatedHeadlines
-    });
-  };
-
-  const handleDescriptionChange = (index: number, value: string) => {
-    const updatedDescriptions = [...editedAd.descriptions];
-    updatedDescriptions[index] = value;
-    setEditedAd({
-      ...editedAd,
-      descriptions: updatedDescriptions
-    });
-  };
-
   return (
-    <Card className="mb-4">
+    <Card className={`${isSelected ? 'border-primary shadow-sm' : ''} transition-all`}>
       <MicrosoftAdCardHeader 
-        adIndex={index}
-        isEditing={isEditing}
-        onEdit={handleEdit}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onCopy={handleCopy}
+        label={`Variation ${index + 1}`} 
+        isSelected={isSelected}
       />
-      <CardContent className="p-4">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <MicrosoftAdPreview 
-              ad={isEditing ? editedAd : ad} 
-              domain={domain} 
-            />
-          </div>
-          <div>
-            <MicrosoftAdDetails 
-              ad={ad}
-              isEditing={isEditing}
-              editedAd={editedAd}
-              onHeadlineChange={handleHeadlineChange}
-              onDescriptionChange={handleDescriptionChange}
-              onUpdate={onUpdate}
-            />
-          </div>
-        </div>
+      <CardContent className="pt-4 pb-2">
+        <MicrosoftAdPreview ad={ad} onUpdate={onUpdate} />
       </CardContent>
+      <CardFooter className="pt-0 pb-4">
+        <Button 
+          variant={isSelected ? "default" : "outline"} 
+          size="sm" 
+          className="w-full" 
+          onClick={onSelect}
+        >
+          {isSelected ? "Selected" : "Select"}
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

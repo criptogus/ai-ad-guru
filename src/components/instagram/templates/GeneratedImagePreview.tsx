@@ -1,68 +1,48 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { InstagramTemplate } from "@/components/testing/instagram/InstagramTemplateGallery";
 
 interface GeneratedImagePreviewProps {
-  generatedImageUrl: string | null;
   selectedTemplate: InstagramTemplate | null;
-  mainText: string;
-  onReset: () => void;
+  generatedImageUrl: string | null;
+  isLoading: boolean;
 }
 
 const GeneratedImagePreview: React.FC<GeneratedImagePreviewProps> = ({
-  generatedImageUrl,
   selectedTemplate,
-  mainText,
-  onReset,
+  generatedImageUrl,
+  isLoading,
 }) => {
+  if (!selectedTemplate) {
+    return null;
+  }
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Generated Image</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid md:grid-cols-2 gap-6">
+      <CardContent className="pt-6">
+        <div className="space-y-4">
           <div>
-            {generatedImageUrl ? (
-              <div className="border rounded-md overflow-hidden">
-                <img
-                  src={generatedImageUrl}
-                  alt="Generated Instagram Ad"
-                  className="w-full h-auto"
-                />
-              </div>
-            ) : (
-              <div className="h-80 bg-muted/20 flex items-center justify-center text-muted-foreground rounded-md">
-                No image generated yet
-              </div>
-            )}
+            <h3 className="font-medium">Preview: {selectedTemplate.name}</h3>
+            <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
           </div>
           
-          <div>
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-2">Template Information</h3>
-                {selectedTemplate && (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium">Template</p>
-                      <p className="text-sm text-muted-foreground">{selectedTemplate.title}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Customization</p>
-                      <p className="text-sm text-muted-foreground">{mainText || "[None]"}</p>
-                    </div>
-                    <div className="flex gap-3 pt-3">
-                      <Button variant="outline" onClick={onReset}>
-                        Start Over
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
+            {isLoading ? (
+              <div className="h-full w-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : generatedImageUrl ? (
+              <img
+                src={generatedImageUrl}
+                alt={`Generated image for ${selectedTemplate.name}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                <span>No image generated yet</span>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

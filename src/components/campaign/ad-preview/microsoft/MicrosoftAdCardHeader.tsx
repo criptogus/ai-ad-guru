@@ -1,58 +1,26 @@
 
 import React from "react";
-import { CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Copy, Edit, Save, X } from "lucide-react";
+import { CardHeader } from "@/components/ui/card";
+import { CheckCircle2 } from "lucide-react";
 
 interface MicrosoftAdCardHeaderProps {
-  adIndex: number;
-  isEditing: boolean;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-  onCopy: () => void;
+  label: string;
+  isSelected?: boolean;
 }
 
-const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
-  adIndex,
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-  onCopy
+export const MicrosoftAdCardHeader: React.FC<MicrosoftAdCardHeaderProps> = ({
+  label,
+  isSelected = false,
 }) => {
   return (
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-md font-medium">
-        Microsoft Ad {adIndex + 1}
-      </CardTitle>
-      <div className="flex gap-2">
-        {isEditing ? (
-          <>
-            <Button onClick={onSave} size="sm" variant="outline" className="h-8 px-2">
-              <Save className="h-4 w-4 mr-1" />
-              Save
-            </Button>
-            <Button onClick={onCancel} size="sm" variant="outline" className="h-8 px-2">
-              <X className="h-4 w-4 mr-1" />
-              Cancel
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button onClick={onEdit} size="sm" variant="outline" className="h-8 px-2">
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
-            <Button onClick={onCopy} size="sm" variant="outline" className="h-8 px-2">
-              <Copy className="h-4 w-4 mr-1" />
-              Copy
-            </Button>
-          </>
-        )}
-      </div>
+    <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
+      <div className="text-sm font-medium">{label}</div>
+      {isSelected && (
+        <div className="flex items-center text-xs text-primary">
+          <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+          <span>Selected</span>
+        </div>
+      )}
     </CardHeader>
   );
 };
-
-export default MicrosoftAdCardHeader;
