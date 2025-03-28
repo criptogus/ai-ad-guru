@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -46,19 +45,10 @@ export const initiateOAuth = async (params: OAuthParams) => {
       if (response.error.message && response.error.message.includes('Missing required')) {
         errorMessage = `Admin needs to configure ${platform} API credentials in Supabase`;
       } else if (response.error.message && response.error.message.includes('non-2xx status')) {
-        // Handle edge function non-2xx status explicitly
         errorMessage = `Edge function error: The Supabase edge function returned a non-2xx status code. Check if the edge function is deployed correctly and all required credentials are set.`;
       } else if (response.error.message && response.error.message.includes('Failed to prepare OAuth flow')) {
         errorMessage = `Database error: ${response.error.message}. Please check database permissions or connection.`;
       }
-      
-      // Log detailed error for debugging
-      console.error(`OAuth initialization error details:`, {
-        errorMessage,
-        originalError: response.error,
-        platform,
-        redirectUri
-      });
       
       throw new Error(errorMessage);
     }
@@ -74,12 +64,11 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(data.error || `Failed to initialize ${platform} OAuth flow`);
     }
     
-    // Explicitly log the full response to debug property name issues
-    console.log('Full response from edge function:', data);
+    // Check for authUrl or url property in response (handle both formats)
+    const authUrl = data.authUrl || data.url;
     
-    // Check specifically for authUrl property
-    if (!data.authUrl) {
-      console.error('Response missing authUrl:', data);
+    if (!authUrl) {
+      console.error('Response missing authUrl/url:', data);
       throw new Error(`Failed to get valid auth URL for ${platform}`);
     }
     
@@ -90,7 +79,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
         inProgress: true,
         userId,
         startTime: Date.now(),
-        redirectUri // Store the redirect URI to use it in the callback
+        redirectUri
       }));
     } catch (storageError) {
       console.warn('Could not store OAuth state in session storage:', storageError);
@@ -98,7 +87,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
     }
     
     // Return the OAuth URL for redirection
-    return data.authUrl;
+    return authUrl;
   } catch (error) {
     console.error(`Error in initiateOAuth:`, error);
     throw error;

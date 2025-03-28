@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AdPlatform } from './types';
 import { tokenSecurity } from '@/services/security/tokenSecurity';
+import { initiateOAuth } from './oauthService';
 
 export const useConnectionInitiation = () => {
   const { toast } = useToast();
@@ -44,79 +44,22 @@ export const useConnectionInitiation = () => {
         }
       });
       
-      // Call edge function to get auth URL
-      const response = await supabase.functions.invoke('ad-account-auth', {
-        body: {
-          action: 'getAuthUrl',
-          platform,
-          userId,
-          redirectUri
-        }
+      // Direct call to initiateOAuth from oauthService
+      const authUrl = await initiateOAuth({
+        platform,
+        userId,
+        redirectUri
       });
       
-      console.log('Edge function response:', response);
-      
-      if (response.error) {
-        console.error(`Error initiating ${platform} connection:`, response.error);
-        
-        setError(`Failed to connect to ${platform}: ${response.error.message || 'Unknown error'}`);
-        setErrorType('edge_function');
-        setErrorDetails(response.error.message || null);
-        
-        toast({
-          title: "Connection Failed",
-          description: `Failed to connect to ${platform}: ${response.error.message || 'Unknown error'}`,
-          variant: "destructive",
-        });
-        
-        return;
-      }
-      
-      const data = response.data;
-      
-      if (!data || !data.success) {
-        const errorMessage = data?.error || `Failed to get auth URL for ${platform}`;
-        console.error(errorMessage, data);
-        
-        setError(errorMessage);
-        setErrorType('invalid_response');
-        setErrorDetails('The server response did not indicate success');
-        
-        toast({
-          title: "Connection Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        return;
-      }
-      
-      // Make sure we have an authUrl
-      if (!data.authUrl) {
-        const errorMessage = `Failed to get valid auth URL for ${platform}`;
-        console.error(errorMessage, data);
-        
-        setError(errorMessage);
-        setErrorType('invalid_response');
-        setErrorDetails('The server response did not contain a valid authorization URL');
-        
-        toast({
-          title: "Connection Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        return;
-      }
-      
       // Redirect to the authorization URL
-      console.log(`Redirecting to ${platform} auth URL:`, data.authUrl);
-      window.location.href = data.authUrl;
+      console.log(`Redirecting to ${platform} auth URL:`, authUrl);
+      window.location.href = authUrl;
+      
     } catch (error: any) {
       console.error(`Error in ${platform} connection initiation:`, error);
       
       setError(error.message || `Failed to connect to ${platform}`);
-      setErrorType('client');
+      setErrorType(platform);
       setErrorDetails(error.toString());
       
       toast({

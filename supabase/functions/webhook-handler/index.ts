@@ -42,9 +42,10 @@ Deno.serve(async (req) => {
     
     if (!stripeKey) throw new Error("Stripe API key not configured");
     
-    // Verify the webhook signature
+    // Initialize Stripe with minimal options
     const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
     
+    // Verify webhook signature
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
@@ -66,40 +67,28 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle checkout session completion
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const userId = extractUserId(session);
+    // Handle events more concisely
+    if (event.type === 'checkout.session.completed' || 
+        (event.type === 'payment_intent.succeeded' && event.data.object.metadata?.userId)) {
       
-      if (!userId) {
-        console.error('No user ID found in session');
-        throw new Error('User ID not found');
-      }
-      
-      // Update user profile
-      const { error } = await supabase
-        .from('profiles')
-        .update({ has_paid: true })
-        .eq('id', userId);
-    
-      if (error) {
-        throw new Error(`Failed to update profile: ${error.message}`);
-      }
-      
-      console.log(`Payment completed for user: ${userId}`);
-    } 
-    // Handle payment intent success
-    else if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object;
-      const userId = paymentIntent.metadata?.userId;
+      // Get userId from different places based on event type
+      const userId = event.type === 'checkout.session.completed' 
+        ? extractUserId(event.data.object)
+        : event.data.object.metadata?.userId;
       
       if (userId) {
-        await supabase
+        const { error } = await supabase
           .from('profiles')
           .update({ has_paid: true })
           .eq('id', userId);
-          
-        console.log(`Payment succeeded for user: ${userId}`);
+      
+        if (error) {
+          console.error(`Failed to update profile: ${error.message}`);
+        } else {
+          console.log(`Payment completed for user: ${userId}`);
+        }
+      } else {
+        console.error('No user ID found in event data');
       }
     }
 
