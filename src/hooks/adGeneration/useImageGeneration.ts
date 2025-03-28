@@ -5,31 +5,46 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const generateAdImage = async (prompt: string, platform: string = 'meta'): Promise<string | null> => {
+  const generateAdImage = async (
+    prompt: string, 
+    additionalInfo?: any
+  ): Promise<string | null> => {
     setIsGenerating(true);
+    setError(null);
     
     try {
       console.log("Generating image with prompt:", prompt.substring(0, 100) + "...");
+      console.log("With additional info:", additionalInfo ? JSON.stringify(additionalInfo).substring(0, 100) + "..." : "none");
+      
+      // Determine platform from additionalInfo or use default
+      const platform = additionalInfo?.platform || 'meta';
+      // Determine format from additionalInfo or use default
+      const format = additionalInfo?.imageFormat || additionalInfo?.format || 'feed';
       
       // Call the generate-image-gpt4o edge function
       const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
         body: { 
           imagePrompt: prompt,
           platform: platform,
-          format: 'feed'
+          format: format,
+          adContext: additionalInfo // Pass all additional info as context
         }
       });
       
       if (error) {
         console.error("Error calling generate-image-gpt4o edge function:", error);
+        setError(error.message || "Failed to call image generation service");
         throw error;
       }
       
       if (!data || !data.success || !data.imageUrl) {
         console.error("No image URL returned from function:", data);
-        throw new Error("Failed to generate image");
+        const errorMessage = "Failed to generate image";
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
       
       console.log("Successfully generated image:", data.imageUrl.substring(0, 50) + "...");
@@ -37,6 +52,9 @@ export const useImageGeneration = () => {
       return data.imageUrl;
     } catch (error) {
       console.error("Error in generateAdImage:", error);
+      
+      // Set error message for UI display
+      setError(error instanceof Error ? error.message : "Unknown error occurred");
       
       // Return a fallback placeholder image
       return getFallbackImage(prompt);
@@ -61,6 +79,7 @@ export const useImageGeneration = () => {
 
   return {
     generateAdImage,
-    isGenerating
+    isGenerating,
+    error
   };
 };

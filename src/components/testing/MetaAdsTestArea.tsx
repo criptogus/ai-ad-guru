@@ -21,7 +21,7 @@ const defaultMetaAd: MetaAd = {
 const MetaAdsTestArea: React.FC = () => {
   const [testAds, setTestAds] = useState<MetaAd[]>([]);
   const [testAd, setTestAd] = useState<MetaAd>(defaultMetaAd);
-  const { generateAdImage, isGenerating } = useImageGeneration();
+  const { generateAdImage, isGenerating, error } = useImageGeneration();
   const { user } = useAuth();
   
   // Company info state from website analysis, replaced with default data that matches WebsiteAnalysisResult type
@@ -72,7 +72,7 @@ const MetaAdsTestArea: React.FC = () => {
     }
 
     try {
-      // Pass additional context to enhance image generation
+      // Create additional context for image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
         brandTone: companyInfo.brandTone,
@@ -165,6 +165,10 @@ const MetaAdsTestArea: React.FC = () => {
               </Button>
             </div>
           </div>
+          
+          {error && (
+            <p className="text-sm text-red-500 mt-2">{error}</p>
+          )}
         </CardContent>
       </Card>
 

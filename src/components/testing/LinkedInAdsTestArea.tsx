@@ -99,7 +99,7 @@ const LinkedInAdsTestArea: React.FC = () => {
     }
 
     try {
-      // Pass additional context to enhance image generation
+      // Create additional context info for image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
         brandTone: companyInfo.brandTone,
@@ -109,8 +109,8 @@ const LinkedInAdsTestArea: React.FC = () => {
         adTheme: adTheme,
         imageFormat: imageFormat,
         platform: "linkedin",
-        userId: user?.id, // Pass user ID for database storing
-        templateId: selectedTemplateId // Pass template ID if using a template
+        userId: user?.id,
+        templateId: selectedTemplateId
       };
 
       const imageUrl = await generateAdImage(testAd.imagePrompt, additionalInfo);
@@ -119,7 +119,7 @@ const LinkedInAdsTestArea: React.FC = () => {
         const updatedAd = { ...testAd, imageUrl };
         setTestAd(updatedAd);
         
-        // Update form values - fixed to use the correct form fields
+        // Update form values
         methods.setValue("ad", updatedAd);
         methods.setValue("testAd", updatedAd);
         
