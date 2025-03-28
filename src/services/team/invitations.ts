@@ -32,11 +32,15 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
     
     if (error) throw error;
     
-    // Show appropriate toast based on the response
-    if (data && data.note) {
-      // We're in development mode with Resend limitations
-      toast.info("Development mode notice", {
-        description: "In development, emails are only sent to the Resend account owner. Invitation record was created successfully."
+    if (!data.success) {
+      // The invitation record was created but the email failed to send
+      toast.warning("Invitation created but email delivery failed", {
+        description: data.error || "The invitation was recorded but we couldn't send the email. The user can still accept via the invitation link."
+      });
+    } else {
+      // Show success message when everything works
+      toast.success("Invitation sent successfully", {
+        description: `An invitation email has been sent to ${email}`
       });
     }
     
@@ -63,9 +67,16 @@ export const resendInvitation = async (id: string) => {
     // Resend the invitation
     await inviteUser(data.email, data.role as UserRole);
     
+    toast.success("Invitation resent", {
+      description: `A new invitation email has been sent to ${data.email}`
+    });
+    
     return true;
   } catch (error) {
     console.error("Error resending invitation:", error);
+    toast.error("Failed to resend invitation", {
+      description: error.message || "An error occurred while resending the invitation"
+    });
     return false;
   }
 };
@@ -73,16 +84,25 @@ export const resendInvitation = async (id: string) => {
 // Revoke invitation
 export const revokeInvitation = async (id: string) => {
   try {
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('team_invitations')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select('email')
+      .single();
     
     if (error) throw error;
+    
+    toast.success("Invitation revoked", {
+      description: data?.email ? `The invitation to ${data.email} has been revoked` : "The invitation has been revoked"
+    });
     
     return true;
   } catch (error) {
     console.error("Error revoking invitation:", error);
+    toast.error("Failed to revoke invitation", {
+      description: error.message || "An error occurred while revoking the invitation"
+    });
     return false;
   }
 };

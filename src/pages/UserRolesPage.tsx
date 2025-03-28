@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus } from "lucide-react";
+import { UserPlus, RefreshCw, X } from "lucide-react";
 import InviteUserModal from "@/components/roles/InviteUserModal";
 import { getTeamMembers } from "@/services/team/members";
-import { inviteUser, getTeamInvitations } from "@/services/team/invitations";
+import { inviteUser, getTeamInvitations, resendInvitation, revokeInvitation } from "@/services/team/invitations";
 import { getRolePermissions } from "@/services/team/roles";
 import { TeamMember, UserRole } from "@/services/types";
 import { toast } from "sonner";
@@ -48,9 +48,6 @@ const UserRolesPage = () => {
   const handleInviteUser = async (email: string, role: UserRole) => {
     try {
       await inviteUser(email, role);
-      toast.success("Invitation process completed", {
-        description: `An invitation has been processed for ${email}`
-      });
       // Refresh the team members and invitations list after successful invitation
       loadData();
     } catch (error) {
@@ -58,6 +55,28 @@ const UserRolesPage = () => {
         description: "There was an error processing the invitation. Please try again."
       });
       console.error("Error inviting user:", error);
+    }
+  };
+
+  const handleResendInvitation = async (id: string) => {
+    try {
+      const success = await resendInvitation(id);
+      if (success) {
+        loadData(); // Refresh the data
+      }
+    } catch (error) {
+      console.error("Error resending invitation:", error);
+    }
+  };
+
+  const handleRevokeInvitation = async (id: string) => {
+    try {
+      const success = await revokeInvitation(id);
+      if (success) {
+        loadData(); // Refresh the data
+      }
+    } catch (error) {
+      console.error("Error revoking invitation:", error);
     }
   };
 
@@ -172,8 +191,23 @@ const UserRolesPage = () => {
                       <TableCell>{new Date(invitation.created_at).toLocaleString()}</TableCell>
                       <TableCell>{new Date(invitation.expires_at).toLocaleString()}</TableCell>
                       <TableCell className="text-right space-x-2">
-                        <Button variant="ghost" size="sm">Resend</Button>
-                        <Button variant="ghost" size="sm" className="text-destructive">Revoke</Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleResendInvitation(invitation.id)}
+                        >
+                          <RefreshCw size={14} className="mr-1" />
+                          Resend
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive"
+                          onClick={() => handleRevokeInvitation(invitation.id)}
+                        >
+                          <X size={14} className="mr-1" />
+                          Revoke
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
