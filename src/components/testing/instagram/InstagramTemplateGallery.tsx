@@ -1,105 +1,77 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import CategoryFilter from "./CategoryFilter";
-import FilteredTemplateGrid from "./FilteredTemplateGrid";
 
 export interface InstagramTemplate {
   id: string;
   name: string;
-  title?: string; // Add title property to support existing code
   description: string;
   category: string;
-  thumbnailUrl?: string;
-  previewUrl?: string;
-  format?: string;
-  tags?: string[];
+  imagePrompt: string;  // Add the imagePrompt property here
 }
 
-const CATEGORIES = [
-  { id: "urgency", name: "Urgency", emoji: "⏰" },
-  { id: "personal-branding", name: "Personal Branding", emoji: "👤" },
-  { id: "e-commerce", name: "E-Commerce", emoji: "🛍️" },
-  { id: "education", name: "Education", emoji: "📚" },
-  { id: "social", name: "Social", emoji: "💬" }
-];
+interface InstagramTemplateCardProps {
+  template: InstagramTemplate;
+  onSelect: (template: InstagramTemplate) => void;
+}
 
-const TEMPLATES: InstagramTemplate[] = [
+const InstagramTemplateCard: React.FC<InstagramTemplateCardProps> = ({ template, onSelect }) => {
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <h3 className="font-medium">{template.name}</h3>
+          <p className="text-xs text-muted-foreground">{template.description}</p>
+          <div className="flex justify-between items-center">
+            <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
+              {template.category}
+            </span>
+            <Button variant="default" size="sm" onClick={() => onSelect(template)}>
+              Select
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const templates: InstagramTemplate[] = [
   {
-    id: "1",
+    id: "urgency",
     name: "Limited Time Offer",
-    title: "Limited Time Offer", // Adding title that matches name
     description: "Create urgency with a time-sensitive promotion",
     category: "urgency",
-    thumbnailUrl: "https://images.unsplash.com/photo-1611224885990-ab7363d7f2a4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["promotion", "sale", "discount"]
+    imagePrompt: "Create a high-quality professional image showing a limited time offer with a countdown clock or timer. Use ${mainText:Limited Time Only!} as the main message displayed prominently."
   },
   {
-    id: "2",
+    id: "personal-branding",
+    name: "Personal Brand Spotlight",
+    description: "Showcase your personal brand with a professional image",
+    category: "personal-branding",
+    imagePrompt: "Generate a professional headshot-style image for personal branding with clean background, professional lighting, and ${mainText:Your Professional Journey} as a concept."
+  },
+  {
+    id: "e-commerce",
     name: "Product Showcase",
-    title: "Product Showcase", // Adding title that matches name
-    description: "Highlight your product with an elegant display",
+    description: "Highlight a product with premium photography",
     category: "e-commerce",
-    thumbnailUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["product", "showcase", "feature"]
+    imagePrompt: "Create a premium product photography style image with professional lighting, minimalist background, and ${mainText:Quality Product} as the focus. Style should be clean and modern."
   },
   {
-    id: "3",
-    name: "Testimonial Spotlight",
-    title: "Testimonial Spotlight", // Adding title that matches name
-    description: "Share customer success stories",
-    category: "social",
-    thumbnailUrl: "https://images.unsplash.com/photo-1596434300655-e48d3ff3dd5e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["testimonial", "review", "customer"]
-  },
-  {
-    id: "4",
-    name: "Expert Tips",
-    title: "Expert Tips", // Adding title that matches name
-    description: "Position yourself as an industry expert",
+    id: "education",
+    name: "Educational Content",
+    description: "Share knowledge with an educational theme",
     category: "education",
-    thumbnailUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["tips", "advice", "expertise"]
+    imagePrompt: "Generate an educational themed image with visual elements like books, digital learning, or classroom setting. Incorporate ${mainText:Learn Something New} as a concept."
   },
   {
-    id: "5",
-    name: "Brand Story",
-    title: "Brand Story", // Adding title that matches name
-    description: "Share your brand's mission and values",
-    category: "personal-branding",
-    thumbnailUrl: "https://images.unsplash.com/photo-1493421419110-74f4e85ba126?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["story", "mission", "values"]
-  },
-  // Added more templates for better selection
-  {
-    id: "6",
-    name: "Flash Sale",
-    title: "Flash Sale", // Adding title that matches name
-    description: "Create extreme urgency with flash sale",
-    category: "urgency",
-    thumbnailUrl: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["flash", "sale", "discount"]
-  },
-  {
-    id: "7",
-    name: "Thought Leadership",
-    title: "Thought Leadership", // Adding title that matches name
-    description: "Establish authority with insights",
-    category: "personal-branding",
-    thumbnailUrl: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["leadership", "insights", "authority"]
-  },
-  {
-    id: "8",
-    name: "Product Collection",
-    title: "Product Collection", // Adding title that matches name
-    description: "Showcase multiple products together",
-    category: "e-commerce",
-    thumbnailUrl: "https://images.unsplash.com/photo-1555529771-122e5d9f2341?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    tags: ["collection", "products", "showcase"]
+    id: "social",
+    name: "Community Connection",
+    description: "Build community with engaging social content",
+    category: "social",
+    imagePrompt: "Create a vibrant social community themed image showing people connecting, sharing, or engaging. Include ${mainText:Join Our Community} as the visual concept."
   }
 ];
 
@@ -108,55 +80,21 @@ interface InstagramTemplateGalleryProps {
 }
 
 const InstagramTemplateGallery: React.FC<InstagramTemplateGalleryProps> = ({
-  onSelectTemplate
+  onSelectTemplate,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  
-  const filteredTemplates = TEMPLATES.filter((template) => {
-    const matchesCategory = activeCategory === "all" || template.category === activeCategory;
-    const matchesSearch = 
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    return matchesCategory && matchesSearch;
-  });
-
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-medium">Instagram Templates</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search templates..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+    <div className="space-y-4">
+      <h2 className="text-lg font-medium">Instagram Templates</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {templates.map((template) => (
+          <InstagramTemplateCard
+            key={template.id}
+            template={template}
+            onSelect={onSelectTemplate}
           />
-        </div>
-        
-        <CategoryFilter 
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-        />
-        
-        <FilteredTemplateGrid 
-          templates={filteredTemplates}
-          onSelectTemplate={onSelectTemplate}
-        />
-        
-        {filteredTemplates.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No templates match your search criteria
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        ))}
+      </div>
+    </div>
   );
 };
 

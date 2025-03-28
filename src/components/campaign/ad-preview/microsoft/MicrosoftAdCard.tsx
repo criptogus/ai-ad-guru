@@ -6,7 +6,7 @@ import { GoogleAd } from "@/hooks/adGeneration";
 import { MicrosoftAdCardHeader } from "./MicrosoftAdCardHeader";
 import { MicrosoftAdPreview } from "./MicrosoftAdPreview";
 
-interface MicrosoftAdCardProps {
+export interface MicrosoftAdCardProps {
   ad: GoogleAd;
   index: number;
   domain?: string;
