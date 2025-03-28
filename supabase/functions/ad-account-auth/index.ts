@@ -163,11 +163,11 @@ Deno.serve(async (req) => {
       
       console.log(`Generated ${platform} auth URL with redirect to: ${redirectUri}`);
       
-      // FIXED: Using authUrl instead of url property in the response
+      // Using authUrl property consistently in the response
       return new Response(
         JSON.stringify({ 
           success: true, 
-          authUrl
+          authUrl: authUrl
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

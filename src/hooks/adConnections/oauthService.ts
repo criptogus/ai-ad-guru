@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -74,8 +73,12 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(data.error || `Failed to initialize ${platform} OAuth flow`);
     }
     
-    if (!data.authUrl) {
-      console.error(`Response missing authUrl:`, data);
+    // Ensure we're working with the correct property name
+    const authUrlValue = data.authUrl;
+    
+    if (!authUrlValue) {
+      // Log the actual response for debugging
+      console.error('Response missing authUrl:', data);
       throw new Error(`Failed to get valid auth URL for ${platform}`);
     }
     
@@ -94,7 +97,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
     }
     
     // Return the OAuth URL for redirection
-    return data.authUrl;
+    return authUrlValue;
   } catch (error) {
     console.error(`Error in initiateOAuth:`, error);
     throw error;
