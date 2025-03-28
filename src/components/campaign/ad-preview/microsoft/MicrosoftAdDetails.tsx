@@ -11,6 +11,7 @@ interface MicrosoftAdDetailsProps {
   editedAd?: GoogleAd;
   onHeadlineChange?: (index: number, value: string) => void;
   onDescriptionChange?: (index: number, value: string) => void;
+  onUpdate?: (updatedAd: GoogleAd) => void; // Added the onUpdate prop
 }
 
 const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
@@ -18,7 +19,8 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
   isEditing,
   editedAd = ad,
   onHeadlineChange,
-  onDescriptionChange
+  onDescriptionChange,
+  onUpdate
 }) => {
   // Helper to insert trigger text
   const insertTrigger = (text: string, fieldType: 'headline' | 'description', index: number) => {

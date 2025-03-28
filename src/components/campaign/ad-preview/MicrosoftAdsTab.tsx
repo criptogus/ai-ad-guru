@@ -5,9 +5,9 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Plus, Sparkles } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
-import { MicrosoftAdCard } from "./microsoft";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MicrosoftAdCard } from "./microsoft";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
