@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
     "@": path.resolve(__dirname, "./src"),
   };
   
-  // Add rollup native module aliases
+  // Complete list of all possible Rollup native modules to mock
   const nativeModules = [
     '@rollup/rollup-linux-x64-gnu',
     '@rollup/rollup-linux-x64-musl',
@@ -34,9 +34,12 @@ export default defineConfig(({ mode }) => {
     '@rollup/rollup-alpine-x64',
     '@rollup/rollup-android-arm64',
     '@rollup/rollup-android-arm-eabi',
-    '@rollup/rollup-native'
+    '@rollup/rollup-native',
+    'rollup/dist/native',
+    'rollup/native'
   ];
   
+  // Add all native modules to alias object
   nativeModules.forEach(moduleName => {
     aliasDefinitions[moduleName] = path.resolve(
       __dirname,
@@ -48,7 +51,8 @@ export default defineConfig(({ mode }) => {
   // Create define object with proper typing
   const defineOptions: Record<string, string> = {
     'process.env.ROLLUP_NATIVE_DISABLE': '"true"',
-    'global.__ROLLUP_NATIVE_DISABLED__': 'true'
+    'global.__ROLLUP_NATIVE_DISABLED__': 'true',
+    'process.env.DISABLE_NATIVE_MODULES': '"true"'
   };
   
   return {
@@ -92,7 +96,7 @@ export default defineConfig(({ mode }) => {
           return null;
         }
       },
-      // Add new plugin to prevent errors during builds
+      // Strengthen the missing module handler
       {
         name: 'vite-plugin-handle-missing-rollup-native',
         configResolved(config: ResolvedConfig) {
@@ -105,6 +109,17 @@ export default defineConfig(({ mode }) => {
           const { importee } = importInfo;
           if (importee && importee.includes('@rollup/rollup-')) {
             return { id: path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js') };
+          }
+          return null;
+        }
+      },
+      // Add new plugin to completely prevent native module resolution
+      {
+        name: 'vite-plugin-prevent-native-modules',
+        resolveId(id, importer) {
+          if (id.includes('@rollup/rollup-') || (id.includes('rollup') && id.includes('native'))) {
+            console.log(`[Vite Plugin] Preventing native module resolution: ${id}`);
+            return path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js');
           }
           return null;
         }
@@ -135,6 +150,11 @@ export default defineConfig(({ mode }) => {
           }
           warn(warning);
         },
+        // Add new option to prevent error on missing external modules
+        output: {
+          manualChunks: {},
+          inlineDynamicImports: true
+        }
       },
       // Use ES modules only to avoid native dependencies
       modulePreload: {
@@ -146,6 +166,11 @@ export default defineConfig(({ mode }) => {
       minify: 'esbuild',
       // Keep sourcemap for debugging
       sourcemap: true,
+      commonjsOptions: {
+        // Improve CommonJS modules handling that might try to load natives
+        transformMixedEsModules: true,
+        strictRequires: false
+      }
     },
     // Force JS runtime compatibility
     esbuild: {

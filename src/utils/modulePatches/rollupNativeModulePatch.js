@@ -1,3 +1,4 @@
+
 /**
  * Enhanced Module Patching System for Rollup
  * 
@@ -18,7 +19,16 @@ const createStandardMock = (moduleName) => ({
   loadBinding: () => {
     console.log(`[Rollup Mock] ${moduleName} loadBinding() called - using pure JS implementation`);
     return null;
-  }
+  },
+  createDist: () => {
+    console.log(`[Rollup Mock] ${moduleName} createDist() called - using pure JS implementation`);
+    return null;
+  },
+  nativeBuild: () => {
+    console.log(`[Rollup Mock] ${moduleName} nativeBuild() called - using pure JS implementation`);
+    return true; // Pretend success
+  },
+  isNativeSupported: () => false // Explicitly tell Rollup native is not supported
 });
 
 // Complete list of ALL possible native bindings across all architectures
@@ -45,8 +55,11 @@ export const mockNativeBindings = {
   '@rollup/rollup-android-arm64': createStandardMock('@rollup/rollup-android-arm64'),
   '@rollup/rollup-android-arm-eabi': createStandardMock('@rollup/rollup-android-arm-eabi'),
   
-  // Generic fallback for any other platform
-  '@rollup/rollup-native': createStandardMock('@rollup/rollup-native')
+  // Generic paths that might be used to access native functionality
+  '@rollup/rollup-native': createStandardMock('@rollup/rollup-native'),
+  'rollup/dist/native': createStandardMock('rollup/dist/native'),
+  'rollup/native': createStandardMock('rollup/native'),
+  'rollup/native.js': createStandardMock('rollup/native.js')
 };
 
 // Apply multiple layers of patches for maximum compatibility
@@ -57,6 +70,8 @@ export function applyRollupPatch() {
     // Set environment variable to disable native modules
     if (typeof process !== 'undefined' && process.env) {
       process.env.ROLLUP_NATIVE_DISABLE = '1';
+      process.env.DISABLE_NATIVE_MODULES = '1';
+      process.env.npm_config_build_from_source = 'false';
     }
     
     // First layer: Node.js environment patching
@@ -68,6 +83,12 @@ export function applyRollupPatch() {
         // @ts-ignore - Intentional global assignment
         global[moduleName] = mockNativeBindings[moduleName];
       });
+      
+      // Set global flags used by Rollup to check for native support
+      // @ts-ignore
+      global.__ROLLUP_NATIVE_DISABLED__ = true;
+      // @ts-ignore
+      global.ROLLUP_NATIVE_DISABLE = true;
       
       // Override require if possible to intercept all module resolution
       if (typeof module !== 'undefined' && module.constructor) {
@@ -178,7 +199,38 @@ export function applyRollupPatch() {
       window.__ROLLUP_PATCH_APPLIED__ = true;
       window.__ROLLUP_NATIVE_DISABLED__ = true;
       
+      // Patch import() if possible
+      if (window.fetch) {
+        const originalFetch = window.fetch;
+        window.fetch = function(input, init) {
+          const url = typeof input === 'string' ? input : input instanceof Request ? input.url : '';
+          if (url && (url.includes('@rollup/rollup-') || url.includes('rollup/native'))) {
+            console.log(`[Rollup Patch] Intercepted fetch for ${url}`);
+            return Promise.resolve(new Response('export default {};', {
+              status: 200,
+              headers: { 'Content-Type': 'application/javascript' }
+            }));
+          }
+          return originalFetch.apply(this, arguments);
+        };
+        console.log('[Rollup Patch] Successfully patched window.fetch for import() interception');
+      }
+      
       console.log('[Rollup Patch] Browser window patched successfully');
+    }
+    
+    // Third layer: Dynamic module patching (for ESM environments)
+    if (typeof import === 'function' && typeof import.meta === 'object') {
+      try {
+        console.log('[Rollup Patch] Applying ESM environment patches');
+        
+        // Nothing specific to do here since we can't override import() directly
+        // The other patches should catch most issues
+        
+        console.log('[Rollup Patch] ESM patches applied as much as possible');
+      } catch (esmError) {
+        console.warn('[Rollup Patch] ESM patch attempt failed:', esmError);
+      }
     }
     
     console.log('[Rollup Patch] Patch application complete');
@@ -196,6 +248,13 @@ try {
   applyRollupPatch();
 } catch (e) {
   console.warn('[Rollup Patch] Self-execution failed:', e);
+}
+
+// Add additional module.exports for CommonJS compatibility
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = mockNativeBindings['@rollup/rollup-linux-x64-gnu'];
+  module.exports.mockNativeBindings = mockNativeBindings;
+  module.exports.applyRollupPatch = applyRollupPatch;
 }
 
 // Default export using ESM syntax
