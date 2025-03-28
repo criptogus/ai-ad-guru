@@ -29,7 +29,7 @@ const GoogleLoginRedirectGuide: React.FC = () => {
               <ol className="list-decimal list-inside text-sm space-y-2 mt-2">
                 <li>Go to the Google Cloud Console</li>
                 <li>Select your project</li>
-                <li>Go to "APIs & Services" > "Credentials"</li>
+                <li>Go to "APIs & Services" {">"} "Credentials"</li>
                 <li>Edit your OAuth 2.0 Client ID</li>
                 <li>Under "Authorized redirect URIs", add:
                   <code className="block bg-muted p-2 rounded mt-1 break-all">
