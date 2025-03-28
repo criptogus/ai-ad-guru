@@ -22,6 +22,8 @@ const queryClient = new QueryClient({
   },
 });
 
+console.log("Main script executing");
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <HelmetProvider>

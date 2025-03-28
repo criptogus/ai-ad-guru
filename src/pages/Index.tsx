@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import LandingPage from "./LandingPage";
 import { Helmet } from "react-helmet-async";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,6 +7,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const Index = () => {
   const { currentLanguage } = useLanguage();
   
+  useEffect(() => {
+    // Debug log to verify the component is mounting
+    console.log("Index component mounted");
+  }, []);
+
   return (
     <>
       <Helmet>

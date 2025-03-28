@@ -29,6 +29,17 @@ export const en = {
       title: "Simple Credit-Based System",
       description: "Our straightforward credit system gives you flexibility without subscriptions. Pay only for what you use."
     }
+  },
+  nav: {
+    signin: "Sign In",
+    getStarted: "Get Started",
+    dashboard: "Dashboard"
+  },
+  footer: {
+    product: "Product",
+    company: "Company",
+    legal: "Legal",
+    copyright: "All rights reserved."
   }
 };
 
@@ -62,5 +73,60 @@ export const es = {
       title: "Sistema basado en créditos simple",
       description: "Nuestro sencillo sistema de créditos te da flexibilidad sin suscripciones. Paga solo por lo que uses."
     }
+  },
+  nav: {
+    signin: "Iniciar sesión",
+    getStarted: "Comenzar",
+    dashboard: "Panel"
+  },
+  footer: {
+    product: "Producto",
+    company: "Empresa",
+    legal: "Legal",
+    copyright: "Todos los derechos reservados."
+  }
+};
+
+// Portuguese translations
+export const pt = {
+  common: {
+    welcome: "Bem-vindo ao AI Ad Guru",
+    login: "Entrar",
+    register: "Registrar",
+    getStarted: "Começar",
+    startFreeTrial: "Iniciar teste gratuito",
+    learnMore: "Saiba mais",
+    viewPricing: "Ver preços",
+  },
+  landing: {
+    title: "Crie anúncios de alta conversão com IA",
+    subtitle: "Gere, otimize e gerencie seus anúncios do Google, Meta, LinkedIn e Microsoft com o poder da IA. Menos esforço, melhores resultados.",
+    feature1: {
+      title: "Texto publicitário gerado por IA",
+      description: "Crie textos publicitários de alta conversão para anúncios do Google, Meta, LinkedIn e Microsoft em segundos com nossa IA."
+    },
+    feature2: {
+      title: "Otimização inteligente",
+      description: "Deixe a IA analisar o desempenho dos seus anúncios e otimizar automaticamente suas campanhas para obter melhores resultados."
+    },
+    feature3: {
+      title: "Integração perfeita",
+      description: "Conecte suas contas de anúncios com um clique e gerencie tudo a partir de um único painel."
+    },
+    creditSystem: {
+      title: "Sistema simples baseado em créditos",
+      description: "Nosso sistema de créditos direto oferece flexibilidade sem assinaturas. Pague apenas pelo que usar."
+    }
+  },
+  nav: {
+    signin: "Entrar",
+    getStarted: "Começar",
+    dashboard: "Painel"
+  },
+  footer: {
+    product: "Produto",
+    company: "Empresa",
+    legal: "Legal",
+    copyright: "Todos os direitos reservados."
   }
 };

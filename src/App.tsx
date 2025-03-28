@@ -13,7 +13,6 @@ import ConfigPage from "./pages/ConfigPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
-import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
 import BillingPage from "./pages/BillingPage";
 import CreditsInfoPage from "./pages/CreditsInfoPage";
@@ -21,11 +20,15 @@ import UserRolesPage from "./pages/UserRolesPage";
 import TestConnectionsPage from "./pages/TestConnectionsPage";
 
 function App() {
+  useEffect(() => {
+    // Debug log to verify App is mounting
+    console.log("App component mounted");
+  }, []);
+
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
