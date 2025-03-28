@@ -28,12 +28,20 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      {imageUrl && (
+      {imageUrl ? (
         <img
           src={imageUrl}
           alt={alt}
           className="w-full h-full object-cover"
         />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+          {isLoading ? (
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          ) : (
+            <span className="text-gray-400 text-sm">No image generated yet</span>
+          )}
+        </div>
       )}
       
       {/* Overlay with image prompt - only show when hovering */}

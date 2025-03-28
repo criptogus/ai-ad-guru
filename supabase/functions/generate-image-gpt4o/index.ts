@@ -18,102 +18,34 @@ serve(async (req) => {
     
     // Parse request body
     const requestData = await req.json();
-    const { 
-      promptTemplate, 
-      mainText, 
-      subText,
-      companyName,
-      brandTone,
-      industry,
-      templateId,
-      campaignId,
-      userId,
-      imagePrompt  // Add explicit imagePrompt field
-    } = requestData;
+    const { imagePrompt } = requestData;
     
     console.log("Received image generation request:", JSON.stringify({
-      templateId,
-      mainText,
-      subText,
-      campaignId,
-      imagePrompt, // Log the image prompt
+      imagePrompt: imagePrompt?.substring(0, 100) + "...",
     }));
     
-    // Use direct imagePrompt if provided, otherwise use template variables
-    let finalPrompt = imagePrompt || promptTemplate;
-    
-    if (!finalPrompt) {
+    if (!imagePrompt) {
       throw new Error('No image prompt provided');
     }
     
-    // Replace template variables if using a template
-    if (!imagePrompt && promptTemplate) {
-      if (mainText) {
-        finalPrompt = finalPrompt.replace(/\${mainText:[^}]*}/g, mainText);
-      }
-      
-      if (subText) {
-        finalPrompt = finalPrompt.replace(/\${subText:[^}]*}/g, subText);
-      }
-    }
+    // Enhance the prompt for better results
+    let finalPrompt = imagePrompt + " High quality, photorealistic, detailed, professional photography style. Create a professional, high-quality Instagram ad image. The image should be visually striking with excellent lighting and composition.";
     
-    // Add context about company, industry, and brand tone if available
-    if (companyName || brandTone || industry) {
-      finalPrompt += " The ad is for ";
-      
-      if (companyName) {
-        finalPrompt += `${companyName}`;
-      } else {
-        finalPrompt += "a company";
-      }
-      
-      if (industry) {
-        finalPrompt += ` in the ${industry} industry`;
-      }
-      
-      if (brandTone) {
-        finalPrompt += `. The brand tone is ${brandTone}`;
-      }
-      
-      finalPrompt += ".";
-    }
+    console.log("Sending to OpenAI:", finalPrompt.substring(0, 100) + "...");
     
-    // Add instructions for high-quality Instagram advertising imagery
-    finalPrompt += " Create a professional, high-quality Instagram ad image. The image should be visually striking with excellent lighting and composition. No text overlay (text will be added separately). The image should be perfect for Instagram advertising.";
-    
-    // Ensure prompt doesn't exceed OpenAI's limit (truncate if needed)
-    const MAX_PROMPT_LENGTH = 1000;
-    if (finalPrompt.length > MAX_PROMPT_LENGTH) {
-      finalPrompt = finalPrompt.substring(0, MAX_PROMPT_LENGTH - 3) + "...";
-      console.log(`Prompt was truncated to ${MAX_PROMPT_LENGTH} characters`);
-    }
-    
-    console.log("Sending prompt to GPT-4o:", finalPrompt);
-    
-    // Call OpenAI API with GPT-4o model and image generation tool
-    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call the OpenAI API with the DALL-E 3 model
+    const openAIResponse = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert at creating stunning and professional Instagram ad images."
-          },
-          {
-            role: "user",
-            content: finalPrompt
-          }
-        ],
-        tools: [
-          {
-            type: "image_generation"
-          }
-        ]
+        model: "dall-e-3",
+        prompt: finalPrompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard"
       })
     });
     
@@ -124,28 +56,13 @@ serve(async (req) => {
     }
     
     const openAIData = await openAIResponse.json();
-    console.log("OpenAI response received");
     
-    // Extract image URL from OpenAI response - using the new format with tool_calls
-    const message = openAIData.choices?.[0]?.message;
-    const toolCalls = message?.tool_calls;
-    
-    if (!toolCalls || toolCalls.length === 0) {
-      throw new Error("No image was generated or no tool_calls in the response");
+    if (!openAIData.data || !openAIData.data[0] || !openAIData.data[0].url) {
+      throw new Error("No image URL in the response");
     }
     
-    // Find the image generation tool call
-    const imageToolCall = toolCalls.find((call: any) => call.type === "image_generation");
-    if (!imageToolCall) {
-      throw new Error("No image generation tool call in the response");
-    }
-    
-    const imageUrl = imageToolCall.image?.url;
-    if (!imageUrl) {
-      throw new Error("No image URL in the tool_calls response");
-    }
-    
-    console.log("Successfully generated image");
+    const imageUrl = openAIData.data[0].url;
+    console.log("Successfully generated image URL");
     
     return new Response(
       JSON.stringify({
@@ -162,7 +79,7 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    console.error("Error generating image with GPT-4o:", error);
+    console.error("Error generating image:", error);
     
     return new Response(
       JSON.stringify({
