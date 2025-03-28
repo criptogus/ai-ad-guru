@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -87,6 +88,23 @@ export default defineConfig(({ mode }) => {
               `,
               map: null
             };
+          }
+          return null;
+        }
+      },
+      // Add new plugin to prevent errors during builds
+      {
+        name: 'vite-plugin-handle-missing-rollup-native',
+        configResolved(config) {
+          console.log('[Vite Plugin] Config resolved with Rollup patching enabled');
+        },
+        buildStart() {
+          console.log('[Vite Plugin] Build starting with Rollup native module patching');
+        },
+        resolveImport(importInfo) {
+          const { importee } = importInfo;
+          if (importee && importee.includes('@rollup/rollup-')) {
+            return { id: path.resolve(__dirname, './src/utils/modulePatches/rollup-linux-x64-gnu-mock.js') };
           }
           return null;
         }

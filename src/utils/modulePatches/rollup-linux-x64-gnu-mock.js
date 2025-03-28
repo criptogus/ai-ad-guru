@@ -1,6 +1,7 @@
 
 /**
  * Pure ESM mock for @rollup/rollup-linux-x64-gnu
+ * This mock is designed to work in any environment without native dependencies
  */
 
 console.log('[Mock] ESM @rollup/rollup-linux-x64-gnu mock loaded');
@@ -28,6 +29,19 @@ const mockModule = {
     return null;
   }
 };
+
+// Handle both CommonJS and ESM exports
+if (typeof module !== 'undefined' && module.exports) {
+  // CommonJS
+  module.exports = mockModule;
+  module.exports.default = mockModule;
+  module.exports.bindings = mockModule.bindings;
+  module.exports.isLoaded = mockModule.isLoaded;
+  module.exports.load = mockModule.load;
+  module.exports.needsRebuilding = mockModule.needsRebuilding;
+  module.exports.getUuid = mockModule.getUuid;
+  module.exports.loadBinding = mockModule.loadBinding;
+}
 
 // ESM exports
 export const bindings = mockModule.bindings;
