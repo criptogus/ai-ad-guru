@@ -11,7 +11,8 @@ import { getGoogleAuthUrl } from './platforms/google.ts';
 import { getMetaAuthUrl } from './platforms/meta.ts';
 import { getLinkedInAuthUrl } from './platforms/linkedin.ts';
 import { getMicrosoftAuthUrl } from './platforms/microsoft.ts';
-import { storeOAuthState } from "./utils/state.ts";
+import { storeOAuthState, validateOAuthState } from "./utils/state.ts";
+import { exchangeToken, saveUserTokens } from "./utils/token-exchange.ts";
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -40,8 +41,44 @@ Deno.serve(async (req) => {
     const { action, platform, userId, redirectUri } = requestBody;
     console.log(`Processing ${action} for ${platform} account, user: ${userId}`);
     
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    let supabaseClient;
+    
+    try {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.23.0");
+      supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+    } catch (error) {
+      console.error('Failed to create Supabase client:', error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Internal server error: Database connection failed" 
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     // Generate OAuth URL
     if (action === 'getAuthUrl') {
+      // Validate required parameters
+      if (!platform || !userId || !redirectUri) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Missing required parameters: platform, userId, or redirectUri" 
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
       // Create a secure state parameter to validate the callback
       const stateParam = crypto.randomUUID();
       
@@ -55,11 +92,6 @@ Deno.serve(async (req) => {
       
       // Store state in Supabase
       try {
-        // Create Supabase client
-        const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-        const supabaseClient = await createSupabaseClient(supabaseUrl, supabaseServiceKey);
-        
         await storeOAuthState(supabaseClient, stateParam, stateData);
       } catch (stateError) {
         console.error('Error storing OAuth state:', stateError);
@@ -80,13 +112,13 @@ Deno.serve(async (req) => {
       let authUrl;
       
       // Generate the proper OAuth URL for the specified platform
-      if (platform === 'google') {
-        clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+      try {
+        clientId = Deno.env.get(`${platform.toUpperCase()}_CLIENT_ID`);
         if (!clientId) {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: "Missing required Google Ads credentials"
+              error: `Missing required ${platform.toUpperCase()}_CLIENT_ID`
             }),
             {
               status: 400,
@@ -94,15 +126,20 @@ Deno.serve(async (req) => {
             }
           );
         }
-        authUrl = getGoogleAuthUrl(clientId, redirectUri, stateParam);
-      } 
-      else if (platform === 'meta') {
-        clientId = Deno.env.get('META_CLIENT_ID');
-        if (!clientId) {
+        
+        if (platform === 'google') {
+          authUrl = getGoogleAuthUrl(clientId, redirectUri, stateParam);
+        } else if (platform === 'meta') {
+          authUrl = getMetaAuthUrl(clientId, redirectUri, stateParam);
+        } else if (platform === 'linkedin') {
+          authUrl = getLinkedInAuthUrl(clientId, redirectUri, stateParam);
+        } else if (platform === 'microsoft') {
+          authUrl = getMicrosoftAuthUrl(clientId, redirectUri, stateParam);
+        } else {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: "Missing required Meta Ads credentials"
+              error: `Unsupported platform: ${platform}`
             }),
             {
               status: 400,
@@ -110,48 +147,15 @@ Deno.serve(async (req) => {
             }
           );
         }
-        authUrl = getMetaAuthUrl(clientId, redirectUri, stateParam);
-      }
-      else if (platform === 'linkedin') {
-        clientId = Deno.env.get('LINKEDIN_CLIENT_ID');
-        if (!clientId) {
-          return new Response(
-            JSON.stringify({ 
-              success: false, 
-              error: "Missing required LinkedIn Ads credentials"
-            }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
-        }
-        authUrl = getLinkedInAuthUrl(clientId, redirectUri, stateParam);
-      }
-      else if (platform === 'microsoft') {
-        clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
-        if (!clientId) {
-          return new Response(
-            JSON.stringify({ 
-              success: false, 
-              error: "Missing required Microsoft Ads credentials"
-            }),
-            {
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
-        }
-        authUrl = getMicrosoftAuthUrl(clientId, redirectUri, stateParam);
-      }
-      else {
+      } catch (error) {
+        console.error(`Error generating ${platform} auth URL:`, error);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: `Unsupported platform: ${platform}`
+            error: `Failed to generate authorization URL: ${error.message}`
           }),
           {
-            status: 400,
+            status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
@@ -171,24 +175,119 @@ Deno.serve(async (req) => {
       );
     }
     
-    // Exchange code for token (mock)
+    // Exchange code for token and save user connection
     if (action === 'exchangeToken') {
-      const { code, state, platform, redirectUri } = requestBody;
+      const { code, state } = requestBody;
       
-      // Here we would normally validate the state parameter and exchange the code for tokens
-      // For this implementation, we'll return a mock response
+      if (!code || !state) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Missing required parameters: code or state"
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
       
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          accountId: `${platform}-account-${crypto.randomUUID().substring(0, 8)}`,
-          accountName: `${platform.charAt(0).toUpperCase() + platform.slice(1)} Test Account`,
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
+      try {
+        // Validate the state and get stored data
+        const stateData = await validateOAuthState(supabaseClient, state);
+        const { userId, platform, redirectUri } = stateData;
+        
+        // Exchange the code for tokens
+        const tokens = await exchangeToken(platform, code, redirectUri);
+        
+        // Save the tokens to the database
+        const connection = await saveUserTokens(supabaseClient, userId, platform, tokens);
+        
+        // Get account information (mock for now, can be implemented later)
+        const accountInfo = {
+          id: connection.id,
+          platform: connection.platform,
+          accountName: `${platform.charAt(0).toUpperCase() + platform.slice(1)} Account`,
+          connectedAt: new Date().toISOString()
+        };
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            connection: accountInfo
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
+      } catch (error) {
+        console.error('Error exchanging token:', error);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Authentication error: ${error.message}`
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+    }
+    
+    // Remove connection
+    if (action === 'removeConnection') {
+      const { connectionId, userId } = requestBody;
+      
+      if (!connectionId || !userId) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Missing required parameters: connectionId or userId"
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
+      try {
+        // Remove the connection from the database
+        const { error } = await supabaseClient
+          .from('user_integrations')
+          .delete()
+          .eq('id', connectionId)
+          .eq('user_id', userId);
+        
+        if (error) {
+          throw new Error(`Failed to remove connection: ${error.message}`);
         }
-      );
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: "Connection successfully removed"
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
+      } catch (error) {
+        console.error('Error removing connection:', error);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Failed to remove connection: ${error.message}`
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
     }
     
     return new Response(
@@ -217,9 +316,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-// Helper function to create Supabase client
-async function createSupabaseClient(url: string, key: string) {
-  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.23.0");
-  return createClient(url, key);
-}

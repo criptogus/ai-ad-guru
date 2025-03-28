@@ -195,6 +195,33 @@ export type Database = {
           },
         ]
       }
+      oauth_states: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          platform: string
+          redirect_uri: string
+          user_id: string
+        }
+        Insert: {
+          created_at: string
+          expires_at: string
+          id: string
+          platform: string
+          redirect_uri: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform?: string
+          redirect_uri?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: string | null

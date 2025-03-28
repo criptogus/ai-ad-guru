@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 
@@ -159,9 +158,7 @@ export const handleOAuthCallback = async (redirectUri: string) => {
         action: 'exchangeToken',
         code,
         state,
-        platform,
-        redirectUri: effectiveRedirectUri,
-        userId
+        redirectUri: effectiveRedirectUri
       }
     });
     
@@ -182,8 +179,41 @@ export const handleOAuthCallback = async (redirectUri: string) => {
       throw new Error(data?.error || `Failed to complete ${platform} connection`);
     }
     
+    // Log successful token exchange for security auditing
+    try {
+      await tokenSecurity.logSecurityEvent({
+        event: 'oauth_token_exchange_success',
+        user_id: userId,
+        platform,
+        timestamp: new Date().toISOString(),
+        details: {
+          origin: window.location.origin
+        }
+      });
+    } catch (logError) {
+      // Non-blocking error, just log to console
+      console.warn('Failed to log security event:', logError);
+    }
+    
     return { platform, userId, success: true };
   } catch (error) {
+    // Log failed token exchange for security auditing
+    try {
+      await tokenSecurity.logSecurityEvent({
+        event: 'oauth_token_exchange_failure',
+        user_id: userId,
+        platform,
+        timestamp: new Date().toISOString(),
+        details: {
+          error: error.message || 'Unknown error',
+          origin: window.location.origin
+        }
+      });
+    } catch (logError) {
+      // Non-blocking error, just log to console
+      console.warn('Failed to log security event:', logError);
+    }
+    
     console.error(`Error in handleOAuthCallback:`, error);
     throw error;
   }
