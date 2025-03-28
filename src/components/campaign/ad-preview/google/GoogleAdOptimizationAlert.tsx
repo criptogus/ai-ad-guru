@@ -7,7 +7,7 @@ const GoogleAdOptimizationAlert: React.FC = () => {
   return (
     <Alert className="mb-3 bg-blue-50 text-blue-700 border-blue-200">
       <AlertCircle className="h-4 w-4" />
-      <AlertDescription>
+      <AlertDescription className="text-left">
         This ad will be automatically optimized based on campaign performance.
       </AlertDescription>
     </Alert>

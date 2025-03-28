@@ -98,7 +98,9 @@ const AIOptimizationCard: React.FC<AIOptimizationCardProps> = ({ campaign }) => 
                   {getImpactBadge(opt.impact)}
                 </div>
                 <div className="flex-grow space-y-2">
-                  <p className="text-sm text-foreground">{opt.description}</p>
+                  <p className="text-sm text-foreground">
+                    {opt.description}
+                  </p>
                   <div className="flex items-center justify-between">
                     <Button size="sm" variant="outline" className="text-xs h-8">
                       Apply ({opt.credits} credits)
