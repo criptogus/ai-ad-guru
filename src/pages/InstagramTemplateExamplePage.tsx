@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
 import { toast } from "sonner";
@@ -17,12 +16,14 @@ const InstagramTemplateExamplePage: React.FC = () => {
   const handleSelectTemplate = (template: InstagramTemplate) => {
     setSelectedTemplate(template);
     
-    // Extract default mainText from template
-    const mainTextMatch = template.prompt.match(/\${mainText:([^}]*)}/);
-    if (mainTextMatch && mainTextMatch[1]) {
-      setMainText(mainTextMatch[1]);
-    } else {
-      setMainText("");
+    // Check if template has imagePrompt property before accessing it
+    if (template.imagePrompt) {
+      const mainTextMatch = template.imagePrompt.match(/\${mainText:([^}]*)}/);
+      if (mainTextMatch && mainTextMatch[1]) {
+        setMainText(mainTextMatch[1]);
+      } else {
+        setMainText("");
+      }
     }
   };
 
@@ -34,8 +35,8 @@ const InstagramTemplateExamplePage: React.FC = () => {
 
     try {
       // Process the prompt by replacing variables with actual values
-      let processedPrompt = selectedTemplate.prompt;
-      if (mainText) {
+      let processedPrompt = selectedTemplate.imagePrompt || "";
+      if (mainText && processedPrompt) {
         processedPrompt = processedPrompt.replace(/\${mainText:[^}]*}/g, mainText);
       }
       
@@ -95,12 +96,11 @@ const InstagramTemplateExamplePage: React.FC = () => {
           )}
           
           {/* Generated Image Preview - Only shown when an image has been generated */}
-          {generatedImageUrl && (
+          {selectedTemplate && generatedImageUrl && (
             <GeneratedImagePreview
-              generatedImageUrl={generatedImageUrl}
               selectedTemplate={selectedTemplate}
-              mainText={mainText}
-              onReset={handleReset}
+              generatedImageUrl={generatedImageUrl}
+              isLoading={false}
             />
           )}
         </div>

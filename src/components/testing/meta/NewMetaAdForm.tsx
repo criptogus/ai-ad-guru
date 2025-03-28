@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
@@ -48,15 +47,16 @@ const NewMetaAdForm: React.FC<NewMetaAdFormProps> = ({
   const handleSelectTemplate = (template: InstagramTemplate) => {
     setSelectedTemplate(template);
     
-    const mainTextMatch = template.prompt.match(/\${mainText:([^}]*)}/);
-    
-    if (mainTextMatch && mainTextMatch[1]) {
-      setMainText(mainTextMatch[1]);
+    if (template.imagePrompt) {
+      const mainTextMatch = template.imagePrompt.match(/\${mainText:([^}]*)}/);
+      
+      if (mainTextMatch && mainTextMatch[1]) {
+        setMainText(mainTextMatch[1]);
+      }
+      
+      onAdChange("imagePrompt", template.imagePrompt);
     }
     
-    onAdChange("imagePrompt", template.prompt);
-    
-    // Update ad details based on the template category
     const categoryAdDetails = getCategoryAdDetails(template.category);
     onAdChange("headline", categoryAdDetails.headline);
     onAdChange("primaryText", categoryAdDetails.primaryText);
@@ -103,9 +103,9 @@ const NewMetaAdForm: React.FC<NewMetaAdFormProps> = ({
 
   const handleGenerateWithTemplate = async () => {
     if (selectedTemplate) {
-      let processedPrompt = selectedTemplate.prompt;
+      let processedPrompt = selectedTemplate.imagePrompt || "";
       
-      if (mainText) {
+      if (mainText && processedPrompt) {
         processedPrompt = processedPrompt.replace(/\${mainText:[^}]*}/g, mainText);
       }
       

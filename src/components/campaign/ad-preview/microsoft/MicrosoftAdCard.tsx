@@ -9,6 +9,7 @@ import { MicrosoftAdPreview } from "./MicrosoftAdPreview";
 interface MicrosoftAdCardProps {
   ad: GoogleAd;
   index: number;
+  domain?: string;
   isSelected?: boolean;
   onSelect?: () => void;
   onUpdate?: (updatedAd: GoogleAd) => void;
@@ -17,6 +18,7 @@ interface MicrosoftAdCardProps {
 export const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   ad,
   index,
+  domain = "example.com",
   isSelected = false,
   onSelect,
   onUpdate,
@@ -28,7 +30,7 @@ export const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
         isSelected={isSelected}
       />
       <CardContent className="pt-4 pb-2">
-        <MicrosoftAdPreview ad={ad} onUpdate={onUpdate} />
+        <MicrosoftAdPreview ad={ad} domain={domain} onUpdate={onUpdate} />
       </CardContent>
       <CardFooter className="pt-0 pb-4">
         <Button 

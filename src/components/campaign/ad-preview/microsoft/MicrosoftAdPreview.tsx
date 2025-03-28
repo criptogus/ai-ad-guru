@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 
 interface MicrosoftAdPreviewProps {
   ad: GoogleAd;
+  domain?: string;
   onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
 export const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({
   ad,
+  domain = "example.com",
   onUpdate,
 }) => {
   // Get the headlines and descriptions from the ad object, handling both formats
@@ -95,9 +97,11 @@ export const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({
       
       <div className="flex text-xs text-green-600">
         <span>
-          {ad.finalUrl || ad.displayPath || "www.example.com/offer"}
+          {ad.finalUrl || ad.displayPath || domain || "www.example.com/offer"}
         </span>
       </div>
     </div>
   );
 };
+
+export default MicrosoftAdPreview;
