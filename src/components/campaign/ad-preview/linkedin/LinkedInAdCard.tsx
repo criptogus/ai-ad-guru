@@ -22,6 +22,7 @@ interface LinkedInAdCardProps {
   onSave?: (updatedAd: MetaAd) => void;
   onCancel?: () => void;
   onCopy?: () => void;
+  previewType?: "feed" | "message" | "sidebar" | "spotlight";
 }
 
 const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
@@ -35,7 +36,8 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   onEdit,
   onSave,
   onCancel,
-  onCopy
+  onCopy,
+  previewType = "feed"
 }) => {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
@@ -155,6 +157,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
               isGeneratingImage={isGeneratingImage}
               onGenerateImage={onGenerateImage}
               onUpdateAd={onUpdateAd}
+              previewType={previewType}
             />
           </div>
           
