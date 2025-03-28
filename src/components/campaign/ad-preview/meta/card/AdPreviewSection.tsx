@@ -5,6 +5,7 @@ import { Loader2, Image, RotateCw, Edit, Eye } from "lucide-react";
 import { PreviewSectionProps } from "./types";
 import MetaImagePromptGallery from "../MetaImagePromptGallery";
 import { InstagramPreview } from "@/components/campaign/ad-preview/meta";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AdPreviewSection: React.FC<PreviewSectionProps> = ({
   ad,
@@ -32,13 +33,6 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      {showPromptGallery && (
-        <MetaImagePromptGallery 
-          initialPrompt={ad.imagePrompt || ""} 
-          onSelectPrompt={handleSelectPrompt} 
-        />
-      )}
-
       {/* View Mode Selector */}
       <div className="flex justify-end mb-2">
         <div className="flex rounded-md overflow-hidden border">
@@ -90,18 +84,36 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
         </div>
       )}
 
-      {/* Regenerate Image Button */}
-      <div className="flex gap-2">
+      {/* Image Template Gallery Section - Horizontal */}
+      <div className="mt-4">
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => setShowPromptGallery(true)} 
-          className="w-full"
+          onClick={() => setShowPromptGallery(!showPromptGallery)} 
+          className="w-full mb-2"
         >
           <Image className="h-4 w-4 mr-2" />
-          Image Templates
+          {showPromptGallery ? "Hide Image Templates" : "Show Image Templates"}
         </Button>
         
+        {showPromptGallery && (
+          <div className="border rounded-md p-3 bg-muted/10">
+            <h4 className="text-sm font-medium mb-2">Select an Image Template</h4>
+            <ScrollArea className="h-28 pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                <MetaImagePromptGallery 
+                  initialPrompt={ad.imagePrompt || ""} 
+                  onSelectPrompt={handleSelectPrompt}
+                  displayMode="horizontal" 
+                />
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+      </div>
+
+      {/* Regenerate Image Button */}
+      <div className="flex gap-2">
         {ad.imageUrl && !isLoading && (
           <Button 
             variant="outline" 

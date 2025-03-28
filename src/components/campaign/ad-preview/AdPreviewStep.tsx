@@ -114,6 +114,25 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     return <div>No website analysis found. Please go back and analyze a website first.</div>;
   }
 
+  // Check if there are any ads for the selected platforms
+  const hasAdsForPlatform = (platform: string) => {
+    switch (platform) {
+      case 'google':
+        return googleAds.length > 0;
+      case 'meta':
+        return metaAds.length > 0;
+      case 'linkedin':
+        return linkedInAds.length > 0;
+      case 'microsoft':
+        return microsoftAds.length > 0;
+      default:
+        return false;
+    }
+  };
+  
+  // Check if any selected platform has ads
+  const hasAnyAds = selectedPlatforms.some(platform => hasAdsForPlatform(platform));
+
   return (
     <FormProvider {...methods}>
       <Card className="shadow-md border border-border">
@@ -209,13 +228,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
             <Button 
               onClick={handleNextClick} 
               className="flex items-center gap-2"
-              disabled={
-                selectedPlatforms.length === 0 || 
-                (selectedPlatforms.includes("google") && googleAds.length === 0) &&
-                (selectedPlatforms.includes("meta") && metaAds.length === 0) &&
-                (selectedPlatforms.includes("linkedin") && linkedInAds.length === 0) &&
-                (selectedPlatforms.includes("microsoft") && microsoftAds.length === 0)
-              }
+              disabled={!hasAnyAds}
             >
               Next Step
               <MoveRight className="h-4 w-4" />
