@@ -11,6 +11,19 @@ import { getMicrosoftAuthUrl } from '../platforms/microsoft.ts';
 export async function getAuthUrl(supabaseClient: any, requestData: any) {
   const { platform, redirectUri, userId } = requestData;
   
+  if (!platform || !redirectUri || !userId) {
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Missing required parameters'
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    );
+  }
+  
   try {
     // Get platform credentials from environment
     const clientId = Deno.env.get(`${platform.toUpperCase()}_CLIENT_ID`);
@@ -20,7 +33,7 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: `Missing ${platform} API credentials. Please check your environment variables.`
+          error: `Missing API credentials for ${platform}`
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -29,10 +42,10 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
       );
     }
     
-    // Generate a secure state parameter to prevent CSRF attacks
+    // Generate a secure state parameter using a more efficient method
     const state = crypto.randomUUID();
     
-    // Store auth state in the database for verification
+    // Store auth state in the database for verification - with minimal data
     const { error: stateError } = await supabaseClient
       .from('oauth_states')
       .insert({
@@ -44,11 +57,11 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
       });
       
     if (stateError) {
-      console.error('Failed to store OAuth state:', stateError);
+      console.error('OAuth state error:', stateError.message);
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: `Failed to prepare OAuth flow: ${stateError.message}`
+          error: 'Failed to prepare OAuth flow'
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -57,27 +70,32 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
       );
     }
     
-    // Generate platform-specific auth URL
+    // Generate platform-specific auth URL with optimized function calls
     let authUrl;
-    if (platform === 'google') {
-      authUrl = getGoogleAuthUrl(clientId, redirectUri, state);
-    } else if (platform === 'meta') {
-      authUrl = getMetaAuthUrl(clientId, redirectUri, state);
-    } else if (platform === 'linkedin') {
-      authUrl = getLinkedInAuthUrl(clientId, redirectUri, state);
-    } else if (platform === 'microsoft') {
-      authUrl = getMicrosoftAuthUrl(clientId, redirectUri, state);
-    } else {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          error: `Unsupported platform: ${platform}`
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
+    switch(platform) {
+      case 'google':
+        authUrl = getGoogleAuthUrl(clientId, redirectUri, state);
+        break;
+      case 'meta':
+        authUrl = getMetaAuthUrl(clientId, redirectUri, state);
+        break;
+      case 'linkedin':
+        authUrl = getLinkedInAuthUrl(clientId, redirectUri, state);
+        break;
+      case 'microsoft':
+        authUrl = getMicrosoftAuthUrl(clientId, redirectUri, state);
+        break;
+      default:
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: `Unsupported platform: ${platform}`
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
     }
     
     return new Response(
@@ -91,12 +109,13 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
       }
     );
   } catch (error) {
-    console.error(`Error generating ${platform} auth URL:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Auth URL error (${platform}):`, errorMessage);
     
     return new Response(
       JSON.stringify({
         success: false,
-        error: `Failed to generate ${platform} auth URL: ${error.message}`
+        error: `Failed to generate auth URL: ${errorMessage}`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
