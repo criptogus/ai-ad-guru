@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { secureApi } from '@/services/api/secureApi';
@@ -75,7 +76,6 @@ export const useAIImageGeneration = (): UseAIImageGenerationReturn => {
       toast({
         title: "Credit Usage Preview",
         description: `This will use ${creditAmount} credits to generate this ad image with AI`,
-        duration: 3000,
       });
       
       // Consume credits - assuming we need 5 credits for image generation

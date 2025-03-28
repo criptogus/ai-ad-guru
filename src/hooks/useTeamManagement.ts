@@ -1,11 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { getTeamMembers } from "@/services/team/members";
-import { getTeamInvitations, resendInvitation, revokeInvitation, inviteUser } from "@/services/team/invitations";
+import { getTeamInvitations, resendInvitation, revokeInvitation } from "@/services/team/invitations";
 import { TeamMember, UserRole, RolePermissions } from "@/services/types";
-import { toast } from "sonner";
 import { updateTeamMemberRole } from "@/services/team/members";
 import { getRolePermissions } from "@/services/team/roles";
+import { useToast } from "@/hooks/use-toast";
+import { inviteUser } from "@/services/team/invitations";
 
 export const useTeamManagement = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -15,6 +16,7 @@ export const useTeamManagement = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const { toast } = useToast();
   
   // Define role permissions
   const rolePermissions = getRolePermissions();
@@ -44,7 +46,8 @@ export const useTeamManagement = () => {
       const pendingInvitations = await getTeamInvitations();
       setInvitations(pendingInvitations);
     } catch (error) {
-      toast.error("Failed to load team data", {
+      toast({
+        title: "Failed to load team data",
         description: "There was an error loading the team members and invitations. Please try again."
       });
       console.error("Error loading team data:", error);
@@ -67,7 +70,8 @@ export const useTeamManagement = () => {
       return true;
     } catch (error) {
       console.error("Error sending invitation:", error);
-      toast.error("Failed to send invitation", {
+      toast({
+        title: "Failed to send invitation",
         description: "There was an error sending the invitation. Please try again."
       });
       return false;
@@ -114,7 +118,8 @@ export const useTeamManagement = () => {
       const success = await updateTeamMemberRole(id, role);
       
       if (success) {
-        toast.success("Role updated", {
+        toast({
+          title: "Role updated",
           description: "The team member's role has been updated successfully."
         });
         
@@ -126,7 +131,8 @@ export const useTeamManagement = () => {
       }
     } catch (error) {
       console.error("Error updating team member role:", error);
-      toast.error("Failed to update role", {
+      toast({
+        title: "Failed to update role",
         description: "There was an error updating the team member's role. Please try again."
       });
       return false;
