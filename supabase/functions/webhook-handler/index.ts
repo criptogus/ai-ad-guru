@@ -9,20 +9,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Validate Stripe signature
-const validateStripeSignature = (signature, body, endpointSecret, stripeKey) => {
-  if (!signature || !stripeKey) return false;
-  
-  try {
-    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
-    stripe.webhooks.constructEvent(body, signature, endpointSecret);
-    return true;
-  } catch (error) {
-    console.error('Stripe signature validation failed:', error);
-    return false;
-  }
-};
-
 // Extract user ID from various possible sources in the session
 const extractUserId = (session) => {
   // Option 1: From client_reference_id
@@ -43,63 +29,6 @@ const extractUserId = (session) => {
   }
   
   return null;
-};
-
-// Handle checkout session completed event
-const handleCheckoutSession = async (session, supabase) => {
-  let userId = extractUserId(session);
-  
-  // Option 4: Look up by customer email
-  if (!userId && session.customer_email) {
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', session.customer_email)
-      .single();
-      
-    if (!userError && userData) {
-      userId = userData.id;
-    }
-  }
-  
-  if (!userId) {
-    console.error('No user ID found in session. Full session data:', JSON.stringify(session, null, 2));
-    return;
-  }
-  
-  // Update user profile
-  const { error } = await supabase
-    .from('profiles')
-    .update({ has_paid: true })
-    .eq('id', userId);
-
-  if (error) {
-    console.error('Error updating profile:', error);
-    throw new Error(`Failed to update user profile: ${error.message}`);
-  }
-  
-  console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
-};
-
-// Handle payment intent succeeded event - simplified version
-const handlePaymentIntent = async (paymentIntent, supabase) => {
-  const userId = paymentIntent.metadata?.userId;
-  
-  if (!userId) {
-    console.log('No user ID found in payment intent metadata');
-    return;
-  }
-  
-  const { error } = await supabase
-    .from('profiles')
-    .update({ has_paid: true })
-    .eq('id', userId);
-
-  if (error) {
-    console.error('Error updating profile from payment intent:', error);
-  } else {
-    console.log(`Payment intent succeeded and profile updated for user: ${userId}`);
-  }
 };
 
 Deno.serve(async (req) => {
@@ -131,8 +60,63 @@ Deno.serve(async (req) => {
     
     // Verify the webhook signature
     const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
     
-    if (!validateStripeSignature(signature, body, endpointSecret, stripeKey)) {
+    try {
+      const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+      
+      // Initialize the Supabase client
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase configuration missing');
+      }
+      
+      const supabase = createClient(supabaseUrl, supabaseKey);
+  
+      // Handle specific webhook events
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const userId = extractUserId(session);
+        
+        if (!userId) {
+          console.error('No user ID found in session. Full session data:', JSON.stringify(session, null, 2));
+          throw new Error('User ID not found in session data');
+        }
+        
+        // Update user profile
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_paid: true })
+          .eq('id', userId);
+      
+        if (error) {
+          console.error('Error updating profile:', error);
+          throw new Error(`Failed to update user profile: ${error.message}`);
+        }
+        
+        console.log(`Webhook: Payment completed and profile updated for user: ${userId}`);
+      } else if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        const userId = paymentIntent.metadata?.userId;
+        
+        if (userId) {
+          await supabase
+            .from('profiles')
+            .update({ has_paid: true })
+            .eq('id', userId);
+            
+          console.log(`Payment intent succeeded and profile updated for user: ${userId}`);
+        }
+      }
+  
+      return new Response(JSON.stringify({ received: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    } catch (verificationError) {
+      console.error('Stripe signature validation failed:', verificationError);
       return new Response(
         JSON.stringify({ error: 'Invalid Stripe signature' }),
         {
@@ -141,31 +125,6 @@ Deno.serve(async (req) => {
         }
       );
     }
-    
-    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
-    const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
-
-    // Initialize the Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase configuration missing');
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Handle specific webhook events
-    if (event.type === 'checkout.session.completed') {
-      await handleCheckoutSession(event.data.object, supabase);
-    } else if (event.type === 'payment_intent.succeeded') {
-      await handlePaymentIntent(event.data.object, supabase);
-    }
-
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
   } catch (error) {
     console.error('Webhook error:', error.message);
     return new Response(

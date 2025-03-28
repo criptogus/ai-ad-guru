@@ -6,5 +6,6 @@ entrypoints = [
   "generate-image/index.ts", 
   "optimize-ads/index.ts",
   "create-checkout-session/index.ts",
-  "ad-account-auth/index.ts"
+  "ad-account-auth/index.ts",
+  "webhook-handler/index.ts"
 ]
