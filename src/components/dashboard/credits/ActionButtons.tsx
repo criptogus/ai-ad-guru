@@ -1,39 +1,35 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CreditHistoryDialog from "./CreditHistoryDialog";
+import { Coins, Info } from "lucide-react";
 
 interface ActionButtonsProps {
-  hasPaid?: boolean;
-  userId?: string;
+  isLowCredits: boolean;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ hasPaid, userId }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ isLowCredits }) => {
   const navigate = useNavigate();
   
   return (
-    <div className="space-y-2">
+    <div className="grid grid-cols-2 gap-2 mt-4">
       <Button 
-        className="w-full" 
-        variant={hasPaid ? "outline" : "default"}
-        onClick={() => navigate("/billing")}
-      >
-        {hasPaid ? "Manage Subscription" : "Upgrade to Premium"}
-      </Button>
-      
-      <Button
+        variant={isLowCredits ? "default" : "outline"} 
         className="w-full"
-        variant="outline"
         onClick={() => navigate("/billing")}
       >
-        <Plus className="mr-1 h-4 w-4" /> Buy More Credits
+        <Coins className="mr-2 h-4 w-4" />
+        {isLowCredits ? "Buy Credits" : "Add Credits"}
       </Button>
       
-      {userId && (
-        <CreditHistoryDialog userId={userId} />
-      )}
+      <Button 
+        variant="outline" 
+        className="w-full"
+        onClick={() => navigate("/credits-info")}
+      >
+        <Info className="mr-2 h-4 w-4" />
+        Learn More
+      </Button>
     </div>
   );
 };
