@@ -37,6 +37,7 @@ export const useConnectionInitiation = () => {
       });
       
       if (authUrl) {
+        console.log(`Redirecting to ${platform} auth URL:`, authUrl);
         // Redirect to the OAuth URL
         window.location.href = authUrl;
       } else {

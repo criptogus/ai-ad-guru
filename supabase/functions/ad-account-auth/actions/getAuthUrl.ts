@@ -19,6 +19,8 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
   }
   
   try {
+    console.log(`Processing getAuthUrl for ${platform} account, user: ${userId}`);
+    
     // Get platform credentials from environment
     const clientId = Deno.env.get(`${platform.toUpperCase()}_CLIENT_ID`);
     const clientSecret = Deno.env.get(`${platform.toUpperCase()}_CLIENT_SECRET`);
