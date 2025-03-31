@@ -73,5 +73,22 @@ export const googleAdsApi = {
       console.error('Error getting Google Ads campaigns:', error);
       throw error;
     }
+  },
+
+  /**
+   * List accessible customer accounts
+   */
+  listAccessibleAccounts: async (userId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('google-ads-accounts', {
+        body: { userId }
+      });
+      
+      if (error) throw error;
+      return data?.accounts || [];
+    } catch (error) {
+      console.error('Error listing Google Ads accounts:', error);
+      throw error;
+    }
   }
 };

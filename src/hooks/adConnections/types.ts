@@ -3,14 +3,17 @@ export type AdPlatform = 'google' | 'meta' | 'linkedin' | 'microsoft';
 
 export interface Connection {
   id: string;
-  user_id: string;
   platform: AdPlatform;
-  access_token?: string;
-  refresh_token?: string;
-  account_id?: string;
-  expires_at?: string;
-  created_at?: string;
-  updated_at?: string;
+  accountId?: string;
+  accountName?: string;
+  expiresAt?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface OAuthParams {
+  platform: AdPlatform;
+  userId: string;
+  redirectUri: string;
 }
 
 export interface AdConnectionsState {
@@ -24,24 +27,24 @@ export interface AdConnectionsState {
 
 export interface AdConnectionsActions {
   fetchConnections: () => Promise<void>;
-  initiateGoogleConnection: () => Promise<void>;
-  initiateLinkedInConnection: () => Promise<void>;
-  initiateMicrosoftConnection: () => Promise<void>;
-  initiateMetaConnection: () => Promise<void>;
+  initiateGoogleConnection: () => void;
+  initiateMetaConnection: () => void;
+  initiateLinkedInConnection: () => void;
+  initiateMicrosoftConnection: () => void;
   removeConnection: (id: string, platformName: string) => Promise<void>;
 }
 
-export interface OAuthParams {
-  platform: AdPlatform;
-  userId: string | undefined;
-  redirectUri: string;
+export interface AdAccountInfo {
+  id: string;
+  name: string;
+  currency?: string;
+  timeZone?: string;
+  status?: string;
 }
 
-export interface SecurityLogEntry {
-  event: string;
-  user_id: string | undefined;
-  platform?: AdPlatform;
-  timestamp: string;
-  ip_address?: string;
-  details?: Record<string, any>;
+export interface GoogleAdsAccount {
+  id: string;
+  resourceName: string;
+  name?: string;
+  status?: string;
 }

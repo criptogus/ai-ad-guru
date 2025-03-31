@@ -61,3 +61,28 @@ export const exchangeGoogleToken = async (
     tokenType: data.token_type
   };
 };
+
+// Get Google Ads manager accounts
+export const getGoogleAdsAccounts = async (accessToken: string, developerToken: string) => {
+  try {
+    const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'developer-token': developerToken
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Google Ads API request failed (${response.status}):`, errorText);
+      throw new Error(`Google Ads API request failed: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.resourceNames;
+  } catch (error) {
+    console.error('Error fetching Google Ads accounts:', error);
+    throw error;
+  }
+};

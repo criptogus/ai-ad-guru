@@ -1,20 +1,22 @@
 
 import React from "react";
-import { Connection } from "@/hooks/adConnections/types";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck, AlertCircle } from "lucide-react";
+import { ExternalLink, Loader2, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
+import { Connection, AdPlatform } from "@/hooks/adConnections/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatDistanceToNow } from "date-fns";
+import PlatformIcon from "./PlatformIcon";
+import { AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-interface PlatformConnectionCardProps {
-  platform: 'google' | 'meta' | 'linkedin' | 'microsoft';
+export interface PlatformConnectionCardProps {
+  platform: AdPlatform;
   isConnecting: boolean;
-  errorType: string | null;
-  errorDetails: string | null;
+  errorType?: string | null;
+  errorDetails?: string | null;
   connections: Connection[];
   onConnect: () => void;
-  onRemove: (id: string, platformName: string) => Promise<void>;
+  onRemove: (id: string, platformName: string) => void;
 }
 
 const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
@@ -26,130 +28,141 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   onConnect,
   onRemove
 }) => {
-  const platformConnection = connections.find(conn => conn.platform === platform);
-  const isConnected = !!platformConnection;
+  const platformConnection = connections.find(c => c.platform === platform);
+  
+  const platformName = 
+    platform === 'google' ? 'Google Ads' : 
+    platform === 'meta' ? 'Meta Ads' : 
+    platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
+    
   const isError = errorType === platform;
-
-  // Security enhancement: Don't show exact connection time to reduce information leakage
-  const getConnectionTime = (timestamp?: string) => {
-    if (!timestamp) return "";
-    try {
-      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-    } catch (e) {
-      return "recently";
-    }
-  };
-
-  // Platform-specific configurations
-  const platformConfigs = {
-    google: {
-      name: "Google Ads",
-      icon: <Goal className="h-10 w-10 text-primary" />,
-      connectText: "Connect Google Ads",
-      disconnectText: "Disconnect Google Ads",
-    },
-    meta: {
-      name: "Meta Ads",
-      icon: <Facebook className="h-10 w-10 text-primary" />,
-      connectText: "Connect Meta Ads",
-      disconnectText: "Disconnect Meta Ads",
-    },
-    linkedin: {
-      name: "LinkedIn Ads",
-      icon: <Linkedin className="h-10 w-10 text-primary" />,
-      connectText: "Connect LinkedIn Ads",
-      disconnectText: "Disconnect LinkedIn Ads",
-    },
-    microsoft: {
-      name: "Microsoft Ads",
-      icon: <ServerIcon className="h-10 w-10 text-primary" />,
-      connectText: "Connect Microsoft Ads",
-      disconnectText: "Disconnect Microsoft Ads",
-    }
-  };
-
-  const config = platformConfigs[platform];
-
+  
   return (
-    <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="flex items-center justify-center py-6 space-y-1">
-        {config.icon}
-        <h3 className="text-lg font-medium">{config.name}</h3>
-      </CardHeader>
-      <CardContent className="text-center pb-2">
-        {isConnected ? (
-          <div>
-            <div className="flex items-center justify-center gap-1 text-green-600 dark:text-green-400 font-medium mb-1">
-              <ShieldCheck className="h-4 w-4" />
-              <span>Securely Connected</span>
+    <Card className={`overflow-hidden transition-all duration-200 ${isError ? 'border-destructive/50' : ''}`}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className={`p-2 rounded-lg ${platformConnection ? 'bg-primary/10' : 'bg-muted'}`}>
+              <PlatformIcon platform={platform} size={24} />
             </div>
-            {platformConnection.account_id && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Account: {platformConnection.account_id.substring(0, 6)}...
+            <div>
+              <h3 className="text-lg font-medium">{platformName}</h3>
+              <p className="text-sm text-muted-foreground">
+                {platformConnection 
+                  ? `Connected ${platformConnection.accountName ? `(${platformConnection.accountName})` : ''}` 
+                  : `Connect your ${platformName} account`}
               </p>
-            )}
-            {platformConnection.updated_at && (
-              <p className="text-xs text-muted-foreground">
-                Connected {getConnectionTime(platformConnection.updated_at)}
-              </p>
-            )}
+            </div>
           </div>
-        ) : (
-          <div className="text-sm text-muted-foreground font-medium">
-            Not connected
+          
+          {platformConnection && (
+            <Badge variant="outline" className="text-xs border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400">
+              <ShieldCheck className="h-3 w-3 mr-1" />
+              Connected
+            </Badge>
+          )}
+        </div>
+        
+        {isError && errorDetails && (
+          <div className="mt-4 p-3 bg-destructive/10 rounded-md border border-destructive/20 text-destructive text-sm">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{errorDetails}</span>
+            </div>
+          </div>
+        )}
+        
+        {platformConnection && (
+          <div className="mt-4 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span>Account ID:</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-mono bg-muted px-1.5 py-0.5 rounded">
+                      {platformConnection.accountId || 'Unknown'}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{platform === 'google' ? 'Google Ads account ID' : 'Account identifier'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {platformConnection.metadata?.developerToken && platform === 'google' && (
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <span>Developer token:</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-mono bg-muted px-1.5 py-0.5 rounded">
+                        {'✓ Valid'}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Developer token is configured</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-center pt-2 pb-6">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {isConnected ? (
-                <Button 
-                  variant="outline" 
-                  onClick={() => onRemove(platformConnection.id, platform)}
-                  className="border-destructive hover:border-destructive/90 hover:bg-destructive/10 text-destructive"
-                  disabled={isConnecting}
-                >
-                  {config.disconnectText}
-                </Button>
-              ) : (
-                <Button 
-                  onClick={onConnect}
-                  disabled={isConnecting}
-                  variant="default"
-                >
-                  {isConnecting && errorType === platform ? "Connecting..." : config.connectText}
-                </Button>
-              )}
-            </TooltipTrigger>
-            <TooltipContent side="top" className="bg-popover text-popover-foreground">
-              {isConnected ? (
-                <p className="text-sm px-1">Revokes all access tokens and permissions</p>
-              ) : (
-                <div className="flex items-center gap-1.5 text-sm px-1">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <p>Securely connect via OAuth 2.0</p>
-                </div>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </CardFooter>
-      {isError && (
-        <div className="absolute inset-0 bg-destructive/5 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card p-4 rounded-lg shadow-lg max-w-xs border border-border">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <h4 className="font-bold text-destructive">Connection Error</h4>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">{errorDetails || "There was a problem connecting to the ad platform. Please try again."}</p>
-            <Button size="sm" onClick={() => window.location.reload()}>
-              Try Again
+      
+      <CardFooter className="flex justify-between p-6 pt-0">
+        {!platformConnection ? (
+          <Button 
+            className="w-full" 
+            disabled={isConnecting} 
+            onClick={onConnect}
+          >
+            {isConnecting && platform === errorType ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ShieldCheck className="mr-2 h-4 w-4" />
+            )}
+            {isConnecting && platform === errorType ? 'Connecting...' : `Connect ${platformName}`}
+          </Button>
+        ) : (
+          <div className="flex w-full gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1" 
+              onClick={() => onRemove(platformConnection.id, platformName)}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Disconnect
             </Button>
+            
+            {platform === 'google' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="secondary"
+                      size="icon"
+                      asChild
+                    >
+                      <a 
+                        href="https://ads.google.com/aw/overview" 
+                        target="_blank" 
+                        rel="noreferrer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Open Google Ads dashboard</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </CardFooter>
     </Card>
   );
 };

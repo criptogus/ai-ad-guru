@@ -84,6 +84,47 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       throw new Error(`Failed to exchange token for ${effectivePlatform}`);
     }
     
+    // For Google Ads, additionally verify API access with developer token if available
+    let metadata = {};
+    if (effectivePlatform === 'google') {
+      const developerToken = Deno.env.get('GOOGLE_DEVELOPER_TOKEN');
+      if (developerToken) {
+        metadata.developerToken = 'configured';
+        
+        // Try to verify account access
+        try {
+          // This attempt helps verify that the token has proper Google Ads API scopes
+          const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${tokenResponse.accessToken}`,
+              'developer-token': developerToken
+            }
+          });
+          
+          // If successful, save some account data
+          if (response.ok) {
+            const data = await response.json();
+            if (data.resourceNames && data.resourceNames.length > 0) {
+              // Parse account ID from the first resource name (format: customers/1234567890)
+              const accountId = data.resourceNames[0].split('/')[1] || 'unknown';
+              metadata.accountId = accountId;
+              metadata.accountCount = data.resourceNames.length;
+            }
+          } else {
+            const errorText = await response.text();
+            console.warn('Could not verify Google Ads API access:', errorText);
+            metadata.apiAccessError = 'Could not verify Google Ads API access';
+          }
+        } catch (apiError) {
+          console.warn('Error verifying Google Ads API access:', apiError);
+        }
+      } else {
+        console.warn('Google Ads developer token not configured');
+        metadata.developerTokenWarning = 'Missing developer token';
+      }
+    }
+    
     // Save user tokens in the database
     const { data: connectionData, error: connectionError } = await supabaseClient
       .from('user_integrations')
@@ -96,14 +137,14 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
           expires_at: tokenResponse.expiresIn 
             ? new Date(Date.now() + tokenResponse.expiresIn * 1000).toISOString() 
             : null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          metadata: metadata
         },
-        { onConflict: 'user_id,platform' }
-      )
-      .select('id');
-    
+        { onConflict: 'user_id,platform', returning: 'minimal' }
+      );
+      
     if (connectionError) {
-      console.error('Failed to save connection:', connectionError);
+      console.error('Error saving connection:', connectionError);
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -121,11 +162,10 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       .from('oauth_states')
       .delete()
       .eq('state', state);
-    
+      
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         success: true,
-        connectionId: connectionData?.[0]?.id,
         platform: effectivePlatform
       }),
       {
@@ -133,13 +173,13 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
         status: 200,
       }
     );
-  } catch (error) {
-    console.error(`Error exchanging token:`, error);
     
+  } catch (error) {
+    console.error('Token exchange error:', error);
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         success: false,
-        error: `Failed to exchange token: ${error.message}`
+        error: `Token exchange failed: ${error.message}`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
