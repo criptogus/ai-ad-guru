@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes } from 'react-router-dom'; // Removed BrowserRouter import
 import { AuthProvider } from './contexts/AuthContext';
@@ -44,9 +43,11 @@ function App() {
           <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
           
-          {/* Update the connections route to use ConnectionsPage with AppLayout */}
+          {/* Keep the connections route with AppLayout */}
           <Route path="/connections" element={<ProtectedRoute><AppLayout><ConnectionsPage /></AppLayout></ProtectedRoute>} />
           
+          {/* Update callback route to use ProtectedRoute but NOT wrapped in AppLayout 
+             to prevent duplicate UI elements during OAuth flow */}
           <Route path="/callback" element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>} />
           
           {/* Public pages */}

@@ -31,12 +31,15 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // IMPORTANT: Always use the production domain or the current origin for redirects
-      // This ensures consistent handling across environments
+      // FIXED: Use /callback as the redirect path for all platforms to ensure consistency
+      // This matches what we've configured in the OAuth providers' developer consoles
       const origin = window.location.origin;
-      const redirectUri = `${origin}/connections`;
+      const redirectUri = `${origin}/callback`;
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
+      
+      // Store current location to return after OAuth flow
+      sessionStorage.setItem('oauth_return_path', '/connections');
       
       // Additional platform-specific instructions
       if (platform === 'google') {
@@ -61,9 +64,6 @@ export const useConnectionInitiation = () => {
       });
       
       if (authUrl) {
-        // Store current URL to return to this page after OAuth flow completes
-        sessionStorage.setItem('oauth_return_path', window.location.pathname);
-        
         // Redirect user to the OAuth provider
         window.location.href = authUrl;
       } else {
