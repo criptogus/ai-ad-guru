@@ -18,6 +18,7 @@ import TemplateExamplePage from './pages/TemplateExamplePage';
 import MFAPage from './pages/MFAPage';
 import ConnectionsSection from './components/config/ConnectionsSection';
 import OAuthCallbackHandler from './components/config/OAuthCallbackHandler';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -25,9 +26,11 @@ function App() {
       <AuthProvider>
         {/* Removed the Router component since it's already in main.tsx */}
         <Routes>
+          {/* Landing page as the root path */}
+          <Route path="/" element={<LandingPage />} />
+          
           <Route path="/auth/*" element={<AuthPage />} />
           <Route path="/mfa-verification" element={<MFAPage />} />
-          <Route path="/" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
           <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute requiresPayment={false}><AppLayout><BillingPage /></AppLayout></ProtectedRoute>} />

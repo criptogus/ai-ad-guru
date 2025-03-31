@@ -72,7 +72,7 @@ export const Hero: React.FC = () => {
             <Button
               size="lg"
               className="text-lg px-8 bg-brand-600 hover:bg-brand-700 text-white shadow-lg relative overflow-hidden group"
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/auth/register")}
             >
               <span className="relative z-10">Start Free Trial</span>
               <span className="absolute inset-0 bg-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>

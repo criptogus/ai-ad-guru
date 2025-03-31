@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -36,7 +35,7 @@ export const Cta: React.FC = () => {
             <Button 
               size="lg" 
               className="bg-white hover:bg-gray-100 text-brand-700 text-lg px-8 py-6 font-semibold relative z-10 overflow-hidden group"
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/auth/register")}
             >
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-brand-200 to-brand-300 opacity-0 group-hover:opacity-50 transition-opacity duration-300 z-0"></span>
               <Zap className="mr-2 h-5 w-5 relative z-10" />
