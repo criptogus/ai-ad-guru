@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom'; // Removed BrowserRouter import
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './hooks/use-theme.tsx'; // Fixed import path to use the TSX file with ThemeProvider
+import { ThemeProvider } from './hooks/use-theme.tsx';
 import { Toaster } from '@/components/ui/toaster';
 import AppLayout from './components/AppLayout';
 import DashboardPage from './pages/DashboardPage';
@@ -23,30 +23,29 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
       <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/auth/*" element={<AuthPage />} />
-            <Route path="/mfa-verification" element={<MFAPage />} />
-            <Route path="/" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/billing" element={<ProtectedRoute requiresPayment={false}><AppLayout><BillingPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/website-analysis" element={<ProtectedRoute><AppLayout><WebsiteAnalysisPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/campaign/:campaignId" element={<ProtectedRoute><AppLayout><CampaignPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
-            <Route
-              path="/connections"
-              element={<ProtectedRoute><ConnectionsSection /></ProtectedRoute>}
-            />
+        {/* Removed the Router component since it's already in main.tsx */}
+        <Routes>
+          <Route path="/auth/*" element={<AuthPage />} />
+          <Route path="/mfa-verification" element={<MFAPage />} />
+          <Route path="/" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute requiresPayment={false}><AppLayout><BillingPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/website-analysis" element={<ProtectedRoute><AppLayout><WebsiteAnalysisPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/campaign/:campaignId" element={<ProtectedRoute><AppLayout><CampaignPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
+          <Route
+            path="/connections"
+            element={<ProtectedRoute><ConnectionsSection /></ProtectedRoute>}
+          />
 
-            <Route
-              path="/callback"
-              element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>}
-            />
-          </Routes>
-        </Router>
+          <Route
+            path="/callback"
+            element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>}
+          />
+        </Routes>
         <Toaster />
       </AuthProvider>
     </ThemeProvider>
