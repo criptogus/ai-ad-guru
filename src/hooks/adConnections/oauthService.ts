@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -162,6 +163,7 @@ export const handleOAuthCallback = async (redirectUri: string) => {
         action: 'exchangeToken',
         code,
         state,
+        platform,
         redirectUri: effectiveRedirectUri
       }
     });
@@ -223,9 +225,15 @@ export const handleOAuthCallback = async (redirectUri: string) => {
   }
 };
 
-export const isOAuthCallback = () => {
+export const isOAuthCallback = (): boolean => {
   const url = new URL(window.location.href);
   const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  
+  // More robust check - we need both code and state
+  if (!code || !state) {
+    return false;
+  }
   
   // Check session storage for OAuth state
   let hasStoredOAuthState = false;
@@ -236,7 +244,7 @@ export const isOAuthCallback = () => {
     console.warn('Could not access session storage:', error);
   }
   
-  return Boolean(code && hasStoredOAuthState);
+  return Boolean(code && state && hasStoredOAuthState);
 };
 
 // Helper function to clear OAuth state (for cleanup or error states)

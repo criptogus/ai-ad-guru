@@ -3,75 +3,96 @@ import { supabase } from '@/integrations/supabase/client';
 import { Connection } from './types';
 
 /**
- * Fetch user's ad platform connections
+ * Fetch all ad platform connections for the user
  */
 export const fetchUserConnections = async (userId: string): Promise<Connection[]> => {
   try {
-    // Fetch connections from user_integrations table
+    console.log('Fetching connections for user:', userId);
+    
     const { data, error } = await supabase
       .from('user_integrations')
       .select('*')
       .eq('user_id', userId);
-
+      
     if (error) {
-      console.error('Error fetching connections:', error);
-      throw new Error(`Failed to fetch connections: ${error.message}`);
+      throw error;
     }
-
-    return data as Connection[];
-  } catch (error: any) {
-    console.error('Error in fetchUserConnections:', error);
-    throw error;
+    
+    console.log('Found connections:', data?.length || 0);
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user connections:', error);
+    throw new Error('Failed to load connections');
   }
 };
 
 /**
- * Remove a user's ad platform connection
+ * Remove an ad platform connection for the user
  */
-export const removeUserConnection = async (connectionId: string, userId: string): Promise<void> => {
+export const removeUserConnection = async (
+  connectionId: string, 
+  userId: string
+): Promise<boolean> => {
   try {
-    // First, get the connection details to identify platform
-    const { data: connectionData, error: fetchError } = await supabase
+    console.log(`Removing connection ${connectionId} for user ${userId}`);
+    
+    // Security check: verify the connection belongs to this user
+    const { data: verifyData, error: verifyError } = await supabase
       .from('user_integrations')
-      .select('platform')
+      .select('id')
       .eq('id', connectionId)
       .eq('user_id', userId)
       .single();
-
-    if (fetchError) {
-      console.error('Error fetching connection details:', fetchError);
-      throw new Error(`Connection not found or access denied: ${fetchError.message}`);
+      
+    if (verifyError || !verifyData) {
+      throw new Error('Connection not found or not authorized');
     }
-
-    // Remove from database
+    
     const { error } = await supabase
       .from('user_integrations')
       .delete()
       .eq('id', connectionId)
       .eq('user_id', userId);
-
+      
     if (error) {
-      console.error('Error removing connection:', error);
-      throw new Error(`Failed to remove connection: ${error.message}`);
+      throw error;
     }
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing user connection:', error);
+    throw new Error('Failed to remove connection');
+  }
+};
 
-    // Call platform-specific edge function to revoke tokens if applicable
-    if (connectionData?.platform) {
-      try {
-        await supabase.functions.invoke('ad-account-auth', {
-          body: {
-            action: 'revokeToken',
-            platform: connectionData.platform,
-            userId
-          }
-        });
-      } catch (revokeError) {
-        console.warn('Failed to revoke API token, but DB record was deleted:', revokeError);
-        // We don't throw here since the DB record is already deleted
+/**
+ * Test a specific connection for the user
+ */
+export const testConnection = async (
+  platform: string,
+  userId: string
+): Promise<{ success: boolean; message?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('test-ad-connection', {
+      body: { 
+        platform,
+        userId
       }
+    });
+    
+    if (error) {
+      throw error;
     }
+    
+    return {
+      success: data.success,
+      message: data.message
+    };
   } catch (error: any) {
-    console.error('Error in removeUserConnection:', error);
-    throw error;
+    console.error('Error testing connection:', error);
+    return {
+      success: false,
+      message: error.message || 'Connection test failed'
+    };
   }
 };

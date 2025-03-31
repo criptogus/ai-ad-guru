@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { isOAuthCallback, handleOAuthCallback } from './oauthService';
 import { tokenSecurity } from '@/services/security/tokenSecurity';
+import { useNavigate } from 'react-router-dom';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -10,10 +11,11 @@ export const useOAuthCallback = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const processOAuthCallback = async (userId: string | undefined, fetchConnections: () => Promise<void>) => {
     // Check if this is an OAuth callback and user is authenticated
-    if (!isOAuthCallback() || !userId) return;
+    if (!isOAuthCallback() || !userId) return false;
     
     try {
       // Start processing and clear any previous errors
@@ -22,8 +24,12 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
+      // Important: Get the current path for proper handling after OAuth
+      // We need to redirect back to the connections page after OAuth flow
+      const currentPath = window.location.pathname;
+      
       // Prepare redirect URI - use the same one we used for the initial request
-      const redirectUri = `${window.location.origin}/config`;
+      const redirectUri = `${window.location.origin}/connections`;
       
       // Log OAuth callback attempt for security
       await tokenSecurity.logSecurityEvent({
@@ -31,6 +37,8 @@ export const useOAuthCallback = () => {
         user_id: userId,
         timestamp: new Date().toISOString()
       });
+      
+      console.log('Processing OAuth callback with redirectUri:', redirectUri);
       
       // Handle the OAuth callback
       const result = await handleOAuthCallback(redirectUri);
@@ -56,7 +64,14 @@ export const useOAuthCallback = () => {
             result.platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'
           } Ads`,
         });
+        
+        // Navigate back to connections page to ensure we're on a valid route
+        navigate('/connections');
+        return true;
       }
+      
+      // No result means it wasn't an OAuth callback after all
+      return false;
     } catch (error: any) {
       console.error('Error completing OAuth flow:', error);
       
@@ -91,6 +106,10 @@ export const useOAuthCallback = () => {
           setErrorDetails("There was an error completing the secure OAuth flow.");
         }
       }
+      
+      // Navigate back to connections page to ensure we're on a valid route
+      navigate('/connections');
+      return false;
     } finally {
       setIsConnecting(false);
     }

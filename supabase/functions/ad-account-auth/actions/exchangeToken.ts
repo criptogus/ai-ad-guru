@@ -6,7 +6,7 @@ import { exchangeToken as exchangeTokenUtil } from '../utils/token-exchange.ts';
  * Exchange OAuth authorization code for access token
  */
 export async function exchangeToken(supabaseClient: any, requestData: any) {
-  const { code, state, redirectUri } = requestData;
+  const { code, state, platform, redirectUri } = requestData;
   
   try {
     // Validate required parameters
@@ -57,13 +57,18 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       );
     }
     
-    const { user_id: userId, platform } = stateData;
+    // Get userId and platform from verified state
+    const { user_id: userId, platform: statePlatform } = stateData;
+    
+    // Use either the provided platform or the one from state
+    const effectivePlatform = platform || statePlatform;
     
     // Exchange the authorization code for tokens
-    const tokenResponse = await exchangeTokenUtil(platform, code, redirectUri);
+    console.log(`Exchanging code for ${effectivePlatform} tokens with redirect URI:`, redirectUri);
+    const tokenResponse = await exchangeTokenUtil(effectivePlatform, code, redirectUri);
     
     if (!tokenResponse) {
-      throw new Error(`Failed to exchange token for ${platform}`);
+      throw new Error(`Failed to exchange token for ${effectivePlatform}`);
     }
     
     // Save user tokens in the database
@@ -72,7 +77,7 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       .upsert(
         {
           user_id: userId,
-          platform,
+          platform: effectivePlatform,
           access_token: tokenResponse.accessToken,
           refresh_token: tokenResponse.refreshToken || null,
           expires_at: tokenResponse.expiresIn 
@@ -108,7 +113,7 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       JSON.stringify({
         success: true,
         connectionId: connectionData?.[0]?.id,
-        platform
+        platform: effectivePlatform
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
