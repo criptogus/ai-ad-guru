@@ -13,11 +13,11 @@ const LoginFooter: React.FC = () => {
       </div>
       <div className="text-center text-xs text-muted-foreground">
         By continuing, you agree to our{' '}
-        <Link to="/terms" className="underline">
+        <Link to="/terms-of-service" className="underline">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link to="/privacy" className="underline">
+        <Link to="/privacy-policy" className="underline">
           Privacy Policy
         </Link>
         .

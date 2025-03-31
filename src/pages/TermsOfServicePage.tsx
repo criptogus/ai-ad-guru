@@ -17,8 +17,8 @@ const TermsOfServicePage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Terms of Service | AI Ad Guru</title>
-        <meta name="description" content="Terms of Service for AI Ad Guru - Review our terms before using our AI-powered ad management platform." />
+        <title>Terms of Service | Zero Agency</title>
+        <meta name="description" content="Terms of Service for Zero Agency - Review our terms before using our AI-powered ad management platform." />
       </Helmet>
       <Nav />
       <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
@@ -31,59 +31,112 @@ const TermsOfServicePage: React.FC = () => {
           </Link>
           <div className="flex items-center mb-6 space-x-3">
             <FileText className="h-6 w-6 text-brand-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Terms of Service</h1>
+            <h1 className="text-3xl font-bold text-gray-900">📄 Zero Agency – Terms of Use</h1>
           </div>
-          <p className="text-sm text-gray-500">Last Updated: {currentDate}</p>
+          <p className="text-sm text-gray-500">Effective Date: March 1, 2025</p>
         </div>
 
         <div className="prose max-w-none">
           <p className="text-lg">
-            By using Zero Digital Agency ("Platform," "Service"), you agree to the following terms. If you do not agree, do not use our services.
+            Welcome to Zero Agency. These Terms of Use govern your access to and use of our website, platform, and services ("Services"). By using Zero Agency, you agree to be bound by these terms.
           </p>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">1. Description of Service</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">1. Acceptance of Terms</h2>
           <p>
-            Zero Digital Agency provides an <strong>AI-powered ad management platform</strong> that helps businesses create and optimize ad campaigns on Google, Meta, LinkedIn, and Microsoft Ads.
+            By creating an account or using the platform, you acknowledge that you have read, understood, and agree to comply with these Terms of Use and our Privacy Policy.
           </p>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">2. User Responsibilities</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">2. Use of Services</h2>
+          <p>You may use our Services solely for lawful purposes and in accordance with these Terms. You agree not to:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Users must <strong>comply with all ad platform policies</strong>.</li>
-            <li>Users are <strong>responsible for reviewing AI-generated content</strong> before publishing.</li>
-            <li>Users must <strong>not use our platform for prohibited content</strong>, including illegal, misleading, or harmful ads.</li>
+            <li>Use the platform for any fraudulent, illegal, or abusive purpose</li>
+            <li>Interfere with the security or functionality of the Services</li>
+            <li>Reverse engineer or attempt to access the source code</li>
+          </ul>
+          <p>Zero Agency reserves the right to suspend or terminate your access if you violate these terms.</p>
+
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">3. Account and Access</h2>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>You are responsible for maintaining the confidentiality of your login credentials.</li>
+            <li>You must be at least 18 years old to use the Services.</li>
+            <li>You are responsible for all activities that occur under your account.</li>
           </ul>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">3. AI Limitations & Liability Disclaimer</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">4. Payments and Credits</h2>
           <ul className="list-disc pl-5 space-y-2">
-            <li><strong>AI-generated ads may contain errors.</strong> We do not guarantee accuracy or compliance with advertising regulations.</li>
-            <li>Zero Digital Agency <strong>is not responsible for any financial loss</strong> due to AI-generated content, ad performance, or account suspensions by third-party platforms.</li>
-            <li>Users <strong>acknowledge that AI decisions are probabilistic</strong> and should not be considered final business advice.</li>
+            <li>Our services are billed via a subscription or pay-per-use credit system.</li>
+            <li>By providing your payment details, you authorize us to charge your account as outlined in your selected plan.</li>
+            <li>Failure to pay may result in suspension or termination of Services.</li>
           </ul>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">4. Payments & Refunds</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">5. Content and Intellectual Property</h2>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Users are billed via <strong>Stripe</strong> on a subscription basis.</li>
-            <li>AI-generated ad budgets include a <strong>10% management fee</strong> on ad spend.</li>
-            <li>Refunds are not provided for AI-generated content errors, ad performance issues, or user-initiated campaign failures.</li>
+            <li>You retain ownership of all content and data you upload.</li>
+            <li>By using our Services, you grant Zero Agency a license to use, host, and process your data solely for the purpose of delivering our Services.</li>
+            <li>All platform code, designs, and algorithms are the intellectual property of Zero Agency.</li>
           </ul>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">5. Account Termination</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">6. Third-Party Integrations</h2>
           <p>
-            Zero Digital Agency reserves the right to suspend or terminate accounts for:
+            Our platform integrates with third-party services (e.g., Google Ads, Meta, LinkedIn). Your use of these services is subject to their respective terms and policies. We are not responsible for third-party platforms or any data processed through them.
           </p>
+
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">7. Termination</h2>
+          <p>
+            We reserve the right to terminate or suspend your account at any time, with or without notice, for conduct that we believe violates these Terms or is harmful to other users or to Zero Agency.
+          </p>
+
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">8. Disclaimer of Warranties</h2>
+          <p>The Services are provided "as is" without warranties of any kind. We do not guarantee that:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Violation of <strong>ad platform policies</strong>.</li>
-            <li>Abuse of AI tools or fraudulent activity.</li>
-            <li>Non-payment or unauthorized chargebacks.</li>
+            <li>The Services will be uninterrupted or error-free</li>
+            <li>The results obtained through the Services will be accurate or reliable</li>
           </ul>
 
-          <h2 className="text-xl font-bold mt-8 mb-4">6. Limitation of Liability</h2>
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">9. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, <strong>Zero Digital Agency is not liable for any direct, indirect, or incidental damages arising from the use of AI-generated ads, API integrations, or ad performance outcomes.</strong>
+            To the maximum extent permitted by law, Zero Agency is not liable for any indirect, incidental, or consequential damages arising from your use of the Services.
           </p>
 
-          <p className="mt-8">
-            For disputes, contact us at <strong>legal@zerodigital.com</strong>.
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">10. Modifications to Terms</h2>
+          <p>
+            We may update these Terms at any time. Continued use of the Services after changes constitutes your acceptance of the revised Terms.
+          </p>
+
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">11. Governing Law</h2>
+          <p>
+            These Terms are governed by the laws of the jurisdiction where Zero Agency is registered, without regard to its conflict of laws rules.
+          </p>
+
+          <hr className="my-6" />
+
+          <h2 className="text-xl font-bold mt-8 mb-4">12. Contact</h2>
+          <p>
+            If you have any questions about these Terms, please contact us at:
+            <br />
+            📧 support@zeroagency.ai
           </p>
         </div>
       </main>
