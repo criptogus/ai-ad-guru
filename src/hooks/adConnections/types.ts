@@ -48,3 +48,11 @@ export interface GoogleAdsAccount {
   name?: string;
   status?: string;
 }
+
+export interface SecurityLogEntry {
+  event: string;
+  user_id: string;
+  platform?: AdPlatform;
+  timestamp: string;
+  details?: Record<string, any>;
+}
