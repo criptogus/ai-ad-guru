@@ -29,10 +29,10 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // CRITICAL FIX: Always use the /connections path in the redirect URI
-      // This ensures consistent handling and prevents 404s after redirect
-      // Make sure redirect URI matches with what's configured in Google Cloud Console
-      const redirectUri = `${window.location.origin}/connections`;
+      // IMPORTANT: Always use the production domain or the current origin for redirects
+      // This ensures consistent handling across environments
+      const origin = window.location.origin;
+      const redirectUri = `${origin}/connections`;
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
       
@@ -44,6 +44,9 @@ export const useConnectionInitiation = () => {
       });
       
       if (authUrl) {
+        // Store current URL to return to this page after OAuth flow completes
+        sessionStorage.setItem('oauth_return_path', window.location.pathname);
+        
         // Redirect user to the OAuth provider
         window.location.href = authUrl;
       } else {

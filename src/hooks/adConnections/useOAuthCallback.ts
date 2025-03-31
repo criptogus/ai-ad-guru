@@ -24,12 +24,9 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Important: Get the current path for proper handling after OAuth
-      // We need to redirect back to the connections page after OAuth flow
-      const currentPath = window.location.pathname;
-      
-      // Prepare redirect URI - use the same one we used for the initial request
-      const redirectUri = `${window.location.origin}/connections`;
+      // Get current origin for proper redirect handling
+      const origin = window.location.origin;
+      const redirectUri = `${origin}/connections`;
       
       // Log OAuth callback attempt for security
       await tokenSecurity.logSecurityEvent({
@@ -55,14 +52,16 @@ export const useOAuthCallback = () => {
           timestamp: new Date().toISOString()
         });
         
+        // Get platform display name
+        const platformName = 
+          result.platform === 'google' ? 'Google Ads' : 
+          result.platform === 'meta' ? 'Meta Ads' : 
+          result.platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
+        
         // Show success message
         toast({
-          title: "Account Connected Securely",
-          description: `Successfully connected to ${
-            result.platform === 'google' ? 'Google' : 
-            result.platform === 'meta' ? 'Meta' : 
-            result.platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'
-          } Ads`,
+          title: "Account Connected Successfully",
+          description: `Your ${platformName} account has been connected securely`,
         });
         
         // Navigate back to connections page to ensure we're on a valid route

@@ -1,5 +1,5 @@
 
-// Generate Google OAuth URL
+// Generate Google OAuth URL with proper Google Ads API scopes
 export const getGoogleAuthUrl = (clientId: string, redirectUri: string, state: string) => {
   const scopes = [
     'https://www.googleapis.com/auth/adwords',
@@ -14,7 +14,7 @@ export const getGoogleAuthUrl = (clientId: string, redirectUri: string, state: s
     scope: scopes,
     access_type: 'offline',
     state: state,
-    prompt: 'consent'
+    prompt: 'consent' // Always prompt for consent to ensure we get refresh tokens
   });
   
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -37,6 +37,8 @@ export const exchangeGoogleToken = async (
     grant_type: 'authorization_code'
   });
   
+  console.log(`Exchanging code for token with redirect URI: ${redirectUri}`);
+  
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
@@ -46,7 +48,9 @@ export const exchangeGoogleToken = async (
   });
   
   if (!response.ok) {
-    throw new Error(`Google token exchange failed: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error(`Google token exchange failed (${response.status}):`, errorText);
+    throw new Error(`Google token exchange failed: ${response.status} - ${response.statusText}`);
   }
   
   const data = await response.json();

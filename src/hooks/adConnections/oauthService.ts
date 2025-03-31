@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -152,7 +151,7 @@ export const handleOAuthCallback = async (redirectUri: string) => {
     console.warn('Could not clear OAuth state from session storage:', storageError);
   }
   
-  // Use the stored redirectUri or fall back to the provided one
+  // Always use the stored redirectUri or fall back to the provided one
   const effectiveRedirectUri = authData.redirectUri || redirectUri;
   console.log(`Using callback redirect URI: ${effectiveRedirectUri}`);
   
@@ -247,7 +246,6 @@ export const isOAuthCallback = (): boolean => {
   return Boolean(code && state && hasStoredOAuthState);
 };
 
-// Helper function to clear OAuth state (for cleanup or error states)
 export const clearOAuthState = () => {
   try {
     sessionStorage.removeItem(OAUTH_STORAGE_KEY);

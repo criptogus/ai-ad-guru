@@ -63,6 +63,19 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
     // Use either the provided platform or the one from state
     const effectivePlatform = platform || statePlatform;
     
+    if (!effectivePlatform) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Platform identifier not found in request or state data'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+    
     // Exchange the authorization code for tokens
     console.log(`Exchanging code for ${effectivePlatform} tokens with redirect URI:`, redirectUri);
     const tokenResponse = await exchangeTokenUtil(effectivePlatform, code, redirectUri);
