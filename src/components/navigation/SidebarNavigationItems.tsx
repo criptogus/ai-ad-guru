@@ -14,9 +14,10 @@ import { cn } from '@/lib/utils';
 
 export interface SidebarNavigationItemsProps {
   collapsed?: boolean;
+  activePage?: string;
 }
 
-export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed }) => {
+export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed, activePage }) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -25,43 +26,43 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
       name: 'Dashboard',
       icon: LayoutDashboard,
       path: '/dashboard',
-      active: currentPath === '/dashboard' || currentPath === '/',
+      active: currentPath === '/dashboard' || currentPath === '/' || activePage === 'dashboard',
     },
     {
       name: 'Campaigns',
       icon: Megaphone,
       path: '/campaigns',
-      active: currentPath.includes('/campaigns'),
+      active: currentPath.includes('/campaigns') || activePage === 'campaigns',
     },
     {
       name: 'Analytics',
       icon: BarChart,
       path: '/analytics',
-      active: currentPath.includes('/analytics'),
+      active: currentPath.includes('/analytics') || activePage === 'analytics',
     },
     {
       name: 'Team',
       icon: Users,
       path: '/roles',
-      active: currentPath.includes('/roles'),
+      active: currentPath.includes('/roles') || activePage === 'team' || activePage === 'roles',
     },
     {
       name: 'Billing',
       icon: CreditCard,
       path: '/billing',
-      active: currentPath.includes('/billing'),
+      active: currentPath.includes('/billing') || activePage === 'billing',
     },
     {
       name: 'Settings',
       icon: Settings,
       path: '/settings',
-      active: currentPath.includes('/settings'),
+      active: currentPath.includes('/settings') || activePage === 'settings',
     },
     {
       name: 'Support',
       icon: Compass,
       path: '/support',
-      active: currentPath.includes('/support'),
+      active: currentPath.includes('/support') || activePage === 'support',
     },
   ];
 
@@ -85,3 +86,4 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
     </>
   );
 };
+
