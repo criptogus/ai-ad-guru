@@ -1,6 +1,7 @@
 
 import { TeamMember, UserRole } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Get team members from the database
 export const getTeamMembers = async (): Promise<TeamMember[]> => {

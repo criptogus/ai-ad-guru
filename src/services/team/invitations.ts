@@ -43,8 +43,6 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
         description: `An invitation email has been sent to ${email}`
       });
     }
-    
-    return Promise.resolve();
   } catch (error) {
     console.error("Error inviting user:", error);
     throw error;
@@ -52,7 +50,7 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
 };
 
 // Resend invitation
-export const resendInvitation = async (id: string) => {
+export const resendInvitation = async (id: string): Promise<boolean> => {
   try {
     // Get the invitation details
     const { data, error } = await supabase
@@ -82,7 +80,7 @@ export const resendInvitation = async (id: string) => {
 };
 
 // Revoke invitation
-export const revokeInvitation = async (id: string) => {
+export const revokeInvitation = async (id: string): Promise<boolean> => {
   try {
     const { error, data } = await supabase
       .from('team_invitations')
