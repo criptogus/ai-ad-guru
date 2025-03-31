@@ -9,12 +9,12 @@ export function getLinkedInAuthUrl(
   redirectUri: string,
   state: string
 ): string {
-  // Set up LinkedIn OAuth parameters
+  // Set up LinkedIn OAuth parameters with the required scopes
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     state: state,
-    scope: "r_emailaddress,r_liteprofile,w_member_social,r_ads,w_ads", 
+    scope: "r_liteprofile r_emailaddress rw_organization_admin rw_ads", 
     response_type: "code"
   });
 

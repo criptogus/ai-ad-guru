@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -200,14 +201,27 @@ export const handleOAuthCallback = async (redirectUri: string) => {
       console.warn('Failed to log security event:', logError);
     }
     
-    // Return platform, userId and whether Google Ads access was granted or not
-    return { 
+    // Return platform-specific access flags
+    const result = { 
       platform, 
       userId, 
       success: true,
-      // Use the googleAdsAccess property provided by the server (if present)
-      googleAdsAccess: data.googleAdsAccess !== undefined ? data.googleAdsAccess : undefined
     };
+
+    // Add platform-specific access flags
+    if (platform === 'google') {
+      return {
+        ...result,
+        googleAdsAccess: data.googleAdsAccess !== undefined ? data.googleAdsAccess : undefined
+      };
+    } else if (platform === 'linkedin') {
+      return {
+        ...result,
+        linkedInAdsAccess: data.linkedInAdsAccess !== undefined ? data.linkedInAdsAccess : undefined
+      };
+    }
+    
+    return result;
   } catch (error) {
     // Log failed token exchange for security auditing
     try {

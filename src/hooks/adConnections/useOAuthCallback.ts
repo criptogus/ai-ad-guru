@@ -65,6 +65,12 @@ export const useOAuthCallback = () => {
             description: `Note: Only basic Google account access was granted. You may need to reconnect with Google Ads permissions.`,
             variant: "default",
           });
+        } else if (result.platform === 'linkedin' && result.linkedInAdsAccess === false) {
+          toast({
+            title: "LinkedIn Account Connected",
+            description: `Note: Only basic LinkedIn account access was granted. You may need to reconnect with LinkedIn Ads permissions.`,
+            variant: "default",
+          });
         } else {
           toast({
             title: "Account Connected Successfully",
@@ -110,7 +116,7 @@ export const useOAuthCallback = () => {
           setErrorDetails("The authorization response was invalid or expired.");
         } else if (error.message.includes("scope") || error.message.includes("permission")) {
           setErrorType("permissions");
-          setErrorDetails("Required Google Ads permissions were not granted. Please try again and approve all requested permissions.");
+          setErrorDetails("Required permissions were not granted. Please try again and approve all requested permissions.");
         } else {
           setErrorType("edge_function");
           setErrorDetails("There was an error completing the secure OAuth flow.");

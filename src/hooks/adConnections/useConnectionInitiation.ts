@@ -36,11 +36,17 @@ export const useConnectionInitiation = () => {
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
       
-      // Additional instructions for Google ads connections
+      // Additional platform-specific instructions
       if (platform === 'google') {
         toast({
           title: "Connecting Google Ads",
           description: "Make sure to grant permission to manage your Google Ads account, not just basic Google login.",
+          duration: 5000,
+        });
+      } else if (platform === 'linkedin') {
+        toast({
+          title: "Connecting LinkedIn Ads",
+          description: "Make sure to grant permission to manage your LinkedIn Ads account when prompted.",
           duration: 5000,
         });
       }
