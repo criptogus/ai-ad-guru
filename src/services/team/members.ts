@@ -1,43 +1,48 @@
+
 import { TeamMember, UserRole } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
-// Function to get team members - in a real app, this would fetch from Supabase
+// Get team members from the database
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
-    // Mock data for now since we don't have real team_members yet
-    const mockData: TeamMember[] = [
-      { id: "1", name: "John Doe", email: "john@example.com", role: "Admin", lastActive: "2 hours ago" },
-      { id: "2", name: "Jane Smith", email: "jane@example.com", role: "Analyst", lastActive: "1 day ago" },
-      { id: "3", name: "Robert Johnson", email: "robert@example.com", role: "Viewer", lastActive: "3 days ago" },
-      { id: "4", name: "Emily Davis", email: "emily@example.com", role: "Analyst", lastActive: "Just now" },
-    ];
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .order('created_at', { ascending: false });
     
-    return mockData;
+    if (error) {
+      console.error("Error fetching team members:", error);
+      throw error;
+    }
+    
+    // Map the snake_case properties from Supabase to camelCase for our TeamMember type
+    return data ? data.map(member => ({
+      id: member.id,
+      name: member.name || '',
+      email: member.email,
+      role: member.role as UserRole,
+      lastActive: member.last_active
+    })) : [];
   } catch (error) {
-    console.error("Error fetching team members:", error);
-    // Return mock data as fallback in case of error
-    return [
-      { id: "1", name: "John Doe", email: "john@example.com", role: "Admin", lastActive: "2 hours ago" },
-      { id: "2", name: "Jane Smith", email: "jane@example.com", role: "Analyst", lastActive: "1 day ago" },
-    ];
+    console.error("Error in getTeamMembers:", error);
+    throw error;
   }
 };
 
 // Function to invite a user to the team
 export const inviteUser = async (email: string, role: UserRole): Promise<void> => {
-  console.log(`Inviting ${email} with role ${role}`);
-  
-  // In a real app, would create an invitation in Supabase
-  // and send an email to the user
-  
   try {
-    // Simulating an API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log(`Inviting ${email} with role ${role}`);
     
-    // This would typically involve:
-    // 1. Creating a record in an "invitations" table
-    // 2. Sending an email via a serverless function
-    // 3. Handling the invitation acceptance flow
+    // Call the Supabase Edge Function to send the invitation email
+    const { error } = await supabase.functions.invoke('send-team-invitation', {
+      body: { email, role }
+    });
+    
+    if (error) {
+      console.error("Error invoking send-team-invitation function:", error);
+      throw error;
+    }
     
     console.log(`Invitation to ${email} with role ${role} sent successfully`);
   } catch (error) {
@@ -46,18 +51,49 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
   }
 };
 
-// Function to update a team member
-export const updateTeamMember = async (id: string, updates: any): Promise<boolean> => {
+// Function to update a team member's role
+export const updateTeamMemberRole = async (id: string, role: UserRole): Promise<boolean> => {
   try {
-    console.log(`Updating team member ${id} with:`, updates);
+    const { error } = await supabase
+      .from('team_members')
+      .update({ role })
+      .eq('id', id);
     
-    // In a real app, would update the user in Supabase
-    // For now, just simulate a successful update
-    await new Promise(resolve => setTimeout(resolve, 500));
+    if (error) {
+      console.error("Error updating team member role:", error);
+      return false;
+    }
     
     return true;
   } catch (error) {
-    console.error("Error updating team member:", error);
+    console.error("Error in updateTeamMemberRole:", error);
+    return false;
+  }
+};
+
+// Function to update a team member
+export const updateTeamMember = async (id: string, updates: Partial<TeamMember>): Promise<boolean> => {
+  try {
+    // Convert camelCase to snake_case for the database
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.role !== undefined) dbUpdates.role = updates.role;
+    if (updates.lastActive !== undefined) dbUpdates.last_active = updates.lastActive;
+    
+    const { error } = await supabase
+      .from('team_members')
+      .update(dbUpdates)
+      .eq('id', id);
+    
+    if (error) {
+      console.error("Error updating team member:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in updateTeamMember:", error);
     return false;
   }
 };
@@ -65,15 +101,19 @@ export const updateTeamMember = async (id: string, updates: any): Promise<boolea
 // Function to remove a team member
 export const removeTeamMember = async (id: string): Promise<boolean> => {
   try {
-    console.log(`Removing team member ${id}`);
+    const { error } = await supabase
+      .from('team_members')
+      .delete()
+      .eq('id', id);
     
-    // In a real app, would remove the user from the team in Supabase
-    // For now, just simulate a successful removal
-    await new Promise(resolve => setTimeout(resolve, 500));
+    if (error) {
+      console.error("Error removing team member:", error);
+      return false;
+    }
     
     return true;
   } catch (error) {
-    console.error("Error removing team member:", error);
+    console.error("Error in removeTeamMember:", error);
     return false;
   }
 };

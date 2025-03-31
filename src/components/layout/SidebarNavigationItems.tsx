@@ -59,9 +59,9 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
     },
     {
       name: "Team",
-      href: "/team",
+      href: "/roles",
       icon: Users,
-      active: activePage === "team" || currentPath === "/team"
+      active: activePage === "team" || activePage === "roles" || currentPath === "/team" || currentPath === "/roles"
     },
     {
       name: "Settings",

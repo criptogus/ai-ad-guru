@@ -1,57 +1,74 @@
 
-// Define the possible credit actions
-export type CreditAction = 
-  | 'google_ad_creation'
-  | 'meta_ad_creation'
-  | 'linkedin_ad_creation'
-  | 'microsoft_ad_creation'
-  | 'image_generation'
-  | 'website_analysis'
-  | 'campaign_creation'
-  | 'credit_purchase'
-  | 'ai_insights_report'
-  | 'smart_banner_creation'
-  | 'ai_optimization_daily'
-  | 'ai_optimization_3days'
-  | 'ai_optimization_weekly'
-  | 'credit_refund'; // Added for refund actions
+// User Roles and Permissions
+export type UserRole = "Admin" | "Editor" | "Analyst" | "Viewer";
 
-// User role types
-export type UserRole = 'Admin' | 'Editor' | 'Viewer' | 'Analyst';
+export type Permission = 
+  | "View analytics" 
+  | "Edit campaigns" 
+  | "Delete campaigns" 
+  | "Manage team" 
+  | "Manage billing" 
+  | "Configure integrations" 
+  | "Export reports" 
+  | "View campaigns"
+  | "Create campaigns"
+  | "Configure platforms"
+  | "Manage company settings"
+  | "Create insights";
 
-// Team member interface
+// Role Permissions Map
+export interface RolePermissions {
+  [role: string]: Permission[];
+}
+
+// Team Member
 export interface TeamMember {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  lastActive: string;
+  lastActive?: string;
 }
 
-// Role permissions interface
-export interface RolePermissions {
-  [key: string]: string[];
-}
-
-// Credit usage interfaces
-export interface CreditUsage {
+// Invitation
+export interface Invitation {
   id: string;
-  user_id: string;
-  action: CreditAction;
-  amount: number;
-  created_at: string;
-  details?: string;
+  email: string;
+  role: UserRole;
+  invitationToken: string;
+  expiresAt: string;
+  accepted: boolean;
+  createdAt: string;
 }
 
-// Optimization costs interface
-export interface OptimizationCosts {
-  daily: number;
-  threeDays: number;
-  weekly: number;
+// Campaign
+export interface Campaign {
+  id: string;
+  name: string;
+  status: "active" | "paused" | "completed" | "draft";
+  budget: number;
+  platform: string;
+  results?: {
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    spend: number;
+  };
 }
 
-// Credit costs interface
-export interface AllCreditCosts {
-  [key: string]: number | OptimizationCosts;
-  optimization?: OptimizationCosts;
+// Ad Variation
+export interface AdVariation {
+  id: string;
+  campaignId: string;
+  headline?: string;
+  description?: string;
+  imageUrl?: string;
+  platform: string;
+  status: "active" | "paused" | "review" | "draft";
+  performance?: {
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    ctr: number;
+  };
 }
