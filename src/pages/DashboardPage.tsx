@@ -1,6 +1,5 @@
 
 import React from "react";
-import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateMockCampaigns, Campaign } from "@/models/CampaignTypes";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -43,38 +42,36 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <AppLayout activePage="dashboard">
-      <div className="space-y-4 sm:space-y-6">
-        <DashboardHeader user={dashboardUser} />
-        
-        {/* Full width Notifications */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          <SmartNotifications />
-        </div>
-        
-        {/* Credits Status as a solo horizontal column */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          <CreditsStatus user={dashboardUser} />
-        </div>
-        
-        {/* Leaderboard (Top Performing and Needs Attention) */}
-        <LeaderboardSection campaigns={campaigns} />
-        
-        {/* Business Overview */}
-        <BusinessOverview campaigns={campaigns} />
-        
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {/* Vertical column for campaigns taking up full width */}
-          <div className="space-y-4 sm:space-y-6">
-            <CampaignSummaryCards campaigns={campaigns} />
-            <ActiveCampaigns campaigns={campaigns} />
-          </div>
-          
-          {/* AI Insights at the bottom */}
-          <AiInsights />
-        </div>
+    <div className="space-y-4 sm:space-y-6">
+      <DashboardHeader user={dashboardUser} />
+      
+      {/* Full width Notifications */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <SmartNotifications />
       </div>
-    </AppLayout>
+      
+      {/* Credits Status as a solo horizontal column */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <CreditsStatus user={dashboardUser} />
+      </div>
+      
+      {/* Leaderboard (Top Performing and Needs Attention) */}
+      <LeaderboardSection campaigns={campaigns} />
+      
+      {/* Business Overview */}
+      <BusinessOverview campaigns={campaigns} />
+      
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        {/* Vertical column for campaigns taking up full width */}
+        <div className="space-y-4 sm:space-y-6">
+          <CampaignSummaryCards campaigns={campaigns} />
+          <ActiveCampaigns campaigns={campaigns} />
+        </div>
+        
+        {/* AI Insights at the bottom */}
+        <AiInsights />
+      </div>
+    </div>
   );
 };
 

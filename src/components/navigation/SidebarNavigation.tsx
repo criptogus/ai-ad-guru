@@ -14,7 +14,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
     <div className="flex-1 py-6">
       <nav className="space-y-1">
         <SidebarMenu>
-          <SidebarNavigationItems />
+          <SidebarNavigationItems collapsed={collapsed} activePage={activePage} />
         </SidebarMenu>
       </nav>
     </div>
