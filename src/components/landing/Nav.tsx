@@ -52,10 +52,10 @@ export const Nav: React.FC = () => {
               <Button onClick={() => navigate("/dashboard")}>{t('nav.dashboard')}</Button>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => navigate("/login")}>
+                <Button variant="ghost" onClick={() => navigate("/auth/login")}>
                   {t('nav.signin')}
                 </Button>
-                <Button onClick={() => navigate("/register")}>{t('nav.getStarted')}</Button>
+                <Button onClick={() => navigate("/auth/register")}>{t('nav.getStarted')}</Button>
               </>
             )}
           </div>

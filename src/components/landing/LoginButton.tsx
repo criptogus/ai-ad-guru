@@ -13,7 +13,7 @@ export const LoginButton: React.FC = () => {
         <Button 
           size="lg" 
           className="bg-brand-600 hover:bg-brand-700 text-white"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/auth/login")}
         >
           <LogIn className="mr-2 h-5 w-5" />
           Log in to your account
