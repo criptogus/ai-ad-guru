@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { useAdAccountConnections } from '@/hooks/adConnections';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useOAuthCallback } from '@/hooks/adConnections';
 
 const OAuthCallbackHandler: React.FC = () => {
   const { user } = useAuth();
-  const { processOAuthCallback } = useAdAccountConnections();
+  const { processOAuthCallback } = useOAuthCallback();
   const [isProcessed, setIsProcessed] = useState(false);
 
   useEffect(() => {
