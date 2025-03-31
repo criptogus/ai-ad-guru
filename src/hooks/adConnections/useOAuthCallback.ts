@@ -19,6 +19,7 @@ export const useOAuthCallback = () => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
     const platformParam = searchParams.get('platform') || '';
     
     // If no code or error, this is not an OAuth redirect
@@ -27,12 +28,19 @@ export const useOAuthCallback = () => {
       return;
     }
     
-    console.log("Processing OAuth callback:", { code: !!code, error, state: !!state, platform: platformParam });
+    console.log("Processing OAuth callback:", { 
+      hasCode: !!code, 
+      error, 
+      errorDescription,
+      hasState: !!state, 
+      platform: platformParam 
+    });
     
     if (error) {
+      const errorMsg = errorDescription ? `${error}: ${errorDescription}` : error;
       toast({
         title: "Authentication Error",
-        description: `Error: ${error}. The platform denied access.`,
+        description: `Error: ${errorMsg}. The platform denied access.`,
         variant: "destructive",
       });
       
@@ -60,6 +68,7 @@ export const useOAuthCallback = () => {
       setErrorType(null);
       
       // Get the redirect URI that exactly matches what was used to initiate the OAuth flow
+      // This is critical for LinkedIn which requires exact match
       const redirectUri = `${window.location.origin}/callback`;
       console.log("Using redirect URI for token exchange:", redirectUri);
       
@@ -79,8 +88,14 @@ export const useOAuthCallback = () => {
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Token exchange failed: ${response.status} - ${errorText}`);
+        let errorText;
+        try {
+          const errorData = await response.json();
+          errorText = errorData.error || `Status: ${response.status}`;
+        } catch (e) {
+          errorText = await response.text();
+        }
+        throw new Error(`Token exchange failed: ${errorText}`);
       }
       
       const data = await response.json();

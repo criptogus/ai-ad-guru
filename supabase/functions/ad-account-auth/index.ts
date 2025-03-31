@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "./utils/cors.ts";
 import { storeTokens, revokeTokens } from "./utils/token.ts";
@@ -65,7 +66,7 @@ serve(async (req) => {
         const { error } = await supabase
           .from('oauth_states')
           .insert({
-            id: secureState,
+            state: secureState,
             user_id: userId,
             platform,
             redirect_uri: redirectUri,
@@ -101,7 +102,7 @@ serve(async (req) => {
       const { data: oauthState, error: stateError } = await supabase
         .from('oauth_states')
         .select('*')
-        .eq('id', state)
+        .eq('state', state)
         .maybeSingle();
       
       if (stateError) {
