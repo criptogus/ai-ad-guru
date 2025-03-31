@@ -18,6 +18,8 @@ export function getLinkedInAuthUrl(
     response_type: "code"
   });
 
+  console.log(`LinkedIn auth URL being generated with redirect URI: ${redirectUri}`);
+  
   // Generate the authorization URL
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
   return authUrl;
@@ -33,6 +35,8 @@ export async function exchangeLinkedInToken(
   redirectUri: string
 ): Promise<any> {
   try {
+    console.log(`Exchanging LinkedIn code with redirect URI: ${redirectUri}`);
+    
     // Prepare token request
     const tokenUrl = "https://www.linkedin.com/oauth/v2/accessToken";
     const params = new URLSearchParams({
@@ -60,6 +64,12 @@ export async function exchangeLinkedInToken(
     }
 
     const data = await response.json();
+    
+    console.log("LinkedIn token exchange successful:", {
+      hasAccessToken: !!data.access_token,
+      hasRefreshToken: !!data.refresh_token,
+      expiresIn: data.expires_in
+    });
 
     // Format token response to match our standard
     return {

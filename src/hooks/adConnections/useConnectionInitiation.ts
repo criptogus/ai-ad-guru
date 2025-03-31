@@ -31,8 +31,8 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // FIXED: Use /callback as the redirect path for all platforms to ensure consistency
-      // This matches what we've configured in the OAuth providers' developer consoles
+      // Use EXACTLY the same callback format that's registered in LinkedIn's developer console
+      // The /callback path must match EXACTLY what's configured in LinkedIn
       const origin = window.location.origin;
       const redirectUri = `${origin}/callback`;
       

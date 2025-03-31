@@ -14,8 +14,10 @@ const OAuthCallbackHandler: React.FC = () => {
   useEffect(() => {
     const handleCallback = async () => {
       if (!user) return;
-
+      
       try {
+        console.log("OAuthCallbackHandler: Processing callback for user", user.id);
+        
         // Process the OAuth callback
         await processOAuthCallback(user.id);
         
@@ -23,7 +25,7 @@ const OAuthCallbackHandler: React.FC = () => {
         setIsProcessed(true);
         
         // Show success message
-        toast.success("Connection successfully processed!");
+        toast.success("Ad account connection successful!");
       } catch (error: any) {
         console.error("Error processing OAuth callback:", error);
         setError(error.message || "Unknown error occurred during authentication");

@@ -59,8 +59,9 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Get the original redirect URI from session storage
-      const redirectUri = `${window.location.origin}/connections`;
+      // Get the redirect URI that exactly matches what was used to initiate the OAuth flow
+      const redirectUri = `${window.location.origin}/callback`;
+      console.log("Using redirect URI for token exchange:", redirectUri);
       
       // Exchange code for token via Supabase Edge Function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ad-account-auth`, {
