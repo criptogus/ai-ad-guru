@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "./utils/cors.ts";
 import { storeTokens, revokeTokens } from "./utils/token.ts";
@@ -250,7 +249,7 @@ serve(async (req) => {
             refresh_token: refreshToken,
             expires_in: expiresIn
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       } 
       else {
