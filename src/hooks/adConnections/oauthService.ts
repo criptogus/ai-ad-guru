@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { OAuthParams, AdPlatform } from "./types";
+import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
 
 const OAUTH_STORAGE_KEY = 'adPlatformAuth';
@@ -95,7 +94,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
   }
 };
 
-export const handleOAuthCallback = async (redirectUri: string) => {
+export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCallbackResult | null> => {
   // Check if we're coming back from an OAuth redirect
   const url = new URL(window.location.href);
   const code = url.searchParams.get('code');
@@ -201,27 +200,41 @@ export const handleOAuthCallback = async (redirectUri: string) => {
       console.warn('Failed to log security event:', logError);
     }
     
-    // Return platform-specific access flags
-    const result = { 
+    // Return platform-specific access flags with proper typing
+    const baseResult = { 
       platform, 
       userId, 
       success: true,
     };
 
-    // Add platform-specific access flags
+    // Add platform-specific access flags with proper typing
     if (platform === 'google') {
       return {
-        ...result,
+        ...baseResult,
+        platform: 'google' as const,
         googleAdsAccess: data.googleAdsAccess !== undefined ? data.googleAdsAccess : undefined
       };
     } else if (platform === 'linkedin') {
       return {
-        ...result,
+        ...baseResult,
+        platform: 'linkedin' as const,
         linkedInAdsAccess: data.linkedInAdsAccess !== undefined ? data.linkedInAdsAccess : undefined
+      };
+    } else if (platform === 'meta') {
+      return {
+        ...baseResult,
+        platform: 'meta' as const,
+        metaAdsAccess: data.metaAdsAccess !== undefined ? data.metaAdsAccess : undefined
+      };
+    } else if (platform === 'microsoft') {
+      return {
+        ...baseResult,
+        platform: 'microsoft' as const,
+        microsoftAdsAccess: data.microsoftAdsAccess !== undefined ? data.microsoftAdsAccess : undefined
       };
     }
     
-    return result;
+    return baseResult as OAuthCallbackResult;
   } catch (error) {
     // Log failed token exchange for security auditing
     try {

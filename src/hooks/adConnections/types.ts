@@ -56,3 +56,36 @@ export interface SecurityLogEntry {
   timestamp: string;
   details?: Record<string, any>;
 }
+
+// Add new OAuth callback result types
+export interface BaseOAuthCallbackResult {
+  platform: AdPlatform;
+  userId: string;
+  success: boolean;
+}
+
+export interface GoogleOAuthCallbackResult extends BaseOAuthCallbackResult {
+  platform: 'google';
+  googleAdsAccess?: boolean;
+}
+
+export interface LinkedInOAuthCallbackResult extends BaseOAuthCallbackResult {
+  platform: 'linkedin';
+  linkedInAdsAccess?: boolean;
+}
+
+export interface MetaOAuthCallbackResult extends BaseOAuthCallbackResult {
+  platform: 'meta';
+  metaAdsAccess?: boolean;
+}
+
+export interface MicrosoftOAuthCallbackResult extends BaseOAuthCallbackResult {
+  platform: 'microsoft';
+  microsoftAdsAccess?: boolean;
+}
+
+export type OAuthCallbackResult = 
+  | GoogleOAuthCallbackResult 
+  | LinkedInOAuthCallbackResult 
+  | MetaOAuthCallbackResult 
+  | MicrosoftOAuthCallbackResult;

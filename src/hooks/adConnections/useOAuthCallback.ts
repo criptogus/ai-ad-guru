@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { isOAuthCallback, handleOAuthCallback } from './oauthService';
 import { tokenSecurity } from '@/services/security/tokenSecurity';
 import { useNavigate } from 'react-router-dom';
+import { OAuthCallbackResult } from './types';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -38,7 +39,7 @@ export const useOAuthCallback = () => {
       console.log('Processing OAuth callback with redirectUri:', redirectUri);
       
       // Handle the OAuth callback
-      const result = await handleOAuthCallback(redirectUri);
+      const result: OAuthCallbackResult | null = await handleOAuthCallback(redirectUri);
       
       if (result) {
         // If successful, refresh the connections list
@@ -59,13 +60,13 @@ export const useOAuthCallback = () => {
           result.platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
         
         // Show appropriate success message based on platform
-        if (result.platform === 'google' && result.googleAdsAccess === false) {
+        if (result.platform === 'google' && 'googleAdsAccess' in result && result.googleAdsAccess === false) {
           toast({
             title: "Google Account Connected",
             description: `Note: Only basic Google account access was granted. You may need to reconnect with Google Ads permissions.`,
             variant: "default",
           });
-        } else if (result.platform === 'linkedin' && result.linkedInAdsAccess === false) {
+        } else if (result.platform === 'linkedin' && 'linkedInAdsAccess' in result && result.linkedInAdsAccess === false) {
           toast({
             title: "LinkedIn Account Connected",
             description: `Note: Only basic LinkedIn account access was granted. You may need to reconnect with LinkedIn Ads permissions.`,
