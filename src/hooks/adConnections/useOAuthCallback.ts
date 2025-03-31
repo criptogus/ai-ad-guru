@@ -59,7 +59,7 @@ export const useOAuthCallback = () => {
           result.platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
         
         // Show appropriate success message based on platform
-        if (result.platform === 'google' && !result.adsAccessGranted) {
+        if (result.platform === 'google' && result.googleAdsAccess === false) {
           toast({
             title: "Google Account Connected",
             description: `Note: Only basic Google account access was granted. You may need to reconnect with Google Ads permissions.`,

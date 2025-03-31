@@ -89,6 +89,7 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
     
     let tokenResponse;
     let metadata = {};
+    let googleAdsAccess = undefined;
     
     switch(effectivePlatform) {
       case 'google': 
@@ -105,6 +106,7 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
             console.log(`Google Ads API access verified. Found ${adsAccessResult.accountCount} accounts.`);
             metadata.googleAdsVerified = true;
             metadata.accountCount = adsAccessResult.accountCount;
+            googleAdsAccess = true;
             
             if (adsAccessResult.accounts && adsAccessResult.accounts.length > 0) {
               // Extract account ID from the first resource name (format: customers/1234567890)
@@ -118,10 +120,12 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
             console.warn('Failed to verify Google Ads API access:', adsAccessResult.error);
             metadata.googleAdsVerified = false;
             metadata.verificationError = adsAccessResult.error;
+            googleAdsAccess = false;
           }
         } else {
           console.warn('Google Ads developer token not configured or access token not available');
           metadata.googleAdsDeveloperTokenMissing = !developerToken;
+          googleAdsAccess = false;
         }
         break;
       
@@ -195,7 +199,7 @@ export async function exchangeToken(supabaseClient: any, requestData: any) {
       JSON.stringify({ 
         success: true,
         platform: effectivePlatform,
-        adsAccessGranted: metadata.googleAdsVerified === true
+        googleAdsAccess: googleAdsAccess
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );

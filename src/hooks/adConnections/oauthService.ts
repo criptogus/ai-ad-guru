@@ -200,7 +200,14 @@ export const handleOAuthCallback = async (redirectUri: string) => {
       console.warn('Failed to log security event:', logError);
     }
     
-    return { platform, userId, success: true };
+    // Return platform, userId and whether Google Ads access was granted or not
+    return { 
+      platform, 
+      userId, 
+      success: true,
+      // Use the googleAdsAccess property provided by the server (if present)
+      googleAdsAccess: data.googleAdsAccess !== undefined ? data.googleAdsAccess : undefined
+    };
   } catch (error) {
     // Log failed token exchange for security auditing
     try {
