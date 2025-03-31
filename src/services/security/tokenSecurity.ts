@@ -2,72 +2,74 @@
 import { supabase } from '@/integrations/supabase/client';
 import { SecurityLogEntry } from '@/hooks/adConnections/types';
 
-/**
- * Token security service
- * Manages token security related functions and logging
- */
+// Service for security-related operations with OAuth tokens
 export const tokenSecurity = {
   /**
-   * Log security events for audit and monitoring
+   * Log security events for audit trail
    */
-  logSecurityEvent: async (event: SecurityLogEntry): Promise<void> => {
+  logSecurityEvent: async (entry: SecurityLogEntry): Promise<void> => {
     try {
-      if (!event.user_id) return;
-      
-      // Log to console for development
-      console.log('Security event:', event);
-      
-      // In production, you would log to a secure database table
-      // For now, we'll use Supabase storage to store security logs
-      await supabase
+      const { error } = await supabase
         .from('security_logs')
         .insert({
-          user_id: event.user_id,
-          event_type: event.event,
-          platform: event.platform,
-          timestamp: event.timestamp,
-          details: event.details || {}
-        })
-        .select()
-        .single();
-    } catch (error) {
-      // Just log the error but don't throw - security logging should not block normal operations
-      console.warn('Failed to log security event:', error);
-    }
-  },
-  
-  /**
-   * Validate token expiration
-   */
-  isTokenExpired: (expiresAt: string | undefined | null): boolean => {
-    if (!expiresAt) return true;
-    
-    try {
-      const expiryDate = new Date(expiresAt);
-      const now = new Date();
+          user_id: entry.user_id,
+          event: entry.event,
+          platform: entry.platform,
+          timestamp: entry.timestamp,
+          details: entry.details || {}
+        });
       
-      // Add 5 minutes buffer to handle clock skew
-      const bufferMs = 5 * 60 * 1000;
-      return expiryDate.getTime() - bufferMs < now.getTime();
-    } catch (error) {
-      console.error('Error checking token expiration:', error);
-      return true;
+      if (error) {
+        console.warn('Failed to log security event:', error);
+      }
+    } catch (err) {
+      console.warn('Error in security logging:', err);
     }
   },
   
   /**
-   * Mask sensitive data for display
+   * Revoke tokens for a specific platform
    */
-  maskData: (data: string, visibleChars = 4): string => {
-    if (!data) return '';
-    
-    const firstPart = data.substring(0, visibleChars);
-    const lastPart = data.substring(data.length - visibleChars);
-    const maskedMiddle = '•'.repeat(Math.min(data.length - (visibleChars * 2), 8));
-    
-    return `${firstPart}${maskedMiddle}${lastPart}`;
+  revokeTokens: async (userId: string, platform: string): Promise<boolean> => {
+    try {
+      // First get the tokens
+      const { data, error } = await supabase
+        .from('user_integrations')
+        .select('access_token, refresh_token')
+        .eq('user_id', userId)
+        .eq('platform', platform)
+        .single();
+      
+      if (error || !data) {
+        console.warn('No tokens found to revoke');
+        return true; // Nothing to revoke is technically a success
+      }
+      
+      // For different platforms, call different revocation endpoints
+      if (platform === 'google' && data.access_token) {
+        // Google token revocation
+        const response = await fetch('https://oauth2.googleapis.com/revoke', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: data.access_token }).toString(),
+        });
+        
+        if (!response.ok) {
+          console.warn('Failed to revoke Google token:', await response.text());
+        }
+      }
+      
+      // Finally, remove the tokens from the database regardless of revocation outcome
+      await supabase
+        .from('user_integrations')
+        .delete()
+        .eq('user_id', userId)
+        .eq('platform', platform);
+      
+      return true;
+    } catch (err) {
+      console.error('Error revoking tokens:', err);
+      return false;
+    }
   }
 };
-
-// Export the service for use throughout the application
-export default tokenSecurity;

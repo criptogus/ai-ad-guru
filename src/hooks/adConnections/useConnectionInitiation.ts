@@ -36,6 +36,15 @@ export const useConnectionInitiation = () => {
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
       
+      // Additional instructions for Google ads connections
+      if (platform === 'google') {
+        toast({
+          title: "Connecting Google Ads",
+          description: "Make sure to grant permission to manage your Google Ads account, not just basic Google login.",
+          duration: 5000,
+        });
+      }
+      
       // Get OAuth URL from edge function
       const authUrl = await initiateOAuth({
         platform,

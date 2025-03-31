@@ -58,11 +58,19 @@ export const useOAuthCallback = () => {
           result.platform === 'meta' ? 'Meta Ads' : 
           result.platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
         
-        // Show success message
-        toast({
-          title: "Account Connected Successfully",
-          description: `Your ${platformName} account has been connected securely`,
-        });
+        // Show appropriate success message based on platform
+        if (result.platform === 'google' && !result.adsAccessGranted) {
+          toast({
+            title: "Google Account Connected",
+            description: `Note: Only basic Google account access was granted. You may need to reconnect with Google Ads permissions.`,
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Account Connected Successfully",
+            description: `Your ${platformName} account has been connected securely`,
+          });
+        }
         
         // Navigate back to connections page to ensure we're on a valid route
         navigate('/connections');
@@ -100,6 +108,9 @@ export const useOAuthCallback = () => {
         } else if (error.message.includes("Invalid") || error.message.includes("expired")) {
           setErrorType("credentials");
           setErrorDetails("The authorization response was invalid or expired.");
+        } else if (error.message.includes("scope") || error.message.includes("permission")) {
+          setErrorType("permissions");
+          setErrorDetails("Required Google Ads permissions were not granted. Please try again and approve all requested permissions.");
         } else {
           setErrorType("edge_function");
           setErrorDetails("There was an error completing the secure OAuth flow.");
