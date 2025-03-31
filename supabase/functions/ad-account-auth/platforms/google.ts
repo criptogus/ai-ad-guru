@@ -1,7 +1,6 @@
 
 // Generate Google OAuth URL with proper Google Ads API scopes
 export const getGoogleAuthUrl = (clientId: string, redirectUri: string, state: string) => {
-  // The adwords scope is essential for Google Ads API access
   const scopes = [
     'https://www.googleapis.com/auth/adwords',
     'https://www.googleapis.com/auth/userinfo.email',
@@ -15,8 +14,7 @@ export const getGoogleAuthUrl = (clientId: string, redirectUri: string, state: s
     scope: scopes,
     access_type: 'offline',
     state: state,
-    prompt: 'consent', // Always prompt for consent to ensure we get refresh tokens
-    include_granted_scopes: 'true' // Include any previously granted scopes
+    prompt: 'consent' // Always prompt for consent to ensure we get refresh tokens
   });
   
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -64,7 +62,44 @@ export const exchangeGoogleToken = async (
   };
 };
 
-// Get Google Ads manager accounts
+// Verify access to Google Ads API
+export const verifyGoogleAdsAccess = async (accessToken: string, developerToken: string) => {
+  try {
+    const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'developer-token': developerToken
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Google Ads API verification failed (${response.status}):`, errorText);
+      return { 
+        verified: false, 
+        error: `API access verification failed: ${response.status} - ${response.statusText}` 
+      };
+    }
+
+    const data = await response.json();
+    const accounts = data.resourceNames || [];
+    
+    return { 
+      verified: true, 
+      accountCount: accounts.length,
+      accounts: accounts
+    };
+  } catch (error) {
+    console.error('Error verifying Google Ads API access:', error);
+    return { 
+      verified: false, 
+      error: error instanceof Error ? error.message : 'Unknown error during API access verification'
+    };
+  }
+};
+
+// Get Google Ads manager accounts (duplicative with verifyGoogleAdsAccess but kept for compatibility)
 export const getGoogleAdsAccounts = async (accessToken: string, developerToken: string) => {
   try {
     const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
@@ -86,34 +121,5 @@ export const getGoogleAdsAccounts = async (accessToken: string, developerToken: 
   } catch (error) {
     console.error('Error fetching Google Ads accounts:', error);
     throw error;
-  }
-};
-
-// Verify if the access token has appropriate Google Ads API scopes
-export const verifyGoogleAdsAccess = async (accessToken: string, developerToken: string) => {
-  try {
-    const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'developer-token': developerToken
-      }
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Google Ads API access verification failed (${response.status}):`, errorText);
-      return { verified: false, error: errorText };
-    }
-    
-    const data = await response.json();
-    return { 
-      verified: true, 
-      accountCount: data.resourceNames?.length || 0,
-      accounts: data.resourceNames 
-    };
-  } catch (error) {
-    console.error('Error verifying Google Ads API access:', error);
-    return { verified: false, error: error.message };
   }
 };

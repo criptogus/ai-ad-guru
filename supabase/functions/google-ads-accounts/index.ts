@@ -2,7 +2,7 @@
 // Google Ads Accounts Edge Function
 // Lists accessible Google Ads accounts for a user using their stored access token
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
-import { corsHeaders } from '../utils/cors.ts';
+import { corsHeaders } from './utils/cors.ts';
 
 Deno.serve(async (req) => {
   // Handle preflight CORS
