@@ -1,104 +1,47 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAdAccountConnections } from '@/hooks/adConnections';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, CheckCircle, AlertCircle, Home } from 'lucide-react';
-import { useOAuthCallback } from '@/hooks/adConnections/useOAuthCallback';
-import { fetchUserConnections } from '@/hooks/adConnections/connectionService';
+import { Navigate } from 'react-router-dom';
 
 const OAuthCallbackHandler: React.FC = () => {
   const { user } = useAuth();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Processing your authentication...');
-  const navigate = useNavigate();
-  const { processOAuthCallback } = useOAuthCallback();
+  const { processOAuthCallback } = useAdAccountConnections();
+  const [isProcessed, setIsProcessed] = useState(false);
 
   useEffect(() => {
     const handleCallback = async () => {
-      if (!user) {
-        setStatus('error');
-        setMessage('You must be logged in to connect an ad account.');
-        return;
-      }
+      if (!user) return;
 
       try {
-        const result = await processOAuthCallback(user.id, async () => {
-          await fetchUserConnections(user.id);
-        });
-
-        if (result) {
-          setStatus('success');
-          setMessage('Your account has been successfully connected!');
-          
-          // Auto-redirect after 3 seconds
-          setTimeout(() => {
-            navigate('/connections');
-          }, 3000);
-        } else {
-          // Not an OAuth callback, redirect to connections page
-          navigate('/connections');
-        }
-      } catch (error: any) {
-        setStatus('error');
-        setMessage(error.message || 'There was an error connecting your account.');
+        // The processOAuthCallback returns a promise - we need to wait for it
+        await processOAuthCallback(user.id);
+        
+        // After processing is complete, set isProcessed to true
+        setIsProcessed(true);
+      } catch (error) {
+        console.error("Error processing OAuth callback:", error);
+        setIsProcessed(true); // Set to true even on error to prevent endless loading
       }
     };
 
     handleCallback();
-  }, [user, navigate, processOAuthCallback]);
+  }, [user, processOAuthCallback]);
 
+  // If processed, redirect to the connections page
+  if (isProcessed) {
+    // Check if there was a stored return path
+    const returnPath = sessionStorage.getItem('oauth_return_path');
+    sessionStorage.removeItem('oauth_return_path'); // Clean up
+    return <Navigate to={returnPath || "/connections"} replace />;
+  }
+
+  // While processing, show a loading state
   return (
-    <div className="container max-w-md mx-auto py-12">
-      <Card>
-        <CardHeader>
-          <CardTitle>Authentication {status === 'success' ? 'Complete' : 'In Progress'}</CardTitle>
-          <CardDescription>
-            {status === 'loading' ? 'Connecting your ad account...' : 
-             status === 'success' ? 'Your ad account has been connected' : 
-             'There was an issue connecting your account'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {status === 'loading' && (
-            <div className="flex flex-col items-center justify-center p-6 space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="text-center text-muted-foreground">{message}</p>
-            </div>
-          )}
-          
-          {status === 'success' && (
-            <Alert variant="default" className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-              <AlertTitle>Connection Successful</AlertTitle>
-              <AlertDescription>
-                {message}
-                <p className="mt-2 text-sm opacity-80">Redirecting you back in a moment...</p>
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {status === 'error' && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-5 w-5" />
-              <AlertTitle>Connection Error</AlertTitle>
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={() => navigate('/connections')}
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Back to Connections
-          </Button>
-        </CardFooter>
-      </Card>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <h2 className="mt-4 text-xl font-semibold">Processing authentication...</h2>
+      <p className="mt-2 text-muted-foreground">Please wait while we complete your ad account connection.</p>
     </div>
   );
 };

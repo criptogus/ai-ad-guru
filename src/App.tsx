@@ -19,6 +19,9 @@ import MFAPage from './pages/MFAPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import OAuthCallbackHandler from './components/config/OAuthCallbackHandler';
 import LandingPage from './pages/LandingPage';
+import ZeroAgencyPrivacyPolicyPage from './pages/ZeroAgencyPrivacyPolicyPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import CookiePolicyPage from './pages/CookiePolicyPage';
 
 function App() {
   return (
@@ -40,10 +43,15 @@ function App() {
           <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
           
-          {/* Update the connections route to use ConnectionsPage instead of just ConnectionsSection */}
-          <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-
+          {/* Update the connections route to use ConnectionsPage with AppLayout */}
+          <Route path="/connections" element={<ProtectedRoute><AppLayout><ConnectionsPage /></AppLayout></ProtectedRoute>} />
+          
           <Route path="/callback" element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>} />
+          
+          {/* Public pages */}
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
+          <Route path="/cookie-policy" element={<CookiePolicyPage />} />
         </Routes>
         <Toaster />
       </AuthProvider>

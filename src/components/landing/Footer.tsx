@@ -42,6 +42,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-lg font-bold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/zero-agency-privacy-policy" className="text-gray-400 hover:text-white">Zero Agency Privacy Policy</Link></li>
               <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
               <li><Link to="/security-policy" className="text-gray-400 hover:text-white">Security Policy</Link></li>
               <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white">Cookie Policy</Link></li>
