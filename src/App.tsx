@@ -16,7 +16,7 @@ import CampaignPage from './pages/CampaignPage';
 import TestAdsPage from './pages/TestAdsPage';
 import TemplateExamplePage from './pages/TemplateExamplePage';
 import MFAPage from './pages/MFAPage';
-import ConnectionsSection from './components/config/ConnectionsSection';
+import ConnectionsPage from './pages/ConnectionsPage';
 import OAuthCallbackHandler from './components/config/OAuthCallbackHandler';
 import LandingPage from './pages/LandingPage';
 
@@ -39,15 +39,11 @@ function App() {
           <Route path="/campaign/:campaignId" element={<ProtectedRoute><AppLayout><CampaignPage /></AppLayout></ProtectedRoute>} />
           <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
-          <Route
-            path="/connections"
-            element={<ProtectedRoute><ConnectionsSection /></ProtectedRoute>}
-          />
+          
+          {/* Update the connections route to use ConnectionsPage instead of just ConnectionsSection */}
+          <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
 
-          <Route
-            path="/callback"
-            element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>}
-          />
+          <Route path="/callback" element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>} />
         </Routes>
         <Toaster />
       </AuthProvider>

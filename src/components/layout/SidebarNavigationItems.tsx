@@ -67,7 +67,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       name: "Settings",
       href: "/settings",
       icon: Settings,
-      active: activePage === "settings" || currentPath === "/settings"
+      active: activePage === "settings" || currentPath.includes("/settings")
     }
   ];
 

@@ -1,147 +1,138 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isOAuthCallback, handleOAuthCallback } from './oauthService';
-import { tokenSecurity } from '@/services/security/tokenSecurity';
-import { useNavigate } from 'react-router-dom';
-import { OAuthCallbackResult } from './types';
+import { AdPlatform, OAuthCallbackResult } from './types';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  const processOAuthCallback = async (userId: string | undefined, fetchConnections: () => Promise<void>) => {
-    // Check if this is an OAuth callback and user is authenticated
-    if (!isOAuthCallback() || !userId) return false;
+  
+  const processOAuthCallback = async (userId: string, onSuccess?: () => void) => {
+    // Parse URL search params
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    const error = searchParams.get('error');
+    const platformParam = searchParams.get('platform') || '';
+    
+    // If no code or error, this is not an OAuth redirect
+    if (!code && !error) {
+      console.log("No OAuth callback parameters detected");
+      return;
+    }
+    
+    console.log("Processing OAuth callback:", { code: !!code, error, state: !!state, platform: platformParam });
+    
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: `Error: ${error}. The platform denied access.`,
+        variant: "destructive",
+      });
+      
+      // Clear URL params
+      navigate('/connections', { replace: true });
+      return;
+    }
+    
+    if (!code || !state) {
+      toast({
+        title: "Authentication Error",
+        description: "Missing required OAuth parameters",
+        variant: "destructive",
+      });
+      
+      // Clear URL params
+      navigate('/connections', { replace: true });
+      return;
+    }
     
     try {
-      // Start processing and clear any previous errors
       setIsConnecting(true);
       setError(null);
       setErrorDetails(null);
       setErrorType(null);
       
-      // Get current origin for proper redirect handling
-      const origin = window.location.origin;
-      const redirectUri = `${origin}/connections`;
+      // Get the original redirect URI from session storage
+      const redirectUri = `${window.location.origin}/connections`;
       
-      // Log OAuth callback attempt for security
-      await tokenSecurity.logSecurityEvent({
-        event: 'oauth_callback_started',
-        user_id: userId,
-        timestamp: new Date().toISOString()
+      // Exchange code for token via Supabase Edge Function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ad-account-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'exchangeToken',
+          code,
+          state,
+          redirectUri,
+          userId
+        }),
       });
       
-      console.log('Processing OAuth callback with redirectUri:', redirectUri);
-      
-      // Handle the OAuth callback
-      const result: OAuthCallbackResult | null = await handleOAuthCallback(redirectUri);
-      
-      if (result) {
-        // If successful, refresh the connections list
-        await fetchConnections();
-        
-        // Log successful OAuth connection
-        await tokenSecurity.logSecurityEvent({
-          event: 'oauth_connection_success',
-          user_id: userId,
-          platform: result.platform,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Get platform display name
-        const platformName = 
-          result.platform === 'google' ? 'Google Ads' : 
-          result.platform === 'meta' ? 'Meta Ads' : 
-          result.platform === 'linkedin' ? 'LinkedIn Ads' : 'Microsoft Ads';
-        
-        // Show appropriate success message based on platform
-        if (result.platform === 'google' && 'googleAdsAccess' in result && result.googleAdsAccess === false) {
-          toast({
-            title: "Google Account Connected",
-            description: `Note: Only basic Google account access was granted. You may need to reconnect with Google Ads permissions.`,
-            variant: "default",
-          });
-        } else if (result.platform === 'linkedin' && 'linkedInAdsAccess' in result && result.linkedInAdsAccess === false) {
-          toast({
-            title: "LinkedIn Account Connected",
-            description: `Note: Only basic LinkedIn account access was granted. You may need to reconnect with LinkedIn Ads permissions.`,
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Account Connected Successfully",
-            description: `Your ${platformName} account has been connected securely`,
-          });
-        }
-        
-        // Navigate back to connections page to ensure we're on a valid route
-        navigate('/connections');
-        return true;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Token exchange failed: ${response.status} - ${errorText}`);
       }
       
-      // No result means it wasn't an OAuth callback after all
-      return false;
-    } catch (error: any) {
-      console.error('Error completing OAuth flow:', error);
+      const data = await response.json();
       
-      // Log error for security purposes
-      await tokenSecurity.logSecurityEvent({
-        event: 'oauth_connection_error',
-        user_id: userId,
-        timestamp: new Date().toISOString(),
-        details: { errorMessage: error.message || "Unknown error" }
-      }).catch(e => console.warn("Failed to log security event"));
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to exchange token');
+      }
+      
+      // Success
+      const result: OAuthCallbackResult = data.result;
+      const platformName = 
+        result.platform === 'google' ? 'Google Ads' :
+        result.platform === 'meta' ? 'Meta Ads' :
+        result.platform === 'linkedin' ? 'LinkedIn Ads' :
+        result.platform === 'microsoft' ? 'Microsoft Ads' : 
+        'Ad Platform';
+      
+      toast({
+        title: "Connection Successful",
+        description: `Your ${platformName} account has been connected.`,
+      });
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error("OAuth callback error:", error);
+      
+      // Set error information
+      setError(`Failed to connect ad account: ${error.message}`);
+      setErrorDetails(error.message);
+      setErrorType('oauth');
       
       // Show error toast
       toast({
         title: "Connection Failed",
-        description: error.message || "There was an error connecting your account",
+        description: error.message || "There was an error connecting your ad account",
         variant: "destructive",
       });
-      
-      // Set detailed error information
-      setError(error.message || "There was an error connecting your account");
-      
-      // Set more focused error information for better troubleshooting
-      if (error.message) {
-        if (error.message.includes("token")) {
-          setErrorType("credentials");
-          setErrorDetails("There was a secure error exchanging the authorization code.");
-        } else if (error.message.includes("Invalid") || error.message.includes("expired")) {
-          setErrorType("credentials");
-          setErrorDetails("The authorization response was invalid or expired.");
-        } else if (error.message.includes("scope") || error.message.includes("permission")) {
-          setErrorType("permissions");
-          setErrorDetails("Required permissions were not granted. Please try again and approve all requested permissions.");
-        } else {
-          setErrorType("edge_function");
-          setErrorDetails("There was an error completing the secure OAuth flow.");
-        }
-      }
-      
-      // Navigate back to connections page to ensure we're on a valid route
-      navigate('/connections');
-      return false;
     } finally {
       setIsConnecting(false);
+      
+      // Clear URL params by redirecting to connections page
+      navigate('/connections', { replace: true });
     }
   };
-
+  
   return {
     isConnecting,
     error,
     errorDetails,
     errorType,
-    processOAuthCallback,
-    clearErrors: () => {
-      setError(null);
-      setErrorDetails(null);
-      setErrorType(null);
-    }
+    processOAuthCallback
   };
 };
