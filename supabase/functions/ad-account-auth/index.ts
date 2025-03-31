@@ -72,7 +72,101 @@ Deno.serve(async (req) => {
 
     // Handle the getAuthUrl action
     if (action === 'getAuthUrl') {
-      return await getAuthUrl(supabaseClient, requestData);
+      const { platform, redirectUri, userId } = requestData;
+      
+      // Validate required fields
+      if (!platform) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Platform is required'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+      
+      if (!redirectUri) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Redirect URI is required'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+      
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'User ID is required'
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+      
+      console.log(`Processing getAuthUrl for ${platform} account, user: ${userId}`);
+      
+      // Generate state parameter
+      const state = crypto.randomUUID();
+      
+      // Store auth state in the database for verification
+      try {
+        // Store state in database
+        const { error } = await supabaseClient
+          .from('oauth_states')
+          .insert({
+            id: state,
+            user_id: userId,
+            platform,
+            redirect_uri: redirectUri,
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+          });
+        
+        if (error) {
+          console.error('OAuth state error:', error);
+          return new Response(
+            JSON.stringify({ success: false, error: `Failed to prepare OAuth flow: ${error.message}` }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          );
+        }
+      } catch (error) {
+        console.error('Failed to store OAuth state:', error);
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to prepare OAuth flow: ${error.message}` }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
+      }
+      
+      // Get platform credentials from environment
+      const clientId = Deno.env.get(`${platform.toUpperCase()}_CLIENT_ID`);
+      const clientSecret = Deno.env.get(`${platform.toUpperCase()}_CLIENT_SECRET`);
+      
+      if (!clientId || !clientSecret) {
+        return new Response(
+          JSON.stringify({ success: false, error: `Missing API credentials for ${platform}` }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      
+      // Generate a mock auth URL for testing
+      // In a real implementation, this would call the platform's OAuth endpoint
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=profile%20email&state=${state}`;
+      
+      return new Response(
+        JSON.stringify({ success: true, authUrl }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
     }
     
     // Handle the exchangeToken action

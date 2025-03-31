@@ -1,61 +1,75 @@
 
-import React, { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React from "react";
+import { Helmet } from "react-helmet-async";
 import { Nav } from "@/components/landing/Nav";
+import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import { Process } from "@/components/landing/Process";
+import { Pricing } from "@/components/landing/Pricing";
 import { Trust } from "@/components/landing/Trust";
 import { Cta } from "@/components/landing/Cta";
 import { Footer } from "@/components/landing/Footer";
-import { Pricing } from "@/components/landing/Pricing";
+import { LoginButton } from "@/components/landing/LoginButton";
 
 const LandingPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { t } = useLanguage();
+  // Current URL for canonical and OG tags
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://aiadguru.com';
   
-  useEffect(() => {
-    // Enhanced debug logging
-    console.log("LandingPage component mounted");
-    console.log("DOM ready:", document.readyState);
-    
-    // Force a layout recalculation
-    document.body.offsetHeight;
-  }, []);
-
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Nav />
-      
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="py-20 bg-background">
-          <div className="container mx-auto text-center px-4">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Create High-Converting Ads with AI</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Generate, optimize, and manage your Google, Meta, LinkedIn & Microsoft ads with the power of AI. 
-              Less effort, better results.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" onClick={() => navigate("/login")}>
-                {t('common.startFreeTrial')}
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/credits-info")}>
-                {t('common.learnMore')}
-              </Button>
-            </div>
-          </div>
-        </section>
+    <div className="min-h-screen">
+      <Helmet>
+        <title>AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft</title>
+        <meta name="description" content="Generate, optimize and manage Google, Meta, LinkedIn & Microsoft ads that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta name="keywords" content="AI ads, Google ads generator, Meta ads creator, LinkedIn ads, Microsoft ads, ad automation, marketing AI, GPT-4 ads, DALL·E ads, Instagram ads, ad optimization, ROI optimization" />
         
-        {/* Include all landing page sections */}
-        <Features />
-        <Process />
-        <Trust />
-        <Pricing />
-        <Cta />
-      </main>
-      
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:title" content="AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft" />
+        <meta property="og:description" content="Generate, optimize and manage ads across major platforms that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta property="og:image" content="/og-image.png" />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={currentUrl} />
+        <meta property="twitter:title" content="AI Ad Guru | Create High-Converting Ads with AI for Google, Meta, LinkedIn & Microsoft" />
+        <meta property="twitter:description" content="Generate, optimize and manage ads across major platforms that actually convert using GPT-4 and DALL·E 3. Save time, increase ROAS and grow your business." />
+        <meta property="twitter:image" content="/og-image.png" />
+
+        {/* Additional SEO tags */}
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={currentUrl} />
+        
+        {/* Schema.org structured data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "AI Ad Guru",
+            "applicationCategory": "MarketingApplication",
+            "offers": {
+              "@type": "Offer",
+              "price": "99",
+              "priceCurrency": "USD"
+            },
+            "description": "AI-powered ad creation and optimization for Google, Meta, LinkedIn, and Microsoft platforms.",
+            "operatingSystem": "Web browser",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "127"
+            }
+          })}
+        </script>
+      </Helmet>
+      <Nav />
+      <Hero />
+      <LoginButton />
+      <Features />
+      <Process />
+      <Pricing />
+      <Trust />
+      <Cta />
       <Footer />
     </div>
   );

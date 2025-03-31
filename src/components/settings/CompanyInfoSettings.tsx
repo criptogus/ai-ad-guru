@@ -5,14 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ImagePlus, Trash, Save, Loader2 } from "lucide-react";
+import { ImagePlus, Trash } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanyInfo } from "@/types/supabase";
-import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const INDUSTRY_OPTIONS = [
   "Software & Technology",
@@ -63,6 +61,7 @@ const TONE_EXAMPLES = {
 };
 
 const CompanyInfoSettings: React.FC = () => {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -123,7 +122,8 @@ const CompanyInfoSettings: React.FC = () => {
       console.error("Error fetching company info:", error);
       toast({
         title: "Failed to load company information",
-        description: "There was an error loading your company details"
+        description: "There was an error loading your company details",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -152,7 +152,8 @@ const CompanyInfoSettings: React.FC = () => {
     if (!companyInfo.company_name.trim()) {
       toast({
         title: "Company name required",
-        description: "Please enter your company name"
+        description: "Please enter your company name",
+        variant: "destructive",
       });
       return;
     }
@@ -196,7 +197,7 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Changes saved",
-        description: "Your company information has been updated"
+        description: "Your company information has been updated",
       });
       
       // Refresh data
@@ -206,7 +207,8 @@ const CompanyInfoSettings: React.FC = () => {
       console.error("Error saving company info:", error);
       toast({
         title: "Failed to save changes",
-        description: "There was an error updating your company information"
+        description: "There was an error updating your company information",
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -222,7 +224,8 @@ const CompanyInfoSettings: React.FC = () => {
     if (!fileType.match(/image\/(png|jpeg|jpg|svg\+xml)/)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PNG, JPG, or SVG image"
+        description: "Please upload a PNG, JPG, or SVG image",
+        variant: "destructive",
       });
       return;
     }
@@ -231,7 +234,8 @@ const CompanyInfoSettings: React.FC = () => {
     if (file.size > 2 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Logo image must be less than 2MB"
+        description: "Logo image must be less than 2MB",
+        variant: "destructive",
       });
       return;
     }
@@ -269,14 +273,15 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Logo uploaded",
-        description: "Your company logo has been uploaded"
+        description: "Your company logo has been uploaded",
       });
       
     } catch (error) {
       console.error("Error uploading logo:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your logo"
+        description: "There was an error uploading your logo",
+        variant: "destructive",
       });
     } finally {
       setIsUploading(false);
@@ -301,14 +306,15 @@ const CompanyInfoSettings: React.FC = () => {
       
       toast({
         title: "Logo removed",
-        description: "Your company logo has been removed"
+        description: "Your company logo has been removed",
       });
       
     } catch (error) {
       console.error("Error removing logo:", error);
       toast({
         title: "Failed to remove logo",
-        description: "There was an error removing your logo"
+        description: "There was an error removing your logo",
+        variant: "destructive",
       });
     }
   };
@@ -321,7 +327,7 @@ const CompanyInfoSettings: React.FC = () => {
           <CardDescription>Loading your company details...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center p-6">
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <div className="h-8 w-8 border-t-2 border-blue-500 rounded-full animate-spin"></div>
         </CardContent>
       </Card>
     );
@@ -335,15 +341,12 @@ const CompanyInfoSettings: React.FC = () => {
           Define your brand identity for AI-generated content
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-6">
         {/* Basic Information */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium">Basic Information</h3>
-            <Separator className="flex-1" />
-          </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Basic Information</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="company-name">Company Name *</Label>
               <Input
@@ -352,7 +355,6 @@ const CompanyInfoSettings: React.FC = () => {
                 onChange={(e) => handleInputChange("company_name", e.target.value)}
                 placeholder="Your Company Inc."
                 required
-                className="input-focus"
               />
             </div>
             
@@ -363,22 +365,21 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.website || ""}
                 onChange={(e) => handleInputChange("website", e.target.value)}
                 placeholder="https://yourcompany.com"
-                className="input-focus"
               />
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Select 
                 value={companyInfo.industry || ""} 
                 onValueChange={(value) => handleInputChange("industry", value)}
               >
-                <SelectTrigger id="industry" className="focus-ring">
+                <SelectTrigger id="industry">
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
-                <SelectContent position="popper">
+                <SelectContent>
                   {INDUSTRY_OPTIONS.map((industry) => (
                     <SelectItem key={industry} value={industry}>
                       {industry}
@@ -395,21 +396,17 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.target_market || ""}
                 onChange={(e) => handleInputChange("target_market", e.target.value)}
                 placeholder="Small businesses, enterprise, etc."
-                className="input-focus"
               />
             </div>
           </div>
         </div>
         
         {/* Logo Upload */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium">Logo</h3>
-            <Separator className="flex-1" />
-          </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Logo</h3>
           
-          <div className="flex items-start gap-6">
-            <div className="h-24 w-24 border rounded-lg flex items-center justify-center overflow-hidden bg-muted">
+          <div className="flex items-start gap-4">
+            <div className="h-24 w-24 border rounded-md flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
               {companyInfo.logo_url ? (
                 <img 
                   src={companyInfo.logo_url} 
@@ -417,24 +414,26 @@ const CompanyInfoSettings: React.FC = () => {
                   className="max-h-full max-w-full object-contain"
                 />
               ) : (
-                <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                <ImagePlus className="h-8 w-8 text-gray-400" />
               )}
             </div>
             
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2">
               <Label>Upload Logo (Recommended: 500x500px, PNG/SVG)</Label>
               
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col xs:flex-row gap-2">
                 <Button 
                   variant="outline" 
                   onClick={() => document.getElementById('logo-upload')?.click()}
                   disabled={isUploading}
-                  className="relative focus-ring"
+                  className="relative"
                 >
                   {isUploading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                      <div className="h-5 w-5 border-t-2 border-current rounded-full animate-spin"></div>
+                    </div>
                   )}
-                  {!isUploading && <ImagePlus className="mr-2 h-4 w-4" />}
+                  <ImagePlus className="mr-2 h-4 w-4" />
                   {companyInfo.logo_url ? "Change Logo" : "Upload Logo"}
                 </Button>
                 
@@ -443,7 +442,6 @@ const CompanyInfoSettings: React.FC = () => {
                     variant="outline" 
                     onClick={handleRemoveLogo}
                     disabled={isUploading}
-                    className="text-destructive hover:text-destructive focus-ring"
                   >
                     <Trash className="mr-2 h-4 w-4" />
                     Remove
@@ -460,40 +458,27 @@ const CompanyInfoSettings: React.FC = () => {
               </div>
               
               <p className="text-sm text-muted-foreground">
-                This logo will be used in your AI-generated ad creatives
+                This logo will be used in your generated content
               </p>
             </div>
           </div>
         </div>
         
         {/* Content Style */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium">Content Style</h3>
-            <Separator className="flex-1" />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="text-xs text-primary px-2 py-1 bg-primary/10 rounded-full">AI-Important</div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">These settings significantly impact how AI generates your ad content</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Content Style</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>
               <Select 
                 value={companyInfo.language || "English"} 
                 onValueChange={(value) => handleInputChange("language", value)}
               >
-                <SelectTrigger id="language" className="focus-ring">
+                <SelectTrigger id="language">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
-                <SelectContent position="popper">
+                <SelectContent>
                   {LANGUAGE_OPTIONS.map((language) => (
                     <SelectItem key={language} value={language}>
                       {language}
@@ -509,10 +494,10 @@ const CompanyInfoSettings: React.FC = () => {
                 value={companyInfo.tone_of_voice || "Professional"} 
                 onValueChange={(value) => handleInputChange("tone_of_voice", value)}
               >
-                <SelectTrigger id="tone" className="focus-ring">
+                <SelectTrigger id="tone">
                   <SelectValue placeholder="Select tone" />
                 </SelectTrigger>
-                <SelectContent position="popper">
+                <SelectContent>
                   {TONE_OPTIONS.map((tone) => (
                     <SelectItem key={tone} value={tone}>
                       {tone}
@@ -522,7 +507,7 @@ const CompanyInfoSettings: React.FC = () => {
               </Select>
               
               {companyInfo.tone_of_voice && companyInfo.tone_of_voice !== "Custom" && (
-                <p className="text-xs text-muted-foreground mt-1.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Example: "{TONE_EXAMPLES[companyInfo.tone_of_voice as keyof typeof TONE_EXAMPLES]}"
                 </p>
               )}
@@ -530,30 +515,27 @@ const CompanyInfoSettings: React.FC = () => {
           </div>
           
           {companyInfo.tone_of_voice === "Custom" && (
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2">
               <Label htmlFor="custom-tone">Custom Tone Description</Label>
               <Textarea
                 id="custom-tone"
                 value={companyInfo.custom_tone || ""}
                 onChange={(e) => handleInputChange("custom_tone", e.target.value)}
                 placeholder="Describe your brand's unique tone of voice..."
-                className="min-h-[100px] input-focus"
+                className="min-h-[100px]"
               />
             </div>
           )}
         </div>
         
         {/* Brand Colors */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium">Brand Colors</h3>
-            <Separator className="flex-1" />
-          </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Brand Colors</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="primary-color">Primary Color</Label>
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-2">
                 <div 
                   className="h-10 w-10 rounded-md border"
                   style={{ backgroundColor: companyInfo.primary_color || "#0070f3" }}
@@ -563,14 +545,14 @@ const CompanyInfoSettings: React.FC = () => {
                   type="color"
                   value={companyInfo.primary_color || "#0070f3"}
                   onChange={(e) => handleInputChange("primary_color", e.target.value)}
-                  className="w-full h-10 input-focus cursor-pointer"
+                  className="w-full h-10"
                 />
               </div>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="secondary-color">Secondary Color (Optional)</Label>
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-2">
                 <div 
                   className="h-10 w-10 rounded-md border"
                   style={{ backgroundColor: companyInfo.secondary_color || "" }}
@@ -580,7 +562,7 @@ const CompanyInfoSettings: React.FC = () => {
                   type="color"
                   value={companyInfo.secondary_color || "#ffffff"}
                   onChange={(e) => handleInputChange("secondary_color", e.target.value)}
-                  className="w-full h-10 input-focus cursor-pointer"
+                  className="w-full h-10"
                 />
               </div>
             </div>
@@ -596,15 +578,10 @@ const CompanyInfoSettings: React.FC = () => {
           >
             {isSaving ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <div className="h-4 w-4 border-t-2 border-current rounded-full animate-spin mr-2"></div>
                 Saving...
               </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </>
-            )}
+            ) : "Save Changes"}
           </Button>
         </div>
       </CardContent>

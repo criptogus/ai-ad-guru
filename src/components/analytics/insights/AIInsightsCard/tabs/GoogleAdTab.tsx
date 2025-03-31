@@ -1,21 +1,25 @@
 
 import React from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface GoogleAdTabProps {
   sitelinks: Array<{title: string, link: string}>;
 }
 
 export const GoogleAdTab: React.FC<GoogleAdTabProps> = ({ sitelinks }) => {
+  const { toast } = useToast();
+
   const createABTest = () => {
-    toast("A/B Test Created", {
-      description: "A duplicate of this ad has been created for A/B testing."
+    toast({
+      title: "A/B Test Created",
+      description: "A duplicate of this ad has been created for A/B testing.",
     });
   };
 
   const copyAdToClipboard = () => {
-    toast("Ad Copied", {
-      description: "Ad content has been copied to clipboard."
+    toast({
+      title: "Ad Copied",
+      description: "Ad content has been copied to clipboard.",
     });
   };
 

@@ -1,14 +1,17 @@
 
 import React from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "@/hooks/use-theme";
 import CompanyInfoSettings from "@/components/settings/CompanyInfoSettings";
 import ConnectionsSettings from "@/components/settings/ConnectionsSettings";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
 import NotificationsSettings from "@/components/settings/NotificationsSettings";
 
 const SettingsPage: React.FC = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const currentTab = location.pathname.split('/settings/')[1] || 'company';
@@ -30,21 +33,13 @@ const SettingsPage: React.FC = () => {
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="company">
-            <CompanyInfoSettings />
-          </TabsContent>
-          
-          <TabsContent value="connections">
-            <ConnectionsSettings />
-          </TabsContent>
-          
-          <TabsContent value="appearance">
-            <AppearanceSettings />
-          </TabsContent>
-          
-          <TabsContent value="notifications">
-            <NotificationsSettings />
-          </TabsContent>
+          <Routes>
+            <Route path="/" element={<CompanyInfoSettings />} />
+            <Route path="/company" element={<CompanyInfoSettings />} />
+            <Route path="/connections" element={<ConnectionsSettings />} />
+            <Route path="/appearance" element={<AppearanceSettings />} />
+            <Route path="/notifications" element={<NotificationsSettings />} />
+          </Routes>
         </Tabs>
       </div>
     </SafeAppLayout>

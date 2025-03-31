@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, UserRole, RolePermissions, Permission } from "./types";
+import { TeamMember, UserRole, RolePermissions } from "./types";
 
 // Mock function to get team members (would connect to Supabase in production)
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
@@ -58,13 +58,13 @@ export const inviteUser = async (email: string, role: UserRole): Promise<void> =
 export const getRolePermissions = (): RolePermissions => {
   return {
     Admin: [
-      "Manage team",
+      "Manage users",
       "Create campaigns",
       "Edit campaigns",
       "Delete campaigns",
       "View analytics",
       "Manage billing",
-      "Configure integrations",
+      "Configure platforms",
       "Manage company settings",
     ],
     Editor: [
@@ -87,7 +87,7 @@ export const getRolePermissions = (): RolePermissions => {
 };
 
 // Function to check if a user has a specific permission
-export const hasPermission = (userRole: UserRole, permission: Permission): boolean => {
+export const hasPermission = (userRole: UserRole, permission: string): boolean => {
   const permissions = getRolePermissions();
   return permissions[userRole]?.includes(permission) ?? false;
 };

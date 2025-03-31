@@ -19,8 +19,6 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
   }
   
   try {
-    console.log(`Processing getAuthUrl for ${platform} account, user: ${userId}`);
-    
     // Get platform credentials from environment
     const clientId = Deno.env.get(`${platform.toUpperCase()}_CLIENT_ID`);
     const clientSecret = Deno.env.get(`${platform.toUpperCase()}_CLIENT_SECRET`);
@@ -38,14 +36,7 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
     // Store auth state in the database for verification
     const { error: stateError } = await supabaseClient
       .from('oauth_states')
-      .insert({ 
-        state, 
-        user_id: userId, 
-        platform, 
-        created_at: new Date().toISOString(), 
-        redirect_uri: redirectUri,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minute expiry
-      });
+      .insert({ state, user_id: userId, platform, created_at: new Date().toISOString(), redirect_uri: redirectUri });
       
     if (stateError) {
       console.error('OAuth state error:', stateError.message);
@@ -58,18 +49,10 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
     // Generate platform-specific auth URL
     let authUrl;
     switch(platform) {
-      case 'google': 
-        authUrl = getGoogleAuthUrl(clientId, redirectUri, state); 
-        break;
-      case 'meta': 
-        authUrl = getMetaAuthUrl(clientId, redirectUri, state); 
-        break;
-      case 'linkedin': 
-        authUrl = getLinkedInAuthUrl(clientId, redirectUri, state); 
-        break;
-      case 'microsoft': 
-        authUrl = getMicrosoftAuthUrl(clientId, redirectUri, state); 
-        break;
+      case 'google': authUrl = getGoogleAuthUrl(clientId, redirectUri, state); break;
+      case 'meta': authUrl = getMetaAuthUrl(clientId, redirectUri, state); break;
+      case 'linkedin': authUrl = getLinkedInAuthUrl(clientId, redirectUri, state); break;
+      case 'microsoft': authUrl = getMicrosoftAuthUrl(clientId, redirectUri, state); break;
       default:
         return new Response(
           JSON.stringify({ success: false, error: `Unsupported platform: ${platform}` }),

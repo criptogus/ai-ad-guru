@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { LinkedInAd } from "@/contexts/CampaignContext";
 
@@ -10,12 +10,15 @@ export const useLinkedInAdActions = (
   generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<LinkedInAd[] | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
+  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   
   const handleGenerateLinkedInAds = async () => {
     if (!analysisResult) {
-      toast("Analysis Required", {
-        description: "Please analyze a website before generating ads"
+      toast({
+        title: "Analysis Required",
+        description: "Please analyze a website before generating ads",
+        variant: "destructive",
       });
       return;
     }
@@ -23,7 +26,8 @@ export const useLinkedInAdActions = (
     setIsGenerating(true);
     
     try {
-      toast("Generating Ads", {
+      toast({
+        title: "Generating Ads",
         description: "Creating LinkedIn ads based on your website analysis"
       });
       
@@ -37,7 +41,8 @@ export const useLinkedInAdActions = (
           linkedInAds: result
         }));
         
-        toast("Ads Generated", {
+        toast({
+          title: "Ads Generated",
           description: `Successfully created ${result.length} LinkedIn ads`
         });
       } else {
@@ -45,8 +50,10 @@ export const useLinkedInAdActions = (
       }
     } catch (error) {
       console.error("Error generating LinkedIn ads:", error);
-      toast("Generation Failed", {
-        description: error instanceof Error ? error.message : "Failed to generate LinkedIn ads"
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate LinkedIn ads",
+        variant: "destructive",
       });
     } finally {
       setIsGenerating(false);

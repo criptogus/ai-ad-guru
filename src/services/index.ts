@@ -15,25 +15,27 @@ export { mediaService };
 
 // Shared libraries exports
 export * from './libs/supabase-client';
+export * from './libs/auth-helpers';
 export * from './libs/error-handling';
 export * from './libs/api-client';
 
-// Team-related exports (explicitly naming exports to avoid ambiguity)
+// Explicitly re-export team-related functions to maintain backward compatibility
 export { 
   getRolePermissions,
   isAdmin,
   isEditor,
-  isViewer 
+  isViewer
 } from './team/roles';
 
-export {
+export { 
   getTeamMembers,
+  inviteUser as inviteTeamMember,
   updateTeamMember,
-  removeTeamMember,
-  updateTeamMemberRole
+  removeTeamMember
 } from './team/members';
 
-export {
+export { 
+  inviteUser,
   getTeamInvitations,
   resendInvitation,
   revokeInvitation

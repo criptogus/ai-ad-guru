@@ -4,10 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
+  Calendar,
   Home,
   Settings,
   CreditCard,
   Users,
+  FileText,
   ArrowRightLeft,
   Layers
 } from "lucide-react";
@@ -35,7 +37,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       name: "Campaigns",
       href: "/campaigns",
       icon: Layers,
-      active: activePage === "campaigns" || currentPath.includes("/campaigns") || currentPath === "/create-campaign"
+      active: activePage === "campaigns" || currentPath.includes("/campaigns")
     },
     {
       name: "Analytics",
@@ -57,15 +59,15 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
     },
     {
       name: "Team",
-      href: "/roles",
+      href: "/team",
       icon: Users,
-      active: activePage === "team" || activePage === "roles" || currentPath === "/team" || currentPath === "/roles"
+      active: activePage === "team" || currentPath === "/team"
     },
     {
       name: "Settings",
       href: "/settings",
       icon: Settings,
-      active: activePage === "settings" || currentPath === "/settings" || currentPath.includes("/settings/")
+      active: activePage === "settings" || currentPath === "/settings"
     }
   ];
 

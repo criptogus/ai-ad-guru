@@ -7,7 +7,6 @@ import { usePaymentAction } from './auth/usePaymentAction';
 import { loginWithGoogle } from '@/services/auth/loginService';
 import { User } from '@supabase/supabase-js';
 import { useState } from 'react';
-import { useToast } from './use-toast';
 
 export const useAuthActions = (
   user?: User | null,
@@ -25,38 +24,20 @@ export const useAuthActions = (
   } = usePaymentAction(user, setUser);
   
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { toast } = useToast();
   
   // Login with credentials
   const login = async (email: string, password: string) => {
     return handleLogin(email, password);
   };
   
-  // Handle Google login with improved error handling
+  // Handle Google login
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
-      console.log('Initiating Google login flow');
-      const result = await loginWithGoogle();
+      await loginWithGoogle();
       // This will redirect to Google auth page
-      console.log('Google login initiated successfully');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error logging in with Google:', error);
-      
-      if (error.message && error.message.includes('redirect_uri_mismatch')) {
-        toast({
-          title: "OAuth Configuration Error",
-          description: "The redirect URI is misconfigured. Please contact support or check Supabase OAuth settings.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Google Login Failed",
-          description: error.message || "Failed to initiate Google login",
-          variant: "destructive",
-        });
-      }
-      
       throw error;
     } finally {
       setIsGoogleLoading(false);

@@ -20,7 +20,6 @@ export function getLinkedInAuthUrl(
 
   // Generate the authorization URL
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
-  console.log(`Generated LinkedIn auth URL: ${authUrl}`);
   return authUrl;
 }
 

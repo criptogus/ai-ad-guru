@@ -1,9 +1,8 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { handleOAuthCallback, isOAuthCallback } from './oauthService';
+import { isOAuthCallback, handleOAuthCallback } from './oauthService';
 import { tokenSecurity } from '@/services/security/tokenSecurity';
-import { oauthHelpers } from './oauth';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -52,7 +51,9 @@ export const useOAuthCallback = () => {
         toast({
           title: "Account Connected Securely",
           description: `Successfully connected to ${
-            oauthHelpers.formatPlatformName(result.platform)
+            result.platform === 'google' ? 'Google' : 
+            result.platform === 'meta' ? 'Meta' : 
+            result.platform === 'linkedin' ? 'LinkedIn' : 'Microsoft'
           } Ads`,
         });
       }

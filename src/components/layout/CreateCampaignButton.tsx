@@ -13,7 +13,6 @@ const CreateCampaignButton: React.FC<CreateCampaignButtonProps> = ({ collapsed =
   const navigate = useNavigate();
 
   const handleCreateCampaign = () => {
-    console.log("Navigating to /create-campaign");
     navigate('/create-campaign');
   };
 

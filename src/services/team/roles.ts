@@ -1,32 +1,31 @@
 
-import { RolePermissions, Permission } from "../types";
+import { RolePermissions } from "../types";
 
 // Function to get role permissions
 export const getRolePermissions = (): RolePermissions => {
   return {
     Admin: [
-      "Manage team",
-      "Manage billing",
-      "Create campaigns",
-      "Edit campaigns",
-      "Delete campaigns",
-      "View analytics",
-      "Configure integrations",
+      "Manage Users",
+      "Manage Billing",
+      "Create Campaigns",
+      "Edit Campaigns",
+      "View Analytics",
+      "Access API",
     ],
     Editor: [
-      "Create campaigns",
-      "Edit campaigns",
-      "View analytics",
-      "Configure platforms",
+      "Create Campaigns",
+      "Edit Campaigns",
+      "View Analytics",
+      "Configure Platforms",
     ],
     Analyst: [
-      "View analytics",
-      "Export reports",
-      "Create insights",
+      "Create Campaigns",
+      "Edit Campaigns",
+      "View Analytics",
     ],
     Viewer: [
-      "View campaigns",
-      "View analytics",
+      "View Campaigns",
+      "View Analytics",
     ],
   };
 };

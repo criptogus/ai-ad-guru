@@ -1,92 +1,83 @@
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import * as translations from '@/locales';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { en, es, pt } from '@/locales';
 
-type LanguageContextType = {
-  currentLanguage: string;
-  changeLanguage: (lang: string) => void;
-  t: (key: string, params?: Record<string, string>) => string;
-};
+// Define the language types
+type Language = 'en' | 'es' | 'pt';
+type TranslationDictionary = Record<string, string>;
 
-const defaultLanguage = 'en';
+// Define the language context type
+interface LanguageContextType {
+  currentLanguage: Language;
+  changeLanguage: (lang: Language) => void;
+  t: (key: string) => string;
+}
 
+// Create the context with default values
 const LanguageContext = createContext<LanguageContextType>({
-  currentLanguage: defaultLanguage,
+  currentLanguage: 'en',
   changeLanguage: () => {},
-  t: (key: string) => key,
+  t: (key) => key,
 });
 
-export const useLanguage = () => useContext(LanguageContext);
+// Create the provider component
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Detect browser language and set initial state
+  const detectBrowserLanguage = (): Language => {
+    const browserLang = navigator.language.split('-')[0];
+    if (browserLang === 'pt') return 'pt';
+    if (browserLang === 'es') return 'es';
+    return 'en'; // Default to English
+  };
 
-type LanguageProviderProps = {
-  children: ReactNode;
-};
+  // Initialize with localStorage or browser language
+  const getInitialLanguage = (): Language => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem('preferredLanguage') as Language | null;
+      return storedLang || detectBrowserLanguage();
+    }
+    return 'en'; // Default to English for SSR
+  };
+  
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(getInitialLanguage());
+  const [translations, setTranslations] = useState<TranslationDictionary>(
+    currentLanguage === 'es' ? es :
+    currentLanguage === 'pt' ? pt : en
+  );
 
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState<string>(() => {
-    // Try to get language from localStorage
-    const savedLanguage = localStorage.getItem('language');
-    return savedLanguage || defaultLanguage;
-  });
-
-  // Update localStorage when language changes
+  // Update translations when language changes
   useEffect(() => {
-    localStorage.setItem('language', currentLanguage);
+    setTranslations(
+      currentLanguage === 'es' ? es :
+      currentLanguage === 'pt' ? pt : en
+    );
+    
+    // Only attempt to access localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      // Save to localStorage
+      localStorage.setItem('preferredLanguage', currentLanguage);
+      // Update html lang attribute
+      document.documentElement.lang = currentLanguage;
+    }
   }, [currentLanguage]);
 
-  const changeLanguage = (lang: string) => {
-    if (translations[lang as keyof typeof translations]) {
-      setCurrentLanguage(lang);
-    } else {
-      console.warn(`Language ${lang} not supported. Falling back to ${defaultLanguage}`);
-      setCurrentLanguage(defaultLanguage);
-    }
+  // Change language function
+  const changeLanguage = (lang: Language) => {
+    setCurrentLanguage(lang);
   };
 
   // Translation function
-  const t = (key: string, params?: Record<string, string>): string => {
-    const keys = key.split('.');
-    let translation: any = translations[currentLanguage as keyof typeof translations];
-    
-    // Traverse the nested object
-    for (const k of keys) {
-      if (!translation[k]) {
-        // If translation not found, try English, then return the key itself
-        const enTranslation = getEnglishTranslation(key);
-        return enTranslation || key;
-      }
-      translation = translation[k];
-    }
-    
-    // Replace parameters if provided
-    if (params && typeof translation === 'string') {
-      return Object.entries(params).reduce(
-        (str, [param, value]) => str.replace(`{{${param}}}`, value),
-        translation
-      );
-    }
-    
-    return translation || key;
+  const t = (key: string): string => {
+    return translations[key] || key;
   };
 
-  // Helper to get English translation as fallback
-  const getEnglishTranslation = (key: string): string | null => {
-    const keys = key.split('.');
-    let enTranslation: any = translations.en;
-    
-    for (const k of keys) {
-      if (!enTranslation[k]) {
-        return null;
-      }
-      enTranslation = enTranslation[k];
-    }
-    
-    return typeof enTranslation === 'string' ? enTranslation : null;
-  };
-
+  // Provide the context
   return (
     <LanguageContext.Provider value={{ currentLanguage, changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
 };
+
+// Create a custom hook for using this context
+export const useLanguage = () => useContext(LanguageContext);

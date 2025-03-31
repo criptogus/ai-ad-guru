@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Trash2, HardDrive, Loader2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { storageCleanupService } from "@/services/storage/storageCleanup";
 
 const StorageCleanupCard: React.FC = () => {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [lastCleanupResult, setLastCleanupResult] = useState<{
     serverCleanup?: boolean;
@@ -30,13 +31,17 @@ const StorageCleanupCard: React.FC = () => {
         ...localResults
       });
       
-      toast("Storage cleanup completed", {
-        description: "Temporary files and unused storage have been cleared"
+      toast({
+        title: "Storage cleanup completed",
+        description: "Temporary files and unused storage have been cleared",
+        variant: "default",
       });
     } catch (error) {
       console.error("Storage cleanup failed:", error);
-      toast("Storage cleanup failed", {
-        description: error instanceof Error ? error.message : "Please try again later"
+      toast({
+        title: "Storage cleanup failed",
+        description: error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
       });
       
       // Still show local results even if server cleanup failed

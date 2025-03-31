@@ -8,11 +8,10 @@ const CreateCampaignPage: React.FC = () => {
   // Scroll to top on component mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    console.log("CreateCampaignPage mounted");
   }, []);
   
   return (
-    <AppLayout activePage="campaigns">
+    <AppLayout activePage="create-campaign">
       <div className="max-w-6xl mx-auto">
         <CampaignProvider>
           <CampaignContent />

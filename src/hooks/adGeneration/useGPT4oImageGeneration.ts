@@ -77,6 +77,7 @@ export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
       toast({
         title: "Credit Usage Preview",
         description: `This will use ${imageCost} credits to generate this ad image with GPT-4o`,
+        duration: 3000,
       });
       
       // Consume credits - assuming we need 5 credits for image generation

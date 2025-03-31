@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { EyeIcon, EyeOff, AlertCircle } from 'lucide-react';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toast } from "sonner";
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<void>;
@@ -16,7 +17,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     // Listen for the custom event to update form values
@@ -26,11 +27,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
       setEmail(email);
       setPassword(password);
       
-      toast("Test credentials loaded", {
-        description: "Click 'Sign in' to log in with the test account"
+      // Show toast notification to guide the user
+      toast({
+        title: "Test credentials loaded",
+        description: "Click 'Sign in' to log in with the test account",
       });
     };
 
+    // Type casting is needed for CustomEvent with TypeScript
     const listener = ((e: Event) => {
       handleTestAccountCreated(e as CustomEvent<{ email: string, password: string }>);
     });
@@ -40,7 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
     return () => {
       window.removeEventListener('testAccountCreated', listener);
     };
-  }, []);
+  }, [toast]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -48,31 +52,27 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      toast({
+        title: 'Required fields missing',
+        description: 'Please enter both email and password.',
+        variant: 'destructive',
+      });
       return;
     }
     
     try {
       console.log('Submitting login form with email:', email);
       await onSubmit(email, password);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in LoginForm handleSubmit:', error);
-      setError(error.message || 'Failed to sign in. Please try again.');
+      // Error handling is managed by the parent component
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="bg-destructive/15 p-3 rounded-md flex items-center text-sm text-destructive">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          {error}
-        </div>
-      )}
-      
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -86,7 +86,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
           data-testid="email-input"
         />
       </div>
-      
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="password">Password</Label>
@@ -109,31 +108,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isSubmitting }) => {
             type="button" 
             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
             onClick={togglePasswordVisibility}
+            tabIndex={-1}
           >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <EyeIcon className="h-4 w-4" />
-            )}
+            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
           </button>
         </div>
       </div>
-      
-      <Button
-        type="submit"
-        className="w-full"
+      <Button 
+        type="submit" 
+        className="w-full" 
         disabled={isSubmitting}
         data-testid="login-button"
       >
-        {isSubmitting ? 'Signing In...' : 'Sign In'}
+        {isSubmitting ? 'Signing in...' : 'Sign in'}
       </Button>
-      
-      <div className="text-center text-sm">
-        Don't have an account?{' '}
-        <Link to="/register" className="text-brand-600 hover:underline">
-          Sign up
-        </Link>
-      </div>
     </form>
   );
 };

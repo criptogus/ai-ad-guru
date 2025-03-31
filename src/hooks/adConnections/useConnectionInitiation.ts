@@ -1,7 +1,9 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { initiateOAuth } from './oauth';
+import { AdPlatform } from './types';
+import { tokenSecurity } from '@/services/security/tokenSecurity';
+import { initiateOAuth } from './oauthService';
 
 export const useConnectionInitiation = () => {
   const { toast } = useToast();
@@ -10,65 +12,52 @@ export const useConnectionInitiation = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
 
-  const handleConnectionInitiation = async (platform: string, userId: string | undefined) => {
+  const handleConnectionInitiation = async (platform: AdPlatform, userId: string | undefined) => {
     if (!userId) {
       toast({
         title: "Authentication Required",
-        description: "You must be logged in to connect an ad account",
+        description: "You must be logged in to connect ad accounts",
         variant: "destructive",
       });
       return;
     }
-
-    setIsConnecting(true);
-    setError(null);
-    setErrorDetails(null);
-    setErrorType(null);
-
+    
     try {
-      // Prepare redirect URI - this should match what's configured in the ad platform
+      setIsConnecting(true);
+      setError(null);
+      setErrorDetails(null);
+      setErrorType(null);
+      
       const redirectUri = `${window.location.origin}/config`;
       
-      // Initiate OAuth flow for the platform
-      const authUrl = await initiateOAuth({
-        platform: platform as any,
-        userId,
-        redirectUri
+      console.log(`Initiating ${platform} connection`);
+      
+      await tokenSecurity.logSecurityEvent({
+        event: 'oauth_initiated',
+        user_id: userId,
+        platform,
+        timestamp: new Date().toISOString()
       });
+      
+      const authUrl = await initiateOAuth({ platform, userId, redirectUri });
       
       if (authUrl) {
-        console.log(`Redirecting to ${platform} auth URL:`, authUrl);
-        // Redirect to the OAuth URL
         window.location.href = authUrl;
       } else {
-        throw new Error(`Failed to get authentication URL for ${platform}`);
+        throw new Error(`Failed to get authorization URL for ${platform}`);
       }
     } catch (error: any) {
-      console.error(`Error initiating ${platform} connection:`, error);
+      console.error(`Error in ${platform} connection:`, error.message);
       
-      // Show error toast
+      setError(error.message || `Failed to connect to ${platform}`);
+      setErrorType(platform);
+      setErrorDetails(error.toString());
+      
       toast({
         title: "Connection Error",
-        description: error.message || `There was an error connecting to ${platform}`,
+        description: error.message || `Failed to connect to ${platform}`,
         variant: "destructive",
       });
-      
-      // Set detailed error information
-      setError(error.message || `There was an error connecting to ${platform}`);
-      
-      // Set more focused error information for better troubleshooting
-      if (error.message) {
-        if (error.message.includes("API credentials")) {
-          setErrorType("configuration");
-          setErrorDetails("The platform API credentials are not correctly configured.");
-        } else if (error.message.includes("edge function")) {
-          setErrorType("edge_function");
-          setErrorDetails("There was an error with the secure connection service.");
-        } else {
-          setErrorType("initialization");
-          setErrorDetails(`Failed to start the secure connection flow for ${platform}.`);
-        }
-      }
     } finally {
       setIsConnecting(false);
     }

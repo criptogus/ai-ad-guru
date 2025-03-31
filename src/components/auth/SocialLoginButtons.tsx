@@ -1,18 +1,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import GoogleLoginRedirectGuide from '@/components/GoogleLoginRedirectGuide';
 
 interface SocialLoginButtonsProps {
   onGoogleLogin: () => Promise<void>;
   isSubmitting: boolean;
-  showRedirectHelp?: boolean;
 }
 
 const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ 
   onGoogleLogin, 
-  isSubmitting,
-  showRedirectHelp = false
+  isSubmitting 
 }) => {
   return (
     <>
@@ -37,8 +34,6 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         </svg>
         Google
       </Button>
-      
-      {showRedirectHelp && <GoogleLoginRedirectGuide />}
     </>
   );
 };
