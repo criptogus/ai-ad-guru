@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './hooks/use-theme';
+import { ThemeProvider } from './hooks/use-theme.tsx'; // Fixed import path to use the TSX file with ThemeProvider
 import { Toaster } from '@/components/ui/toaster';
 import AppLayout from './components/AppLayout';
 import DashboardPage from './pages/DashboardPage';
