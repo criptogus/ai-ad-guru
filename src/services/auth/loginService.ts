@@ -41,10 +41,21 @@ export const loginWithEmail = async (email: string, password: string) => {
 // Login with Google
 export const loginWithGoogle = async () => {
   console.log('Initiating Google sign-in');
+  
+  // Get the current URL for proper redirect handling
+  const origin = window.location.origin;
+  const redirectTo = `${origin}/dashboard`;
+  
+  console.log('Using redirect URL:', redirectTo);
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/dashboard`,
+      redirectTo: redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      }
     }
   });
 
