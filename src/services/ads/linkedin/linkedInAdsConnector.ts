@@ -165,18 +165,42 @@ export const getLinkedInAdAccounts = async (
   try {
     console.log('Getting LinkedIn ad accounts with access token');
     
-    // This would be replaced with a real API call in production
-    // For example:
-    // const response = await fetch('https://api.linkedin.com/v2/adAccountsV2?q=search', {
-    //   headers: { Authorization: `Bearer ${accessToken}` }
-    // });
-    // return await response.json();
+    // First get organization accounts the user has access to
+    const orgResponse = await fetch('https://api.linkedin.com/v2/organizationAcls?q=roleAssignee', {
+      headers: { 
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Restli-Protocol-Version': '2.0.0',
+      }
+    });
     
-    // Mock implementation for testing
-    return [
-      { id: 'urn:li:sponsoredAccount:123456789', name: 'Main Company Account' },
-      { id: 'urn:li:sponsoredAccount:987654321', name: 'Agency Account' }
-    ];
+    if (!orgResponse.ok) {
+      throw new Error(`LinkedIn API error: ${orgResponse.status}`);
+    }
+    
+    const orgData = await orgResponse.json();
+    
+    if (!orgData.elements || orgData.elements.length === 0) {
+      return [];
+    }
+    
+    // Now get ad accounts for the organizations
+    const adAccountsResponse = await fetch('https://api.linkedin.com/v2/adAccountsV2?q=search', {
+      headers: { 
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Restli-Protocol-Version': '2.0.0',
+      }
+    });
+    
+    if (!adAccountsResponse.ok) {
+      throw new Error(`LinkedIn Ad API error: ${adAccountsResponse.status}`);
+    }
+    
+    const adAccountsData = await adAccountsResponse.json();
+    
+    return (adAccountsData.elements || []).map((account: any) => ({
+      id: account.id,
+      name: account.name || 'LinkedIn Ad Account'
+    }));
   } catch (error) {
     errorLogger.logError(error, 'getLinkedInAdAccounts');
     return [];

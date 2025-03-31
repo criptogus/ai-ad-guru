@@ -3,7 +3,9 @@
 CREATE TABLE IF NOT EXISTS public.oauth_states (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   state TEXT NOT NULL UNIQUE,
-  data JSONB NOT NULL,
+  user_id UUID NOT NULL,
+  platform TEXT NOT NULL,
+  redirect_uri TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
   

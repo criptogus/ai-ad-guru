@@ -36,7 +36,14 @@ export async function getAuthUrl(supabaseClient: any, requestData: any) {
     // Store auth state in the database for verification
     const { error: stateError } = await supabaseClient
       .from('oauth_states')
-      .insert({ state, user_id: userId, platform, created_at: new Date().toISOString(), redirect_uri: redirectUri });
+      .insert({ 
+        state, 
+        user_id: userId, 
+        platform, 
+        redirect_uri: redirectUri,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 min expiry
+      });
       
     if (stateError) {
       console.error('OAuth state error:', stateError.message);
