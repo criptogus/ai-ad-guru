@@ -19,9 +19,9 @@ export const getRolePermissions = (): RolePermissions => {
       "Configure platforms",
     ],
     Analyst: [
-      "Create campaigns",
-      "Edit campaigns",
+      "View campaigns",
       "View analytics",
+      "Create insights",
     ],
     Viewer: [
       "View campaigns",
@@ -34,3 +34,5 @@ export const getRolePermissions = (): RolePermissions => {
 export const isAdmin = (role: string): boolean => role === 'Admin';
 export const isEditor = (role: string): boolean => role === 'Editor' || role === 'Admin';
 export const isViewer = (role: string): boolean => true; // Everyone can view
+export const canCreateCampaigns = (role: string): boolean => 
+  role === 'Admin' || role === 'Editor'; // Only Admin and Editor can create campaigns
