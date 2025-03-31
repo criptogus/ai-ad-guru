@@ -14,7 +14,8 @@ export const getGoogleAuthUrl = (clientId: string, redirectUri: string, state: s
     scope: scopes,
     access_type: 'offline',
     state: state,
-    prompt: 'consent' // Always prompt for consent to ensure we get refresh tokens
+    prompt: 'consent', // Always prompt for consent to ensure we get refresh tokens
+    include_granted_scopes: 'true' // Include any previously granted scopes
   });
   
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;

@@ -1,10 +1,8 @@
-
 import { corsHeaders } from '../utils/cors.ts';
-import { exchangeGoogleToken } from '../platforms/google.ts';
+import { exchangeGoogleToken, verifyGoogleAdsAccess } from '../platforms/google.ts';
 import { exchangeMetaToken } from '../platforms/meta.ts';
 import { exchangeLinkedInToken } from '../platforms/linkedin.ts';
 import { exchangeMicrosoftToken } from '../platforms/microsoft.ts';
-import { verifyGoogleAdsAccess } from '../platforms/google.ts';
 
 /**
  * Exchange OAuth authorization code for access token
