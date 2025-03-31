@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 export const useConnectionInitiation = () => {
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectingPlatform, setConnectingPlatform] = useState<AdPlatform | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export const useConnectionInitiation = () => {
     
     try {
       setIsConnecting(true);
+      setConnectingPlatform(platform);
       setError(null);
       setErrorDetails(null);
       setErrorType(null);
@@ -92,11 +94,13 @@ export const useConnectionInitiation = () => {
       }
     } finally {
       setIsConnecting(false);
+      setConnectingPlatform(null);
     }
   };
 
   return {
     isConnecting,
+    connectingPlatform,
     error,
     errorDetails,
     errorType,

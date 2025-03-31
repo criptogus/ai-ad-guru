@@ -15,6 +15,7 @@ const AccountConnections: React.FC = () => {
     connections,
     isLoading,
     isConnecting,
+    connectingPlatform,
     error,
     errorDetails,
     errorType,
@@ -67,6 +68,7 @@ const AccountConnections: React.FC = () => {
               platform="google"
               connections={connections}
               isConnecting={isConnecting}
+              connectingPlatform={connectingPlatform}
               onConnect={initiateGoogleConnection}
               onRemove={removeConnection}
               errorType={errorType}
@@ -79,6 +81,7 @@ const AccountConnections: React.FC = () => {
               platform="meta"
               connections={connections}
               isConnecting={isConnecting}
+              connectingPlatform={connectingPlatform}
               onConnect={initiateMetaConnection}
               onRemove={removeConnection}
               errorType={errorType}
@@ -91,6 +94,7 @@ const AccountConnections: React.FC = () => {
               platform="linkedin"
               connections={connections}
               isConnecting={isConnecting}
+              connectingPlatform={connectingPlatform}
               onConnect={initiateLinkedInConnection}
               onRemove={removeConnection}
               errorType={errorType}
@@ -103,6 +107,7 @@ const AccountConnections: React.FC = () => {
               platform="microsoft"
               connections={connections}
               isConnecting={isConnecting}
+              connectingPlatform={connectingPlatform}
               onConnect={initiateMicrosoftConnection}
               onRemove={removeConnection}
               errorType={errorType}

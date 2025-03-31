@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Connection, AdConnectionsState, AdConnectionsActions } from './types';
+import { Connection, AdConnectionsState, AdConnectionsActions, AdPlatform } from './types';
 import { fetchUserConnections, removeUserConnection } from './connectionService';
 import { useOAuthCallback } from './useOAuthCallback';
 import { useConnectionInitiation } from './useConnectionInitiation';
@@ -24,6 +24,7 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
 
   const {
     isConnecting: isInitiating,
+    connectingPlatform,
     error: initiationError,
     errorDetails: initiationErrorDetails,
     errorType: initiationErrorType,
@@ -92,6 +93,7 @@ export const useAdAccountConnections = (): AdConnectionsState & AdConnectionsAct
     connections,
     isLoading,
     isConnecting,
+    connectingPlatform,
     error,
     errorDetails,
     errorType,

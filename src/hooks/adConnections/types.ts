@@ -20,6 +20,7 @@ export interface AdConnectionsState {
   connections: Connection[];
   isLoading: boolean;
   isConnecting: boolean;
+  connectingPlatform?: AdPlatform | null;
   error: string | null;
   errorDetails: string | null;
   errorType: string | null;

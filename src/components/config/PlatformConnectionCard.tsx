@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface PlatformConnectionCardProps {
   platform: AdPlatform;
   isConnecting: boolean;
+  connectingPlatform?: AdPlatform | null;
   errorType: string | null;
   errorDetails: string | null;
   connections: any[];
@@ -18,6 +20,7 @@ interface PlatformConnectionCardProps {
 const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   platform,
   isConnecting,
+  connectingPlatform,
   errorType,
   errorDetails,
   connections,
@@ -31,7 +34,10 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
 
   const connection = connections.find(c => c.platform === platform);
   const isConnected = !!connection;
-  const isLoading = isConnecting && errorType !== platform;
+  
+  // Only show loading for the specific platform that's connecting
+  const isLoading = isConnecting && connectingPlatform === platform;
+  const hasError = errorType === platform;
 
   const handleRemove = async () => {
     if (connection) {
@@ -65,14 +71,14 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
                   <span className="text-sm font-medium">Connecting...</span>
                 </div>
               )}
-              {errorType === platform && (
+              {hasError && (
                 <div className="flex items-center text-destructive gap-1">
                   <AlertCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">Connection failed</span>
                 </div>
               )}
             </div>
-            {errorType === platform && errorDetails && (
+            {hasError && errorDetails && (
               <div className="mt-2 text-xs text-destructive">{errorDetails}</div>
             )}
             {isConnected && connection?.accountName && (
