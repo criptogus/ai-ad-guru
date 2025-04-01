@@ -3,7 +3,6 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Github } from "lucide-react";
 
 const SocialLoginButtons: React.FC = () => {
   const { loginWithGoogle } = useAuth();
