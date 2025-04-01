@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiresPayment = false,
+  requiresPayment = true, // Default to requiring payment for protected routes
   requiredRole,
   requiresMFA = false
 }) => {
@@ -68,6 +69,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           
           if (!hasActiveSubscription) {
             console.log('User does not have active subscription, redirecting to billing');
+            // Store intended destination for after billing
+            sessionStorage.setItem('returnAfterBilling', location.pathname + location.search);
             navigate("/billing", { replace: true });
             return;
           }

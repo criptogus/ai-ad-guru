@@ -30,7 +30,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, updateUserPaymentStatus } = useAuth();
+  const { user, updateUserPaymentStatus, checkSubscriptionStatus } = useAuth();
   const [showCreditHistory, setShowCreditHistory] = useState(false);
   const [hasPendingPurchase, setHasPendingPurchase] = useState(false);
   
@@ -46,7 +46,23 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   useEffect(() => {
     const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
     setHasPendingPurchase(!!storedPurchaseIntent);
-  }, []);
+    
+    // Check if there's a return path after successful subscription
+    const checkSubscription = async () => {
+      if (user) {
+        const hasSubscription = await checkSubscriptionStatus();
+        if (hasSubscription) {
+          const returnPath = sessionStorage.getItem('returnAfterBilling');
+          if (returnPath) {
+            sessionStorage.removeItem('returnAfterBilling');
+            navigate(returnPath);
+          }
+        }
+      }
+    };
+    
+    checkSubscription();
+  }, [user, checkSubscriptionStatus, navigate]);
   
   // Force a refresh of the component to trigger useCreditsVerification
   const handleVerifyPurchase = () => {
