@@ -5,10 +5,11 @@ import { useRegisterAction } from './auth/useRegisterAction';
 import { useTestAccountAction } from './auth/useTestAccountAction';
 import { usePaymentAction } from './auth/usePaymentAction';
 import { loginWithGoogle } from '@/services/auth/loginService';
-import { checkUserSubscription } from '@/services/auth/subscriptionService';
+import { checkUserSubscription, verifySubscriptionWithStripe } from '@/services/auth/subscriptionService';
 import { User } from '@supabase/supabase-js';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const useAuthActions = (
   user?: User | null,
@@ -47,19 +48,36 @@ export const useAuthActions = (
     }
   };
   
-  // Check subscription status
+  // Check subscription status - enhanced with Stripe double-check
   const checkSubscriptionStatus = async () => {
     if (!user) return false;
     
     try {
       setIsCheckingSubscription(true);
+      console.log('Checking subscription status for user:', user.id);
+      
+      // First check in our database
       const hasActiveSubscription = await checkUserSubscription(user.id);
       
-      if (!hasActiveSubscription) {
-        navigate('/billing');
+      if (hasActiveSubscription) {
+        console.log('User has active subscription based on database check');
+        return true;
       }
       
-      return hasActiveSubscription;
+      // Double-check with Stripe if the database says no
+      console.log('No active subscription found in database, verifying with Stripe');
+      const stripeVerification = await verifySubscriptionWithStripe(user.id);
+      
+      if (stripeVerification) {
+        console.log('Stripe verification confirmed active subscription');
+        // Update our database to reflect this
+        await updateUserPaymentStatus(true);
+        toast.success('Your subscription has been verified.');
+        return true;
+      }
+      
+      console.log('No active subscription found in Stripe either');
+      return false;
     } catch (error) {
       console.error('Error checking subscription status:', error);
       return false;

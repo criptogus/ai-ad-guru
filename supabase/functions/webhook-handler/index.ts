@@ -1,12 +1,11 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
-import Stripe from 'https://esm.sh/stripe@12.14.0';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.1';
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 
-// Define CORS headers for browser requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 // Extract user ID from session with fallbacks
@@ -16,7 +15,7 @@ const extractUserId = (session) =>
   session?.metadata?.userId || 
   null;
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,6 +24,7 @@ Deno.serve(async (req) => {
   // Verify Stripe signature
   const signature = req.headers.get('stripe-signature');
   if (!signature) {
+    console.log('No signature provided');
     return new Response(
       JSON.stringify({ error: 'No signature provided' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.text();
+    console.log('Webhook received with signature');
     
     // Get the Stripe API key and webhook secret
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+      console.log('Event constructed:', event.type);
     } catch (err) {
       console.error('Signature validation failed:', err);
       return new Response(
@@ -64,6 +66,55 @@ Deno.serve(async (req) => {
     }
     
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Handle subscription events
+    if (event.type === 'customer.subscription.created' ||
+        event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object;
+      
+      // Find customer email
+      const customer = await stripe.customers.retrieve(subscription.customer);
+      const customerEmail = customer.email;
+      
+      if (!customerEmail) {
+        console.error('No customer email found for subscription');
+        return new Response(
+          JSON.stringify({ error: 'No customer email found' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      
+      // Find user by email
+      const { data: users, error: userError } = await supabase
+        .from('auth.users')
+        .select('id')
+        .eq('email', customerEmail)
+        .limit(1);
+      
+      if (userError || !users || users.length === 0) {
+        console.error('User not found for email:', customerEmail);
+        return new Response(
+          JSON.stringify({ error: 'User not found' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+        );
+      }
+      
+      const userId = users[0].id;
+      const isActive = subscription.status === 'active' || 
+                      subscription.status === 'trialing';
+      
+      // Update user profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ has_paid: isActive })
+        .eq('id', userId);
+      
+      if (error) {
+        console.error(`Failed to update profile: ${error.message}`);
+      } else {
+        console.log(`Updated subscription status for user: ${userId} to ${isActive}`);
+      }
+    }
 
     // Handle payment events
     if (event.type === 'checkout.session.completed' || 

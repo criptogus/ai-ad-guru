@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -29,13 +30,16 @@ const AuthCallback: React.FC = () => {
           // Determine where to navigate based on subscription status
           if (hasActiveSubscription) {
             console.log('User has active subscription, redirecting to dashboard');
+            toast.success('Welcome back! Your subscription is active.');
             navigate('/dashboard');
           } else {
             console.log('User does not have active subscription, redirecting to billing');
+            toast.info('Please activate your subscription to continue.');
             navigate('/billing');
           }
         } else {
           console.log('User not authenticated in callback, redirecting to login');
+          toast.error('Authentication failed. Please try again.');
           navigate('/auth/login');
         }
       } catch (error: any) {

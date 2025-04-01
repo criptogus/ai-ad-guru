@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingState } from '@/components/auth/LoadingState';
@@ -17,14 +16,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   requiresMFA = false
 }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, checkSubscriptionStatus } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Check if we're in a payment verification flow
   const isPaymentVerification = location.search.includes('session_id=');
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Skip authentication redirection during payment verification
     if (isPaymentVerification) {
       console.log('Payment verification in progress, bypassing authentication check');
@@ -36,64 +35,78 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return;
     }
 
-    // Handle authentication check
-    if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to login');
-      
-      // Store the current path for redirection after login
-      const returnPath = `${location.pathname}${location.search}`;
-      
-      navigate("/auth/login", { 
-        state: { 
-          from: returnPath
-        },
-        // Use replace to prevent back button from taking users to protected routes
-        replace: true 
-      });
-      return;
-    } 
-    
-    // Handle payment requirement check
-    if (requiresPayment && user && !user.hasPaid) {
-      console.log('User not paid, redirecting to billing');
-      navigate("/billing", { replace: true });
-      return;
-    }
-    
-    // Handle role-based access control
-    if (requiredRole && user) {
-      // This is a simplified role check - implement proper role checking based on your data structure
-      const hasRequiredRole = user.user_metadata?.role === requiredRole;
-      if (!hasRequiredRole) {
-        console.log(`User lacks required role: ${requiredRole}, access denied`);
-        navigate("/dashboard", { 
+    const verifyAccess = async () => {
+      // Handle authentication check
+      if (!isAuthenticated) {
+        console.log('User not authenticated, redirecting to login');
+        
+        // Store the current path for redirection after login
+        const returnPath = `${location.pathname}${location.search}`;
+        
+        navigate("/auth/login", { 
           state: { 
-            accessDenied: true, 
-            requiredRole 
+            from: returnPath
           },
-          replace: true
+          // Use replace to prevent back button from taking users to protected routes
+          replace: true 
         });
         return;
-      }
-    }
-    
-    // Handle MFA requirement check
-    if (requiresMFA && user) {
-      // Check if user has completed MFA verification
-      const hasMFAVerified = user.user_metadata?.mfa_verified === true;
+      } 
       
-      if (!hasMFAVerified) {
-        console.log('MFA verification required');
-        navigate("/mfa-verification", {
-          state: {
-            returnTo: location.pathname,
-          },
-          replace: true
-        });
-        return;
+      // Handle payment requirement check for routes that need it
+      if (requiresPayment && user) {
+        // If user has paid flag, we don't need further checks
+        if (user.hasPaid) {
+          console.log('User has paid flag set, allowing access');
+          return;
+        }
+        
+        // Otherwise verify with Stripe before deciding
+        console.log('Checking subscription status for user:', user.id);
+        const hasActiveSubscription = await checkSubscriptionStatus();
+        
+        if (!hasActiveSubscription) {
+          console.log('User does not have active subscription, redirecting to billing');
+          navigate("/billing", { replace: true });
+          return;
+        }
       }
-    }
+      
+      // Handle role-based access control
+      if (requiredRole && user) {
+        const hasRequiredRole = user.user_metadata?.role === requiredRole;
+        if (!hasRequiredRole) {
+          console.log(`User lacks required role: ${requiredRole}, access denied`);
+          navigate("/dashboard", { 
+            state: { 
+              accessDenied: true, 
+              requiredRole 
+            },
+            replace: true
+          });
+          return;
+        }
+      }
+      
+      // Handle MFA requirement check
+      if (requiresMFA && user) {
+        // Check if user has completed MFA verification
+        const hasMFAVerified = user.user_metadata?.mfa_verified === true;
+        
+        if (!hasMFAVerified) {
+          console.log('MFA verification required');
+          navigate("/mfa-verification", {
+            state: {
+              returnTo: location.pathname,
+            },
+            replace: true
+          });
+          return;
+        }
+      }
+    };
     
+    verifyAccess();
   }, [
     isAuthenticated, 
     isLoading, 
@@ -103,7 +116,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiresPayment, 
     requiredRole,
     requiresMFA,
-    isPaymentVerification
+    isPaymentVerification,
+    checkSubscriptionStatus
   ]);
 
   if (isLoading) {
