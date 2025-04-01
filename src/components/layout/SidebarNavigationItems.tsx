@@ -11,8 +11,13 @@ import {
   Users,
   FileText,
   ArrowRightLeft,
-  Layers
+  Layers,
+  LogOut
 } from "lucide-react";
+import { useLogoutAction } from "@/hooks/auth/useLogoutAction";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface SidebarNavigationItemsProps {
   activePage?: string;
@@ -25,6 +30,9 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+  const { logout, isLoading } = useLogoutAction(setUser, navigate);
 
   const navItems = [
     {
@@ -72,22 +80,38 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
   ];
 
   return (
-    <div className="space-y-1">
-      {navItems.map((item) => (
-        <Link
-          key={item.name}
-          to={item.href}
-          className={cn(
-            "flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors",
-            item.active
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
-          {!collapsed && <span>{item.name}</span>}
-        </Link>
-      ))}
+    <div className="space-y-1 flex flex-col h-full">
+      <div className="flex-1">
+        {navItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={cn(
+              "flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors",
+              item.active
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
+            {!collapsed && <span>{item.name}</span>}
+          </Link>
+        ))}
+      </div>
+      
+      {/* Logout Button */}
+      <button
+        onClick={logout}
+        disabled={isLoading}
+        className={cn(
+          "flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors mt-auto",
+          "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        )}
+        title="Logout"
+      >
+        <LogOut className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
+        {!collapsed && <span>Logout</span>}
+      </button>
     </div>
   );
 };
