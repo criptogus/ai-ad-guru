@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import Nav from '@/components/landing/Nav';
-import Hero from '@/components/landing/Hero';
-import Features from '@/components/landing/Features';
-import Process from '@/components/landing/Process';
-import Trust from '@/components/landing/Trust';
-import Pricing from '@/components/landing/Pricing';
-import Cta from '@/components/landing/Cta';
-import Footer from '@/components/landing/Footer';
+import { Nav } from '@/components/landing/Nav';
+import { Hero } from '@/components/landing/Hero';
+import { Features } from '@/components/landing/Features';
+import { Process } from '@/components/landing/Process';
+import { Trust } from '@/components/landing/Trust';
+import { Pricing } from '@/components/landing/Pricing';
+import { Cta } from '@/components/landing/Cta';
+import { Footer } from '@/components/landing/Footer';
 
 const LandingPage: React.FC = () => {
   return (
