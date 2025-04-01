@@ -63,7 +63,7 @@ export const useConnectionInitiation = () => {
       const authUrl = await initiateOAuth({
         platform,
         userId,
-        redirectUri
+        redirectUri // Pass the redirectUri variable here
       });
       
       if (authUrl) {
@@ -74,6 +74,9 @@ export const useConnectionInitiation = () => {
       }
     } catch (error: any) {
       console.error(`Error initiating ${platform} connection:`, error);
+      
+      // Get the redirectUri for error messages (define it again in this scope)
+      const errorRedirectUri = `${window.location.origin}/callback`;
       
       // Show error toast
       toast({
@@ -93,7 +96,7 @@ export const useConnectionInitiation = () => {
           if (error.message.includes("access_denied") && error.message.includes("not allowed to create application tokens")) {
             setErrorDetails("Your LinkedIn app needs Marketing Developer Platform approval. Go to LinkedIn Developers Portal, select your app, and request access to the Marketing Developer Platform.");
           } else if (error.message.includes("redirect_uri_mismatch")) {
-            setErrorDetails(`LinkedIn OAuth redirect URI mismatch. Make sure the redirect URI "${redirectUri}" is registered in your LinkedIn app settings.`);
+            setErrorDetails(`LinkedIn OAuth redirect URI mismatch. Make sure the redirect URI "${errorRedirectUri}" is registered in your LinkedIn app settings.`);
           } else {
             setErrorDetails(`LinkedIn error: ${error.message}. Make sure your app is configured correctly in the LinkedIn Developer Portal.`);
           }
@@ -104,7 +107,7 @@ export const useConnectionInitiation = () => {
           setErrorDetails(`Missing ${platform} API credentials in server configuration. Please contact support.`);
         } else if (error.message.includes("redirect_uri_mismatch")) {
           setErrorType("oauth_config");
-          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${redirectUri}" is registered in your ${platform} developer console.`);
+          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${errorRedirectUri}" is registered in your ${platform} developer console.`);
         } else {
           setErrorDetails(error.message);
         }
