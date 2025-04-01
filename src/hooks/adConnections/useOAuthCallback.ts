@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AdPlatform, OAuthCallbackResult } from './types';
+import { toast } from 'sonner';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -34,7 +35,8 @@ export const useOAuthCallback = () => {
       errorDescription,
       hasState: !!state, 
       platform: platformParam,
-      fullUrl: window.location.href
+      fullUrl: window.location.href,
+      origin: window.location.origin
     });
     
     if (error) {
@@ -69,7 +71,7 @@ export const useOAuthCallback = () => {
       setErrorType(null);
       
       // Get the redirect URI that exactly matches what was used to initiate the OAuth flow
-      // This is critical for LinkedIn which requires exact match
+      // This is critical for OAuth providers which require exact match
       const redirectUri = `${window.location.origin}/callback`;
       console.log("Using redirect URI for token exchange:", redirectUri);
       

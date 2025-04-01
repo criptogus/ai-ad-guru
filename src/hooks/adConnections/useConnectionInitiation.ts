@@ -35,8 +35,8 @@ export const useConnectionInitiation = () => {
       // This ensures it matches exactly what's registered in OAuth providers
       const origin = window.location.origin;
       
-      // Use the exact redirect URI registered in LinkedIn/OAuth provider console
-      // Make sure this matches EXACTLY what's configured in the provider console
+      // Always use /callback as the redirect path
+      // This must match EXACTLY what's registered in Google Cloud Console
       const redirectUri = `${origin}/callback`;
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);

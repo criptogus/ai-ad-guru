@@ -18,6 +18,8 @@ const OAuthCallbackHandler: React.FC = () => {
       try {
         console.log("OAuthCallbackHandler: Processing callback for user", user.id);
         console.log("Current URL:", window.location.href);
+        console.log("Current origin:", window.location.origin);
+        console.log("Callback path:", "/callback");
         
         // Process the OAuth callback
         await processOAuthCallback(user.id);
@@ -73,6 +75,7 @@ const OAuthCallbackHandler: React.FC = () => {
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       <h2 className="mt-4 text-xl font-semibold">Processing authentication...</h2>
       <p className="mt-2 text-muted-foreground">Please wait while we complete your ad account connection.</p>
+      <p className="mt-4 text-sm text-muted-foreground">Redirect URI: {window.location.origin}/callback</p>
     </div>
   );
 };
