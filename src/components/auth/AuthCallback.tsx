@@ -15,20 +15,23 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // If there's a hash in the URL, this might be a direct OAuth redirect with token
+        // Check if we have access token in the URL hash (typical for OAuth flows)
         if (location.hash && location.hash.includes('access_token')) {
-          console.log('Detected access token in URL hash, handling OAuth callback');
+          console.log('Detected access token in URL hash, processing OAuth callback');
+          
+          // Let Supabase handle the hash parameters
           const { data, error } = await supabase.auth.getSession();
           
           if (error) {
             console.error('Error getting session from hash:', error);
+            toast.error('Authentication failed: Unable to process login credentials');
             throw error;
           }
           
           console.log('Session obtained from hash:', data.session ? 'Valid session' : 'No session');
           
-          // Wait a moment to ensure auth state is updated
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Wait for auth state to update
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Wait for auth state to be initialized
@@ -59,7 +62,7 @@ const AuthCallback: React.FC = () => {
             sessionStorage.setItem('returnAfterBilling', returnTo);
             navigate('/billing');
           }
-        } else {
+        } else if (!isLoading) {
           console.log('User not authenticated in callback, redirecting to login');
           toast.error('Authentication failed. Please try again.');
           navigate('/auth/login');
@@ -67,6 +70,7 @@ const AuthCallback: React.FC = () => {
       } catch (error: any) {
         console.error('Error processing auth callback:', error);
         setError(error.message || 'An error occurred during authentication');
+        toast.error(`Authentication error: ${error.message || 'Unknown error'}`);
         navigate('/auth/login');
       } finally {
         setIsProcessing(false);

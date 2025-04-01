@@ -11,7 +11,7 @@ export const useAuthState = () => {
   // Consider both session and profile loading states
   const isLoading = sessionLoading || profileLoading;
 
-  // Handle hash fragments that might contain tokens (Google OAuth redirect)
+  // Handle hash fragments that might contain tokens (OAuth redirect)
   useEffect(() => {
     const handleHashFragment = async () => {
       if (window.location.hash && window.location.hash.includes('access_token')) {
@@ -23,6 +23,16 @@ export const useAuthState = () => {
             console.error('Error processing hash fragment:', error);
           } else {
             console.log('Hash fragment processed successfully, session:', data.session ? 'exists' : 'none');
+            
+            // If we have a session but URL still contains the hash, clean it up
+            if (data.session) {
+              // Clean up the URL by removing the hash fragment
+              window.history.replaceState(
+                {}, 
+                document.title, 
+                window.location.pathname + window.location.search
+              );
+            }
           }
         } catch (err) {
           console.error('Exception processing hash fragment:', err);

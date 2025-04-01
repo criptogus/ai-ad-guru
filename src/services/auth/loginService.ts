@@ -38,11 +38,11 @@ export const loginWithEmail = async (email: string, password: string) => {
   }
 };
 
-// Login with Google - improved with more debugging and error handling
+// Login with Google - improved with dynamic origin detection
 export const loginWithGoogle = async () => {
   console.log('Initiating Google sign-in');
   
-  // Get the current URL for proper redirect handling
+  // Get the current URL dynamically for proper redirect handling
   const origin = window.location.origin;
   
   // Use an explicit auth/callback path that matches what's in App.tsx
@@ -59,10 +59,9 @@ export const loginWithGoogle = async () => {
           access_type: 'offline',
           prompt: 'consent',
         },
-        // Set the project name that will be displayed on the Google consent screen
-        // This makes it show "Zero Digital Agency" instead of the Supabase project ID
+        // Set a descriptive project name for the Google consent screen
         scopes: 'email profile',
-        skipBrowserRedirect: false, // Ensure we redirect to Google auth page
+        skipBrowserRedirect: false,
       }
     });
 

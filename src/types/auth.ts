@@ -28,7 +28,6 @@ export interface AuthContextType {
   loginWithGoogle: () => Promise<any>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<any>;
-  createTestAccount: () => Promise<any>;
   updateUserPaymentStatus: (hasPaid: boolean) => Promise<any>;
   simulateSuccessfulPayment: () => Promise<any>;
   checkSubscriptionStatus: () => Promise<boolean>;

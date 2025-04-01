@@ -2,7 +2,6 @@
 import { useLoginActions } from './auth/useLoginActions';
 import { useLogoutAction } from './auth/useLogoutAction';
 import { useRegisterAction } from './auth/useRegisterAction';
-import { useTestAccountAction } from './auth/useTestAccountAction';
 import { usePaymentAction } from './auth/usePaymentAction';
 import { loginWithGoogle } from '@/services/auth/loginService';
 import { checkUserSubscription, verifySubscriptionWithStripe } from '@/services/auth/subscriptionService';
@@ -19,7 +18,6 @@ export const useAuthActions = (
   const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions(navigate);
   const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser, navigate);
   const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser, navigate);
-  const { createTestAccount, isLoading: isTestAccountLoading } = useTestAccountAction(setUser, navigate);
   const { 
     updateUserPaymentStatus, 
     simulateSuccessfulPayment,
@@ -90,8 +88,7 @@ export const useAuthActions = (
   const isLoading = 
     isLoginSubmitting || 
     isLogoutLoading || 
-    isRegisterLoading || 
-    isTestAccountLoading || 
+    isRegisterLoading ||
     isPaymentLoading ||
     isGoogleLoading ||
     isCheckingSubscription;
@@ -101,7 +98,6 @@ export const useAuthActions = (
     loginWithGoogle: handleGoogleLogin,
     logout,
     register,
-    createTestAccount,
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
     checkSubscriptionStatus,
