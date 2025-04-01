@@ -1,8 +1,9 @@
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useAuthActions } from '@/hooks/useAuthActions';
+import { setupSessionRefresh } from '@/utils/sessionRefresh';
 
 // Create the context with a default undefined value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +26,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkSubscriptionStatus,
     isLoading: actionsLoading 
   } = useAuthActions(user, setUser);
+
+  // Set up session refresh mechanism
+  useEffect(() => {
+    let intervalId: number;
+    
+    if (isAuthenticated && session) {
+      // Start the session refresh mechanism
+      intervalId = setupSessionRefresh();
+    }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAuthenticated, session]);
 
   // Combine isLoading states
   const isLoading = authStateLoading || actionsLoading;

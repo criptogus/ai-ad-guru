@@ -30,6 +30,13 @@ const AuthCallback: React.FC = () => {
           
           console.log('Session obtained from hash:', data.session ? 'Valid session' : 'No session');
           
+          // Configure session to expire after 24 hours
+          if (data.session) {
+            const expiresAt = Date.now() + (86400 * 1000); // 24 hours in milliseconds
+            localStorage.setItem('session_expires_at', expiresAt.toString());
+            console.log('Session configured to expire in 24 hours');
+          }
+          
           // Clean up the URL by removing the hash fragment
           window.history.replaceState(
             {}, 

@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 
 // Login with email and password
 export const loginWithEmail = async (email: string, password: string) => {
@@ -31,6 +31,10 @@ export const loginWithEmail = async (email: string, password: string) => {
     }
 
     console.log('Sign-in successful:', data);
+    
+    // Configure session to expire after 24 hours (86400 seconds)
+    await configureSessionExpiration(86400);
+    
     return data;
   } catch (error) {
     console.error('Error in loginWithEmail:', error);
@@ -88,5 +92,9 @@ export const loginWithGoogle = async () => {
 // Sign out
 export const logout = async () => {
   console.log('Logging out user');
+  
+  // Clean up any session expiration data
+  localStorage.removeItem('session_expires_at');
+  
   await supabase.auth.signOut();
 };
