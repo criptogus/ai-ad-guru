@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Set up session refresh mechanism
   useEffect(() => {
-    let intervalId: number;
+    let intervalId: ReturnType<typeof setTimeout>;
     
     if (isAuthenticated && session) {
       // Start the session refresh mechanism

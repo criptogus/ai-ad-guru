@@ -43,7 +43,7 @@ export const refreshSession = async (): Promise<boolean> => {
 /**
  * Set up periodic session refresh to maintain user login
  */
-export const setupSessionRefresh = () => {
+export const setupSessionRefresh = (): ReturnType<typeof setTimeout> => {
   // Check session every 15 minutes
   const intervalId = setInterval(async () => {
     const { data } = await supabase.auth.getSession();
