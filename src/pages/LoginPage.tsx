@@ -1,22 +1,34 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import LoginHeader from '@/components/auth/LoginHeader';
 import LoginFooter from '@/components/auth/LoginFooter';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { login } = useAuth();
+  const navigate = useNavigate();
   
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (email: string, password: string) => {
     setIsSubmitting(true);
+    setErrorMessage(null);
+    
     try {
-      // Handle login submission
-      console.log('Login data:', data);
-      // Add your login logic here
-    } catch (error) {
+      const response = await login(email, password);
+      if (response) {
+        toast.success('Login successful');
+        navigate('/dashboard');
+      } else {
+        setErrorMessage('Failed to log in. Please check your credentials.');
+      }
+    } catch (error: any) {
       console.error('Login error:', error);
+      setErrorMessage(error.message || 'Failed to log in');
     } finally {
       setIsSubmitting(false);
     }
@@ -40,7 +52,7 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
         
-        <LoginForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <LoginForm onSubmit={handleSubmit} isSubmitting={isSubmitting} errorMessage={errorMessage} />
 
         <LoginFooter />
       </div>

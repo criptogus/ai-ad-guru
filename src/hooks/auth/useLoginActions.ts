@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { loginWithEmail, loginWithGoogle } from '@/services/auth/loginService';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
-export const useLoginActions = (navigate?: (path: string) => void) => {
+export const useLoginActions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
   
   // Handle login
   const handleLogin = async (email: string, password: string) => {
@@ -17,12 +19,13 @@ export const useLoginActions = (navigate?: (path: string) => void) => {
     try {
       const response = await loginWithEmail(email, password);
       
-      if (navigate) {
+      if (response && response.session) {
+        toast.success('Logged in successfully');
         navigate('/dashboard');
+        return response;
       }
       
-      toast.success('Logged in successfully');
-      return response;
+      return false;
     } catch (error: any) {
       console.error('Login error:', error);
       
@@ -41,8 +44,22 @@ export const useLoginActions = (navigate?: (path: string) => void) => {
     }
   };
   
+  const handleGoogleLogin = async () => {
+    try {
+      setIsSubmitting(true);
+      await loginWithGoogle();
+      // This will redirect to Google auth page
+    } catch (error: any) {
+      console.error('Error logging in with Google:', error);
+      toast.error(error.message || 'Failed to log in with Google');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   return {
     handleLogin,
+    handleGoogleLogin,
     isSubmitting,
   };
 };
