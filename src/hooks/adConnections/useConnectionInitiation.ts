@@ -31,9 +31,12 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Use EXACTLY the same callback format that's registered in LinkedIn's developer console
-      // The /callback path must match EXACTLY what's configured in LinkedIn
+      // Generate the redirect URI based on the current environment
+      // This ensures it matches exactly what's registered in OAuth providers
       const origin = window.location.origin;
+      
+      // Use the exact redirect URI registered in LinkedIn/OAuth provider console
+      // Make sure this matches EXACTLY what's configured in the provider console
       const redirectUri = `${origin}/callback`;
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
@@ -87,6 +90,9 @@ export const useConnectionInitiation = () => {
         if (error.message.includes("Missing") && error.message.includes("credentials")) {
           setErrorType("configuration");
           setErrorDetails(`Missing ${platform} API credentials in server configuration. Please contact support.`);
+        } else if (error.message.includes("redirect_uri_mismatch")) {
+          setErrorType("oauth_config");
+          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${window.location.origin}/callback" is registered in your ${platform} developer console.`);
         } else {
           setErrorType(platform);
           setErrorDetails(error.message);

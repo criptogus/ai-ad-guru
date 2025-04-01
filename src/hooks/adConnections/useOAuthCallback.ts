@@ -33,7 +33,8 @@ export const useOAuthCallback = () => {
       error, 
       errorDescription,
       hasState: !!state, 
-      platform: platformParam 
+      platform: platformParam,
+      fullUrl: window.location.href
     });
     
     if (error) {
@@ -95,10 +96,12 @@ export const useOAuthCallback = () => {
         } catch (e) {
           errorText = await response.text();
         }
+        console.error("Token exchange error response:", errorText);
         throw new Error(`Token exchange failed: ${errorText}`);
       }
       
       const data = await response.json();
+      console.log("Token exchange response:", data);
       
       if (!data.success) {
         throw new Error(data.error || 'Failed to exchange token');

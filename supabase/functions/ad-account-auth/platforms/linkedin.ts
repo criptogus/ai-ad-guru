@@ -27,9 +27,11 @@ export function getLinkedInAuthUrl(
   });
 
   console.log(`LinkedIn auth URL being generated with redirect URI: ${redirectUri}`);
+  console.log(`LinkedIn OAuth state parameter: ${state}`);
   
   // Generate the authorization URL
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+  console.log(`Complete LinkedIn auth URL: ${authUrl}`);
   return authUrl;
 }
 
@@ -54,6 +56,13 @@ export async function exchangeLinkedInToken(
       redirect_uri: redirectUri,
       code: code
     });
+    
+    console.log("LinkedIn token exchange parameters:", {
+      clientIdLength: clientId ? clientId.length : 0,
+      clientSecretPresent: !!clientSecret,
+      code: code ? code.substring(0, 5) + "..." : "missing",
+      redirectUri
+    });
 
     // Make the token request
     const response = await fetch(tokenUrl, {
@@ -68,6 +77,7 @@ export async function exchangeLinkedInToken(
     if (!response.ok) {
       const errorText = await response.text();
       console.error("LinkedIn token exchange error:", errorText);
+      console.error("LinkedIn token exchange status:", response.status);
       throw new Error(`LinkedIn API error: ${response.status} ${errorText}`);
     }
 

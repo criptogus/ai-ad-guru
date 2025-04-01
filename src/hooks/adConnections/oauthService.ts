@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -102,6 +103,14 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
   const error = url.searchParams.get('error');
   const errorDescription = url.searchParams.get('error_description');
   
+  console.log("OAuth callback parameters:", { 
+    hasCode: Boolean(code), 
+    hasState: Boolean(state), 
+    error, 
+    errorDescription,
+    currentUrl: window.location.href
+  });
+  
   // Clean up the URL parameters regardless of the outcome
   try {
     if (code || error) {
@@ -126,6 +135,11 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
     }
     
     authData = JSON.parse(storedAuthData);
+    console.log("Retrieved stored OAuth data:", { 
+      platform: authData.platform,
+      hasUserId: Boolean(authData.userId),
+      storedRedirectUri: authData.redirectUri
+    });
   } catch (storageError) {
     console.error('Failed to retrieve OAuth state from session storage:', storageError);
     throw new Error('OAuth state could not be retrieved. Please try again.');
@@ -157,6 +171,13 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
   
   try {
     // Exchange the code for tokens
+    console.log("Invoking edge function for token exchange with params:", {
+      platform,
+      hasCode: Boolean(code),
+      hasState: Boolean(state),
+      redirectUri: effectiveRedirectUri
+    });
+    
     const response = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'exchangeToken',
@@ -178,6 +199,11 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
     }
     
     const data = response.data;
+    console.log("Token exchange response:", {
+      success: data?.success,
+      platform: data?.platform,
+      hasError: Boolean(data?.error)
+    });
     
     if (!data || !data.success) {
       console.error(`Invalid response from token exchange:`, data);

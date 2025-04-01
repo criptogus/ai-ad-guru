@@ -17,6 +17,7 @@ const OAuthCallbackHandler: React.FC = () => {
       
       try {
         console.log("OAuthCallbackHandler: Processing callback for user", user.id);
+        console.log("Current URL:", window.location.href);
         
         // Process the OAuth callback
         await processOAuthCallback(user.id);
