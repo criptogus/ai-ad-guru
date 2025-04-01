@@ -1,4 +1,3 @@
-
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 
 // Login with email and password

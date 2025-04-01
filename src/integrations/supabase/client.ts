@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: localStorage, // Use localStorage (more persistent than sessionStorage)
     debug: import.meta.env.DEV, // Enable debug in development
     flowType: 'pkce', // Use PKCE flow for added security
-    authUrl: customAuthDomain, // Set custom auth domain
+    url: customAuthDomain, // Set custom auth domain (corrected from authUrl)
   }
 });
 
