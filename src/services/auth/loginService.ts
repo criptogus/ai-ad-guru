@@ -45,9 +45,7 @@ export const loginWithGoogle = async () => {
   // Get the current URL for proper redirect handling
   const origin = window.location.origin;
   
-  // Use a consistent callback URI format across the application
-  // This needs to match EXACTLY with what's registered in Google Cloud Console
-  // and what's configured in Supabase Auth settings
+  // Use an explicit auth/callback path that matches what's in App.tsx
   const redirectTo = `${origin}/auth/callback`;
   
   console.log('Using redirect URL:', redirectTo);

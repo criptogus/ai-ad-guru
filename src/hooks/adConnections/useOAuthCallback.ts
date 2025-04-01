@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AdPlatform, OAuthCallbackResult } from './types';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -13,6 +14,28 @@ export const useOAuthCallback = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
+  
+  // Handle any OAuth token in the URL fragment
+  useEffect(() => {
+    const handleHashParams = async () => {
+      if (location.hash && location.hash.includes('access_token')) {
+        console.log('OAuth hash detected in useOAuthCallback');
+        try {
+          // Let Supabase handle the hash params
+          const { data, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error('Error processing hash in useOAuthCallback:', error);
+          } else {
+            console.log('Session in useOAuthCallback:', data.session ? 'Valid' : 'None');
+          }
+        } catch (err) {
+          console.error('Exception in hash processing:', err);
+        }
+      }
+    };
+    
+    handleHashParams();
+  }, [location.hash]);
   
   const processOAuthCallback = async (userId: string, onSuccess?: () => void) => {
     // Parse URL search params
