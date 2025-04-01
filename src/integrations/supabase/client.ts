@@ -18,9 +18,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: localStorage, // Use localStorage (more persistent than sessionStorage)
     debug: import.meta.env.DEV, // Enable debug in development
     flowType: 'pkce', // Use PKCE flow for added security
-    url: customAuthDomain, // Set custom auth domain (corrected from authUrl)
   }
 });
+
+// Add the custom auth domain using the correct method
+if (customAuthDomain) {
+  supabase.auth.setAuth({ url: customAuthDomain });
+}
 
 // Additional helper to configure session expiration
 export const configureSessionExpiration = async (expiresIn = 86400) => {

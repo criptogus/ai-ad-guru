@@ -30,31 +30,80 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
       <AuthProvider>
         <Routes>
+          {/* Public routes that don't require authentication */}
           <Route path="/" element={<LandingPage />} />
-          
-          <Route path="/auth/*" element={<AuthPage />} />
-          
-          {/* Important: This route handles the OAuth callback */}
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          <Route path="/mfa-verification" element={<MFAPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute requiresPayment={true}><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/settings/*" element={<ProtectedRoute requiresPayment={true}><SettingsPage /></ProtectedRoute>} />
-          <Route path="/billing" element={<ProtectedRoute requiresPayment={false}><AppLayout><BillingPage /></AppLayout></ProtectedRoute>} />
           <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/website-analysis" element={<ProtectedRoute requiresPayment={true}><AppLayout><WebsiteAnalysisPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/campaign/:campaignId" element={<ProtectedRoute requiresPayment={true}><AppLayout><CampaignPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/testing" element={<ProtectedRoute requiresPayment={true}><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/template-example" element={<ProtectedRoute requiresPayment={true}><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
-          
-          <Route path="/connections" element={<ProtectedRoute requiresPayment={true}><AppLayout><ConnectionsPage /></AppLayout></ProtectedRoute>} />
-          
-          <Route path="/callback" element={<ProtectedRoute requiresPayment={false}><OAuthCallbackHandler /></ProtectedRoute>} />
-          
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
           <Route path="/cookie-policy" element={<CookiePolicyPage />} />
           <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+          
+          {/* Authentication routes */}
+          <Route path="/auth/*" element={<AuthPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/mfa-verification" element={<MFAPage />} />
+          
+          {/* Protected routes requiring authentication */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <DashboardPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings/*" element={
+            <ProtectedRoute requiresPayment={true}>
+              <SettingsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/billing" element={
+            <ProtectedRoute requiresPayment={false}>
+              <AppLayout>
+                <BillingPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/website-analysis" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <WebsiteAnalysisPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/campaign/:campaignId" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <CampaignPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/testing" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <TestAdsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/template-example" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <TemplateExamplePage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/connections" element={
+            <ProtectedRoute requiresPayment={true}>
+              <AppLayout>
+                <ConnectionsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/callback" element={
+            <ProtectedRoute requiresPayment={false}>
+              <OAuthCallbackHandler />
+            </ProtectedRoute>
+          } />
         </Routes>
         <Toaster />
       </AuthProvider>

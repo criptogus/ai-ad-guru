@@ -5,13 +5,12 @@ import LoginForm from '@/components/auth/LoginForm';
 import LoginHeader from '@/components/auth/LoginHeader';
 import LoginFooter from '@/components/auth/LoginFooter';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { useAuth } from '@/contexts/AuthContext';
+import { loginWithEmail } from '@/services/auth/loginService';
 import { toast } from 'sonner';
 
 const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { login } = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = async (email: string, password: string) => {
@@ -19,8 +18,12 @@ const LoginPage: React.FC = () => {
     setErrorMessage(null);
     
     try {
-      const response = await login(email, password);
-      if (response) {
+      const { data, error } = await loginWithEmail(email, password);
+      
+      if (error) {
+        setErrorMessage(error.message);
+        toast.error(error.message);
+      } else if (data.session) {
         toast.success('Login successful');
         navigate('/dashboard');
       } else {
