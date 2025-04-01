@@ -15,7 +15,7 @@ export const useAuthActions = (
   setUser?: (user: User | null) => void
 ) => {
   const navigate = useNavigate();
-  const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions(navigate);
+  const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions();
   const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser, navigate);
   const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser, navigate);
   const { 
