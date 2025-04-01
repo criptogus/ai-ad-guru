@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Route, Routes } from 'react-router-dom'; // Removed BrowserRouter import
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './hooks/use-theme.tsx';
 import { Toaster } from '@/components/ui/toaster';
@@ -29,14 +28,11 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
       <AuthProvider>
-        {/* Removed the Router component since it's already in main.tsx */}
         <Routes>
-          {/* Landing page as the root path */}
           <Route path="/" element={<LandingPage />} />
           
           <Route path="/auth/*" element={<AuthPage />} />
           
-          {/* Handle both OAuth redirect paths */}
           <Route path="/auth/callback" element={<AuthCallback />} />
           
           <Route path="/mfa-verification" element={<MFAPage />} />
@@ -49,14 +45,10 @@ function App() {
           <Route path="/testing" element={<ProtectedRoute><AppLayout><TestAdsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/template-example" element={<ProtectedRoute><AppLayout><TemplateExamplePage /></AppLayout></ProtectedRoute>} />
           
-          {/* Keep the connections route with AppLayout */}
           <Route path="/connections" element={<ProtectedRoute><AppLayout><ConnectionsPage /></AppLayout></ProtectedRoute>} />
           
-          {/* Update callback route to use ProtectedRoute but NOT wrapped in AppLayout 
-             to prevent duplicate UI elements during OAuth flow */}
           <Route path="/callback" element={<ProtectedRoute><OAuthCallbackHandler /></ProtectedRoute>} />
           
-          {/* Public pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
           <Route path="/cookie-policy" element={<CookiePolicyPage />} />
