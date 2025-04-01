@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, ExternalLink } from "lucide-react";
 import { AdPlatform } from "@/hooks/adConnections/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -38,6 +38,46 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
   // Only show loading for the specific platform that's connecting
   const isLoading = isConnecting && connectingPlatform === platform;
   const hasError = errorType === platform;
+
+  // Developer console links for different platforms
+  const developerConsoleLink = 
+    platform === 'google' ? 'https://console.cloud.google.com/apis/credentials' :
+    platform === 'microsoft' ? 'https://ads.microsoft.com/customer-management/apiaccess' :
+    platform === 'meta' ? 'https://developers.facebook.com/apps/' :
+    platform === 'linkedin' ? 'https://www.linkedin.com/developers/apps' : null;
+
+  // Platform-specific help text for common errors
+  const getErrorHelp = () => {
+    if (!errorDetails) return null;
+    
+    if (platform === 'linkedin') {
+      if (errorDetails.includes('Marketing Developer Platform')) {
+        return (
+          <div className="mt-2 text-xs">
+            <p>LinkedIn requires Marketing Developer Platform approval for ad management.</p>
+            <a 
+              href="https://www.linkedin.com/developers/apps" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline inline-flex items-center mt-1"
+            >
+              <span>Check app permissions</span>
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </a>
+          </div>
+        );
+      }
+      if (errorDetails.includes('redirect_uri_mismatch') || errorDetails.includes('invalid redirect')) {
+        return (
+          <div className="mt-2 text-xs">
+            <p>Redirect URI must exactly match what's registered in LinkedIn.</p>
+          </div>
+        );
+      }
+    }
+    
+    return null;
+  };
 
   const handleRemove = async () => {
     if (connection) {
@@ -81,6 +121,7 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
             {hasError && errorDetails && (
               <div className="mt-2 text-xs text-destructive">{errorDetails}</div>
             )}
+            {hasError && getErrorHelp()}
             {isConnected && connection?.accountName && (
               <div className="mt-2 text-xs text-muted-foreground">
                 Account: {connection.accountName}
@@ -129,6 +170,20 @@ const PlatformConnectionCard: React.FC<PlatformConnectionCardProps> = ({
           </TooltipProvider>
         )}
       </CardFooter>
+      
+      {developerConsoleLink && (
+        <div className="px-6 pb-4 text-xs">
+          <a 
+            href={developerConsoleLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline inline-flex items-center"
+          >
+            <span>Open {platformName} Developer Console</span>
+            <ExternalLink className="h-3 w-3 ml-1" />
+          </a>
+        </div>
+      )}
     </Card>
   );
 };

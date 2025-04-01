@@ -5,9 +5,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck, Lock, Key, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck, Lock, Key, RefreshCw, CheckCircle2, HelpCircle } from "lucide-react";
 import PlatformConnectionCard from "./PlatformConnectionCard";
 import { toast } from "sonner";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const ConnectionsSection: React.FC = () => {
   const { user } = useAuth();
@@ -36,6 +42,10 @@ const ConnectionsSection: React.FC = () => {
     }
   }, [connections, isLoading]);
 
+  // Determine if we have a LinkedIn-specific error
+  const isLinkedInError = errorType === 'linkedin' || 
+    (errorDetails && errorDetails.toLowerCase().includes('linkedin'));
+
   return (
     <div className="max-w-[1280px] mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
@@ -62,6 +72,33 @@ const ConnectionsSection: React.FC = () => {
                   </summary>
                   <p className="mt-2 text-sm font-mono bg-destructive/10 p-3 rounded">{errorDetails}</p>
                 </details>
+              </div>
+            )}
+            
+            {isLinkedInError && (
+              <div className="mt-4">
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="linkedin-help">
+                    <AccordionTrigger className="text-sm">
+                      <div className="flex items-center gap-1">
+                        <HelpCircle className="h-4 w-4" />
+                        <span>LinkedIn Connection Help</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 text-sm">
+                        <p>LinkedIn requires special approval for marketing API access:</p>
+                        <ol className="list-decimal list-inside space-y-1 ml-2">
+                          <li>Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">LinkedIn Developer Portal</a></li>
+                          <li>Select your app</li>
+                          <li>Under "Products", request "Marketing Developer Platform" access</li>
+                          <li>Make sure your Redirect URI is <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{window.location.origin}/callback</code></li>
+                          <li>Wait for LinkedIn approval (can take 1-5 business days)</li>
+                        </ol>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
             )}
           </AlertDescription>

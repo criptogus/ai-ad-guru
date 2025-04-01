@@ -36,7 +36,7 @@ export const useConnectionInitiation = () => {
       const origin = window.location.origin;
       
       // Always use /callback as the redirect path
-      // This must match EXACTLY what's registered in Google Cloud Console
+      // This must match EXACTLY what's registered in OAuth provider developer consoles
       const redirectUri = `${origin}/callback`;
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
@@ -54,8 +54,8 @@ export const useConnectionInitiation = () => {
       } else if (platform === 'linkedin') {
         toast({
           title: "Connecting LinkedIn Ads",
-          description: "Make sure to grant permission to manage your LinkedIn Ads account when prompted.",
-          duration: 5000,
+          description: "LinkedIn requires Marketing Developer Platform approval for ads management. Make sure your app has the necessary permissions.",
+          duration: 6000,
         });
       }
       
@@ -84,17 +84,28 @@ export const useConnectionInitiation = () => {
       
       // Set detailed error information
       setError(error.message || `Failed to connect to ${platform}`);
+      setErrorType(platform);
       
-      // Add more specific error information
+      // Add more specific error information based on platform
       if (error.message) {
-        if (error.message.includes("Missing") && error.message.includes("credentials")) {
+        // Handle LinkedIn-specific errors
+        if (platform === 'linkedin') {
+          if (error.message.includes("access_denied") && error.message.includes("not allowed to create application tokens")) {
+            setErrorDetails("Your LinkedIn app needs Marketing Developer Platform approval. Go to LinkedIn Developers Portal, select your app, and request access to the Marketing Developer Platform.");
+          } else if (error.message.includes("redirect_uri_mismatch")) {
+            setErrorDetails(`LinkedIn OAuth redirect URI mismatch. Make sure the redirect URI "${redirectUri}" is registered in your LinkedIn app settings.`);
+          } else {
+            setErrorDetails(`LinkedIn error: ${error.message}. Make sure your app is configured correctly in the LinkedIn Developer Portal.`);
+          }
+        } 
+        // Handle other platform errors
+        else if (error.message.includes("Missing") && error.message.includes("credentials")) {
           setErrorType("configuration");
           setErrorDetails(`Missing ${platform} API credentials in server configuration. Please contact support.`);
         } else if (error.message.includes("redirect_uri_mismatch")) {
           setErrorType("oauth_config");
-          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${window.location.origin}/callback" is registered in your ${platform} developer console.`);
+          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${redirectUri}" is registered in your ${platform} developer console.`);
         } else {
-          setErrorType(platform);
           setErrorDetails(error.message);
         }
       }

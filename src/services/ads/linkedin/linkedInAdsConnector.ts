@@ -29,6 +29,11 @@ export const initiateLinkedInConnection = async (redirectUri: string): Promise<s
   try {
     console.log('Initiating LinkedIn Ads connection with redirect URI:', redirectUri);
     
+    // Validate the redirect URI
+    if (!redirectUri.startsWith('https://') && !redirectUri.startsWith('http://localhost')) {
+      throw new Error('LinkedIn requires HTTPS for redirect URIs in production environments');
+    }
+    
     const { data, error } = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'getAuthUrl',
@@ -43,7 +48,9 @@ export const initiateLinkedInConnection = async (redirectUri: string): Promise<s
     }
     
     if (!data || !data.success) {
-      throw new Error(data?.error || 'Failed to generate LinkedIn Ads authorization URL');
+      const errorMsg = data?.error || 'Failed to generate LinkedIn Ads authorization URL';
+      console.error('LinkedIn auth URL generation failed:', errorMsg);
+      throw new Error(errorMsg);
     }
     
     return data.authUrl;
@@ -72,8 +79,22 @@ export const handleLinkedInCallback = async (
       }
     });
     
-    if (error || !data || !data.success) {
-      const errorMessage = error?.message || data?.error || 'Failed to exchange LinkedIn authorization code';
+    if (error) {
+      const errorMessage = error.message || 'Failed to exchange LinkedIn authorization code';
+      console.error('LinkedIn token exchange error:', errorMessage);
+      errorLogger.logError(new Error(errorMessage), 'handleLinkedInCallback');
+      
+      // Check for specific LinkedIn errors
+      if (errorMessage.includes('access_denied') && errorMessage.includes('not allowed to create application tokens')) {
+        throw new Error('Your LinkedIn app needs Marketing Developer Platform approval for these scopes. Please check your LinkedIn Developer App settings.');
+      }
+      
+      return null;
+    }
+    
+    if (!data || !data.success) {
+      const errorMessage = data?.error || 'Failed to exchange LinkedIn authorization code';
+      console.error('LinkedIn token exchange response failed:', errorMessage);
       errorLogger.logError(new Error(errorMessage), 'handleLinkedInCallback');
       return null;
     }
@@ -174,7 +195,9 @@ export const getLinkedInAdAccounts = async (
     });
     
     if (!orgResponse.ok) {
-      throw new Error(`LinkedIn API error: ${orgResponse.status}`);
+      const errorText = await orgResponse.text();
+      console.error('LinkedIn organizations API error:', errorText);
+      throw new Error(`LinkedIn API error: ${orgResponse.status} - ${errorText}`);
     }
     
     const orgData = await orgResponse.json();
@@ -192,7 +215,15 @@ export const getLinkedInAdAccounts = async (
     });
     
     if (!adAccountsResponse.ok) {
-      throw new Error(`LinkedIn Ad API error: ${adAccountsResponse.status}`);
+      const errorText = await adAccountsResponse.text();
+      console.error('LinkedIn ad accounts API error:', errorText);
+      
+      // Check if this is a permissions issue
+      if (adAccountsResponse.status === 403) {
+        throw new Error(`LinkedIn Marketing Developer Platform access required. Please ensure your LinkedIn app has been approved for Marketing Developer Platform access.`);
+      }
+      
+      throw new Error(`LinkedIn Ad API error: ${adAccountsResponse.status} - ${errorText}`);
     }
     
     const adAccountsData = await adAccountsResponse.json();

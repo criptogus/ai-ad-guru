@@ -10,6 +10,7 @@ export function getLinkedInAuthUrl(
   state: string
 ): string {
   // Set up LinkedIn OAuth parameters with the required scopes for LinkedIn Ads API
+  // Note: LinkedIn requires Marketing Developer Platform approval for advanced ad scopes
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
@@ -74,14 +75,27 @@ export async function exchangeLinkedInToken(
       body: params.toString()
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("LinkedIn token exchange error:", errorText);
-      console.error("LinkedIn token exchange status:", response.status);
-      throw new Error(`LinkedIn API error: ${response.status} ${errorText}`);
+    const responseText = await response.text();
+    let data;
+    
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse LinkedIn response as JSON:", responseText);
+      throw new Error(`LinkedIn API returned non-JSON response: ${responseText}`);
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      console.error("LinkedIn token exchange error:", data);
+      console.error("LinkedIn token exchange status:", response.status);
+      
+      // Handle specific LinkedIn error messages
+      if (data.error === 'access_denied') {
+        throw new Error(`LinkedIn API error: ${data.error_description || data.error}`);
+      }
+      
+      throw new Error(`LinkedIn API error: ${response.status} ${JSON.stringify(data)}`);
+    }
     
     console.log("LinkedIn token exchange successful:", {
       hasAccessToken: !!data.access_token,
@@ -98,5 +112,33 @@ export async function exchangeLinkedInToken(
   } catch (error) {
     console.error("Error exchanging LinkedIn token:", error);
     throw error;
+  }
+}
+
+/**
+ * Validate LinkedIn Marketing Developer Platform access
+ * This helps determine if the app has the necessary permissions
+ */
+export async function validateLinkedInAccess(accessToken: string): Promise<boolean> {
+  try {
+    // Test API call that requires Marketing Developer Platform permissions
+    const response = await fetch('https://api.linkedin.com/v2/adAccountsV2?q=search&count=1', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Restli-Protocol-Version': '2.0.0',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("LinkedIn API validation failed:", errorText);
+      return false;
+    }
+    
+    // If we get here, the access token has Marketing API permissions
+    return true;
+  } catch (error) {
+    console.error("LinkedIn access validation error:", error);
+    return false;
   }
 }
