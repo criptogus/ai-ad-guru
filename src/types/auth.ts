@@ -31,6 +31,7 @@ export interface AuthContextType {
   createTestAccount: () => Promise<any>;
   updateUserPaymentStatus: (hasPaid: boolean) => Promise<any>;
   simulateSuccessfulPayment: () => Promise<any>;
+  checkSubscriptionStatus: () => Promise<boolean>;
   session: Session | null;
   setUser: (user: CustomUser | null) => void;
 }

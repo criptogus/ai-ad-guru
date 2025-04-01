@@ -5,14 +5,16 @@ import { useRegisterAction } from './auth/useRegisterAction';
 import { useTestAccountAction } from './auth/useTestAccountAction';
 import { usePaymentAction } from './auth/usePaymentAction';
 import { loginWithGoogle } from '@/services/auth/loginService';
+import { checkUserSubscription } from '@/services/auth/subscriptionService';
 import { User } from '@supabase/supabase-js';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const useAuthActions = (
   user?: User | null,
-  setUser?: (user: User | null) => void,
-  navigate?: (path: string) => void
+  setUser?: (user: User | null) => void
 ) => {
+  const navigate = useNavigate();
   const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions(navigate);
   const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser, navigate);
   const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser, navigate);
@@ -24,6 +26,7 @@ export const useAuthActions = (
   } = usePaymentAction(user, setUser);
   
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   
   // Login with credentials
   const login = async (email: string, password: string) => {
@@ -44,6 +47,27 @@ export const useAuthActions = (
     }
   };
   
+  // Check subscription status
+  const checkSubscriptionStatus = async () => {
+    if (!user) return false;
+    
+    try {
+      setIsCheckingSubscription(true);
+      const hasActiveSubscription = await checkUserSubscription(user.id);
+      
+      if (!hasActiveSubscription) {
+        navigate('/billing');
+      }
+      
+      return hasActiveSubscription;
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      return false;
+    } finally {
+      setIsCheckingSubscription(false);
+    }
+  };
+  
   // Combine all loading states
   const isLoading = 
     isLoginSubmitting || 
@@ -51,7 +75,8 @@ export const useAuthActions = (
     isRegisterLoading || 
     isTestAccountLoading || 
     isPaymentLoading ||
-    isGoogleLoading;
+    isGoogleLoading ||
+    isCheckingSubscription;
 
   return {
     login,
@@ -61,6 +86,7 @@ export const useAuthActions = (
     createTestAccount,
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
+    checkSubscriptionStatus,
     isLoading,
   };
 };

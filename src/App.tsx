@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router-dom'; // Removed BrowserRouter import
 import { AuthProvider } from './contexts/AuthContext';
@@ -17,6 +18,7 @@ import TemplateExamplePage from './pages/TemplateExamplePage';
 import MFAPage from './pages/MFAPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import OAuthCallbackHandler from './components/config/OAuthCallbackHandler';
+import AuthCallback from './components/auth/AuthCallback';
 import LandingPage from './pages/LandingPage';
 import ZeroAgencyPrivacyPolicyPage from './pages/ZeroAgencyPrivacyPolicyPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -33,6 +35,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           
           <Route path="/auth/*" element={<AuthPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/mfa-verification" element={<MFAPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
           <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

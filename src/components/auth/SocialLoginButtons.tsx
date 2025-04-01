@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface SocialLoginButtonsProps {
   onGoogleLogin: () => Promise<void>;
@@ -13,9 +14,16 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
 }) => {
   const handleGoogleLogin = async () => {
     try {
+      // Store a flag to indicate we're coming from a login flow
+      // The callback component can use this to determine the proper flow
+      localStorage.setItem('auth_flow', 'login_redirect');
+      
+      toast.info("Redirecting to Google for authentication...");
+      
       await onGoogleLogin();
     } catch (error) {
       console.error('Google login error:', error);
+      toast.error("Failed to login with Google. Please try again.");
       // Error is handled in the parent component
     }
   };

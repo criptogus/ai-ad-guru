@@ -23,6 +23,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     createTestAccount,
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
+    checkSubscriptionStatus,
     isLoading: actionsLoading 
   } = useAuthActions(user, setUser);
 
@@ -50,6 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     createTestAccount,
     updateUserPaymentStatus,
     simulateSuccessfulPayment,
+    checkSubscriptionStatus,
     session,
     setUser,
   };
