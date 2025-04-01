@@ -18,12 +18,12 @@ const LoginPage: React.FC = () => {
     setErrorMessage(null);
     
     try {
-      const { data, error } = await loginWithEmail(email, password);
+      const result = await loginWithEmail(email, password);
       
-      if (error) {
-        setErrorMessage(error.message);
-        toast.error(error.message);
-      } else if (data.session) {
+      if (result.error) {
+        setErrorMessage(result.error.message);
+        toast.error(result.error.message);
+      } else if (result.session) {
         toast.success('Login successful');
         navigate('/dashboard');
       } else {

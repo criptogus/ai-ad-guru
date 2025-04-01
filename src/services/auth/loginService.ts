@@ -1,7 +1,16 @@
+
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
+import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
+
+interface LoginResult {
+  session: Session | null;
+  user: User | null;
+  error?: AuthError | null;
+  weakPassword?: WeakPassword | null;
+}
 
 // Login with email and password
-export const loginWithEmail = async (email: string, password: string) => {
+export const loginWithEmail = async (email: string, password: string): Promise<LoginResult> => {
   console.log('Attempting to sign in with email:', email);
   
   try {
@@ -15,18 +24,26 @@ export const loginWithEmail = async (email: string, password: string) => {
       
       // Handle specific error codes with more user-friendly messages
       if (error.message.includes('Email not confirmed')) {
-        throw {
-          code: 'email_not_confirmed',
-          message: 'Please check your email and click the confirmation link to activate your account.'
+        return {
+          session: null,
+          user: null,
+          error: {
+            ...error,
+            message: 'Please check your email and click the confirmation link to activate your account.'
+          },
         };
       } else if (error.message.includes('Invalid login credentials')) {
-        throw {
-          code: 'invalid_credentials',
-          message: 'The email or password you entered is incorrect. Please try again.'
+        return {
+          session: null,
+          user: null,
+          error: {
+            ...error,
+            message: 'The email or password you entered is incorrect. Please try again.'
+          },
         };
       }
       
-      throw error;
+      return { session: null, user: null, error };
     }
 
     console.log('Sign-in successful:', data);
@@ -34,7 +51,11 @@ export const loginWithEmail = async (email: string, password: string) => {
     // Configure session to expire after 24 hours (86400 seconds)
     await configureSessionExpiration(86400);
     
-    return data;
+    return {
+      session: data.session,
+      user: data.user,
+      error: null
+    };
   } catch (error) {
     console.error('Error in loginWithEmail:', error);
     throw error;

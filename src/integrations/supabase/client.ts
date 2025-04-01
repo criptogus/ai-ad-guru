@@ -21,9 +21,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Add the custom auth domain using the correct method
+// For newer versions of Supabase, we need to update the global auth settings
+// if we want to use a custom auth domain
 if (customAuthDomain) {
-  supabase.auth.setAuth({ url: customAuthDomain });
+  // The proper way to set a custom auth URL in newer Supabase versions
+  supabase.auth.setSession({
+    access_token: '',
+    refresh_token: '',
+  }, {
+    goTo: (url) => {
+      // Redirect to the custom auth domain
+      window.location.href = url.replace(supabaseUrl, customAuthDomain);
+    }
+  });
 }
 
 // Additional helper to configure session expiration
