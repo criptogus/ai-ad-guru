@@ -38,14 +38,14 @@ export const loginWithEmail = async (email: string, password: string) => {
   }
 };
 
-// Login with Google - improved with dynamic origin detection
+// Login with Google - improved with dynamic origin detection and environment awareness
 export const loginWithGoogle = async () => {
   console.log('Initiating Google sign-in');
   
-  // Get the current URL dynamically for proper redirect handling
+  // Get the current domain dynamically
   const origin = window.location.origin;
   
-  // Use an explicit auth/callback path that matches what's in App.tsx
+  // Use an explicit auth/callback path that matches the route in App.tsx
   const redirectTo = `${origin}/auth/callback`;
   
   console.log('Using redirect URL:', redirectTo);
@@ -59,7 +59,6 @@ export const loginWithGoogle = async () => {
           access_type: 'offline',
           prompt: 'consent',
         },
-        // Set a descriptive project name for the Google consent screen
         scopes: 'email profile',
         skipBrowserRedirect: false,
       }
