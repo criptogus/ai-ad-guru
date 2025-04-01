@@ -38,7 +38,7 @@ export const loginWithEmail = async (email: string, password: string) => {
   }
 };
 
-// Login with Google
+// Login with Google - improved with more debugging and error handling
 export const loginWithGoogle = async () => {
   console.log('Initiating Google sign-in');
   
@@ -47,28 +47,42 @@ export const loginWithGoogle = async () => {
   
   // Use a consistent callback URI format across the application
   // This needs to match EXACTLY with what's registered in Google Cloud Console
+  // and what's configured in Supabase Auth settings
   const redirectTo = `${origin}/callback`;
   
   console.log('Using redirect URL:', redirectTo);
   
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: redirectTo,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
       }
-    }
-  });
+    });
 
-  if (error) {
-    console.error('Google sign-in error:', error);
+    if (error) {
+      console.error('Google sign-in error:', error);
+      
+      if (error.message.includes('provider is not enabled')) {
+        throw {
+          code: 'provider_not_enabled',
+          message: 'Google authentication is not enabled. Please contact support.'
+        };
+      }
+      
+      throw error;
+    }
+
+    console.log('Google sign-in initiated:', data);
+    return data;
+  } catch (error) {
+    console.error('Google sign-in failed:', error);
     throw error;
   }
-
-  console.log('Google sign-in initiated:', data);
-  return data;
 };
 
 // Sign out

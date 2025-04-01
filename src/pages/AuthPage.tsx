@@ -17,7 +17,7 @@ const AuthPage: React.FC = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-600 to-brand-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Routes>
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
