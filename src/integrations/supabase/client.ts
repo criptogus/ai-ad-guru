@@ -24,14 +24,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // For newer versions of Supabase, we need to update the global auth settings
 // if we want to use a custom auth domain
 if (customAuthDomain) {
-  // The proper way to set a custom auth URL in newer Supabase versions
-  supabase.auth.setSession({
-    access_token: '',
-    refresh_token: '',
-  }, {
-    goTo: (url) => {
+  // Use a redirect callback instead of directly calling setSession with options
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session && window.location.href.includes(supabaseUrl)) {
       // Redirect to the custom auth domain
-      window.location.href = url.replace(supabaseUrl, customAuthDomain);
+      window.location.href = window.location.href.replace(supabaseUrl, customAuthDomain);
     }
   });
 }
