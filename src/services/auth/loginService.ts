@@ -1,4 +1,3 @@
-
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
 
@@ -24,22 +23,22 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
       
       // Handle specific error codes with more user-friendly messages
       if (error.message.includes('Email not confirmed')) {
+        // Modify message but keep the original error object
+        const enhancedError = error;
+        enhancedError.message = 'Please check your email and click the confirmation link to activate your account.';
         return {
           session: null,
           user: null,
-          error: {
-            ...error,
-            message: 'Please check your email and click the confirmation link to activate your account.'
-          },
+          error: enhancedError,
         };
       } else if (error.message.includes('Invalid login credentials')) {
+        // Modify message but keep the original error object
+        const enhancedError = error;
+        enhancedError.message = 'The email or password you entered is incorrect. Please try again.';
         return {
           session: null,
           user: null,
-          error: {
-            ...error,
-            message: 'The email or password you entered is incorrect. Please try again.'
-          },
+          error: enhancedError,
         };
       }
       
