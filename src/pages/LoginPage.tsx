@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +12,8 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login, loginWithGoogle, createTestAccount } = useAuth();
+
+  const [isCreatingTestAccount, setIsCreatingTestAccount] = useState(false);
 
   const handleLogin = async (email: string, password: string) => {
     setError(null);
@@ -48,7 +49,7 @@ const LoginPage: React.FC = () => {
 
   const handleCreateTestAccount = async () => {
     try {
-      setIsSubmitting(true);
+      setIsCreatingTestAccount(true);
       const result = await createTestAccount();
       if (result) {
         navigate('/dashboard');
@@ -56,7 +57,7 @@ const LoginPage: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Failed to create test account.');
     } finally {
-      setIsSubmitting(false);
+      setIsCreatingTestAccount(false);
     }
   };
 
@@ -93,7 +94,10 @@ const LoginPage: React.FC = () => {
               </Link>
             </div>
             
-            <TestAccountSection onCreateTestAccount={handleCreateTestAccount} />
+            <TestAccountSection 
+              onCreateTestAccount={handleCreateTestAccount} 
+              isCreatingTestAccount={isCreatingTestAccount}
+            />
           </CardFooter>
         </Card>
       </div>
