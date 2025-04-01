@@ -44,15 +44,15 @@ export const Footer: React.FC = () => {
               <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
               <li><Link to="/zero-agency-privacy-policy" className="text-gray-400 hover:text-white">Zero Agency Privacy Policy</Link></li>
               <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
-              <li><Link to="/security-policy" className="text-gray-400 hover:text-white">Security Policy</Link></li>
               <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white">Cookie Policy</Link></li>
+              <li><Link to="/security-policy" className="text-gray-400 hover:text-white">Security Policy</Link></li>
             </ul>
           </div>
         </div>
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <div className="h-8 w-8 rounded bg-brand-600 text-white flex items-center justify-center font-bold">
-              ZD
+              ZA
             </div>
             <span className="ml-2 text-lg font-bold">Zero Digital Agency</span>
           </div>
