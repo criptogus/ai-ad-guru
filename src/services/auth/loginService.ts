@@ -60,7 +60,11 @@ export const loginWithGoogle = async () => {
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
-        }
+        },
+        // Set the project name that will be displayed on the Google consent screen
+        // This makes it show "Zero Digital Agency" instead of the Supabase project ID
+        scopes: 'email profile',
+        skipBrowserRedirect: false, // Ensure we redirect to Google auth page
       }
     });
 
