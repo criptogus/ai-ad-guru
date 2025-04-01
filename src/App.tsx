@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -33,6 +34,7 @@ function App() {
           
           <Route path="/auth/*" element={<AuthPage />} />
           
+          {/* Important: This route handles the OAuth callback */}
           <Route path="/auth/callback" element={<AuthCallback />} />
           
           <Route path="/mfa-verification" element={<MFAPage />} />

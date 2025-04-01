@@ -30,6 +30,13 @@ const AuthCallback: React.FC = () => {
           
           console.log('Session obtained from hash:', data.session ? 'Valid session' : 'No session');
           
+          // Clean up the URL by removing the hash fragment
+          window.history.replaceState(
+            {}, 
+            document.title, 
+            window.location.pathname + window.location.search
+          );
+          
           // Wait for auth state to update
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
