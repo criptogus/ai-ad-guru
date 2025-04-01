@@ -15,6 +15,22 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // If there's a hash in the URL, this might be a direct OAuth redirect with token
+        if (location.hash && location.hash.includes('access_token')) {
+          console.log('Detected access token in URL hash, handling OAuth callback');
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Error getting session from hash:', error);
+            throw error;
+          }
+          
+          console.log('Session obtained from hash:', data.session ? 'Valid session' : 'No session');
+          
+          // Wait a moment to ensure auth state is updated
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         // Wait for auth state to be initialized
         if (isLoading) return;
 
@@ -27,14 +43,20 @@ const AuthCallback: React.FC = () => {
           // Check if the user has an active subscription
           const hasActiveSubscription = await checkSubscriptionStatus();
           
+          // Get return path from location state if available
+          const state = location.state as { from?: string } | undefined;
+          const returnTo = state?.from || '/dashboard';
+          
           // Determine where to navigate based on subscription status
           if (hasActiveSubscription) {
-            console.log('User has active subscription, redirecting to dashboard');
+            console.log('User has active subscription, redirecting to:', returnTo);
             toast.success('Welcome back! Your subscription is active.');
-            navigate('/dashboard');
+            navigate(returnTo);
           } else {
             console.log('User does not have active subscription, redirecting to billing');
             toast.info('Please activate your subscription to continue.');
+            // Store intended destination for after billing
+            sessionStorage.setItem('returnAfterBilling', returnTo);
             navigate('/billing');
           }
         } else {
@@ -52,7 +74,7 @@ const AuthCallback: React.FC = () => {
     };
 
     handleAuthCallback();
-  }, [isLoading, isAuthenticated, user, navigate, checkSubscriptionStatus]);
+  }, [isLoading, isAuthenticated, user, navigate, checkSubscriptionStatus, location]);
 
   // If still loading or processing, show a loading state
   if (isLoading || isProcessing) {

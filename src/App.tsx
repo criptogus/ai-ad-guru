@@ -35,7 +35,10 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           
           <Route path="/auth/*" element={<AuthPage />} />
+          
+          {/* Handle both OAuth redirect paths */}
           <Route path="/auth/callback" element={<AuthCallback />} />
+          
           <Route path="/mfa-verification" element={<MFAPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
           <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
