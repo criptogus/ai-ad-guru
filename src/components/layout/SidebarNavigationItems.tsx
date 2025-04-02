@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ import { useLogoutAction } from "@/hooks/auth/useLogoutAction";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SidebarNavigationItemsProps {
   activePage?: string;
@@ -94,6 +96,14 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
           >
             <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
             {!collapsed && <span>{item.name}</span>}
+            {collapsed && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="sr-only">{item.name}</span>
+                </TooltipTrigger>
+                <TooltipContent side="right">{item.name}</TooltipContent>
+              </Tooltip>
+            )}
           </Link>
         ))}
       </div>
@@ -110,6 +120,14 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({
       >
         <LogOut className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-2")} />
         {!collapsed && <span>Logout</span>}
+        {collapsed && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="sr-only">Logout</span>
+            </TooltipTrigger>
+            <TooltipContent side="right">Logout</TooltipContent>
+          </Tooltip>
+        )}
       </button>
     </div>
   );
