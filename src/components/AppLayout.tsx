@@ -29,7 +29,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
+      <div className="flex h-screen w-full overflow-hidden bg-background">
         <TooltipProvider>
           {withSidebar && (
             <Sidebar variant="sidebar">

@@ -32,7 +32,7 @@ const UserRolesPage: React.FC = () => {
 
   return (
     <AppLayout activePage="roles">
-      <div className="container mx-auto p-6 max-w-6xl">
+      <div className="container mx-auto p-6 max-w-6xl w-full">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Team Management</h1>

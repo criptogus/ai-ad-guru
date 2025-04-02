@@ -16,7 +16,7 @@ const AnalyticsPage: React.FC = () => {
   
   return (
     <AppLayout activePage="analytics">
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6 max-w-7xl w-full">
         <h1 className="text-2xl font-medium text-foreground mb-6">Analytics & Insights</h1>
         
         <Tabs defaultValue="dashboard" className="w-full">

@@ -15,7 +15,7 @@ import {
 const CreditsInfoPage = () => {
   return (
     <AppLayout activePage="credits">
-      <div className="container mx-auto py-6 px-6 max-w-5xl">
+      <div className="container mx-auto py-6 px-6 max-w-7xl w-full">
         <CreditPageHeader />
         <CreditSystemAlert />
         
