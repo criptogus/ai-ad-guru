@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import { useSidebar } from '@/components/ui/sidebar';
 import SidebarCollapseButton from '@/components/layout/SidebarCollapseButton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface SidebarNavigationProps {
   activePage?: string;
