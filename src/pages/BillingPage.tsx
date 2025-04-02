@@ -31,7 +31,7 @@ const BillingPage: React.FC = () => {
     setShowDevTools(!showDevTools);
   };
   
-  // Helper function to get the correct layout
+  // Helper function to get the correct content
   const getContent = () => {
     try {
       // If we're verifying a payment, show the verification component
@@ -69,7 +69,11 @@ const BillingPage: React.FC = () => {
   
   // Show loading state while auth is initializing
   if (isLoading && !isPaymentVerification) {
-    return <LoadingState />;
+    return (
+      <AppLayout activePage="billing">
+        <LoadingState />
+      </AppLayout>
+    );
   }
   
   return (

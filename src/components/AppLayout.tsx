@@ -12,24 +12,38 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard" }) => {
-  const { isCollapsed } = useSidebar();
   const isMobile = useIsMobile();
   
-  return (
-    <div className="h-screen w-full flex overflow-hidden bg-background">
-      {/* Sidebar Navigation */}
-      <SidebarNavigation 
-        collapsed={isCollapsed} 
-        activePage={activePage}
-      />
+  // We'll use this hook inside the SidebarProvider
+  const AppLayoutContent = ({ children, activePage }: AppLayoutProps) => {
+    const { isCollapsed } = useSidebar();
+    
+    return (
+      <div className="h-screen w-full flex overflow-hidden bg-background">
+        {/* Sidebar Navigation */}
+        <SidebarNavigation 
+          collapsed={isCollapsed} 
+          activePage={activePage}
+        />
 
-      {/* Main Content */}
-      <main className="flex-grow overflow-y-auto bg-white dark:bg-gray-800">
-        <div className="p-6 max-w-[1280px] mx-auto">
+        {/* Main Content */}
+        <main className="flex-grow overflow-y-auto bg-white dark:bg-gray-800">
+          <div className="p-6 max-w-[1280px] mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  };
+  
+  return (
+    <SidebarProvider>
+      <TooltipProvider>
+        <AppLayoutContent activePage={activePage}>
           {children}
-        </div>
-      </main>
-    </div>
+        </AppLayoutContent>
+      </TooltipProvider>
+    </SidebarProvider>
   );
 };
 
