@@ -98,7 +98,7 @@ const CampaignsPage = () => {
   }
 
   return (
-    <div className="p-8">
+    <div>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Campaigns</h1>
