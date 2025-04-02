@@ -16,10 +16,17 @@ const OAuthCallbackHandler: React.FC = () => {
       if (!user) return;
       
       try {
+        console.log("==== OAUTH CALLBACK DEBUG INFO ====");
         console.log("OAuthCallbackHandler: Processing callback for user", user.id);
         console.log("Current URL:", window.location.href);
         console.log("Current origin:", window.location.origin);
+        console.log("Path:", window.location.pathname);
+        console.log("Search params:", window.location.search);
+        console.log("Hash:", window.location.hash);
         console.log("Callback path:", "/callback");
+        console.log("Full redirect URI used:", `${window.location.origin}/callback`);
+        console.log("Auth domain redirect URI:", "https://auth.zeroagency.ai/auth/callback");
+        console.log("===================================");
         
         // Process the OAuth callback
         await processOAuthCallback(user.id);
@@ -30,7 +37,10 @@ const OAuthCallbackHandler: React.FC = () => {
         // Show success message
         toast.success("Ad account connection successful!");
       } catch (error: any) {
+        console.error("==== OAUTH CALLBACK ERROR ====");
         console.error("Error processing OAuth callback:", error);
+        console.error("Error message:", error.message);
+        console.error("============================");
         setError(error.message || "Unknown error occurred during authentication");
         setIsProcessed(true); // Set to true even on error to prevent endless loading
         

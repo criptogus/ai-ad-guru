@@ -1,4 +1,3 @@
-
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
 
@@ -62,19 +61,23 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
   }
 };
 
-// Login with Google - improved with explicit redirect URL and better debugging
+// Login with Google - enhanced with more debug options and explicit URL handling
 export const loginWithGoogle = async () => {
-  // Get the EXACT redirect URL that matches what's registered in Google Cloud Console
+  // Get the exact redirect URL that must be registered in Google Cloud Console
   const origin = window.location.origin;
   
-  // We're using a custom auth domain, so construct the callback URL accordingly
-  // This MUST EXACTLY match what's registered in Google Cloud Console
+  // CRITICAL: This MUST EXACTLY match what's registered in Google Cloud Console
+  // Use the custom auth domain as configured in Supabase
   const redirectTo = 'https://auth.zeroagency.ai/auth/callback';
   
+  console.log('==== GOOGLE AUTH DEBUG INFO ====');
   console.log('Initiating Google sign-in with redirect URL:', redirectTo);
   console.log('Current origin:', origin);
+  console.log('Make sure this EXACT URL is registered in Google Cloud Console');
+  console.log('================================');
   
   try {
+    // Use the default behavior without skipBrowserRedirect
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -84,19 +87,25 @@ export const loginWithGoogle = async () => {
           prompt: 'consent',
         },
         scopes: 'email profile',
-        skipBrowserRedirect: false,
       }
     });
 
     if (error) {
-      console.error('Google sign-in error:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('==== GOOGLE AUTH ERROR ====');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Error status:', error.status);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
+      console.error('==========================');
       
       if (error.message.includes('provider is not enabled')) {
-        throw {
-          code: 'provider_not_enabled',
-          message: 'Google authentication is not enabled. Please contact support.'
-        };
+        throw error;
+      }
+      
+      if (error.message.includes('redirect_uri_mismatch')) {
+        console.error('REDIRECT URI MISMATCH ERROR: The redirect URI in your Google OAuth settings does not match the one being used.');
+        console.error('Please ensure you have registered EXACTLY this URL in Google Cloud Console:');
+        console.error(redirectTo);
       }
       
       throw error;

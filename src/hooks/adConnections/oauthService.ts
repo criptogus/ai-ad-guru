@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -16,7 +15,11 @@ export const initiateOAuth = async (params: OAuthParams) => {
     throw new Error('Redirect URI is required for the OAuth flow');
   }
   
+  console.log(`==== OAUTH INITIATION DEBUG INFO ====`);
+  console.log(`Initiating ${platform} OAuth flow`);
   console.log(`Using redirect URI: ${redirectUri}`);
+  console.log(`For user: ${userId}`);
+  console.log(`=====================================`);
   
   try {
     // Generate the OAuth URL from our edge function
@@ -90,7 +93,9 @@ export const initiateOAuth = async (params: OAuthParams) => {
     // Return the OAuth URL for redirection
     return authUrl;
   } catch (error) {
+    console.error(`==== OAUTH ERROR ====`);
     console.error(`Error in initiateOAuth:`, error);
+    console.error(`===================`);
     throw error;
   }
 };
