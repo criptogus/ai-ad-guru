@@ -6,8 +6,8 @@ import AppLayout from "@/components/AppLayout";
 const ConnectionsPage: React.FC = () => {
   return (
     <AppLayout activePage="config">
-      <div className="px-6 py-6 w-full">
-        <div className="mx-auto max-w-7xl">
+      <div className="w-full">
+        <div className="px-6 py-6 max-w-7xl mx-auto">
           <ConnectionsSection />
         </div>
       </div>

@@ -9,8 +9,8 @@ const ConfigPage: React.FC = () => {
 
   return (
     <AppLayout activePage="config">
-      <div className="px-6 py-6 w-full">
-        <div className="mx-auto max-w-7xl">
+      <div className="w-full">
+        <div className="px-6 py-6 max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Configuration</h1>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

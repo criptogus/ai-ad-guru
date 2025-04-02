@@ -12,8 +12,8 @@ const CreateCampaignPage: React.FC = () => {
   
   return (
     <AppLayout activePage="create-campaign">
-      <div className="px-6 py-6 w-full">
-        <div className="max-w-6xl mx-auto">
+      <div className="w-full">
+        <div className="px-6 py-6 max-w-6xl mx-auto">
           <CampaignProvider>
             <CampaignContent />
           </CampaignProvider>

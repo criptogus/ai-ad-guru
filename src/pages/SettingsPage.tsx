@@ -21,8 +21,8 @@ const SettingsPage: React.FC = () => {
 
   return (
     <SafeAppLayout activePage="settings">
-      <div className="px-6 py-6 w-full">
-        <div className="mx-auto max-w-7xl">
+      <div className="w-full">
+        <div className="px-6 py-6 max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Settings</h1>
           
           <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
