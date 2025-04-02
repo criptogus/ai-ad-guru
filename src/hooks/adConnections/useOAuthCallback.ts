@@ -93,7 +93,7 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // UPDATED: Use the correct Supabase v1 redirect URI
+      // UPDATED: Use the consistent redirect URI
       const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       console.log("Using redirect URI for token exchange:", redirectUri);
       

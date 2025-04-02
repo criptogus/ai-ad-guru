@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -27,10 +26,8 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("Hash:", window.location.hash);
         console.log("Callback path:", "/callback");
         
-        // Log all the different redirect URIs that might be used
-        console.log("Full redirect URI used:", `${window.location.origin}/callback`);
-        console.log("Auth domain redirect URI:", "https://auth.zeroagency.ai/auth/callback");
-        console.log("Auth domain v1 redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
+        // Log the consistent redirect URI
+        console.log("Consistent redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
         console.log("===================================");
         
         // Process the OAuth callback

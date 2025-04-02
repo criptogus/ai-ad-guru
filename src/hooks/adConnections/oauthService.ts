@@ -11,15 +11,13 @@ export const initiateOAuth = async (params: OAuthParams) => {
     throw new Error('User must be authenticated to connect ad accounts');
   }
   
-  if (!redirectUri) {
-    throw new Error('Redirect URI is required for the OAuth flow');
-  }
+  const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
   
   console.log(`==== OAUTH INITIATION DEBUG INFO ====`);
   console.log(`Initiating ${platform} OAuth flow`);
-  console.log(`Using redirect URI: ${redirectUri}`);
+  console.log(`Using redirect URI: ${effectiveRedirectUri}`);
   console.log(`For user: ${userId}`);
-  console.log(`Make sure this URI is registered in your ${platform} developer console: ${redirectUri}`);
+  console.log(`Make sure this URI is registered in your ${platform} developer console: ${effectiveRedirectUri}`);
   console.log(`=====================================`);
   
   try {
@@ -29,7 +27,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
       body: {
         action: 'getAuthUrl',
         platform,
-        redirectUri,
+        redirectUri: effectiveRedirectUri,
         userId
       }
     });
@@ -171,13 +169,8 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
     console.warn('Could not clear OAuth state from session storage:', storageError);
   }
   
-  // Always use the stored redirectUri or fall back to the provided one but ensure it includes /v1/
-  let effectiveRedirectUri = authData?.redirectUri || redirectUri;
-  
-  // Make sure we're using the correct v1 path
-  if (!effectiveRedirectUri.includes('/v1/')) {
-    effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
-  }
+  // Always use the consistent redirect URI
+  const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
   
   console.log(`Using callback redirect URI: ${effectiveRedirectUri}`);
   

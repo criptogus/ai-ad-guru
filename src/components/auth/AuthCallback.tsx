@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +18,7 @@ const AuthCallback: React.FC = () => {
         console.log('Auth callback URL:', window.location.href);
         console.log('Auth callback search params:', location.search);
         console.log('Auth callback hash:', location.hash);
+        console.log('Consistent redirect URI:', 'https://auth.zeroagency.ai/auth/v1/callback');
         
         // Check if we have access token in the URL hash (typical for OAuth flows)
         if (location.hash && location.hash.includes('access_token')) {

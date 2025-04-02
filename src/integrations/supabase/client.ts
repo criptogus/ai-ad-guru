@@ -44,7 +44,7 @@ export const configureSessionExpiration = async (expiresIn = 30 * 24 * 60 * 60) 
       // Store expiration time
       const expiresAt = Date.now() + expiresIn * 1000;
       localStorage.setItem('session_expires_at', expiresAt.toString());
-      console.log(`Session configured to expire in ${expiresIn} seconds`);
+      console.log(`Session configured to expire in ${expiresIn} seconds (${expiresIn / 86400} days)`);
     }
   } catch (error) {
     console.error('Error configuring session expiration:', error);
