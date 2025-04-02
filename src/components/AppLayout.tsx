@@ -2,7 +2,7 @@
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SidebarNavigation from "@/components/navigation/SidebarNavigation";
-import { SidebarProvider, Sidebar, SidebarContent } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarContent } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface AppLayoutProps {
@@ -32,11 +32,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <div className="flex h-screen w-full overflow-hidden bg-[#0c121f]">
         <TooltipProvider>
           {withSidebar && (
-            <Sidebar className="border-r border-gray-800 bg-[#0c121f]">
-              <SidebarContent>
-                <SidebarNavigation activePage={activePage} />
-              </SidebarContent>
-            </Sidebar>
+            <SidebarContent>
+              <SidebarNavigation activePage={activePage} />
+            </SidebarContent>
           )}
         </TooltipProvider>
 
