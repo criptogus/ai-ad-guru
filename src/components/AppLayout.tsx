@@ -1,9 +1,9 @@
 
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import SidebarNavigation from "@/components/navigation/SidebarNavigation";
-import { SidebarProvider, SidebarContent } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarContent, Sidebar } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import SidebarNavigation from "@/components/navigation/SidebarNavigation";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -32,9 +32,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <div className="flex h-screen w-full overflow-hidden bg-[#0c121f]">
         <TooltipProvider>
           {withSidebar && (
-            <SidebarContent>
-              <SidebarNavigation activePage={activePage} />
-            </SidebarContent>
+            <Sidebar side="left" variant="sidebar">
+              <SidebarContent>
+                <SidebarNavigation activePage={activePage} />
+              </SidebarContent>
+            </Sidebar>
           )}
         </TooltipProvider>
 

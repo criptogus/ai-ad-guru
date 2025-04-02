@@ -26,7 +26,7 @@ export interface SidebarNavigationItemsProps {
   activePage?: string;
 }
 
-export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed, activePage }) => {
+const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed, activePage }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user, setUser } = useAuth();
