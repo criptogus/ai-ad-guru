@@ -32,50 +32,52 @@ const UserRolesPage: React.FC = () => {
 
   return (
     <AppLayout activePage="roles">
-      <div className="container mx-auto p-6 max-w-6xl w-full">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Team Management</h1>
-            <p className="text-muted-foreground mt-1">Manage your team members and their permissions</p>
+      <div className="w-full px-6 py-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">Team Management</h1>
+              <p className="text-muted-foreground mt-1">Manage your team members and their permissions</p>
+            </div>
+            <Button onClick={() => setShowInviteModal(true)} className="flex items-center gap-2">
+              <PlusCircle className="h-4 w-4" />
+              Invite Team Member
+            </Button>
           </div>
-          <Button onClick={() => setShowInviteModal(true)} className="flex items-center gap-2">
-            <PlusCircle className="h-4 w-4" />
-            Invite Team Member
-          </Button>
-        </div>
 
-        <div className="space-y-6">
-          <TeamMembersCard 
-            isLoading={isLoading} 
-            teamMembers={teamMembers} 
-            getBadgeVariant={getBadgeVariant}
-            onEditMember={handleEditMember}
+          <div className="space-y-6">
+            <TeamMembersCard 
+              isLoading={isLoading} 
+              teamMembers={teamMembers} 
+              getBadgeVariant={getBadgeVariant}
+              onEditMember={handleEditMember}
+            />
+            
+            <PendingInvitationsCard 
+              invitations={invitations} 
+              getBadgeVariant={getBadgeVariant}
+              onResendInvitation={handleResendInvitation}
+              onRevokeInvitation={handleRevokeInvitation}
+            />
+            
+            <RolesPermissionsCard rolePermissions={rolePermissions} />
+          </div>
+
+          <InviteUserModal 
+            open={showInviteModal}
+            onOpenChange={setShowInviteModal}
+            onSendInvitation={handleSendInvitation}
+            isSubmitting={isSubmitting}
           />
-          
-          <PendingInvitationsCard 
-            invitations={invitations} 
-            getBadgeVariant={getBadgeVariant}
-            onResendInvitation={handleResendInvitation}
-            onRevokeInvitation={handleRevokeInvitation}
+
+          <EditTeamMemberModal
+            open={showEditModal}
+            onOpenChange={setShowEditModal}
+            onUpdateRole={handleUpdateTeamMemberRole}
+            isSubmitting={isSubmitting}
+            teamMember={selectedMember}
           />
-          
-          <RolesPermissionsCard rolePermissions={rolePermissions} />
         </div>
-
-        <InviteUserModal 
-          open={showInviteModal}
-          onOpenChange={setShowInviteModal}
-          onSendInvitation={handleSendInvitation}
-          isSubmitting={isSubmitting}
-        />
-
-        <EditTeamMemberModal
-          open={showEditModal}
-          onOpenChange={setShowEditModal}
-          onUpdateRole={handleUpdateTeamMemberRole}
-          isSubmitting={isSubmitting}
-          teamMember={selectedMember}
-        />
       </div>
     </AppLayout>
   );

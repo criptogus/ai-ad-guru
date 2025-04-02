@@ -22,25 +22,27 @@ const SettingsPage: React.FC = () => {
 
   return (
     <SafeAppLayout activePage="settings">
-      <div className="container mx-auto p-6 max-w-7xl w-full">
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
-        
-        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="w-full max-w-4xl mb-2">
-            <TabsTrigger value="company">Company</TabsTrigger>
-            <TabsTrigger value="connections">Connections</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          </TabsList>
+      <div className="w-full px-6 py-6">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-2xl font-bold mb-6">Settings</h1>
           
-          <Routes>
-            <Route path="/" element={<CompanyInfoSettings />} />
-            <Route path="/company" element={<CompanyInfoSettings />} />
-            <Route path="/connections" element={<ConnectionsSettings />} />
-            <Route path="/appearance" element={<AppearanceSettings />} />
-            <Route path="/notifications" element={<NotificationsSettings />} />
-          </Routes>
-        </Tabs>
+          <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
+            <TabsList className="w-full max-w-4xl mb-2">
+              <TabsTrigger value="company">Company</TabsTrigger>
+              <TabsTrigger value="connections">Connections</TabsTrigger>
+              <TabsTrigger value="appearance">Appearance</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            </TabsList>
+            
+            <Routes>
+              <Route path="/" element={<CompanyInfoSettings />} />
+              <Route path="/company" element={<CompanyInfoSettings />} />
+              <Route path="/connections" element={<ConnectionsSettings />} />
+              <Route path="/appearance" element={<AppearanceSettings />} />
+              <Route path="/notifications" element={<NotificationsSettings />} />
+            </Routes>
+          </Tabs>
+        </div>
       </div>
     </SafeAppLayout>
   );
