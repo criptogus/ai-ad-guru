@@ -1,5 +1,4 @@
 
-export { default as Sidebar } from './Sidebar';
 export { default as SidebarHeader } from './SidebarHeader';
 export { default as SidebarCollapseButton } from './SidebarCollapseButton';
 export { default as CreateCampaignButton } from './CreateCampaignButton';
