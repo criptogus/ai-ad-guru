@@ -40,6 +40,12 @@ const AuthCallback: React.FC = () => {
             const expiresAt = Date.now() + (86400 * 1000); // 24 hours in milliseconds
             localStorage.setItem('session_expires_at', expiresAt.toString());
             console.log('Session configured to expire in 24 hours');
+            
+            // CRITICAL: Force immediate redirect to dashboard after successful OAuth login
+            console.log('Successful OAuth login detected, redirecting to dashboard');
+            toast.success('Logged in successfully!');
+            navigate('/dashboard', { replace: true });
+            return;
           }
           
           // Clean up the URL by removing the hash fragment
@@ -48,9 +54,6 @@ const AuthCallback: React.FC = () => {
             document.title, 
             window.location.pathname + window.location.search
           );
-          
-          // Wait for auth state to update
-          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Process error parameters if present
@@ -83,13 +86,13 @@ const AuthCallback: React.FC = () => {
           if (hasActiveSubscription) {
             console.log('User has active subscription, redirecting to:', returnTo);
             toast.success('Welcome back! Your subscription is active.');
-            navigate(returnTo);
+            navigate(returnTo, { replace: true });
           } else {
             console.log('User does not have active subscription, redirecting to billing');
             toast.info('Please activate your subscription to continue.');
             // Store intended destination for after billing
             sessionStorage.setItem('returnAfterBilling', returnTo);
-            navigate('/billing');
+            navigate('/billing', { replace: true });
           }
         } else if (!isLoading) {
           console.log('User not authenticated in callback, redirecting to login');
