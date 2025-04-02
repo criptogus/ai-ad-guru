@@ -9,7 +9,7 @@ interface CampaignsTabContentProps {
 
 const CampaignsTabContent: React.FC<CampaignsTabContentProps> = ({ campaigns }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <CampaignSummaryCards campaigns={campaigns} />
     </div>
   );

@@ -15,11 +15,11 @@ import {
 const CreditsInfoPage = () => {
   return (
     <AppLayout activePage="credits">
-      <div className="container mx-auto py-6 space-y-6 max-w-5xl">
+      <div className="container mx-auto py-6 px-6 max-w-5xl">
         <CreditPageHeader />
         <CreditSystemAlert />
         
-        <Tabs defaultValue="usages" className="w-full">
+        <Tabs defaultValue="usages" className="w-full mt-6">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="usages">Credit Usage</TabsTrigger>
             <TabsTrigger value="plans">Pricing Plans</TabsTrigger>

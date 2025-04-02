@@ -22,16 +22,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   if (!withSidebar) {
     return (
       <main className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900">
-        <div className="p-6 max-w-[1280px] mx-auto">
-          {children}
-        </div>
+        {children}
       </main>
     );
   }
   
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen overflow-hidden bg-background">
         <TooltipProvider>
           {withSidebar && (
             <Sidebar variant="sidebar">
@@ -43,10 +41,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </TooltipProvider>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
-          <div className="p-6 max-w-[1280px] mx-auto">
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto">
+          {children}
         </main>
       </div>
     </SidebarProvider>

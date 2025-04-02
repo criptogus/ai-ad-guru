@@ -79,7 +79,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
