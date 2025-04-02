@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
-import { getCreditCost } from '@/services/credits/creditCosts';
-import { checkUserCredits, deductUserCredits } from '@/services/credits/creditChecks';
+import { getCreditCost } from '@/services/credits';
+import { checkUserCredits, deductUserCredits } from '@/services/credits';
 import { useToast } from './use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 

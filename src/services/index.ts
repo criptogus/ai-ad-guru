@@ -4,7 +4,31 @@ export * from './auth';
 export * from './billing';
 export * from './campaign';
 export * from './analytics';
-export * from './credits';
+
+// Re-export from credits with renames to avoid any conflicts
+export {
+  CREDIT_COSTS,
+  getCreditCost,
+  calculateTotalCreditCost,
+  getUserCredits,
+  getCreditTransactions,
+  addCreditsApi,
+  useCredits,
+  hasEnoughCreditsApi,
+  consumeCredits,
+  addUserCredits,
+  checkCreditSufficiency,
+  getUserCreditHistory,
+  getCreditUsageHistory,
+  getCreditUsageSummary,
+  getCreditBalanceHistory,
+  checkUserCredits,
+  deductUserCredits,
+  type CreditUsage,
+  type CreditAction,
+  type CreditTransaction,
+  type CreditTransactionType
+} from './credits';
 
 // Ads and media services (with explicit exports to avoid ambiguity)
 import * as adsService from './ads';
@@ -40,7 +64,3 @@ export {
   resendInvitation,
   revokeInvitation
 } from './team/invitations';
-
-// Export CreditUsage type and functions from creditHistory
-export type { CreditUsage } from './credits/creditHistory';
-export { getUserCreditHistory, getCreditUsageHistory } from './credits/creditHistory';
