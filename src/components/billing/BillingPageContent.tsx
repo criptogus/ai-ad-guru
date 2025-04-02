@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import CreditUsageHistory from "./CreditUsageHistory";
 import { useCreditsVerification } from "@/hooks/billing/useCreditsVerification";
+import { toast } from "sonner";
 
 interface BillingPageContentProps {
   showDevTools: boolean;
@@ -44,24 +45,32 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   
   // Check for pending purchases on component mount
   useEffect(() => {
-    const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
-    setHasPendingPurchase(!!storedPurchaseIntent);
-    
-    // Check if there's a return path after successful subscription
-    const checkSubscription = async () => {
-      if (user) {
-        const hasSubscription = await checkSubscriptionStatus();
-        if (hasSubscription) {
-          const returnPath = sessionStorage.getItem('returnAfterBilling');
-          if (returnPath) {
-            sessionStorage.removeItem('returnAfterBilling');
-            navigate(returnPath);
+    try {
+      const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
+      setHasPendingPurchase(!!storedPurchaseIntent);
+      
+      // Check if there's a return path after successful subscription
+      const checkSubscription = async () => {
+        if (user) {
+          try {
+            const hasSubscription = await checkSubscriptionStatus();
+            if (hasSubscription) {
+              const returnPath = sessionStorage.getItem('returnAfterBilling');
+              if (returnPath) {
+                sessionStorage.removeItem('returnAfterBilling');
+                navigate(returnPath);
+              }
+            }
+          } catch (error) {
+            console.error("Error checking subscription status:", error);
           }
         }
-      }
-    };
-    
-    checkSubscription();
+      };
+      
+      checkSubscription();
+    } catch (error) {
+      console.error("Error in billing page effect:", error);
+    }
   }, [user, checkSubscriptionStatus, navigate]);
   
   // Force a refresh of the component to trigger useCreditsVerification
@@ -70,7 +79,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
@@ -162,9 +171,11 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         </Card>
       )}
       
-      <div className="mb-8 space-y-8">
+      <div className="space-y-8">
         {/* Credits Purchase Card */}
-        <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
+        {user && (
+          <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
+        )}
 
         {/* Subscription Card */}
         <BillingSubscriptionCard 

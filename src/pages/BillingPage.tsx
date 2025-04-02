@@ -9,6 +9,7 @@ import BillingPageContent from "@/components/billing/BillingPageContent";
 import AppLayout from "@/components/AppLayout";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const BillingPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,34 +33,40 @@ const BillingPage: React.FC = () => {
   
   // Helper function to get the correct layout
   const getContent = () => {
-    // If we're verifying a payment, show the verification component
-    if (isPaymentVerification) {
-      return (
-        <Card className="max-w-2xl mx-auto">
-          <PaymentVerification 
-            sessionId={sessionId} 
-            verifying={verifying} 
-            success={success} 
-            error={error} 
-          />
-        </Card>
-      );
+    try {
+      // If we're verifying a payment, show the verification component
+      if (isPaymentVerification) {
+        return (
+          <Card className="max-w-2xl mx-auto">
+            <PaymentVerification 
+              sessionId={sessionId} 
+              verifying={verifying} 
+              success={success} 
+              error={error} 
+            />
+          </Card>
+        );
+      }
+      
+      // If the user is already authenticated, show the billing page
+      if (isAuthenticated) {
+        return (
+          <AppLayout activePage="billing">
+            <BillingPageContent
+              showDevTools={showDevTools}
+              toggleDevTools={toggleDevTools}
+            />
+          </AppLayout>
+        );
+      }
+      
+      // If not authenticated and not in payment verification, show login prompt
+      return <AuthenticationRequired />;
+    } catch (error) {
+      console.error("Error rendering billing page:", error);
+      toast.error("An error occurred while loading the billing page. Please try again.");
+      return <div className="p-8 text-center">An error occurred. Please try again or contact support.</div>;
     }
-    
-    // If the user is already authenticated, show the billing page
-    if (isAuthenticated) {
-      return (
-        <AppLayout activePage="billing">
-          <BillingPageContent
-            showDevTools={showDevTools}
-            toggleDevTools={toggleDevTools}
-          />
-        </AppLayout>
-      );
-    }
-    
-    // If not authenticated and not in payment verification, show login prompt
-    return <AuthenticationRequired />;
   };
   
   // Show loading state while auth is initializing
