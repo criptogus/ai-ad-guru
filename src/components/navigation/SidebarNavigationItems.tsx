@@ -56,12 +56,6 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
       active: currentPath.includes('/connections') || activePage === 'connections',
     },
     {
-      name: 'Team',
-      icon: Users,
-      path: '/roles',
-      active: currentPath.includes('/roles') || activePage === 'team' || activePage === 'roles',
-    },
-    {
       name: 'Settings',
       icon: Settings,
       path: '/settings',

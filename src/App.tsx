@@ -114,6 +114,13 @@ function App() {
               <OAuthCallbackHandler />
             </ProtectedRoute>
           } />
+          
+          {/* Redirect /roles to /settings/team */}
+          <Route path="/roles" element={
+            <ProtectedRoute>
+              <Navigate to="/settings/team" replace />
+            </ProtectedRoute>
+          } />
         </Routes>
         <Toaster />
       </AuthProvider>
