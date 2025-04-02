@@ -8,8 +8,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Nav: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const { currentLanguage, changeLanguage, t } = useLanguage();
+  
+  // Try to get auth context, but handle the case when it's not available
+  let isAuthenticated = false;
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+  } catch (error) {
+    console.log("Auth context not available, assuming not authenticated");
+    isAuthenticated = false;
+  }
 
   return (
     <nav className="border-b bg-white">

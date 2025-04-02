@@ -9,6 +9,7 @@ import { Trust } from '@/components/landing/Trust';
 import { Pricing } from '@/components/landing/Pricing';
 import { Cta } from '@/components/landing/Cta';
 import { Footer } from '@/components/landing/Footer';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const LandingPage: React.FC = () => {
   return (
@@ -18,7 +19,9 @@ const LandingPage: React.FC = () => {
         <meta name="description" content="Automate your Google Ads & Meta Ads campaigns with AI-powered optimization. Create, manage, and optimize ads that convert better with less effort." />
       </Helmet>
       
-      <Nav />
+      <AuthProvider>
+        <Nav />
+      </AuthProvider>
       
       <main>
         <Hero 
