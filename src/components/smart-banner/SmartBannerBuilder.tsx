@@ -69,42 +69,44 @@ const SmartBannerBuilder: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-6 max-w-7xl">
-      <Header 
-        title="Smart Banner Builder" 
-        description="Create professional ad banners with AI assistance" 
-      />
+    <div className="w-full">
+      <div className="container mx-auto py-6 px-6 max-w-7xl">
+        <Header 
+          title="Smart Banner Builder" 
+          description="Create professional ad banners with AI assistance" 
+        />
 
-      <BannerSettings 
-        selectedFormat={selectedFormat}
-        selectedPlatform={selectedPlatform}
-        onFormatChange={handleFormatChange}
-        onPlatformChange={handlePlatformChange}
-      />
+        <BannerSettings 
+          selectedFormat={selectedFormat}
+          selectedPlatform={selectedPlatform}
+          onFormatChange={handleFormatChange}
+          onPlatformChange={handlePlatformChange}
+        />
 
-      <BuilderContent 
-        currentStep={currentStep}
-        selectedTemplate={selectedTemplate}
-        selectedFormat={selectedFormat}
-        selectedPlatform={selectedPlatform}
-        templates={templates}
-        backgroundImage={backgroundImage}
-        textElements={textElements}
-        bannerElements={bannerElements}
-        userImages={userImages}
-        isGeneratingImage={isGeneratingImage}
-        isUploading={isUploading}
-        onTemplateSelect={handleTemplateSelect}
-        onGoToExport={handleGoToExport}
-        onUpdateTextElement={updateTextElement}
-        onGenerateAIImage={generateAIImage}
-        onRegenerateImage={handleRegenerateImage}
-        onGenerateAIText={generateAIText}
-        onUploadImage={uploadImage}
-        onSelectUserImage={selectUserImage}
-        onUpdateBannerElements={setBannerElements}
-        onBack={handleBackToEditor}
-      />
+        <BuilderContent 
+          currentStep={currentStep}
+          selectedTemplate={selectedTemplate}
+          selectedFormat={selectedFormat}
+          selectedPlatform={selectedPlatform}
+          templates={templates}
+          backgroundImage={backgroundImage}
+          textElements={textElements}
+          bannerElements={bannerElements}
+          userImages={userImages}
+          isGeneratingImage={isGeneratingImage}
+          isUploading={isUploading}
+          onTemplateSelect={handleTemplateSelect}
+          onGoToExport={handleGoToExport}
+          onUpdateTextElement={updateTextElement}
+          onGenerateAIImage={generateAIImage}
+          onRegenerateImage={handleRegenerateImage}
+          onGenerateAIText={generateAIText}
+          onUploadImage={uploadImage}
+          onSelectUserImage={selectUserImage}
+          onUpdateBannerElements={setBannerElements}
+          onBack={handleBackToEditor}
+        />
+      </div>
     </div>
   );
 };

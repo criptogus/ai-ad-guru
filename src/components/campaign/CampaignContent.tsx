@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import CampaignHeader from "./CampaignHeader";
@@ -244,17 +243,19 @@ const CampaignContent: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 space-y-8 max-w-7xl">
-      <CampaignHeader onBack={handleBack} currentStep={currentStep} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-3 lg:sticky lg:top-24 self-start">
-          <StepIndicator currentStep={currentStep} />
-        </div>
+    <div className="w-full">
+      <div className="container mx-auto py-8 px-4 md:px-6 max-w-7xl">
+        <CampaignHeader onBack={handleBack} currentStep={currentStep} />
         
-        <div className="lg:col-span-9">
-          <div className="card-modern p-6 bg-card shadow-md">
-            {getStepContent()}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-3 lg:sticky lg:top-24 self-start">
+            <StepIndicator currentStep={currentStep} />
+          </div>
+          
+          <div className="lg:col-span-9">
+            <div className="card-modern p-6 bg-card shadow-md">
+              {getStepContent()}
+            </div>
           </div>
         </div>
       </div>
