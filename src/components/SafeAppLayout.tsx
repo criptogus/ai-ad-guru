@@ -7,7 +7,6 @@ const SafeAppLayout: React.FC<{
   activePage: string;
   children: React.ReactNode;
 }> = ({ activePage, children }) => {
-  // Use AppLayout directly without any extra wrappers
   return (
     <AppLayout activePage={activePage}>
       {children}

@@ -31,10 +31,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-background">
+      <div className="flex h-screen bg-background">
         <TooltipProvider>
           {withSidebar && (
-            <Sidebar>
+            <Sidebar variant="sidebar">
               <SidebarContent>
                 <SidebarNavigation activePage={activePage} />
               </SidebarContent>
@@ -42,7 +42,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           )}
         </TooltipProvider>
 
-        {/* Main Content - remove any extra divs or spacing */}
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
           <div className="p-6 max-w-[1280px] mx-auto">
             {children}
