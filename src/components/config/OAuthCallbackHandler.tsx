@@ -10,6 +10,7 @@ const OAuthCallbackHandler: React.FC = () => {
   const { processOAuthCallback } = useOAuthCallback();
   const [isProcessed, setIsProcessed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [redirectPath, setRedirectPath] = useState<string>('/connections');
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -33,13 +34,17 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("===================================");
         
         // Process the OAuth callback
-        await processOAuthCallback(user.id);
+        const result = await processOAuthCallback(user.id);
         
         // After processing is complete, set isProcessed to true
         setIsProcessed(true);
         
         // Show success message
         toast.success("Ad account connection successful!");
+        
+        // Set the redirect path to campaign creation for a better user flow
+        setRedirectPath('/campaign/create');
+        
       } catch (error: any) {
         console.error("==== OAUTH CALLBACK ERROR ====");
         console.error("Error processing OAuth callback:", error);
@@ -56,13 +61,14 @@ const OAuthCallbackHandler: React.FC = () => {
     handleCallback();
   }, [user, processOAuthCallback]);
 
-  // If processed, redirect to the connections page or stored return path
+  // If processed, redirect to the campaign creation page or stored return path
   if (isProcessed) {
     // Check if there was a stored return path
     const returnPath = sessionStorage.getItem('oauth_return_path');
     sessionStorage.removeItem('oauth_return_path'); // Clean up
     
-    return <Navigate to={returnPath || "/connections"} replace />;
+    // Prioritize the campaign creation path for better UX flow
+    return <Navigate to={returnPath || redirectPath} replace />;
   }
 
   // Error state

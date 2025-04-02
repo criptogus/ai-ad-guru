@@ -22,7 +22,7 @@ const AuthCallback: React.FC = () => {
         
         // Check if we have access token in the URL hash (typical for OAuth flows)
         if (location.hash && location.hash.includes('access_token')) {
-          console.log('Detected access token in URL hash, processing OAuth callback');
+          console.log('Detected access token in URL hash, processing OAuth login');
           
           // Let Supabase handle the hash parameters
           const { data, error } = await supabase.auth.getSession();
@@ -35,16 +35,41 @@ const AuthCallback: React.FC = () => {
           
           console.log('Session obtained from hash:', data.session ? 'Valid session' : 'No session');
           
-          // Configure session to expire after 24 hours
+          // Configure session to expire after 30 days
           if (data.session) {
-            const expiresAt = Date.now() + (86400 * 1000); // 24 hours in milliseconds
+            // 30 days in milliseconds
+            const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
             localStorage.setItem('session_expires_at', expiresAt.toString());
-            console.log('Session configured to expire in 24 hours');
+            console.log('Session configured to expire in 30 days');
             
-            // CRITICAL: Force immediate redirect to dashboard after successful OAuth login
-            console.log('Successful OAuth login detected, redirecting to dashboard');
-            toast.success('Logged in successfully!');
-            navigate('/dashboard', { replace: true });
+            // Check if the user has an active subscription immediately
+            const userId = data.session.user.id;
+            console.log('Checking billing status for user:', userId);
+            
+            // Get profile data which includes has_paid flag
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('has_paid')
+              .eq('id', userId)
+              .single();
+              
+            if (profileError) {
+              console.error('Error checking billing status:', profileError);
+            }
+            
+            const hasPaid = profileData?.has_paid || false;
+            console.log('User billing status:', hasPaid ? 'Paid' : 'Not paid');
+            
+            // Redirect based on billing status
+            if (hasPaid) {
+              console.log('User has active subscription, redirecting to dashboard');
+              toast.success('Welcome back!');
+              navigate('/dashboard', { replace: true });
+            } else {
+              console.log('User does not have active subscription, redirecting to billing');
+              toast.info('Please complete your subscription to get started');
+              navigate('/billing', { replace: true });
+            }
             return;
           }
           
@@ -85,11 +110,11 @@ const AuthCallback: React.FC = () => {
           // Determine where to navigate based on subscription status
           if (hasActiveSubscription) {
             console.log('User has active subscription, redirecting to:', returnTo);
-            toast.success('Welcome back! Your subscription is active.');
+            toast.success('Welcome back!');
             navigate(returnTo, { replace: true });
           } else {
             console.log('User does not have active subscription, redirecting to billing');
-            toast.info('Please activate your subscription to continue.');
+            toast.info('Please complete your subscription to get started');
             // Store intended destination for after billing
             sessionStorage.setItem('returnAfterBilling', returnTo);
             navigate('/billing', { replace: true });

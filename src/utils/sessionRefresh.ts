@@ -17,7 +17,8 @@ export const refreshSession = async (): Promise<boolean> => {
     
     // If we're more than 80% through our session, refresh it
     // This ensures we refresh before expiry but not too frequently
-    if (now > (expiry - (0.2 * 86400 * 1000))) {
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    if (now > (expiry - (0.2 * thirtyDaysInMs))) {
       const { data, error } = await supabase.auth.refreshSession();
       
       if (error || !data.session) {
@@ -25,10 +26,10 @@ export const refreshSession = async (): Promise<boolean> => {
         return false;
       }
       
-      // Reset the 24-hour timer
-      const newExpiresAt = Date.now() + (86400 * 1000); // 24 hours
+      // Reset the 30-day timer
+      const newExpiresAt = Date.now() + thirtyDaysInMs;
       localStorage.setItem('session_expires_at', newExpiresAt.toString());
-      console.log('Session refreshed, new expiration set');
+      console.log('Session refreshed, new expiration set for 30 days');
       
       return true;
     }

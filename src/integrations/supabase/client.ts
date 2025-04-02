@@ -18,6 +18,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: localStorage, // Use localStorage (more persistent than sessionStorage)
     debug: import.meta.env.DEV, // Enable debug in development
     flowType: 'pkce', // Use PKCE flow for added security
+    detectSessionInUrl: true, // Detect session in URL
+    cookieOptions: {
+      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+      sameSite: 'lax',
+      secure: true
+    }
   }
 });
 
@@ -34,8 +40,8 @@ if (customAuthDomain) {
 }
 
 // Additional helper to configure session expiration
-export const configureSessionExpiration = async (expiresIn = 86400) => {
-  // 86400 seconds = 24 hours
+export const configureSessionExpiration = async (expiresIn = 30 * 24 * 60 * 60) => {
+  // Default: 30 days (in seconds)
   try {
     // Get current session
     const { data } = await supabase.auth.getSession();

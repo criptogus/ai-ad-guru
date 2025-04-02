@@ -48,8 +48,8 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
 
     console.log('Sign-in successful:', data);
     
-    // Configure session to expire after 24 hours (86400 seconds)
-    await configureSessionExpiration(86400);
+    // Configure session to expire after 30 days (30 * 86400 seconds)
+    await configureSessionExpiration(30 * 86400);
     
     return {
       session: data.session,
