@@ -93,9 +93,8 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Get the redirect URI that exactly matches what was used to initiate the OAuth flow
-      // This is critical for OAuth providers which require exact match
-      const redirectUri = `${window.location.origin}/callback`;
+      // UPDATED: Use the correct Supabase v1 redirect URI
+      const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       console.log("Using redirect URI for token exchange:", redirectUri);
       
       // Exchange code for token via Supabase Edge Function

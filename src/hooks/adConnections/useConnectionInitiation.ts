@@ -31,13 +31,13 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Generate the redirect URI based on the current environment
-      // This ensures it matches exactly what's registered in OAuth providers
+      // UPDATED: Generate the redirect URI with the correct path that includes /v1/
+      // This ensures it matches exactly what's registered in OAuth providers and what Supabase expects
       const origin = window.location.origin;
       
       // Always use /callback as the redirect path
-      // This must match EXACTLY what's registered in OAuth provider developer consoles
-      const redirectUri = `${origin}/callback`;
+      // For Supabase auth domain, we need to use the /auth/v1/callback path
+      const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
       
@@ -63,7 +63,7 @@ export const useConnectionInitiation = () => {
       const authUrl = await initiateOAuth({
         platform,
         userId,
-        redirectUri // Pass the redirectUri variable here
+        redirectUri // Pass the updated redirectUri variable here
       });
       
       if (authUrl) {
@@ -76,7 +76,7 @@ export const useConnectionInitiation = () => {
       console.error(`Error initiating ${platform} connection:`, error);
       
       // Get the redirectUri for error messages (define it again in this scope)
-      const errorRedirectUri = `${window.location.origin}/callback`;
+      const errorRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       
       // Show error toast
       toast({

@@ -1,3 +1,4 @@
+
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
 
@@ -66,9 +67,9 @@ export const loginWithGoogle = async () => {
   // Get the exact redirect URL that must be registered in Google Cloud Console
   const origin = window.location.origin;
   
+  // UPDATED: Use the Supabase v1 auth path that includes the /v1/ segment
   // CRITICAL: This MUST EXACTLY match what's registered in Google Cloud Console
-  // Use the custom auth domain as configured in Supabase
-  const redirectTo = 'https://auth.zeroagency.ai/auth/callback';
+  const redirectTo = 'https://auth.zeroagency.ai/auth/v1/callback';
   
   console.log('==== GOOGLE AUTH DEBUG INFO ====');
   console.log('Initiating Google sign-in with redirect URL:', redirectTo);

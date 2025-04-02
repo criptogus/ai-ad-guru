@@ -16,6 +16,7 @@ const OAuthCallbackHandler: React.FC = () => {
       if (!user) return;
       
       try {
+        // Enhanced debugging - Log detailed redirect information
         console.log("==== OAUTH CALLBACK DEBUG INFO ====");
         console.log("OAuthCallbackHandler: Processing callback for user", user.id);
         console.log("Current URL:", window.location.href);
@@ -24,8 +25,11 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("Search params:", window.location.search);
         console.log("Hash:", window.location.hash);
         console.log("Callback path:", "/callback");
+        
+        // Log all the different redirect URIs that might be used
         console.log("Full redirect URI used:", `${window.location.origin}/callback`);
         console.log("Auth domain redirect URI:", "https://auth.zeroagency.ai/auth/callback");
+        console.log("Auth domain v1 redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
         console.log("===================================");
         
         // Process the OAuth callback
@@ -86,6 +90,7 @@ const OAuthCallbackHandler: React.FC = () => {
       <h2 className="mt-4 text-xl font-semibold">Processing authentication...</h2>
       <p className="mt-2 text-muted-foreground">Please wait while we complete your ad account connection.</p>
       <p className="mt-4 text-sm text-muted-foreground">Redirect URI: {window.location.origin}/callback</p>
+      <p className="mt-1 text-sm text-muted-foreground">Auth Domain: https://auth.zeroagency.ai/auth/v1/callback</p>
     </div>
   );
 };
