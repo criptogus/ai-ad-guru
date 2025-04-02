@@ -42,8 +42,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           )}
         </TooltipProvider>
 
-        {/* Main Content */}
-        <main className="flex-grow overflow-y-auto bg-white dark:bg-gray-900">
+        {/* Main Content - removed any extra padding/margin that could cause black space */}
+        <main className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
           <div className="p-6 max-w-[1280px] mx-auto">
             {children}
           </div>
