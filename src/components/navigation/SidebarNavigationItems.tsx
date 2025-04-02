@@ -14,6 +14,11 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoutAction } from '@/hooks/auth/useLogoutAction';
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from '@/components/ui/sidebar';
 
 export interface SidebarNavigationItemsProps {
   collapsed?: boolean;
@@ -73,42 +78,38 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
   ];
 
   return (
-    <>
-      <div className="flex flex-col h-full">
-        <div className="flex-1">
-          {items.map((item) => (
-            <Link 
-              key={item.name} 
-              to={item.path} 
-              className={cn(
-                "flex items-center px-2 py-2 rounded-md transition-all duration-200",
-                "hover:bg-gray-100 dark:hover:bg-gray-800",
-                item.active ? "bg-gray-100 dark:bg-gray-800 text-primary" : "text-gray-600 dark:text-gray-400",
-                collapsed ? "justify-center" : "justify-start"
-              )}
-            >
-              <item.icon className={cn("h-5 w-5", item.active ? "text-primary" : "text-gray-500 dark:text-gray-400")} />
-              {!collapsed && <span className="ml-3">{item.name}</span>}
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.name}>
+          <SidebarMenuButton
+            asChild
+            isActive={item.active}
+            tooltip={collapsed ? item.name : undefined}
+          >
+            <Link to={item.path}>
+              <item.icon />
+              {!collapsed && <span>{item.name}</span>}
             </Link>
-          ))}
-        </div>
-        
-        {/* Logout Button */}
-        <button
-          onClick={logout}
-          disabled={isLoading}
-          className={cn(
-            "flex items-center px-2 py-2 rounded-md transition-all duration-200 mt-4",
-            "hover:bg-red-100 dark:hover:bg-red-900/20",
-            "text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400",
-            collapsed ? "justify-center" : "justify-start"
-          )}
-          title="Logout"
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+      
+      {/* Logout Button */}
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          asChild
+          isActive={false}
+          tooltip={collapsed ? "Logout" : undefined}
+          className="mt-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
         >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="ml-3">Logout</span>}
-        </button>
-      </div>
-    </>
+          <button onClick={logout} disabled={isLoading}>
+            <LogOut />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 };
+
+export default SidebarNavigationItems;

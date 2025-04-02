@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import SafeAppLayout from "@/components/SafeAppLayout";
+import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateMockCampaigns, convertToCampaignType } from "@/components/analytics/AnalyticsMockData";
 import {
@@ -15,7 +15,7 @@ const AnalyticsPage: React.FC = () => {
   const campaigns = useMemo(() => convertToCampaignType(mockCampaigns), [mockCampaigns]);
   
   return (
-    <SafeAppLayout activePage="analytics">
+    <AppLayout activePage="analytics">
       <div className="p-6 space-y-6">
         <h1 className="text-2xl font-medium text-foreground mb-6">Analytics & Insights</h1>
         
@@ -44,7 +44,7 @@ const AnalyticsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </SafeAppLayout>
+    </AppLayout>
   );
 };
 
