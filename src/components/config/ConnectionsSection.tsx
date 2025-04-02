@@ -14,8 +14,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const ConnectionsSection: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     connections,
@@ -45,6 +48,9 @@ const ConnectionsSection: React.FC = () => {
   // Determine if we have a LinkedIn-specific error
   const isLinkedInError = errorType === 'linkedin' || 
     (errorDetails && errorDetails.toLowerCase().includes('linkedin'));
+    
+  // Determine if the user has connected at least one platform
+  const hasAtLeastOneConnection = connections.length > 0;
 
   return (
     <div className="max-w-[1280px] mx-auto p-4 sm:p-6">
@@ -92,7 +98,7 @@ const ConnectionsSection: React.FC = () => {
                           <li>Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">LinkedIn Developer Portal</a></li>
                           <li>Select your app</li>
                           <li>Under "Products", request "Marketing Developer Platform" access</li>
-                          <li>Make sure your Redirect URI is <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{window.location.origin}/callback</code></li>
+                          <li>Make sure your Redirect URI is <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">https://auth.zeroagency.ai/auth/v1/callback</code></li>
                           <li>Wait for LinkedIn approval (can take 1-5 business days)</li>
                         </ol>
                       </div>
@@ -182,6 +188,17 @@ const ConnectionsSection: React.FC = () => {
           onConnect={initiateMicrosoftConnection}
           onRemove={removeConnection}
         />
+      </div>
+      
+      {/* Continue Button - Only enabled when at least one connection is established */}
+      <div className="mt-8 flex justify-end">
+        <Button 
+          size="lg"
+          onClick={() => navigate('/campaign/create')}
+          disabled={!hasAtLeastOneConnection}
+        >
+          {hasAtLeastOneConnection ? 'Continue to Ad Creation' : 'Connect at least one platform'}
+        </Button>
       </div>
     </div>
   );
