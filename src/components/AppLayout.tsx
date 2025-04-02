@@ -32,7 +32,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <div className="flex h-screen w-full overflow-hidden bg-[#0c121f]">
         <TooltipProvider>
           {withSidebar && (
-            <Sidebar variant="sidebar" className="border-r border-gray-800 bg-[#0c121f]">
+            <Sidebar className="border-r border-gray-800 bg-[#0c121f]">
               <SidebarContent>
                 <SidebarNavigation activePage={activePage} />
               </SidebarContent>
