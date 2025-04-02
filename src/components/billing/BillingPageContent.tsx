@@ -79,7 +79,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <Button variant="ghost" className="mr-2" onClick={() => navigate("/dashboard")}>
@@ -103,7 +103,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
                 <span>Credit History</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-white dark:bg-gray-800">
               <DialogHeader>
                 <DialogTitle>Credit Usage History</DialogTitle>
                 <DialogDescription>
@@ -134,15 +134,15 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       
       {/* Show info if there's a pending purchase */}
       {hasPendingPurchase && !processing && (
-        <Card className="p-4 mb-6 bg-blue-50 border-blue-200">
+        <Card className="p-4 mb-6 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-center justify-between">
-            <p className="text-blue-800">
+            <p className="text-blue-800 dark:text-blue-200">
               You have a pending credit purchase. Click the button to verify and add credits to your account.
             </p>
             <Button 
               variant="outline" 
               size="sm" 
-              className="ml-4 bg-white" 
+              className="ml-4 bg-white dark:bg-gray-700" 
               onClick={handleVerifyPurchase}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -154,8 +154,8 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       
       {/* Show warning if coming from campaign with insufficient credits */}
       {fromCampaign && requiredCredits > 0 && (
-        <Card className="p-4 mb-6 bg-amber-50 border-amber-200">
-          <p className="text-amber-800">
+        <Card className="p-4 mb-6 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+          <p className="text-amber-800 dark:text-amber-200">
             You need <strong>{requiredCredits} more credits</strong> to create this campaign. 
             Please purchase more credits below.
           </p>
@@ -164,8 +164,8 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       
       {/* Show info if credits are being processed */}
       {processing && (
-        <Card className="p-4 mb-6 bg-blue-50 border-blue-200">
-          <p className="text-blue-800">
+        <Card className="p-4 mb-6 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+          <p className="text-blue-800 dark:text-blue-200">
             Processing your recent credit purchase. This will be reflected in your account shortly.
           </p>
         </Card>

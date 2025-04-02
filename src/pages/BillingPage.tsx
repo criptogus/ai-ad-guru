@@ -51,12 +51,10 @@ const BillingPage: React.FC = () => {
       // If the user is already authenticated, show the billing page
       if (isAuthenticated) {
         return (
-          <AppLayout activePage="billing">
-            <BillingPageContent
-              showDevTools={showDevTools}
-              toggleDevTools={toggleDevTools}
-            />
-          </AppLayout>
+          <BillingPageContent
+            showDevTools={showDevTools}
+            toggleDevTools={toggleDevTools}
+          />
         );
       }
       
@@ -74,7 +72,11 @@ const BillingPage: React.FC = () => {
     return <LoadingState />;
   }
   
-  return getContent();
+  return (
+    <AppLayout activePage="billing">
+      {getContent()}
+    </AppLayout>
+  );
 };
 
 export default BillingPage;

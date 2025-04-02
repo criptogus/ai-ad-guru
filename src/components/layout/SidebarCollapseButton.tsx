@@ -18,8 +18,8 @@ const SidebarCollapseButton: React.FC<SidebarCollapseButtonProps> = ({
       <TooltipTrigger asChild>
         <button 
           className={cn(
-            "rounded-md bg-primary text-primary-foreground p-1.5 hover:bg-primary/90 transition-all duration-200 active:scale-95",
-            "flex items-center justify-center"
+            "rounded-full bg-primary text-primary-foreground p-1.5 hover:bg-primary/90 transition-all duration-200 active:scale-95",
+            "flex items-center justify-center shadow-md z-10"
           )}
           onClick={onClick}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

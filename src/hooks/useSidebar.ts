@@ -25,7 +25,7 @@ export const useSidebar = (): SidebarState => {
     return isMobile;
   };
 
-  const [isCollapsed, setIsCollapsed] = useState(getSavedState);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(getSavedState);
 
   // Update collapse state when mobile state changes
   useEffect(() => {
