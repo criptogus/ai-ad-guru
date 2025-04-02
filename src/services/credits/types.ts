@@ -1,3 +1,4 @@
+
 /**
  * Credit action types supported by the platform
  */
@@ -43,3 +44,8 @@ export interface CreditTransaction {
   timestamp: string;
   metadata?: Record<string, any>;
 }
+
+/**
+ * Export credit costs for use in other modules
+ */
+export { CREDIT_COSTS } from './creditCosts';

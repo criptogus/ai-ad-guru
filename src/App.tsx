@@ -13,6 +13,9 @@ import BillingPage from './pages/BillingPage';
 import PricingPage from './pages/PricingPage';
 import WebsiteAnalysisPage from './pages/WebsiteAnalysisPage';
 import CampaignPage from './pages/CampaignPage';
+import CampaignsPage from './pages/CampaignsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import CreditsInfoPage from './pages/CreditsInfoPage';
 import TestAdsPage from './pages/TestAdsPage';
 import TemplateExamplePage from './pages/TemplateExamplePage';
 import MFAPage from './pages/MFAPage';
@@ -24,6 +27,7 @@ import ZeroAgencyPrivacyPolicyPage from './pages/ZeroAgencyPrivacyPolicyPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import CookiePolicyPage from './pages/CookiePolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
+import CreateCampaignPage from './pages/CreateCampaignPage';
 
 function App() {
   return (
@@ -45,54 +49,82 @@ function App() {
           
           {/* Protected routes requiring authentication */}
           <Route path="/dashboard" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <DashboardPage />
               </AppLayout>
             </ProtectedRoute>
           } />
+          <Route path="/campaigns" element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CampaignsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/create-campaign" element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CreateCampaignPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/analytics" element={
+            <ProtectedRoute>
+              <AppLayout>
+                <AnalyticsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/credits-info" element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CreditsInfoPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
           <Route path="/settings/*" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
           } />
           <Route path="/billing" element={
-            <ProtectedRoute requiresPayment={false}>
+            <ProtectedRoute>
               <AppLayout>
                 <BillingPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/website-analysis" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <WebsiteAnalysisPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/campaign/:campaignId" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <CampaignPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/testing" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <TestAdsPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/template-example" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <TemplateExamplePage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/connections" element={
-            <ProtectedRoute requiresPayment={true}>
+            <ProtectedRoute>
               <AppLayout>
                 <ConnectionsPage />
               </AppLayout>
@@ -100,7 +132,7 @@ function App() {
           } />
           
           <Route path="/callback" element={
-            <ProtectedRoute requiresPayment={false}>
+            <ProtectedRoute>
               <OAuthCallbackHandler />
             </ProtectedRoute>
           } />

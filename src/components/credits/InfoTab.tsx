@@ -1,176 +1,122 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Image, BarChart3, Megaphone, Rocket } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const InfoTab: React.FC = () => {
+const InfoTab = () => {
   return (
     <div className="space-y-6">
-      {/* How credits work section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Brain className="mr-2 h-5 w-5 text-primary" />
-            How Credits Work
-          </CardTitle>
+          <CardTitle>How Credits Work</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p>
-            Credits power AI-driven features in our platform. Each action consumes a specific 
-            number of credits based on the computational resources and AI models used.
+            Our platform uses a credit system to provide you with flexible access to AI-powered features.
+            Credits are consumed when you use specific features, and different actions require different
+            amounts of credits based on the computational resources they use.
           </p>
-          <p>
-            Credits never expire, so you can use them at your own pace. You can always check your 
-            remaining balance at the top of your dashboard.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Credit costs by feature */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Megaphone className="mr-2 h-5 w-5 text-primary" />
-            Ad Creation Credits
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            <strong>Google Search Ads (5 text variations):</strong> 5 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Our AI analyzes your website and generates 5 different ad variations with
-              headlines, descriptions, and extensions optimized for maximum CTR.
-            </p>
-          </div>
           
-          <p>
-            <strong>Meta/Instagram Ads (image + caption):</strong> 5 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              AI generates a high-quality Instagram ad image based on your product and 
-              brand, along with caption copy that drives engagement.
-            </p>
-          </div>
-          
-          <p>
-            <strong>LinkedIn Ads:</strong> 7 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Professional ad copy tailored for B2B audiences, with specialized targeting recommendations.
-            </p>
+          <div className="bg-muted p-4 rounded-md space-y-2">
+            <p className="font-medium">Key Benefits:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Pay only for what you use</li>
+              <li>Scale up or down based on your needs</li>
+              <li>Transparent tracking of resource usage</li>
+              <li>No surprise billing at the end of the month</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
-
-      {/* Image generation */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Image className="mr-2 h-5 w-5 text-primary" />
-            Image Generation Credits
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            <strong>Standard Image Generation:</strong> 3 credits per image
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Uses DALL·E 3 to create high-quality ad images based on your product and brand.
-            </p>
-          </div>
-          
-          <p>
-            <strong>Smart Banner Generation:</strong> 5 credits per banner
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Creates ready-to-use banner ads in multiple sizes with your branding and messaging.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Optimization */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Rocket className="mr-2 h-5 w-5 text-primary" />
-            AI Optimization
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            <strong>Daily Optimization:</strong> 10 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              AI analyzes your ad performance every 24 hours, pauses low-performing ads,
-              and suggests new variations based on what's working.
-            </p>
-          </div>
-          
-          <p>
-            <strong>Weekly Optimization:</strong> 7 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Weekly analysis and optimization of your campaigns.
-            </p>
-          </div>
-          
-          <p>
-            <strong>Monthly Optimization:</strong> 5 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Monthly analysis and optimization of your campaigns.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Reporting */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-            Analysis & Reporting
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            <strong>Campaign Analysis:</strong> 2 credits
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              In-depth analysis of your campaign performance with AI-generated insights.
-            </p>
-          </div>
-          
-          <p>
-            <strong>Website Analysis:</strong> 1 credit
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              AI analyzes your website to extract key information for ad creation.
-            </p>
-          </div>
-          
-          <p>
-            <strong>Export Report:</strong> 1 credit
-          </p>
-          <div className="pl-6">
-            <p className="text-sm text-muted-foreground">
-              Export detailed reports in various formats (PDF, CSV, etc.).
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      
+      <Tabs defaultValue="creating">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="creating">Creating Ads</TabsTrigger>
+          <TabsTrigger value="optimizing">Optimizing</TabsTrigger>
+          <TabsTrigger value="purchasing">Purchasing</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="creating" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="mb-4">
+                Creating ads with our AI uses credits based on the platform and complexity:
+              </p>
+              
+              <div className="space-y-4">
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Google Search Ads</div>
+                  <p className="text-sm text-muted-foreground">5 credits for 5 variations of headlines and descriptions.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Meta Ads with Images</div>
+                  <p className="text-sm text-muted-foreground">5 credits for ad copy and caption, plus 3 credits per AI-generated image.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Smart Banners</div>
+                  <p className="text-sm text-muted-foreground">5 credits per banner generated with custom dimensions and branding.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="optimizing" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="mb-4">
+                Our AI can optimize your campaigns automatically at different frequencies:
+              </p>
+              
+              <div className="space-y-4">
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Daily Optimization</div>
+                  <p className="text-sm text-muted-foreground">10 credits per campaign. Best for high-spend campaigns that need frequent adjustments.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Weekly Optimization</div>
+                  <p className="text-sm text-muted-foreground">7 credits per campaign. Great for most businesses to maintain performance.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Monthly Optimization</div>
+                  <p className="text-sm text-muted-foreground">5 credits per campaign. Good for stable campaigns with consistent performance.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="purchasing" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="mb-4">
+                You can purchase credits in several ways:
+              </p>
+              
+              <div className="space-y-4">
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Monthly Subscription</div>
+                  <p className="text-sm text-muted-foreground">Subscribe to a plan and get a monthly allowance of credits at the best rate.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">One-time Purchases</div>
+                  <p className="text-sm text-muted-foreground">Buy credit packs when you need them without a recurring commitment.</p>
+                </div>
+                
+                <div className="border p-3 rounded-md">
+                  <div className="font-medium">Credit Rollover</div>
+                  <p className="text-sm text-muted-foreground">Unused credits from subscriptions roll over to the next month (up to 3x your monthly allowance).</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

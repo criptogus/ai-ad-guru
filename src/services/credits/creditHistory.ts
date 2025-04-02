@@ -2,23 +2,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 
-export interface CreditUsage {
-  id: string;
-  userId: string;
-  action: string;
-  amount: number;
-  description: string;
-  createdAt: string;
-  campaignId?: string;
-  platformId?: string;
-}
-
 /**
- * Get credit usage history for a user
+ * Get full credit history for a user
  */
-export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage[]> => {
+export const getUserCreditHistory = async (userId: string) => {
   try {
-    // Query credit transactions for user
     const { data, error } = await supabase
       .from('credit_transactions')
       .select('*')
@@ -29,50 +17,47 @@ export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage
       throw error;
     }
     
-    return data.map(item => ({
-      id: item.id,
-      userId: item.user_id,
-      action: item.action,
-      amount: item.amount,
-      description: item.description,
-      createdAt: item.created_at,
-      campaignId: item.campaign_id,
-      platformId: item.platform_id
-    })) || [];
+    return data || [];
   } catch (error) {
-    errorLogger.logError(error, 'getCreditUsageHistory');
+    errorLogger.logError(error, 'getUserCreditHistory');
     return [];
   }
 };
 
 /**
- * Get credit usage summary for a user
+ * Get credit usage summary
  */
-export const getCreditUsageSummary = async (userId: string): Promise<Record<string, number>> => {
+export const getCreditUsageSummary = async (userId: string) => {
   try {
-    // Query credit usage summary
     const { data, error } = await supabase
-      .from('credit_transactions')
-      .select('action, amount')
-      .eq('user_id', userId);
+      .rpc('get_credit_usage_summary', { user_id: userId });
     
     if (error) {
       throw error;
     }
     
-    // Aggregate usage by action
-    const summary: Record<string, number> = {};
-    data.forEach(item => {
-      const action = item.action;
-      if (!summary[action]) {
-        summary[action] = 0;
-      }
-      summary[action] += Math.abs(item.amount);
-    });
-    
-    return summary;
+    return data || [];
   } catch (error) {
     errorLogger.logError(error, 'getCreditUsageSummary');
-    return {};
+    return [];
+  }
+};
+
+/**
+ * Get user's credit balance history
+ */
+export const getCreditBalanceHistory = async (userId: string, days: number = 30) => {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_credit_balance_history', { user_id: userId, days_back: days });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    errorLogger.logError(error, 'getCreditBalanceHistory');
+    return [];
   }
 };

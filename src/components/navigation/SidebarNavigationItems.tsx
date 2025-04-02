@@ -47,16 +47,16 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
       active: currentPath.includes('/analytics') || activePage === 'analytics',
     },
     {
+      name: 'Credits',
+      icon: CreditCard,
+      path: '/credits-info',
+      active: currentPath.includes('/credits') || activePage === 'credits',
+    },
+    {
       name: 'Team',
       icon: Users,
       path: '/roles',
       active: currentPath.includes('/roles') || activePage === 'team' || activePage === 'roles',
-    },
-    {
-      name: 'Billing',
-      icon: CreditCard,
-      path: '/billing',
-      active: currentPath.includes('/billing') || activePage === 'billing',
     },
     {
       name: 'Settings',
