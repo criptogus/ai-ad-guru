@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -43,7 +44,7 @@
     --input: 214.3 31.8% 91.4%; /* #D1D5DB */
     --ring: 221.2 83.2% 53.3%; /* #3B82F6 */
 
-    --radius: 0.75rem; /* Increased radius for modern feel */
+    --radius: 0.5rem;
 
     --sidebar-background: 210 40% 98.1%; /* #F9FAFB */
     --sidebar-foreground: 215.4 16.3% 46.9%; /* #6B7280 */
@@ -110,10 +111,11 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
   }
 }
 
@@ -126,40 +128,34 @@
     @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
   }
   
-  /* Modern card styling */
   .card-modern {
     @apply rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:translate-y-[-2px];
   }
   
-  /* Button styles following design system */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] transition-all duration-200;
+    @apply bg-blue-500 text-white hover:bg-blue-600 rounded-md shadow-md px-4 h-10 active:scale-95 transition-all duration-200;
   }
   
   .btn-secondary {
-    @apply bg-transparent border border-primary text-primary hover:bg-accent active:scale-[0.98] transition-all duration-200;
+    @apply border border-gray-200 text-gray-600 hover:border-blue-300 rounded-md px-4 h-10 active:scale-95 transition-all duration-200;
   }
   
   .btn-outline {
     @apply bg-transparent border border-input text-muted-foreground hover:bg-muted active:scale-[0.98] transition-all duration-200;
   }
   
-  /* Text gradient for special accents */
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent;
   }
   
-  /* Focus styles for accessibility */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   
-  /* Input focus effect */
   .input-focus {
     @apply focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary;
   }
   
-  /* Add explicit dark mode styles for campaign components */
   .dark .campaign-card {
     @apply bg-card border-border;
   }
@@ -172,7 +168,6 @@
     @apply bg-card border-border;
   }
   
-  /* Fix white backgrounds in dark mode */
   .dark .bg-white {
     @apply bg-card;
   }
@@ -181,7 +176,6 @@
     @apply border-border;
   }
   
-  /* Fix tables in dark mode */
   .dark table {
     @apply bg-card border-border;
   }
@@ -194,17 +188,14 @@
     @apply border-border;
   }
   
-  /* Fix inputs in dark mode */
   .dark input, .dark select, .dark textarea {
     @apply bg-muted border-border;
   }
   
-  /* Fix buttons in dark mode */
   .dark button.bg-white {
     @apply bg-muted text-foreground;
   }
   
-  /* Ensure consistent padding and spacing */
   .content-container {
     @apply p-4 sm:p-6;
   }
@@ -213,12 +204,10 @@
     @apply rounded-xl border shadow-sm overflow-hidden;
   }
   
-  /* Campaign step styles */
   .campaign-step-card {
     @apply transition-all duration-300 shadow-md border border-accent/20 rounded-xl;
   }
   
-  /* Campaign wizard navigation styles */
   .step-nav-item {
     @apply flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-md transition-colors;
   }
@@ -231,12 +220,10 @@
     @apply text-success;
   }
   
-  /* Enhanced form inputs */
   .campaign-input {
     @apply border border-input px-3 py-2 rounded-md bg-background input-focus transition-all duration-200;
   }
   
-  /* Button enhancements */
   .action-button {
     @apply flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200;
   }
@@ -249,17 +236,14 @@
     @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98];
   }
   
-  /* Story link animation */
   .story-link {
     @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
   }
   
-  /* Hover scale animation */
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
   }
   
-  /* Pulse animation */
   .pulse {
     @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
   }

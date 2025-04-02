@@ -29,7 +29,9 @@ export const useSidebar = (): SidebarState => {
 
   useEffect(() => {
     // Update collapse state when mobile state changes
-    setIsCollapsed(isMobile);
+    if (isMobile) {
+      setIsCollapsed(true);
+    }
   }, [isMobile]);
 
   // Save state to localStorage whenever it changes
@@ -40,7 +42,7 @@ export const useSidebar = (): SidebarState => {
   }, [isCollapsed]);
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prevState) => !prevState);
   };
 
   return { isCollapsed, setIsCollapsed, toggleSidebar };

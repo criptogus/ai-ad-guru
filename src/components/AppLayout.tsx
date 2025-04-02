@@ -16,7 +16,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
   
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex h-screen w-full bg-background">
         {/* Sidebar Navigation */}
         <SidebarNavigation 
           collapsed={isCollapsed} 
@@ -24,11 +24,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, activePage = "dashboard
         />
 
         {/* Main Content */}
-        <div className="flex-grow overflow-y-auto">
-          <div className="p-6 max-w-[1400px] mx-auto transition-all duration-300">
+        <main className="flex-grow overflow-y-auto">
+          <div className="p-6 max-w-[1280px] mx-auto transition-all duration-300">
             {children}
           </div>
-        </div>
+        </main>
       </div>
     </SidebarProvider>
   );

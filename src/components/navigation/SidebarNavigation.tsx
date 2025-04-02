@@ -24,16 +24,16 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
     <Sidebar 
       variant="sidebar" 
       collapsible={collapsed ? "icon" : "offcanvas"}
-      className="border-r border-border"
+      className="border-r border-border bg-gray-50 dark:bg-gray-800"
     >
       <SidebarHeader>
         <div className={cn(
-          "flex items-center py-4 px-3", 
+          "flex items-center py-4 px-4", 
           collapsed ? "justify-center" : "justify-between"
         )}>
-          {!collapsed && <span className="font-semibold">AdManager AI</span>}
-          <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">A</span>
+          {!collapsed && <span className="font-semibold text-lg font-inter">AdManager AI</span>}
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-sm font-bold text-primary-foreground">A</span>
           </div>
         </div>
       </SidebarHeader>
@@ -43,7 +43,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
       </SidebarContent>
       
       <SidebarFooter>
-        <div className="p-3 border-t flex items-center justify-between">
+        <div className="p-4 border-t flex items-center justify-between">
           <ThemeToggle />
           <SidebarCollapseButton 
             collapsed={collapsed} 
