@@ -12,10 +12,12 @@ const CreateCampaignPage: React.FC = () => {
   
   return (
     <AppLayout activePage="create-campaign">
-      <div className="max-w-6xl mx-auto">
-        <CampaignProvider>
-          <CampaignContent />
-        </CampaignProvider>
+      <div className="px-6 py-6 w-full">
+        <div className="max-w-6xl mx-auto">
+          <CampaignProvider>
+            <CampaignContent />
+          </CampaignProvider>
+        </div>
       </div>
     </AppLayout>
   );

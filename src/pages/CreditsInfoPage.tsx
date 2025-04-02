@@ -13,7 +13,7 @@ import {
 const CreditsInfoPage = () => {
   return (
     <AppLayout activePage="credits">
-      <div className="w-full p-6">
+      <div className="px-6 py-6 w-full">
         <div className="mx-auto max-w-7xl">
           <CreditPageHeader />
           <CreditSystemAlert />

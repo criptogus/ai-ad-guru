@@ -9,7 +9,7 @@ const ConfigPage: React.FC = () => {
 
   return (
     <AppLayout activePage="config">
-      <div className="w-full p-6">
+      <div className="px-6 py-6 w-full">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-3xl font-bold mb-6">Configuration</h1>
           
