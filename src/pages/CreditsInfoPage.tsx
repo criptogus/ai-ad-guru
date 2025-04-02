@@ -1,8 +1,6 @@
 
 import React from "react";
 import AppLayout from "@/components/AppLayout";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   UsageTab, 
@@ -15,7 +13,7 @@ import {
 const CreditsInfoPage = () => {
   return (
     <AppLayout activePage="credits">
-      <div className="w-full px-6 py-6">
+      <div className="w-full p-6">
         <div className="mx-auto max-w-7xl">
           <CreditPageHeader />
           <CreditSystemAlert />

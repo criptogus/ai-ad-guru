@@ -1,7 +1,6 @@
 
 import React from "react";
 import SafeAppLayout from "@/components/SafeAppLayout";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
@@ -22,7 +21,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <SafeAppLayout activePage="settings">
-      <div className="w-full px-6 py-6">
+      <div className="w-full p-6">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-2xl font-bold mb-6">Settings</h1>
           
