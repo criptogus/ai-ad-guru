@@ -1,9 +1,8 @@
 
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import SidebarNavigation from "@/components/navigation/SidebarNavigation";
-import { useSidebar } from "@/hooks/useSidebar";
+import { SidebarProvider, Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface AppLayoutProps {
@@ -19,29 +18,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // We'll use this hook inside the SidebarProvider
-  const AppLayoutContent = ({ children, activePage, withSidebar }: AppLayoutProps) => {
-    const { isCollapsed } = useSidebar();
-    
-    return (
-      <div className="h-screen w-full flex overflow-hidden bg-background">
-        {withSidebar && (
-          <SidebarNavigation 
-            collapsed={isCollapsed} 
-            activePage={activePage}
-          />
-        )}
-
-        {/* Main Content */}
-        <main className="flex-grow overflow-y-auto bg-white dark:bg-gray-900">
-          <div className="p-6 max-w-[1280px] mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
-    );
-  };
-  
   // If withSidebar is false, just return the children without SidebarProvider
   if (!withSidebar) {
     return (
@@ -55,11 +31,24 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   return (
     <SidebarProvider>
-      <TooltipProvider>
-        <AppLayoutContent activePage={activePage} withSidebar={withSidebar}>
-          {children}
-        </AppLayoutContent>
-      </TooltipProvider>
+      <div className="h-screen w-full flex overflow-hidden bg-background">
+        <TooltipProvider>
+          {withSidebar && (
+            <Sidebar>
+              <SidebarContent>
+                <SidebarNavigation activePage={activePage} />
+              </SidebarContent>
+            </Sidebar>
+          )}
+        </TooltipProvider>
+
+        {/* Main Content */}
+        <main className="flex-grow overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="p-6 max-w-[1280px] mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </SidebarProvider>
   );
 };

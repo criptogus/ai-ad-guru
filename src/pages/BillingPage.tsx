@@ -7,7 +7,6 @@ import PaymentVerification from "@/components/billing/PaymentVerification";
 import AuthenticationRequired from "@/components/billing/AuthenticationRequired";
 import BillingPageContent from "@/components/billing/BillingPageContent";
 import AppLayout from "@/components/AppLayout";
-import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
