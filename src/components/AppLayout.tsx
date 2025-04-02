@@ -40,7 +40,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           )}
         </TooltipProvider>
 
-        {/* Main Content - Fix: Ensure it takes the remaining width with flex-1 */}
+        {/* Main Content - Remove w-full to avoid extra space */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
