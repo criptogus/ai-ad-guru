@@ -1,52 +1,36 @@
-
-import { CreditAction, CreditCosts } from "./types";
-
-// Define the base costs for each credit action
-const BASE_COSTS: Record<CreditAction, number> = {
+/**
+ * Credit costs for various actions in the platform
+ */
+export const CREDIT_COSTS: Record<CreditAction, number> = {
+  // Ad creation costs
   googleAds: 5,
   metaAds: 5,
-  linkedInAds: 6,
+  linkedinAds: 7,
   microsoftAds: 5,
-  imageGeneration: 5,
-  websiteAnalysis: 3,
-  aiInsightsReport: 7,
-  "adOptimization.daily": 10,
-  "adOptimization.every3Days": 5,
-  "adOptimization.weekly": 2,
-  campaign_creation: 10,
-  image_generation: 5,
-  smart_banner: 5,
-  daily_optimization: 10,
+  
+  // Image generation costs
+  imageGeneration: 3,
+  smartBanner: 5,
+  
+  // AI optimization costs
+  'adOptimization.daily': 10,
+  'adOptimization.weekly': 7,
+  'adOptimization.monthly': 5,
+  
+  // Other actions
+  campaignAnalysis: 2,
+  websiteAnalysis: 1,
+  exportReport: 1,
+  
+  // Purchases (negative values, these add credits)
+  creditPurchase: -1 // This is a multiplier, actual value set during purchase
 };
 
-// Function to get the credit cost for a specific action
-export const getCreditCost = (action: CreditAction): number => {
-  return BASE_COSTS[action] || 0;
+/**
+ * Get the credit cost for a specific action
+ */
+export const getCreditCost = (action: CreditAction | string): number => {
+  return CREDIT_COSTS[action as CreditAction] || 0;
 };
 
-// Export the full credit costs object for reference
-export const CREDIT_COSTS = BASE_COSTS;
-
-// Function to get all credit costs in a structured format
-export const getAllCreditCosts = (): CreditCosts => {
-  return {
-    googleAds: BASE_COSTS.googleAds,
-    metaAds: BASE_COSTS.metaAds,
-    linkedInAds: BASE_COSTS.linkedInAds,
-    microsoftAds: BASE_COSTS.microsoftAds,
-    imageGeneration: BASE_COSTS.imageGeneration,
-    websiteAnalysis: BASE_COSTS.websiteAnalysis,
-    aiInsightsReport: BASE_COSTS.aiInsightsReport,
-    adOptimization: {
-      daily: BASE_COSTS["adOptimization.daily"],
-      every3Days: BASE_COSTS["adOptimization.every3Days"],
-      weekly: BASE_COSTS["adOptimization.weekly"]
-    },
-    campaign_creation: BASE_COSTS.campaign_creation,
-    image_generation: BASE_COSTS.image_generation,
-    smart_banner: BASE_COSTS.smart_banner,
-    daily_optimization: BASE_COSTS.daily_optimization
-  };
-};
-
-export default BASE_COSTS;
+import { CreditAction } from './types';

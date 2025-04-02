@@ -1,10 +1,5 @@
 
-/**
- * Credit History Service
- * Handles retrieving credit usage history
- */
-
-import { supabase } from '@/services/libs/supabase-client';
+import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 
 export interface CreditUsage {
@@ -14,7 +9,8 @@ export interface CreditUsage {
   amount: number;
   description: string;
   createdAt: string;
-  metadata?: Record<string, any>;
+  campaignId?: string;
+  platformId?: string;
 }
 
 /**
@@ -22,12 +18,12 @@ export interface CreditUsage {
  */
 export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage[]> => {
   try {
+    // Query credit transactions for user
     const { data, error } = await supabase
       .from('credit_transactions')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(50);
+      .order('created_at', { ascending: false });
     
     if (error) {
       throw error;
@@ -40,8 +36,9 @@ export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage
       amount: item.amount,
       description: item.description,
       createdAt: item.created_at,
-      metadata: item.metadata
-    }));
+      campaignId: item.campaign_id,
+      platformId: item.platform_id
+    })) || [];
   } catch (error) {
     errorLogger.logError(error, 'getCreditUsageHistory');
     return [];
@@ -49,25 +46,29 @@ export const getCreditUsageHistory = async (userId: string): Promise<CreditUsage
 };
 
 /**
- * Get summary of credit usage for analytics
+ * Get credit usage summary for a user
  */
 export const getCreditUsageSummary = async (userId: string): Promise<Record<string, number>> => {
   try {
+    // Query credit usage summary
     const { data, error } = await supabase
-      .rpc('get_credit_usage_summary', { user_id: userId });
+      .from('credit_transactions')
+      .select('action, amount')
+      .eq('user_id', userId);
     
     if (error) {
       throw error;
     }
     
-    // Convert the array format to a dictionary
+    // Aggregate usage by action
     const summary: Record<string, number> = {};
-    
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        summary[item.action] = item.total;
-      });
-    }
+    data.forEach(item => {
+      const action = item.action;
+      if (!summary[action]) {
+        summary[action] = 0;
+      }
+      summary[action] += Math.abs(item.amount);
+    });
     
     return summary;
   } catch (error) {

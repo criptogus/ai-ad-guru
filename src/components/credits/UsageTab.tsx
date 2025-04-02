@@ -1,146 +1,90 @@
 
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Coins, BarChart4, Clock } from "lucide-react";
-import { getCreditCost } from "@/services/credits/creditCosts";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, BarChart3 } from "lucide-react";
+import { getCreditUsageHistory, getCreditUsageSummary } from "@/services/credits";
+import { CreditAction } from "@/services/credits/types";
 
-const UsageTab = () => {
-  // Get individual credit costs
-  const googleAdsCost = getCreditCost("googleAds");
-  const metaAdsCost = getCreditCost("metaAds");
-  const linkedInAdsCost = getCreditCost("linkedInAds");
-  const imageGenerationCost = getCreditCost("imageGeneration");
-  const websiteAnalysisCost = getCreditCost("websiteAnalysis");
-  const aiInsightsReportCost = getCreditCost("aiInsightsReport");
-  const dailyOptimizationCost = getCreditCost("adOptimization.daily");
-  const every3DaysOptimizationCost = getCreditCost("adOptimization.every3Days");
-  const weeklyOptimizationCost = getCreditCost("adOptimization.weekly");
+const UsageTab: React.FC = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [usageSummary, setUsageSummary] = useState<Record<string, number>>({});
+  
+  useEffect(() => {
+    const fetchUsageData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const summary = await getCreditUsageSummary(user.id);
+        setUsageSummary(summary);
+      } catch (error) {
+        console.error('Error fetching credit usage:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUsageData();
+  }, [user]);
+  
+  const formatActionName = (action: string): string => {
+    // Handle special formats
+    if (action.includes('.')) {
+      const [base, frequency] = action.split('.');
+      return `${base.charAt(0).toUpperCase() + base.slice(1)} (${frequency})`;
+    }
+    
+    // Normal formatting
+    return action
+      .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+      .replace(/^./, (str) => str.toUpperCase()); // Capitalize first letter
+  };
+  
+  const getColorClass = (action: string): string => {
+    if (action.includes('google')) return 'bg-blue-100 dark:bg-blue-900/20';
+    if (action.includes('meta')) return 'bg-purple-100 dark:bg-purple-900/20';
+    if (action.includes('image')) return 'bg-green-100 dark:bg-green-900/20';
+    if (action.includes('optimization')) return 'bg-amber-100 dark:bg-amber-900/20';
+    return 'bg-gray-100 dark:bg-gray-800';
+  };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
+      </div>
+    );
+  }
+  
+  // If no usage data
+  if (Object.keys(usageSummary).length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 flex flex-col items-center text-center">
+          <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">No Credit Usage Yet</h3>
+          <p className="text-muted-foreground">
+            You haven't used any credits yet. Start creating campaigns and ads to see your usage here.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-brand-100 dark:border-brand-800 shadow-sm overflow-hidden">
-          <CardHeader className="bg-brand-50 dark:bg-brand-900/20 border-b border-brand-100 dark:border-brand-800">
-            <CardTitle className="flex items-center text-xl">
-              <Coins className="mr-2 h-5 w-5 text-brand-600" />
-              Ad Creation
-            </CardTitle>
-            <CardDescription>Credits used when creating new ads</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-4">
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Google Search Ads (5 variations)</span>
-                <span className="font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 py-0.5 px-2 rounded-full">{googleAdsCost} credits</span>
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-4">Credit Usage Summary</h3>
+          <div className="space-y-4">
+            {Object.entries(usageSummary).map(([action, amount]) => (
+              <div key={action} className="flex items-center">
+                <div className={`rounded-full w-2 h-2 mr-2 ${getColorClass(action)}`}></div>
+                <div className="flex-1">{formatActionName(action)}</div>
+                <div className="font-medium">{amount} credits</div>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Includes headline, description, and URL path optimization
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Instagram/Meta Ads (with image)</span>
-                <span className="font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 py-0.5 px-2 rounded-full">{metaAdsCost} credits</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Includes caption, AI-generated image, and hashtags
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>LinkedIn Text Ads</span>
-                <span className="font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 py-0.5 px-2 rounded-full">{linkedInAdsCost} credits</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Professionally-toned ad copy for business audience
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-green-100 dark:border-green-800 shadow-sm overflow-hidden">
-          <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b border-green-100 dark:border-green-800">
-            <CardTitle className="flex items-center text-xl">
-              <BarChart4 className="mr-2 h-5 w-5 text-green-600" />
-              AI Optimization
-            </CardTitle>
-            <CardDescription>Credits used for ongoing campaign improvement</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-4">
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Daily Optimization</span>
-                <span className="font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 py-0.5 px-2 rounded-full">{dailyOptimizationCost} credits/day</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                AI analyzes and adjusts your campaigns every 24 hours
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>3-Day Optimization</span>
-                <span className="font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 py-0.5 px-2 rounded-full">{every3DaysOptimizationCost} credits/cycle</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Balance between cost and performance
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Weekly Optimization</span>
-                <span className="font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 py-0.5 px-2 rounded-full">{weeklyOptimizationCost} credits/week</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Most cost-effective option for stable campaigns
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card className="border-purple-100 dark:border-purple-800 shadow-sm overflow-hidden">
-        <CardHeader className="bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800">
-          <CardTitle className="flex items-center text-xl">
-            <Clock className="mr-2 h-5 w-5 text-purple-600" />
-            Additional Features
-          </CardTitle>
-          <CardDescription>Other ways credits are used in the platform</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Individual Image Generation</span>
-                <span className="font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 py-0.5 px-2 rounded-full">{imageGenerationCost} credits</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Generate a single AI image using DALL·E 3
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Website Analysis</span>
-                <span className="font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 py-0.5 px-2 rounded-full">{websiteAnalysisCost} credits</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                AI analyzes your website for ad-worthy content
-              </p>
-            </div>
-            
-            <div className="rounded-lg p-3 hover:bg-muted/50 transition-colors">
-              <div className="flex justify-between items-center">
-                <span>Custom AI Insights Report</span>
-                <span className="font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 py-0.5 px-2 rounded-full">{aiInsightsReportCost} credits</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                In-depth analysis of your campaigns with recommendations
-              </p>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>

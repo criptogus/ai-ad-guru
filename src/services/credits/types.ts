@@ -1,53 +1,45 @@
-
 /**
- * Credit action types
+ * Credit action types supported by the platform
  */
-export type CreditAction = 
-  | 'googleAds' 
-  | 'metaAds' 
-  | 'linkedInAds'
+export type CreditAction =
+  // Ad creation
+  | 'googleAds'
+  | 'metaAds'
+  | 'linkedinAds'
   | 'microsoftAds'
+  
+  // Image generation
   | 'imageGeneration'
-  | 'websiteAnalysis'
-  | 'aiInsightsReport'
+  | 'smartBanner'
+  
+  // AI optimization
   | 'adOptimization.daily'
-  | 'adOptimization.every3Days'
   | 'adOptimization.weekly'
-  | 'campaign_creation'
-  | 'image_generation'
-  | 'smart_banner'
-  | 'daily_optimization';
+  | 'adOptimization.monthly'
+  
+  // Other actions
+  | 'campaignAnalysis'
+  | 'websiteAnalysis'
+  | 'exportReport'
+  
+  // Purchases
+  | 'creditPurchase';
 
 /**
- * Credit cost structure
+ * Credit transaction types
  */
-export interface CreditCosts {
-  googleAds: number;
-  metaAds: number;
-  linkedInAds: number;
-  microsoftAds: number;
-  imageGeneration: number;
-  websiteAnalysis: number;
-  aiInsightsReport: number;
-  adOptimization: {
-    daily: number;
-    every3Days: number;
-    weekly: number;
-  };
-  campaign_creation: number;
-  image_generation: number;
-  smart_banner: number;
-  daily_optimization: number;
-}
+export type CreditTransactionType = 'debit' | 'credit';
 
 /**
- * Credit transaction structure
+ * Credit transaction interface
  */
 export interface CreditTransaction {
   id: string;
-  user_id: string;
+  userId: string;
+  action: CreditAction;
   amount: number;
-  type: 'add' | 'consume';
   description: string;
-  created_at: string;
+  type: CreditTransactionType;
+  timestamp: string;
+  metadata?: Record<string, any>;
 }

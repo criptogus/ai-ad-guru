@@ -1,98 +1,121 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check } from "lucide-react";
 
-const PlansTab = () => {
+const PlansTab: React.FC = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle>Starter</CardTitle>
-            <CardDescription>Perfect for testing the platform</CardDescription>
-            <div className="mt-2">
-              <span className="text-3xl font-bold">$49</span>
-              <span className="text-muted-foreground ml-1">/one-time</span>
-            </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <Coins className="h-5 w-5 text-brand-600 mr-2 mt-0.5" />
-                <div>
-                  <p className="font-medium">100 credits</p>
-                  <p className="text-sm text-muted-foreground">Create 20 search ads or 20 social ads</p>
-                </div>
-              </div>
-              <Button className="w-full" variant="outline" onClick={() => navigate("/billing")}>
-                Get Started
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-2 border-primary bg-primary/5 hover:shadow-md transition-all duration-200 relative">
-          <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/3">
-            <span className="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full">Popular</span>
+    <div className="grid gap-6 md:grid-cols-3">
+      {/* Starter Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Starter</CardTitle>
+          <CardDescription>Perfect for small businesses</CardDescription>
+          <div className="mt-4">
+            <span className="text-3xl font-bold">$15</span>
+            <span className="text-muted-foreground ml-1">/ 100 credits</span>
           </div>
-          <CardHeader>
-            <CardTitle>Professional</CardTitle>
-            <CardDescription>Most popular for small businesses</CardDescription>
-            <div className="mt-2">
-              <span className="text-3xl font-bold">$99</span>
-              <span className="text-muted-foreground ml-1">/one-time</span>
-            </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <Coins className="h-5 w-5 text-brand-600 mr-2 mt-0.5" />
-                <div>
-                  <p className="font-medium">250 credits</p>
-                  <p className="text-sm text-muted-foreground">50 search ads or 50 social ads</p>
-                </div>
-              </div>
-              <Button className="w-full" onClick={() => navigate("/billing")}>
-                Get Started
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle>Agency</CardTitle>
-            <CardDescription>Ideal for agencies managing multiple clients</CardDescription>
-            <div className="mt-2">
-              <span className="text-3xl font-bold">$249</span>
-              <span className="text-muted-foreground ml-1">/one-time</span>
-            </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <Coins className="h-5 w-5 text-brand-600 mr-2 mt-0.5" />
-                <div>
-                  <p className="font-medium">700 credits</p>
-                  <p className="text-sm text-muted-foreground">140 search ads or 140 social ads</p>
-                </div>
-              </div>
-              <Button className="w-full" variant="outline" onClick={() => navigate("/billing")}>
-                Get Started
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Create ~20 Google or Meta ads</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Generate ~20 Instagram images</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Basic AI optimizations</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" className="w-full" onClick={() => navigate("/billing")}>
+            Buy Credits
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      {/* Pro Plan */}
+      <Card className="border-primary">
+        <CardHeader>
+          <CardTitle>Professional</CardTitle>
+          <CardDescription>Best for growing businesses</CardDescription>
+          <div className="mt-4">
+            <span className="text-3xl font-bold">$50</span>
+            <span className="text-muted-foreground ml-1">/ 500 credits</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Create ~100 Google or Meta ads</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Generate ~100 Instagram images</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Advanced AI optimizations</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>33% discount vs starter</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full" onClick={() => navigate("/billing")}>
+            Buy Credits
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      {/* Agency Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Agency</CardTitle>
+          <CardDescription>For agencies & power users</CardDescription>
+          <div className="mt-4">
+            <span className="text-3xl font-bold">$150</span>
+            <span className="text-muted-foreground ml-1">/ 2000 credits</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Create ~400 Google or Meta ads</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>Generate ~400 Instagram images</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>All AI optimizations</span>
+            </li>
+            <li className="flex">
+              <Check className="mr-2 h-5 w-5 text-green-500" />
+              <span>50% discount vs starter</span>
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" className="w-full" onClick={() => navigate("/billing")}>
+            Buy Credits
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
