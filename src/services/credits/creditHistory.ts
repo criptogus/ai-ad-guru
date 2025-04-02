@@ -3,6 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 
 /**
+ * Credit transaction interface for usage history
+ */
+export interface CreditUsage {
+  id: string;
+  user_id: string;
+  action: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+}
+
+/**
  * Get full credit history for a user
  */
 export const getUserCreditHistory = async (userId: string) => {
@@ -22,6 +34,13 @@ export const getUserCreditHistory = async (userId: string) => {
     errorLogger.logError(error, 'getUserCreditHistory');
     return [];
   }
+};
+
+/**
+ * Get credit usage history - aliased for backward compatibility
+ */
+export const getCreditUsageHistory = async (userId: string) => {
+  return getUserCreditHistory(userId);
 };
 
 /**

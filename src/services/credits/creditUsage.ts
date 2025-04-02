@@ -1,100 +1,12 @@
-/**
- * Credit Usage Service
- * Handles credit usage and verification
- */
 
-import { errorLogger } from '@/services/libs/error-handling';
-import { getUserCredits, useCredits, hasEnoughCredits } from './creditsApi';
+import { supabase } from '@/integrations/supabase/client';
 import { CreditAction } from './types';
-import { CREDIT_COSTS } from './creditCosts';
-
-export interface CreditUsageResult {
-  success: boolean;
-  remainingCredits?: number;
-  error?: string;
-}
+import { getCreditCost } from './creditCosts';
+import { errorLogger } from '@/services/libs/error-handling';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Use credits for a specific action with error handling
- */
-export const useCreditWithErrorHandling = async (
-  userId: string,
-  action: CreditAction,
-  description: string,
-  metadata?: Record<string, any>
-): Promise<CreditUsageResult> => {
-  try {
-    // First check if user has enough credits
-    const hasCredits = await hasEnoughCredits(userId, action);
-    
-    if (!hasCredits) {
-      const cost = CREDIT_COSTS[action] || 0;
-      return {
-        success: false,
-        error: `Insufficient credits. This action requires ${cost} credits.`
-      };
-    }
-    
-    // Use credits
-    const success = await useCredits(userId, action, description, metadata);
-    
-    if (!success) {
-      return {
-        success: false,
-        error: "Failed to use credits. Please try again."
-      };
-    }
-    
-    // Get remaining credits
-    const remainingCredits = await getUserCredits(userId);
-    
-    return {
-      success: true,
-      remainingCredits
-    };
-  } catch (error) {
-    errorLogger.logError(error, 'useCreditWithErrorHandling');
-    
-    return {
-      success: false,
-      error: error.message || "An error occurred while processing credits."
-    };
-  }
-};
-
-/**
- * Calculate total credit cost for a set of actions
- */
-export const calculateTotalCreditCost = (actions: CreditAction[]): number => {
-  return actions.reduce((total, action) => {
-    return total + (CREDIT_COSTS[action] || 0);
-  }, 0);
-};
-
-/**
- * Check if user has enough credits for multiple actions
- */
-export const hasEnoughCreditsForActions = async (userId: string, actions: CreditAction[]): Promise<boolean> => {
-  try {
-    const totalCost = calculateTotalCreditCost(actions);
-    
-    if (totalCost <= 0) {
-      return true; // No credits needed
-    }
-    
-    // Get user's current credit balance
-    const userCredits = await getUserCredits(userId);
-    
-    return userCredits >= totalCost;
-  } catch (error) {
-    errorLogger.logError(error, 'hasEnoughCreditsForActions');
-    return false;
-  }
-};
-
-/**
- * Consume credits for a given action (alias for useCredits with simpler interface)
- * This function is used by components that expect a simpler API
+ * Consume credits for a specific action
  */
 export const consumeCredits = async (
   userId: string,
@@ -103,9 +15,135 @@ export const consumeCredits = async (
   description: string
 ): Promise<boolean> => {
   try {
-    return await useCredits(userId, action, description);
+    if (!userId) {
+      console.error('User ID is required to consume credits');
+      return false;
+    }
+    
+    // Get current user credits
+    const { data: user, error: userError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user credits:', userError);
+      return false;
+    }
+    
+    const currentCredits = user?.credits || 0;
+    
+    // Check if user has enough credits
+    if (currentCredits < amount) {
+      return false;
+    }
+    
+    // Start a transaction to update credits and log the transaction
+    const { error: transactionError } = await supabase.rpc('consume_credits', {
+      user_id: userId,
+      credit_amount: amount,
+      action_type: action,
+      action_description: description
+    });
+    
+    if (transactionError) {
+      console.error('Error consuming credits:', transactionError);
+      return false;
+    }
+    
+    return true;
   } catch (error) {
     errorLogger.logError(error, 'consumeCredits');
+    return false;
+  }
+};
+
+/**
+ * Add credits to a user account
+ */
+export const addCredits = async (
+  userId: string,
+  amount: number,
+  description: string
+): Promise<boolean> => {
+  try {
+    // Get current user credits
+    const { data: user, error: userError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user credits:', userError);
+      return false;
+    }
+    
+    const currentCredits = user?.credits || 0;
+    const newCredits = currentCredits + amount;
+    
+    // Update user credits
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ credits: newCredits })
+      .eq('id', userId);
+    
+    if (updateError) {
+      console.error('Error updating credits:', updateError);
+      return false;
+    }
+    
+    // Log credit transaction
+    const { error: logError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        id: uuidv4(),
+        user_id: userId,
+        amount: -amount, // Negative because it's a credit (adding to balance)
+        action: 'creditPurchase',
+        description: description,
+        created_at: new Date().toISOString()
+      });
+    
+    if (logError) {
+      console.error('Error logging credit transaction:', logError);
+      // Don't return false here since the credits were already added
+    }
+    
+    return true;
+  } catch (error) {
+    errorLogger.logError(error, 'addCredits');
+    return false;
+  }
+};
+
+/**
+ * Check if user has enough credits for an action
+ */
+export const checkCreditSufficiency = async (
+  userId: string,
+  action: CreditAction
+): Promise<boolean> => {
+  try {
+    const cost = getCreditCost(action);
+    
+    // Get current user credits
+    const { data: user, error: userError } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user credits:', userError);
+      return false;
+    }
+    
+    const currentCredits = user?.credits || 0;
+    return currentCredits >= cost;
+  } catch (error) {
+    errorLogger.logError(error, 'checkCreditSufficiency');
     return false;
   }
 };

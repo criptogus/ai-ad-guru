@@ -41,8 +41,6 @@ export {
   revokeInvitation
 } from './team/invitations';
 
-// Export CreditUsage type to avoid import errors
+// Export CreditUsage type and functions from creditHistory
 export type { CreditUsage } from './credits/creditHistory';
-
-// Export credit usage history function
-export { getCreditUsageHistory } from './credits/creditHistory';
+export { getUserCreditHistory, getCreditUsageHistory } from './credits/creditHistory';

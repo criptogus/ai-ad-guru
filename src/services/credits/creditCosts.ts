@@ -1,36 +1,51 @@
+import { CreditAction } from './types';
+
 /**
- * Credit costs for various actions in the platform
+ * Credit costs for different actions in the application
  */
 export const CREDIT_COSTS: Record<CreditAction, number> = {
-  // Ad creation costs
+  // Ad creation
   googleAds: 5,
   metaAds: 5,
   linkedinAds: 7,
   microsoftAds: 5,
   
-  // Image generation costs
+  // Image generation
   imageGeneration: 3,
   smartBanner: 5,
   
-  // AI optimization costs
+  // AI optimization
   'adOptimization.daily': 10,
-  'adOptimization.weekly': 7,
-  'adOptimization.monthly': 5,
+  'adOptimization.weekly': 5,
+  'adOptimization.monthly': 2,
   
   // Other actions
-  campaignAnalysis: 2,
-  websiteAnalysis: 1,
-  exportReport: 1,
+  campaignAnalysis: 8,
+  websiteAnalysis: 5,
+  exportReport: 2,
   
-  // Purchases (negative values, these add credits)
-  creditPurchase: -1 // This is a multiplier, actual value set during purchase
+  // Purchases
+  creditPurchase: 0
 };
 
 /**
  * Get the credit cost for a specific action
  */
-export const getCreditCost = (action: CreditAction | string): number => {
-  return CREDIT_COSTS[action as CreditAction] || 0;
+export const getCreditCost = (action: CreditAction): number => {
+  return CREDIT_COSTS[action] || 0;
 };
 
-import { CreditAction } from './types';
+/**
+ * Check if user has enough credits for an action
+ */
+export const hasEnoughCredits = (userCredits: number, action: CreditAction): boolean => {
+  const cost = getCreditCost(action);
+  return userCredits >= cost;
+};
+
+/**
+ * Calculate total credits needed for multiple actions
+ */
+export const calculateTotalCreditCost = (actions: CreditAction[]): number => {
+  return actions.reduce((total, action) => total + getCreditCost(action), 0);
+};

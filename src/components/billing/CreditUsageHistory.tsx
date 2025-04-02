@@ -1,9 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Minus } from "lucide-react";
-import { getCreditUsageHistory, CreditUsage } from "@/services";
+import { getUserCreditHistory, CreditUsage } from "@/services";
 
 interface CreditUsageHistoryProps {
   userId: string;
@@ -17,7 +18,7 @@ const CreditUsageHistory: React.FC<CreditUsageHistoryProps> = ({ userId }) => {
     const fetchCreditHistory = async () => {
       setIsLoading(true);
       try {
-        const history = await getCreditUsageHistory(userId);
+        const history = await getUserCreditHistory(userId);
         setCreditHistory(history);
       } catch (error) {
         console.error("Error fetching credit history:", error);
@@ -32,7 +33,7 @@ const CreditUsageHistory: React.FC<CreditUsageHistoryProps> = ({ userId }) => {
   // Helper function to format the action type for display
   const formatActionType = (action: string) => {
     return action
-      .split('_')
+      .split(/[._]/)
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
