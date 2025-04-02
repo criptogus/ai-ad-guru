@@ -21,7 +21,11 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
   const { toggleSidebar } = useSidebar();
   
   return (
-    <Sidebar variant="sidebar" collapsible={collapsed ? "icon" : "offcanvas"}>
+    <Sidebar 
+      variant="sidebar" 
+      collapsible={collapsed ? "icon" : "offcanvas"}
+      className="border-r border-border"
+    >
       <SidebarHeader>
         <div className={cn(
           "flex items-center py-4 px-3", 
@@ -34,7 +38,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="p-2">
         <SidebarNavigationItems collapsed={collapsed} activePage={activePage} />
       </SidebarContent>
       

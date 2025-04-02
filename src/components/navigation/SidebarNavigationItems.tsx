@@ -86,8 +86,11 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
             isActive={item.active}
             tooltip={collapsed ? item.name : undefined}
           >
-            <Link to={item.path}>
-              <item.icon />
+            <Link to={item.path} className={cn(
+              "flex items-center gap-2", 
+              collapsed ? "justify-center" : "justify-start"
+            )}>
+              <item.icon size={18} />
               {!collapsed && <span>{item.name}</span>}
             </Link>
           </SidebarMenuButton>
@@ -102,8 +105,15 @@ export const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ 
           tooltip={collapsed ? "Logout" : undefined}
           className="mt-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
         >
-          <button onClick={logout} disabled={isLoading}>
-            <LogOut />
+          <button 
+            onClick={logout} 
+            disabled={isLoading}
+            className={cn(
+              "flex items-center gap-2", 
+              collapsed ? "justify-center" : "justify-start"
+            )}
+          >
+            <LogOut size={18} />
             {!collapsed && <span>Logout</span>}
           </button>
         </SidebarMenuButton>
