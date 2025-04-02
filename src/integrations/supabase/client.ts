@@ -18,12 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: localStorage, // Use localStorage (more persistent than sessionStorage)
     debug: import.meta.env.DEV, // Enable debug in development
     flowType: 'pkce', // Use PKCE flow for added security
-    detectSessionInUrl: true, // Detect session in URL
-    cookieOptions: {
-      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-      sameSite: 'lax',
-      secure: true
-    }
+    detectSessionInUrl: true // Detect session in URL
   }
 });
 
