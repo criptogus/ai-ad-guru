@@ -1,12 +1,11 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoutAction } from '@/hooks/auth/useLogoutAction';
 import ThemeToggle from '@/components/layout/ThemeToggle';
-import SidebarCollapseButton from '@/components/layout/SidebarCollapseButton';
 import SidebarNavigationItems from '@/components/navigation/SidebarNavigationItems';
+import { cn } from '@/lib/utils';
 
 export interface SidebarNavigationProps {
   activePage?: string;
@@ -18,11 +17,17 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const { logout, isLoading } = useLogoutAction(setUser, navigate);
-  const { state: sidebarState, toggleSidebar } = useSidebar();
-  const collapsed = sidebarState === "collapsed";
+  const [collapsed, setCollapsed] = React.useState(false);
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
 
   return (
-    <div className="flex flex-col h-full bg-[#0c121f]">
+    <div className={cn(
+      "h-full bg-[#0c121f] border-r border-gray-800 transition-all duration-300",
+      collapsed ? "w-[70px]" : "w-[240px]"
+    )}>
       {/* App title and logo */}
       <div className={`flex items-center py-4 px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
         {!collapsed && <span className="font-semibold text-lg font-inter text-white">AdManager AI</span>}
@@ -43,19 +48,27 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
         </div>
         
         {!collapsed && (
-          <SidebarCollapseButton 
-            collapsed={collapsed} 
-            onClick={toggleSidebar} 
-          />
+          <button 
+            className="rounded-full bg-blue-500 text-white p-1.5 hover:bg-blue-600 transition-all duration-200 active:scale-95"
+            onClick={toggleSidebar}
+            aria-label="Collapse sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
         )}
         
         {collapsed && (
-          <div className="absolute bottom-4 right-0 transform translate-x-1/2">
-            <SidebarCollapseButton 
-              collapsed={collapsed} 
-              onClick={toggleSidebar} 
-            />
-          </div>
+          <button
+            className="absolute right-0 transform translate-x-1/2 bottom-4 rounded-full bg-blue-500 text-white p-1.5 hover:bg-blue-600 transition-all duration-200 active:scale-95"
+            onClick={toggleSidebar}
+            aria-label="Expand sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
         )}
       </div>
     </div>

@@ -28,24 +28,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }
   
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-[#0c121f]">
-        <TooltipProvider>
-          {withSidebar && (
-            <Sidebar side="left" variant="sidebar">
-              <SidebarContent>
-                <SidebarNavigation activePage={activePage} />
-              </SidebarContent>
-            </Sidebar>
-          )}
-        </TooltipProvider>
+    <div className="h-screen w-full flex overflow-hidden bg-[#0c121f]">
+      <TooltipProvider>
+        {withSidebar && (
+          <SidebarNavigation activePage={activePage} />
+        )}
+      </TooltipProvider>
 
-        {/* Main Content - Using flex-1 to take all available space */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </SidebarProvider>
+      {/* Main Content - Using flex-1 to take all available space */}
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
+    </div>
   );
 };
 

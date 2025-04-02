@@ -9,16 +9,12 @@ import {
   CreditCard,
   Megaphone,
   Compass,
-  LogOut
+  LogOut,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoutAction } from '@/hooks/auth/useLogoutAction';
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface SidebarNavigationItemsProps {
@@ -59,6 +55,12 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
       active: currentPath.includes('/credits') || activePage === 'credits',
     },
     {
+      name: 'Connections',
+      icon: ArrowRightLeft,
+      path: '/connections',
+      active: currentPath.includes('/connections') || activePage === 'connections',
+    },
+    {
       name: 'Team',
       icon: Users,
       path: '/roles',
@@ -80,60 +82,46 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
 
   return (
     <TooltipProvider delayDuration={100}>
-      <SidebarMenu>
+      <div className="space-y-1">
         {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarMenuButton
-                  asChild
-                  isActive={item.active}
-                  className={cn(
-                    "rounded-md transition-all duration-200 ease-in-out",
-                    item.active 
-                      ? "bg-blue-50 dark:bg-blue-900/20 text-primary font-medium" 
-                      : "hover:bg-blue-50 dark:hover:bg-blue-900/10"
-                  )}
-                >
-                  <Link to={item.path} className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm",
-                    collapsed ? "justify-center" : "justify-start"
-                  )}>
-                    <item.icon size={18} />
-                    {!collapsed && <span className="font-medium">{item.name}</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">{item.name}</TooltipContent>}
-            </Tooltip>
-          </SidebarMenuItem>
+          <Tooltip key={item.name}>
+            <TooltipTrigger asChild>
+              <Link 
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+                  item.active 
+                    ? "bg-blue-50 dark:bg-blue-900/20 text-primary font-medium" 
+                    : "hover:bg-blue-50 dark:hover:bg-blue-900/10",
+                  collapsed ? "justify-center" : "justify-start"
+                )}
+              >
+                <item.icon size={18} />
+                {!collapsed && <span className="font-medium">{item.name}</span>}
+              </Link>
+            </TooltipTrigger>
+            {collapsed && <TooltipContent side="right">{item.name}</TooltipContent>}
+          </Tooltip>
         ))}
         
         {/* Logout Button */}
-        <SidebarMenuItem>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SidebarMenuButton
-                asChild
-                className="mt-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all duration-200 ease-in-out"
-              >
-                <button 
-                  onClick={logout} 
-                  disabled={isLoading}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm w-full",
-                    collapsed ? "justify-center" : "justify-start"
-                  )}
-                >
-                  <LogOut size={18} />
-                  {!collapsed && <span className="font-medium">Logout</span>}
-                </button>
-              </SidebarMenuButton>
-            </TooltipTrigger>
-            {collapsed && <TooltipContent side="right">Logout</TooltipContent>}
-          </Tooltip>
-        </SidebarMenuItem>
-      </SidebarMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              onClick={logout} 
+              disabled={isLoading}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 text-sm w-full rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 mt-4 transition-colors",
+                collapsed ? "justify-center" : "justify-start"
+              )}
+            >
+              <LogOut size={18} />
+              {!collapsed && <span className="font-medium">Logout</span>}
+            </button>
+          </TooltipTrigger>
+          {collapsed && <TooltipContent side="right">Logout</TooltipContent>}
+        </Tooltip>
+      </div>
     </TooltipProvider>
   );
 };
