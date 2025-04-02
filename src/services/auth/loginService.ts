@@ -1,3 +1,4 @@
+
 import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
 import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
 
@@ -61,17 +62,17 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
   }
 };
 
-// Login with Google - improved with dynamic origin detection and environment awareness
+// Login with Google - improved with explicit redirect URL and better debugging
 export const loginWithGoogle = async () => {
-  console.log('Initiating Google sign-in');
-  
-  // Get the current domain dynamically
+  // Get the EXACT redirect URL that matches what's registered in Google Cloud Console
   const origin = window.location.origin;
   
-  // Use an explicit auth/callback path that matches the route in App.tsx
-  const redirectTo = `${origin}/auth/callback`;
+  // We're using a custom auth domain, so construct the callback URL accordingly
+  // This MUST EXACTLY match what's registered in Google Cloud Console
+  const redirectTo = 'https://auth.zeroagency.ai/auth/callback';
   
-  console.log('Using redirect URL:', redirectTo);
+  console.log('Initiating Google sign-in with redirect URL:', redirectTo);
+  console.log('Current origin:', origin);
   
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -89,6 +90,7 @@ export const loginWithGoogle = async () => {
 
     if (error) {
       console.error('Google sign-in error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       
       if (error.message.includes('provider is not enabled')) {
         throw {
@@ -100,7 +102,7 @@ export const loginWithGoogle = async () => {
       throw error;
     }
 
-    console.log('Google sign-in initiated:', data);
+    console.log('Google sign-in initiated successfully:', data);
     return data;
   } catch (error) {
     console.error('Google sign-in failed:', error);

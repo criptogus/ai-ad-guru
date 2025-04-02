@@ -3,17 +3,20 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const SocialLoginButtons: React.FC = () => {
   const { loginWithGoogle } = useAuth();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
 
   const handleGoogleLogin = async () => {
     try {
+      console.log('Google login button clicked');
+      toast.info('Redirecting to Google login...');
       await loginWithGoogle();
     } catch (error: any) {
       console.error('Google login error:', error);
-      toast({
+      uiToast({
         title: "Login Failed",
         description: error.message || "Could not sign in with Google. Please try again.",
         variant: "destructive"

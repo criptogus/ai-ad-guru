@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +15,11 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Log the current URL and parameters for debugging
+        console.log('Auth callback URL:', window.location.href);
+        console.log('Auth callback search params:', location.search);
+        console.log('Auth callback hash:', location.hash);
+        
         // Check if we have access token in the URL hash (typical for OAuth flows)
         if (location.hash && location.hash.includes('access_token')) {
           console.log('Detected access token in URL hash, processing OAuth callback');
@@ -45,6 +51,16 @@ const AuthCallback: React.FC = () => {
           
           // Wait for auth state to update
           await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Process error parameters if present
+        const searchParams = new URLSearchParams(location.search);
+        const errorParam = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
+        
+        if (errorParam) {
+          console.error('OAuth error detected:', errorParam, errorDescription);
+          throw new Error(`Authentication error: ${errorDescription || errorParam}`);
         }
         
         // Wait for auth state to be initialized
@@ -100,6 +116,7 @@ const AuthCallback: React.FC = () => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         <h2 className="mt-4 text-xl font-semibold">Processing your login...</h2>
         <p className="mt-2 text-muted-foreground">Please wait while we verify your account.</p>
+        <p className="mt-4 text-sm text-muted-foreground">Current URL: {window.location.href}</p>
       </div>
     );
   }
