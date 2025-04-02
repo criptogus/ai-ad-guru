@@ -50,44 +50,32 @@ function App() {
           {/* Protected routes requiring authentication */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <AppLayout activePage="dashboard">
-                <DashboardPage />
-              </AppLayout>
+              <DashboardPage />
             </ProtectedRoute>
           } />
           <Route path="/campaigns" element={
             <ProtectedRoute>
-              <AppLayout activePage="campaigns">
-                <CampaignsPage />
-              </AppLayout>
+              <CampaignsPage />
             </ProtectedRoute>
           } />
           <Route path="/create-campaign" element={
             <ProtectedRoute>
-              <AppLayout activePage="campaigns">
-                <CreateCampaignPage />
-              </AppLayout>
+              <CreateCampaignPage />
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
             <ProtectedRoute>
-              <AppLayout activePage="analytics">
-                <AnalyticsPage />
-              </AppLayout>
+              <AnalyticsPage />
             </ProtectedRoute>
           } />
           <Route path="/credits-info" element={
             <ProtectedRoute>
-              <AppLayout activePage="credits">
-                <CreditsInfoPage />
-              </AppLayout>
+              <CreditsInfoPage />
             </ProtectedRoute>
           } />
           <Route path="/settings/*" element={
             <ProtectedRoute>
-              <AppLayout activePage="settings">
-                <SettingsPage />
-              </AppLayout>
+              <SettingsPage />
             </ProtectedRoute>
           } />
           <Route path="/billing" element={
@@ -97,37 +85,27 @@ function App() {
           } />
           <Route path="/website-analysis" element={
             <ProtectedRoute>
-              <AppLayout activePage="campaigns">
-                <WebsiteAnalysisPage />
-              </AppLayout>
+              <WebsiteAnalysisPage />
             </ProtectedRoute>
           } />
           <Route path="/campaign/:campaignId" element={
             <ProtectedRoute>
-              <AppLayout activePage="campaigns">
-                <CampaignPage />
-              </AppLayout>
+              <CampaignPage />
             </ProtectedRoute>
           } />
           <Route path="/testing" element={
             <ProtectedRoute>
-              <AppLayout activePage="testing">
-                <TestAdsPage />
-              </AppLayout>
+              <TestAdsPage />
             </ProtectedRoute>
           } />
           <Route path="/template-example" element={
             <ProtectedRoute>
-              <AppLayout activePage="tools">
-                <TemplateExamplePage />
-              </AppLayout>
+              <TemplateExamplePage />
             </ProtectedRoute>
           } />
           <Route path="/connections" element={
             <ProtectedRoute>
-              <AppLayout activePage="connections">
-                <ConnectionsPage />
-              </AppLayout>
+              <ConnectionsPage />
             </ProtectedRoute>
           } />
           

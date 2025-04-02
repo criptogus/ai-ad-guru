@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   BarChart,
@@ -13,9 +13,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLogoutAction } from '@/hooks/auth/useLogoutAction';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface SidebarNavigationItemsProps {
   collapsed?: boolean;
@@ -25,9 +23,6 @@ export interface SidebarNavigationItemsProps {
 const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed, activePage }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user, setUser } = useAuth();
-  const navigate = useNavigate();
-  const { logout, isLoading } = useLogoutAction(setUser, navigate);
 
   const items = [
     {
@@ -107,29 +102,6 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
           </Link>
         </div>
       ))}
-      
-      {/* Logout Button */}
-      <div className="relative group mt-4">
-        <button 
-          onClick={logout} 
-          disabled={isLoading}
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 text-sm w-full rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors",
-            collapsed ? "justify-center" : "justify-start"
-          )}
-        >
-          <LogOut size={18} />
-          {!collapsed && <span className="font-medium">Logout</span>}
-          {collapsed && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="sr-only">Logout</span>
-              </TooltipTrigger>
-              <TooltipContent side="right">Logout</TooltipContent>
-            </Tooltip>
-          )}
-        </button>
-      </div>
     </div>
   );
 };
