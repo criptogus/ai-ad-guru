@@ -9,6 +9,7 @@ import BillingPageContent from "@/components/billing/BillingPageContent";
 import AppLayout from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
 
 const BillingPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
