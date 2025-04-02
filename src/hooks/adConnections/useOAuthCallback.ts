@@ -93,6 +93,35 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
+      // Retrieve stored OAuth state data
+      let storedOAuthData;
+      try {
+        const storedData = sessionStorage.getItem('adPlatformAuth');
+        if (storedData) {
+          storedOAuthData = JSON.parse(storedData);
+          console.log("Retrieved stored OAuth data:", { 
+            platform: storedOAuthData.platform,
+            hasStoredState: !!storedOAuthData.state
+          });
+          
+          // Validate the returned state matches our stored state
+          if (storedOAuthData.state && storedOAuthData.state !== state) {
+            console.error("State mismatch!", { 
+              returnedState: state,
+              storedState: storedOAuthData.state
+            });
+            throw new Error("Invalid OAuth state parameter. Security validation failed.");
+          }
+        } else {
+          console.log("No stored OAuth data found in session storage");
+          // Even without session storage, we can proceed as the state validation
+          // will be handled on the server-side as well
+        }
+      } catch (storageErr) {
+        console.warn("Error retrieving stored OAuth state:", storageErr);
+        // Continue as the server will also validate the state
+      }
+      
       // UPDATED: Use the consistent redirect URI
       const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       console.log("Using redirect URI for token exchange:", redirectUri);
@@ -129,6 +158,13 @@ export const useOAuthCallback = () => {
       
       if (!data.success) {
         throw new Error(data.error || 'Failed to exchange token');
+      }
+      
+      // Clean up saved OAuth state
+      try {
+        sessionStorage.removeItem('adPlatformAuth');
+      } catch (e) {
+        console.warn("Error removing OAuth state from sessionStorage:", e);
       }
       
       // Success

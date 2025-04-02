@@ -11,6 +11,7 @@ export const initiateOAuth = async (params: OAuthParams) => {
     throw new Error('User must be authenticated to connect ad accounts');
   }
   
+  // Always use the consistent redirect URI
   const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
   
   console.log(`==== OAUTH INITIATION DEBUG INFO ====`);
@@ -21,14 +22,18 @@ export const initiateOAuth = async (params: OAuthParams) => {
   console.log(`=====================================`);
   
   try {
+    // Generate a secure state
+    const state = crypto.randomUUID();
+    
     // Generate the OAuth URL from our edge function
-    console.log(`Invoking edge function for ${platform} OAuth URL generation`);
+    console.log(`Invoking edge function for ${platform} OAuth URL generation with state: ${state}`);
     const response = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'getAuthUrl',
         platform,
         redirectUri: effectiveRedirectUri,
-        userId
+        userId,
+        state // Pass the state parameter to the edge function
       }
     });
     
@@ -37,7 +42,6 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(`Failed to initialize ${platform} OAuth flow. No response from server.`);
     }
 
-    // Check the status of the response
     if (response.error) {
       console.error(`Error response from edge function:`, response.error);
       
@@ -75,14 +79,15 @@ export const initiateOAuth = async (params: OAuthParams) => {
       throw new Error(`Failed to get valid auth URL for ${platform}`);
     }
     
-    // Store that we're in the middle of an OAuth flow
+    // Store OAuth flow information in sessionStorage
     try {
       sessionStorage.setItem(OAUTH_STORAGE_KEY, JSON.stringify({
         platform,
         inProgress: true,
         userId,
         startTime: Date.now(),
-        redirectUri
+        redirectUri,
+        state // Store the state parameter in sessionStorage
       }));
     } catch (storageError) {
       console.warn('Could not store OAuth state in session storage:', storageError);

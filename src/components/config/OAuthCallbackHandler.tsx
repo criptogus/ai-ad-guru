@@ -26,7 +26,23 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("Path:", window.location.pathname);
         console.log("Search params:", window.location.search);
         console.log("Hash:", window.location.hash);
-        console.log("Callback path:", "/callback");
+        
+        // Check for required OAuth parameters
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        
+        if (!code || !state) {
+          console.error("Missing required OAuth parameters:", { code, state });
+          setError("Missing required OAuth parameters");
+          setIsProcessed(true);
+          return;
+        }
+        
+        console.log("Found OAuth parameters:", { 
+          code: code ? "present" : "missing", 
+          state: state || "missing"
+        });
         
         // Log the consistent redirect URI
         console.log("Consistent redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
@@ -80,14 +96,18 @@ const OAuthCallbackHandler: React.FC = () => {
   // If processed, redirect to the appropriate page
   if (isProcessed) {
     // Check if there was a stored return path
-    const returnPath = sessionStorage.getItem('oauth_return_path');
-    
-    if (returnPath) {
-      sessionStorage.removeItem('oauth_return_path'); // Clean up
-      return <Navigate to={returnPath} replace />;
+    let returnPath;
+    try {
+      returnPath = sessionStorage.getItem('oauth_return_path');
+      if (returnPath) {
+        sessionStorage.removeItem('oauth_return_path'); // Clean up
+        console.log('Redirecting to stored return path:', returnPath);
+      }
+    } catch (e) {
+      console.warn('Could not access sessionStorage for return path:', e);
     }
     
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to={returnPath || redirectPath} replace />;
   }
 
   // Error state

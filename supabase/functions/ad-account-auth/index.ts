@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "./utils/cors.ts";
 import { storeTokens, revokeTokens } from "./utils/token.ts";
@@ -39,10 +38,11 @@ serve(async (req) => {
         throw new Error('Redirect URI is required');
       }
 
-      let authUrl;
-      const secureState = crypto.randomUUID();
+      // Use provided state or generate a new one
+      const secureState = state || crypto.randomUUID();
       
       // Generate platform-specific auth URL
+      let authUrl;
       if (platform === 'google') {
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
         if (!clientId) {
@@ -76,12 +76,13 @@ serve(async (req) => {
           
         if (error) {
           console.error('Error storing OAuth state:', error);
+          throw new Error('Failed to prepare OAuth flow: ' + error.message);
         }
       }
 
       // Return the authorization URL
       return new Response(
-        JSON.stringify({ success: true, authUrl }),
+        JSON.stringify({ success: true, authUrl, state: secureState }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } 
@@ -98,6 +99,9 @@ serve(async (req) => {
         throw new Error('State parameter is required');
       }
 
+      // Log the state parameter
+      console.log(`Verifying OAuth state: ${state}`);
+
       // Verify OAuth state from database
       const { data: oauthState, error: stateError } = await supabase
         .from('oauth_states')
@@ -107,21 +111,37 @@ serve(async (req) => {
       
       if (stateError) {
         console.error('Error verifying OAuth state:', stateError);
-        throw new Error('Failed to verify OAuth state');
+        throw new Error('Failed to verify OAuth state: ' + stateError.message);
       }
 
       if (!oauthState) {
-        throw new Error('Invalid or expired OAuth state');
+        console.error('Invalid or missing OAuth state in database');
+        throw new Error('Invalid or expired OAuth state parameter');
       }
 
       // Check if state has expired
       if (new Date(oauthState.expires_at) < new Date()) {
+        console.error('OAuth state expired at:', oauthState.expires_at);
         throw new Error('OAuth state has expired');
       }
 
       // Get user_id from database
       const userId = oauthState.user_id;
       
+      // Log that state verification succeeded
+      console.log(`OAuth state verified successfully for user ${userId}`);
+      
+      // Clean up the used state to prevent replay attacks
+      const { error: deleteError } = await supabase
+        .from('oauth_states')
+        .delete()
+        .eq('state', state);
+        
+      if (deleteError) {
+        console.warn('Error deleting used OAuth state:', deleteError);
+      }
+      
+      // Handle platform-specific token exchange
       if (platform === 'google') {
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');

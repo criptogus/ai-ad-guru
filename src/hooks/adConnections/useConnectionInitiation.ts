@@ -37,7 +37,11 @@ export const useConnectionInitiation = () => {
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
       
       // Store current location to return after OAuth flow
-      sessionStorage.setItem('oauth_return_path', '/connections');
+      try {
+        sessionStorage.setItem('oauth_return_path', '/connections');
+      } catch (e) {
+        console.warn('Could not save return path to sessionStorage:', e);
+      }
       
       // Additional platform-specific instructions
       if (platform === 'google') {
@@ -62,6 +66,9 @@ export const useConnectionInitiation = () => {
       });
       
       if (authUrl) {
+        // Log before redirecting
+        console.log(`Redirecting to OAuth URL: ${authUrl}`);
+        
         // Redirect user to the OAuth provider
         window.location.href = authUrl;
       } else {
