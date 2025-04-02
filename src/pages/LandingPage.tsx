@@ -10,8 +10,12 @@ import { Pricing } from '@/components/landing/Pricing';
 import { Cta } from '@/components/landing/Cta';
 import { Footer } from '@/components/landing/Footer';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 const LandingPage: React.FC = () => {
+  // Use the new auth redirect hook to handle redirection for authenticated users
+  useAuthRedirect();
+  
   return (
     <div className="min-h-screen bg-background">
       <Helmet>

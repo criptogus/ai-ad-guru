@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { useOAuthCallback } from '@/hooks/adConnections';
 import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
 
 const OAuthCallbackHandler: React.FC = () => {
   const { user } = useAuth();
@@ -31,7 +33,7 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("===================================");
         
         // Process the OAuth callback
-        const result = await processOAuthCallback(user.id);
+        await processOAuthCallback(user.id);
         
         // After processing is complete, set isProcessed to true
         setIsProcessed(true);
@@ -39,8 +41,25 @@ const OAuthCallbackHandler: React.FC = () => {
         // Show success message
         toast.success("Ad account connection successful!");
         
-        // Set the redirect path to campaign creation for a better user flow
-        setRedirectPath('/campaign/create');
+        // Check how many connections the user has to determine the correct redirect path
+        const { count, error: countError } = await supabase
+          .from('user_integrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+          
+        if (countError) {
+          console.error('Error checking user connections:', countError);
+        } else {
+          console.log(`User has ${count} ad platform connections`);
+          
+          // Set the redirect path based on the number of connections
+          if (count && count > 1) {
+            setRedirectPath('/campaign/create');
+          } else {
+            // First platform connection or error counting connections
+            setRedirectPath('/connections');
+          }
+        }
         
       } catch (error: any) {
         console.error("==== OAUTH CALLBACK ERROR ====");
@@ -58,14 +77,17 @@ const OAuthCallbackHandler: React.FC = () => {
     handleCallback();
   }, [user, processOAuthCallback]);
 
-  // If processed, redirect to the campaign creation page or stored return path
+  // If processed, redirect to the appropriate page
   if (isProcessed) {
     // Check if there was a stored return path
     const returnPath = sessionStorage.getItem('oauth_return_path');
-    sessionStorage.removeItem('oauth_return_path'); // Clean up
     
-    // Prioritize the campaign creation path for better UX flow
-    return <Navigate to={returnPath || redirectPath} replace />;
+    if (returnPath) {
+      sessionStorage.removeItem('oauth_return_path'); // Clean up
+      return <Navigate to={returnPath} replace />;
+    }
+    
+    return <Navigate to={redirectPath} replace />;
   }
 
   // Error state

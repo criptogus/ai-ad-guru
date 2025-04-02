@@ -70,7 +70,7 @@ export const useOAuthCallback = () => {
         variant: "destructive",
       });
       
-      // Clear URL params
+      // Clear URL params and redirect to connections page
       navigate('/connections', { replace: true });
       return;
     }
@@ -82,7 +82,7 @@ export const useOAuthCallback = () => {
         variant: "destructive",
       });
       
-      // Clear URL params
+      // Clear URL params and redirect to connections page
       navigate('/connections', { replace: true });
       return;
     }
@@ -149,6 +149,26 @@ export const useOAuthCallback = () => {
       if (onSuccess) {
         onSuccess();
       }
+      
+      // Check how many connections the user has
+      const { count, error: countError } = await supabase
+        .from('user_integrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+        
+      if (countError) {
+        console.error('Error checking connection count:', countError);
+      }
+      
+      // Determine where to redirect based on connection count
+      if (count === 1) {
+        // First connection, stay on connections page
+        navigate('/connections', { replace: true });
+      } else {
+        // User has multiple connections, redirect to campaign creation
+        navigate('/campaign/create', { replace: true });
+      }
+      
     } catch (error: any) {
       console.error("OAuth callback error:", error);
       
@@ -163,11 +183,11 @@ export const useOAuthCallback = () => {
         description: error.message || "There was an error connecting your ad account",
         variant: "destructive",
       });
+      
+      // Redirect to connections page on error
+      navigate('/connections', { replace: true });
     } finally {
       setIsConnecting(false);
-      
-      // Clear URL params by redirecting to connections page
-      navigate('/connections', { replace: true });
     }
   };
   
