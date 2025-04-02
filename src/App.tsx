@@ -50,82 +50,82 @@ function App() {
           {/* Protected routes requiring authentication */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="dashboard">
                 <DashboardPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/campaigns" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="campaigns">
                 <CampaignsPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/create-campaign" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="campaigns">
                 <CreateCampaignPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="analytics">
                 <AnalyticsPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/credits-info" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="credits">
                 <CreditsInfoPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/settings/*" element={
             <ProtectedRoute>
-              <SettingsPage />
+              <AppLayout activePage="settings">
+                <SettingsPage />
+              </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/billing" element={
             <ProtectedRoute>
-              <AppLayout>
-                <BillingPage />
-              </AppLayout>
+              <BillingPage />
             </ProtectedRoute>
           } />
           <Route path="/website-analysis" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="campaigns">
                 <WebsiteAnalysisPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/campaign/:campaignId" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="campaigns">
                 <CampaignPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/testing" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="testing">
                 <TestAdsPage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/template-example" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="tools">
                 <TemplateExamplePage />
               </AppLayout>
             </ProtectedRoute>
           } />
           <Route path="/connections" element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout activePage="connections">
                 <ConnectionsPage />
               </AppLayout>
             </ProtectedRoute>

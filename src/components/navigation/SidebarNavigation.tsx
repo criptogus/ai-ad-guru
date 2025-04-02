@@ -19,7 +19,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ collapsed, active
     <TooltipProvider delayDuration={100}>
       <aside className={cn(
         "h-full border-r border-border transition-all duration-300",
-        "bg-gray-50 dark:bg-gray-800",
+        "bg-gray-50 dark:bg-gray-900",
         collapsed ? "w-16" : "w-64"
       )}>
         <div className="flex flex-col h-full">

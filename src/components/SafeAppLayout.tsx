@@ -7,6 +7,7 @@ const SafeAppLayout: React.FC<{
   activePage: string;
   children: React.ReactNode;
 }> = ({ activePage, children }) => {
+  // Use AppLayout directly without creating a new sidebar
   return (
     <AppLayout activePage={activePage}>
       {children}
