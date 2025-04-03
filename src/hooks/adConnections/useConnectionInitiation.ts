@@ -31,7 +31,7 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // UPDATED: Use the consistent redirect URI
+      // Use the consistent redirect URI
       const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
@@ -58,6 +58,9 @@ export const useConnectionInitiation = () => {
         });
       }
       
+      // Log before getting OAuth URL
+      console.log(`Requesting OAuth URL for ${platform} with userId ${userId} and redirectUri ${redirectUri}`);
+      
       // Get OAuth URL from edge function
       const authUrl = await initiateOAuth({
         platform,
@@ -65,9 +68,11 @@ export const useConnectionInitiation = () => {
         redirectUri
       });
       
+      console.log(`Received authUrl from initiateOAuth:`, authUrl ? `${authUrl.substring(0, 50)}...` : 'No URL returned');
+      
       if (authUrl) {
         // Log before redirecting
-        console.log(`Redirecting to OAuth URL: ${authUrl}`);
+        console.log(`Redirecting to OAuth URL: ${authUrl.substring(0, 50)}...`);
         
         // Redirect user to the OAuth provider
         window.location.href = authUrl;
@@ -93,17 +98,14 @@ export const useConnectionInitiation = () => {
       
       // Add more specific error information based on platform
       if (error.message) {
-        // Handle LinkedIn-specific errors
-        if (platform === 'linkedin') {
-          if (error.message.includes("access_denied") && error.message.includes("not allowed to create application tokens")) {
-            setErrorDetails("Your LinkedIn app needs Marketing Developer Platform approval. Go to LinkedIn Developers Portal, select your app, and request access to the Marketing Developer Platform.");
-          } else if (error.message.includes("redirect_uri_mismatch")) {
-            setErrorDetails(`LinkedIn OAuth redirect URI mismatch. Make sure the redirect URI "${errorRedirectUri}" is registered in your LinkedIn app settings.`);
-          } else {
-            setErrorDetails(`LinkedIn error: ${error.message}. Make sure your app is configured correctly in the LinkedIn Developer Portal.`);
-          }
+        if (error.message.includes("function") && error.message.includes("non-2xx")) {
+          setErrorType("edge_function");
+          setErrorDetails(`Edge function error: The edge function may not be properly deployed or is missing required credentials. Please check the Supabase edge function logs for more details.`);
         } 
-        // Handle other platform errors
+        else if (platform === 'google' && error.message.includes("redirect_uri_mismatch")) {
+          setErrorType("oauth_config");
+          setErrorDetails(`Google OAuth redirect URI mismatch. Please ensure the redirect URI "${errorRedirectUri}" is registered in your Google Cloud Console.`);
+        }
         else if (error.message.includes("Missing") && error.message.includes("credentials")) {
           setErrorType("configuration");
           setErrorDetails(`Missing ${platform} API credentials in server configuration. Please contact support.`);
