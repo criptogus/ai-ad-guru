@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, BarChart2, Edit, Pause, Play } from 'lucide-react';
+import CampaignTimeline from '@/components/campaign/CampaignTimeline';
+import { useTimelineSteps } from '@/hooks/campaign/useTimelineSteps';
 
 interface Campaign {
   id: string;
@@ -26,6 +28,16 @@ const CampaignPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
   const [loading, setLoading] = useState(true);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  
+  // Mock timeline data for demonstration
+  const timelineInfo = {
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    reviewedAt: new Date().toISOString()
+  };
+  
+  const { getTimelineSteps } = useTimelineSteps(timelineInfo, campaignId || '');
+  const timelineSteps = getTimelineSteps();
 
   useEffect(() => {
     // In a real app, we'd fetch this data from an API
@@ -144,6 +156,11 @@ const CampaignPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      {/* Campaign Timeline Section */}
+      <div className="mb-6">
+        <CampaignTimeline steps={timelineSteps} />
       </div>
       
       <Tabs defaultValue="overview" className="space-y-4">
