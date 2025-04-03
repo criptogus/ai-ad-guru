@@ -1,5 +1,5 @@
 
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.23.0';
 
 export async function storeTokens(
   supabase: SupabaseClient,
@@ -9,91 +9,71 @@ export async function storeTokens(
   refreshToken: string,
   accountId: string,
   expiresAt: string,
-  metadata: any = {}
+  metadata: Record<string, any> = {}
 ): Promise<boolean> {
   try {
     console.log(`Storing ${platform} tokens for user ${userId}`);
     
-    // Check if integration already exists
-    const { data: existingIntegration, error: fetchError } = await supabase
+    // First check if this user already has a connection for this platform
+    const { data: existingConnection } = await supabase
       .from('user_integrations')
       .select('id')
       .eq('user_id', userId)
       .eq('platform', platform)
       .maybeSingle();
       
-    if (fetchError) {
-      console.error('Error checking for existing integration:', fetchError);
-      throw new Error(`Failed to check for existing integration: ${fetchError.message}`);
-    }
-    
-    // Update or insert based on whether integration already exists
-    if (existingIntegration) {
+    if (existingConnection) {
+      // Update existing connection
+      console.log(`Updating existing ${platform} connection for user ${userId}`);
+      
       const { error: updateError } = await supabase
         .from('user_integrations')
         .update({
           access_token: accessToken,
           refresh_token: refreshToken,
-          expires_at: expiresAt,
           account_id: accountId,
-          updated_at: new Date().toISOString(),
-          metadata
+          expires_at: expiresAt,
+          metadata,
+          updated_at: new Date().toISOString()
         })
-        .eq('id', existingIntegration.id);
+        .eq('id', existingConnection.id);
         
       if (updateError) {
-        console.error(`Error updating ${platform} integration:`, updateError);
-        throw new Error(`Failed to update ${platform} integration: ${updateError.message}`);
+        console.error(`Error updating ${platform} connection:`, updateError);
+        return false;
       }
+      
+      console.log(`Successfully updated ${platform} connection`);
+      return true;
     } else {
+      // Create new connection
+      console.log(`Creating new ${platform} connection for user ${userId}`);
+      
       const { error: insertError } = await supabase
         .from('user_integrations')
         .insert({
+          id: crypto.randomUUID(),
           user_id: userId,
           platform,
           access_token: accessToken,
           refresh_token: refreshToken,
-          expires_at: expiresAt,
           account_id: accountId,
+          expires_at: expiresAt,
+          metadata,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          metadata
+          updated_at: new Date().toISOString()
         });
         
       if (insertError) {
-        console.error(`Error inserting ${platform} integration:`, insertError);
-        throw new Error(`Failed to create ${platform} integration: ${insertError.message}`);
+        console.error(`Error creating ${platform} connection:`, insertError);
+        return false;
       }
-    }
-    
-    console.log(`Successfully stored ${platform} tokens`);
-    return true;
-  } catch (error) {
-    console.error('Error storing tokens:', error);
-    throw error;
-  }
-}
-
-export async function revokeTokens(
-  supabase: SupabaseClient,
-  userId: string,
-  platform: string
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('user_integrations')
-      .delete()
-      .eq('user_id', userId)
-      .eq('platform', platform);
       
-    if (error) {
-      console.error(`Error revoking ${platform} tokens:`, error);
-      throw new Error(`Failed to revoke ${platform} access: ${error.message}`);
+      console.log(`Successfully created ${platform} connection`);
+      return true;
     }
-    
-    return true;
   } catch (error) {
-    console.error('Error revoking tokens:', error);
-    throw error;
+    console.error(`Error storing ${platform} tokens:`, error);
+    return false;
   }
 }
