@@ -3,6 +3,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoutAction } from '@/hooks/auth/useLogoutAction';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import SidebarNavigationItems from '@/components/navigation/SidebarNavigationItems';
 import { cn } from '@/lib/utils';
 
@@ -24,12 +25,12 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
 
   return (
     <div className={cn(
-      "h-full bg-white border-r border-gray-200 transition-all duration-300",
+      "h-full bg-[#0c121f] border-r border-gray-800 transition-all duration-300",
       collapsed ? "w-[70px]" : "w-[240px]"
     )}>
       {/* App title and logo */}
       <div className={`flex items-center py-4 px-4 ${collapsed ? "justify-center" : "justify-between"}`}>
-        {!collapsed && <span className="font-semibold text-lg font-inter text-gray-800">AdManager AI</span>}
+        {!collapsed && <span className="font-semibold text-lg font-inter text-white">AdManager AI</span>}
         <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
           <span className="text-sm font-bold text-white">A</span>
         </div>
@@ -40,9 +41,11 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
         <SidebarNavigationItems activePage={activePage} collapsed={collapsed} />
       </div>
       
-      {/* Collapse button */}
-      <div className="border-t border-gray-200 p-4 flex items-center justify-between">
-        <div className={collapsed ? "mx-auto" : ""}></div>
+      {/* Theme toggle and collapse button */}
+      <div className="border-t border-gray-800 p-4 flex items-center justify-between">
+        <div className={collapsed ? "mx-auto" : ""}>
+          <ThemeToggle />
+        </div>
         
         {!collapsed && (
           <button 
