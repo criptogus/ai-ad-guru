@@ -1,10 +1,11 @@
+
 import React from "react";
 import { useAdAccountConnections } from "@/hooks/adConnections";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck, Lock, Key, RefreshCw, CheckCircle2, HelpCircle } from "lucide-react";
+import { Goal, Facebook, Linkedin, ServerIcon, ShieldCheck, Lock, Key, RefreshCw, CheckCircle2, HelpCircle, ExternalLink } from "lucide-react";
 import PlatformConnectionCard from "./PlatformConnectionCard";
 import { toast } from "sonner";
 import { 
