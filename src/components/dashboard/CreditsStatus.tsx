@@ -38,7 +38,7 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
   const isLowCredits = currentCredits < 50;
   
   return (
-    <Card className="bg-white">
+    <Card className="dark:bg-gray-800">
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-medium">Credits Available</h3>
@@ -49,7 +49,7 @@ const CreditsStatus: React.FC<CreditsStatusProps> = ({ user }) => {
                 <span className="sr-only">Credit Information</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white">
+            <DialogContent className="dark:bg-gray-800">
               <DialogHeader>
                 <DialogTitle>Credit System</DialogTitle>
                 <DialogDescription>

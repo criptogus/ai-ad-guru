@@ -1,136 +1,111 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Lightbulb, BarChart, BrainCircuit, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Lightbulb, TrendingUp, Zap, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const AiInsights: React.FC = () => {
-  const [expandedInsight, setExpandedInsight] = React.useState<number | null>(null);
+  const navigate = useNavigate();
   
+  // Mock AI insights
   const insights = [
     {
       id: 1,
-      title: "Increase CTR by 24%",
-      description: "Your Google Ads could perform better by adding more emotional triggers. Consider using 'Urgency' and 'Scarcity' in your ad copy.",
-      action: "Optimize Google Ads",
-      actionPath: "/campaign/1?tab=google",
-      category: "performance",
-      impact: "high"
+      title: "Increase your CTR by 23%",
+      description: "Adding customer testimonials to your ad description can boost engagement.",
+      icon: <TrendingUp className="h-4 w-4 text-primary" />,
+      impact: "high",
+      platform: "google"
     },
     {
       id: 2,
-      title: "Budget optimization opportunity",
-      description: "Shift 30% of your 'Summer Sale' budget to your 'Product Launch' campaign to maximize ROAS based on last week's performance data.",
-      action: "Adjust budgets",
-      actionPath: "/campaigns",
-      category: "budget",
-      impact: "medium"
+      title: "Optimize your ad spend",
+      description: "Reallocate 20% of your budget from campaign 'Summer Sale' to 'New Products'.",
+      icon: <Lightbulb className="h-4 w-4 text-primary" />,
+      impact: "medium",
+      platform: "meta"
     },
     {
       id: 3,
-      title: "New audience segment identified",
-      description: "Data shows professionals aged 28-35 are engaging most with your ads. Consider creating a dedicated campaign for this segment.",
-      action: "Create segment",
-      actionPath: "/create-campaign",
-      category: "audience",
-      impact: "high"
+      title: "Try new headline format",
+      description: "A/B test question-based headlines for your Google search campaigns.",
+      icon: <Zap className="h-4 w-4 text-primary" />,
+      impact: "low",
+      platform: "google"
     }
   ];
-  
-  const toggleInsight = (id: number) => {
-    if (expandedInsight === id) {
-      setExpandedInsight(null);
-    } else {
-      setExpandedInsight(id);
-    }
-  };
-  
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'performance':
-        return <BarChart className="h-4 w-4 text-blue-500" />;
-      case 'budget':
-        return <BarChart className="h-4 w-4 text-green-500" />;
-      case 'audience':
-        return <BrainCircuit className="h-4 w-4 text-purple-500" />;
+
+  const getImpactBadge = (impact: string) => {
+    switch(impact) {
+      case "high":
+        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-900">High impact</Badge>;
+      case "medium":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900">Medium impact</Badge>;
+      case "low":
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900">Low impact</Badge>;
       default:
-        return <Lightbulb className="h-4 w-4 text-amber-500" />;
+        return null;
     }
   };
-  
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case 'high':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'medium':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'low':
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+
+  const getPlatformBadge = (platform: string) => {
+    switch(platform) {
+      case "google":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900">Google</Badge>;
+      case "meta":
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-900">Meta</Badge>;
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return null;
     }
   };
-  
+
   return (
-    <Card className="bg-white">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium flex items-center">
-          <Lightbulb className="mr-2 h-5 w-5 text-amber-500" />
-          <span>AI Insights</span>
-        </CardTitle>
+    <Card className="shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold">AI Recommendations</CardTitle>
+        <CardDescription>Smart suggestions to improve your campaigns</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-0">
+        <div className="divide-y">
           {insights.map((insight) => (
-            <div 
-              key={insight.id} 
-              className="border rounded-lg p-4 hover:border-blue-200 transition-all duration-200"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">
-                    {getCategoryIcon(insight.category)}
-                  </div>
-                  <div>
-                    <h3 className="font-medium">{insight.title}</h3>
-                    {expandedInsight === insight.id ? (
-                      <p className="text-sm text-muted-foreground mt-2">{insight.description}</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground truncate max-w-xs sm:max-w-md md:max-w-lg">
-                        {insight.description}
-                      </p>
-                    )}
+            <div key={insight.id} className="p-4 hover:bg-muted/50 transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="mt-1 flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    {insight.icon}
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 rounded-full"
-                  onClick={() => toggleInsight(insight.id)}
-                >
-                  {expandedInsight === insight.id ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-              
-              {expandedInsight === insight.id && (
-                <div className="mt-4 flex items-center justify-between">
-                  <div className={`text-xs px-2 py-1 rounded ${getImpactColor(insight.impact)}`}>
-                    {insight.impact.charAt(0).toUpperCase() + insight.impact.slice(1)} impact
+                <div className="flex-grow space-y-1">
+                  <h3 className="text-sm font-medium">{insight.title}</h3>
+                  <div className="flex gap-2 mb-2">
+                    {getPlatformBadge(insight.platform)}
+                    {getImpactBadge(insight.impact)}
                   </div>
-                  <Button size="sm" className="gap-1 bg-blue-500 hover:bg-blue-600">
-                    {insight.action}
-                    <ArrowRight className="h-3.5 w-3.5" />
+                  <p className="text-xs text-muted-foreground">{insight.description}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <Button size="sm" variant="outline" className="h-8">
+                    Apply
                   </Button>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
       </CardContent>
+      <CardFooter className="pt-2 pb-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full text-primary"
+          onClick={() => navigate("/insights")}
+        >
+          View All Insights
+          <ArrowRight className="ml-1 h-4 w-4" />
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
