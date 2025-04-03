@@ -1,18 +1,13 @@
-
 /**
  * LinkedIn Ads OAuth utilities
  */
 
 export function getLinkedInAuthUrl(clientId: string, redirectUri: string, state: string): string {
-  // Modified scopes to ensure we request exactly what we need for LinkedIn Ads
+  // Scopes specifically for LinkedIn Ads management
   const scopes = [
-    'r_emailaddress',
-    'r_liteprofile',
-    'rw_ads',
     'r_ads',
-    'r_ads_reporting',
-    'r_organization_social',
-    'rw_organization_admin'
+    'rw_ads',
+    'r_ads_reporting'
   ].join(' ');
   
   console.log(`Generating LinkedIn OAuth URL with clientId=${clientId ? 'present' : 'missing'} and redirect=${redirectUri}`);
