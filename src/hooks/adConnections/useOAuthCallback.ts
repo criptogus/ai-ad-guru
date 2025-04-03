@@ -126,34 +126,24 @@ export const useOAuthCallback = () => {
       const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       console.log("Using redirect URI for token exchange:", redirectUri);
       
-      // Exchange code for token via Supabase Edge Function
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ad-account-auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Exchange code for token directly using the Supabase function
+      const response = await supabase.functions.invoke('ad-account-auth', {
+        body: {
           action: 'exchangeToken',
           code,
           state,
           redirectUri,
-          userId
-        }),
+          userId,
+          platform: storedOAuthData?.platform || 'unknown' // Pass platform if available
+        }
       });
       
-      if (!response.ok) {
-        let errorText;
-        try {
-          const errorData = await response.json();
-          errorText = errorData.error || `Status: ${response.status}`;
-        } catch (e) {
-          errorText = await response.text();
-        }
-        console.error("Token exchange error response:", errorText);
-        throw new Error(`Token exchange failed: ${errorText}`);
+      if (response.error) {
+        console.error("Token exchange error response:", response.error);
+        throw new Error(`Token exchange failed: ${response.error.message}`);
       }
       
-      const data = await response.json();
+      const data = response.data;
       console.log("Token exchange response:", data);
       
       if (!data.success) {
@@ -168,12 +158,12 @@ export const useOAuthCallback = () => {
       }
       
       // Success
-      const result: OAuthCallbackResult = data.result;
+      const platform = storedOAuthData?.platform || data.platform || 'unknown';
       const platformName = 
-        result.platform === 'google' ? 'Google Ads' :
-        result.platform === 'meta' ? 'Meta Ads' :
-        result.platform === 'linkedin' ? 'LinkedIn Ads' :
-        result.platform === 'microsoft' ? 'Microsoft Ads' : 
+        platform === 'google' ? 'Google Ads' :
+        platform === 'meta' ? 'Meta Ads' :
+        platform === 'linkedin' ? 'LinkedIn Ads' :
+        platform === 'microsoft' ? 'Microsoft Ads' : 
         'Ad Platform';
       
       toast({

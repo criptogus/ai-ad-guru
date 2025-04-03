@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -86,8 +87,8 @@ export const initiateOAuth = async (params: OAuthParams) => {
         inProgress: true,
         userId,
         startTime: Date.now(),
-        redirectUri,
-        state // Store the state parameter in sessionStorage
+        redirectUri: effectiveRedirectUri,
+        state: data.state || state // Use the state from response if available, fallback to local state
       }));
     } catch (storageError) {
       console.warn('Could not store OAuth state in session storage:', storageError);

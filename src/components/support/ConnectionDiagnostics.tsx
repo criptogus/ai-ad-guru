@@ -1,186 +1,256 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { googleAdsApi } from "@/services/ads/google/googleAdsApi";
-import { testLinkedInCredentials } from "@/services/ads/linkedin/linkedInAdsConnector";
-import { secureApi } from "@/services/api/secureApi";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const ConnectionDiagnostics: React.FC = () => {
-  const [isTestingGoogle, setIsTestingGoogle] = useState(false);
-  const [isTestingLinkedIn, setIsTestingLinkedIn] = useState(false);
-  const [isTestingEdgeFunction, setIsTestingEdgeFunction] = useState(false);
-  const [googleStatus, setGoogleStatus] = useState<null | { success: boolean; message: string }>(null);
-  const [linkedInStatus, setLinkedInStatus] = useState<null | { success: boolean; message: string }>(null);
-  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<null | { success: boolean; message: string }>(null);
+type DiagnosticStatus = 'unchecked' | 'checking' | 'success' | 'error';
 
-  const testGoogleConnection = async () => {
-    setIsTestingGoogle(true);
+interface ConnectionDiagnosticsProps {
+  className?: string;
+}
+
+const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className }) => {
+  const { toast } = useToast();
+  const [databaseStatus, setDatabaseStatus] = useState<DiagnosticStatus>('unchecked');
+  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<DiagnosticStatus>('unchecked');
+  const [oauthStateStatus, setOauthStateStatus] = useState<DiagnosticStatus>('unchecked');
+  const [databaseError, setDatabaseError] = useState<string | null>(null);
+  const [edgeFunctionError, setEdgeFunctionError] = useState<string | null>(null);
+  const [oauthStateError, setOauthStateError] = useState<string | null>(null);
+  const [isRunningDiagnostics, setIsRunningDiagnostics] = useState(false);
+
+  const runDatabaseDiagnostic = async (): Promise<boolean> => {
     try {
-      const result = await googleAdsApi.testCredentials();
-      setGoogleStatus(result);
-      toast(result.success ? "Google Ads test successful" : "Google Ads test failed", {
-        description: result.message
-      });
-    } catch (error) {
-      console.error("Error testing Google Ads connection:", error);
-      setGoogleStatus({
-        success: false,
-        message: `Error: ${error.message || "Unknown error"}`
-      });
-      toast.error("Google Ads Test Error", {
-        description: error.message || "An error occurred testing Google Ads connection"
-      });
-    } finally {
-      setIsTestingGoogle(false);
-    }
-  };
-
-  const testLinkedInConnection = async () => {
-    setIsTestingLinkedIn(true);
-    try {
-      const result = await testLinkedInCredentials();
-      setLinkedInStatus(result);
-      toast(result.success ? "LinkedIn test successful" : "LinkedIn test failed", {
-        description: result.message
-      });
-    } catch (error) {
-      console.error("Error testing LinkedIn connection:", error);
-      setLinkedInStatus({
-        success: false,
-        message: `Error: ${error.message || "Unknown error"}`
-      });
-      toast.error("LinkedIn Test Error", {
-        description: error.message || "An error occurred testing LinkedIn connection"
-      });
-    } finally {
-      setIsTestingLinkedIn(false);
-    }
-  };
-
-  const testEdgeFunction = async () => {
-    setIsTestingEdgeFunction(true);
-    try {
-      const result = await secureApi.invokeFunction('ad-account-test', { 
-        platform: 'test',
-        timestamp: new Date().toISOString()
-      });
+      setDatabaseStatus('checking');
+      // Simple test query to check database connectivity
+      const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
       
-      setEdgeFunctionStatus({
-        success: true,
-        message: `Edge function responded successfully: ${JSON.stringify(result)}`
-      });
-      toast.success("Edge Function Test", {
-        description: "The edge function responded successfully"
-      });
+      if (error) {
+        console.error('Database diagnostic error:', error);
+        setDatabaseError(`Connection error: ${error.message}`);
+        setDatabaseStatus('error');
+        return false;
+      }
+      
+      setDatabaseStatus('success');
+      setDatabaseError(null);
+      return true;
+    } catch (error: any) {
+      console.error('Database diagnostic exception:', error);
+      setDatabaseError(error.message || 'Unknown error');
+      setDatabaseStatus('error');
+      return false;
+    }
+  };
+
+  const runEdgeFunctionDiagnostic = async (): Promise<boolean> => {
+    try {
+      setEdgeFunctionStatus('checking');
+      // Invoke a simple edge function ping
+      const { error } = await supabase.functions.invoke('create-oauth-states');
+      
+      if (error) {
+        console.error('Edge function diagnostic error:', error);
+        setEdgeFunctionError(`Function error: ${error.message}`);
+        setEdgeFunctionStatus('error');
+        return false;
+      }
+      
+      setEdgeFunctionStatus('success');
+      setEdgeFunctionError(null);
+      return true;
+    } catch (error: any) {
+      console.error('Edge function diagnostic exception:', error);
+      setEdgeFunctionError(error.message || 'Unknown error');
+      setEdgeFunctionStatus('error');
+      return false;
+    }
+  };
+
+  const runOAuthStateDiagnostic = async (): Promise<boolean> => {
+    try {
+      setOauthStateStatus('checking');
+      // Check if we can insert and delete from oauth_states table
+      const testState = `test-${Date.now()}`;
+      
+      // Insert a test record
+      const { error: insertError } = await supabase
+        .from('oauth_states')
+        .insert({
+          state: testState,
+          user_id: '00000000-0000-0000-0000-000000000000', // Dummy UUID
+          platform: 'test',
+          redirect_uri: 'https://example.com',
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 60000).toISOString(), // 1 minute from now
+        });
+      
+      if (insertError) {
+        console.error('OAuth state insert error:', insertError);
+        setOauthStateError(`Insert error: ${insertError.message}`);
+        setOauthStateStatus('error');
+        return false;
+      }
+      
+      // Delete the test record
+      const { error: deleteError } = await supabase
+        .from('oauth_states')
+        .delete()
+        .eq('state', testState);
+      
+      if (deleteError) {
+        console.error('OAuth state delete error:', deleteError);
+        setOauthStateError(`Delete error: ${deleteError.message}`);
+        setOauthStateStatus('error');
+        return false;
+      }
+      
+      setOauthStateStatus('success');
+      setOauthStateError(null);
+      return true;
+    } catch (error: any) {
+      console.error('OAuth state diagnostic exception:', error);
+      setOauthStateError(error.message || 'Unknown error');
+      setOauthStateStatus('error');
+      return false;
+    }
+  };
+
+  const runAllDiagnostics = async () => {
+    setIsRunningDiagnostics(true);
+    
+    try {
+      const dbResult = await runDatabaseDiagnostic();
+      const fnResult = await runEdgeFunctionDiagnostic();
+      const oauthResult = await runOAuthStateDiagnostic();
+      
+      if (dbResult && fnResult && oauthResult) {
+        toast({
+          title: "All diagnostics passed",
+          description: "Your connection setup appears to be working correctly"
+        });
+      } else {
+        toast({
+          title: "Some diagnostics failed",
+          description: "Please check the detailed results",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error("Error testing edge function:", error);
-      setEdgeFunctionStatus({
-        success: false,
-        message: `Error: ${error.message || "Unknown error"}`
-      });
-      toast.error("Edge Function Test Error", {
-        description: error.message || "An error occurred testing the edge function"
+      console.error('Error running diagnostics:', error);
+      toast({
+        title: "Diagnostics error",
+        description: "An unexpected error occurred while running diagnostics",
+        variant: "destructive"
       });
     } finally {
-      setIsTestingEdgeFunction(false);
+      setIsRunningDiagnostics(false);
     }
   };
 
   return (
-    <Card className="mt-4">
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Connection Diagnostics</CardTitle>
         <CardDescription>
-          Test your ad platform connections and API integrations
+          Test your connection setup for ad platform integrations
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 border rounded-md">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-semibold">Google Ads API</h3>
-                <p className="text-sm text-muted-foreground">Test Google Ads API connectivity</p>
-              </div>
-              {googleStatus && (
-                <Badge variant={googleStatus.success ? "default" : "destructive"}>
-                  {googleStatus.success ? "Success" : "Failed"}
-                </Badge>
-              )}
-            </div>
-            {googleStatus && (
-              <div className="mb-4 text-sm p-2 bg-muted rounded-md">
-                <p>{googleStatus.message}</p>
-              </div>
+      
+      <CardContent className="space-y-6">
+        {/* Database Connection */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">Database Connection</h3>
+            {databaseStatus === 'unchecked' && (
+              <Badge variant="outline">Not checked</Badge>
             )}
-            <Button 
-              onClick={testGoogleConnection} 
-              disabled={isTestingGoogle}
-              variant="outline"
-              className="w-full"
-            >
-              {isTestingGoogle ? "Testing..." : "Test Google Connection"}
-            </Button>
-          </div>
-
-          <div className="p-4 border rounded-md">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-semibold">LinkedIn API</h3>
-                <p className="text-sm text-muted-foreground">Test LinkedIn API connectivity</p>
-              </div>
-              {linkedInStatus && (
-                <Badge variant={linkedInStatus.success ? "default" : "destructive"}>
-                  {linkedInStatus.success ? "Success" : "Failed"}
-                </Badge>
-              )}
-            </div>
-            {linkedInStatus && (
-              <div className="mb-4 text-sm p-2 bg-muted rounded-md">
-                <p>{linkedInStatus.message}</p>
-              </div>
+            {databaseStatus === 'checking' && (
+              <Badge variant="outline" className="animate-pulse">Checking...</Badge>
             )}
-            <Button 
-              onClick={testLinkedInConnection} 
-              disabled={isTestingLinkedIn}
-              variant="outline"
-              className="w-full"
-            >
-              {isTestingLinkedIn ? "Testing..." : "Test LinkedIn Connection"}
-            </Button>
-          </div>
-
-          <div className="p-4 border rounded-md">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-semibold">Edge Function</h3>
-                <p className="text-sm text-muted-foreground">Test Supabase edge function connectivity</p>
-              </div>
-              {edgeFunctionStatus && (
-                <Badge variant={edgeFunctionStatus.success ? "default" : "destructive"}>
-                  {edgeFunctionStatus.success ? "Success" : "Failed"}
-                </Badge>
-              )}
-            </div>
-            {edgeFunctionStatus && (
-              <div className="mb-4 text-sm p-2 bg-muted rounded-md">
-                <p className="break-all">{edgeFunctionStatus.message}</p>
-              </div>
+            {databaseStatus === 'success' && (
+              <Badge variant="outline" className="border-green-500 text-green-500 bg-green-50 dark:bg-green-950 dark:border-green-700">
+                <CheckCircle className="h-3.5 w-3.5 mr-1" /> Success
+              </Badge>
             )}
-            <Button 
-              onClick={testEdgeFunction} 
-              disabled={isTestingEdgeFunction}
-              variant="outline"
-              className="w-full"
-            >
-              {isTestingEdgeFunction ? "Testing..." : "Test Edge Function"}
-            </Button>
+            {databaseStatus === 'error' && (
+              <Badge variant="destructive">
+                <XCircle className="h-3.5 w-3.5 mr-1" /> Failed
+              </Badge>
+            )}
           </div>
+          {databaseError && (
+            <p className="text-sm text-red-500 mt-1">{databaseError}</p>
+          )}
+        </div>
+        
+        {/* Edge Function */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">Edge Function</h3>
+            {edgeFunctionStatus === 'unchecked' && (
+              <Badge variant="outline">Not checked</Badge>
+            )}
+            {edgeFunctionStatus === 'checking' && (
+              <Badge variant="outline" className="animate-pulse">Checking...</Badge>
+            )}
+            {edgeFunctionStatus === 'success' && (
+              <Badge variant="outline" className="border-green-500 text-green-500 bg-green-50 dark:bg-green-950 dark:border-green-700">
+                <CheckCircle className="h-3.5 w-3.5 mr-1" /> Success
+              </Badge>
+            )}
+            {edgeFunctionStatus === 'error' && (
+              <Badge variant="destructive">
+                <XCircle className="h-3.5 w-3.5 mr-1" /> Failed
+              </Badge>
+            )}
+          </div>
+          {edgeFunctionError && (
+            <p className="text-sm text-red-500 mt-1">{edgeFunctionError}</p>
+          )}
+        </div>
+        
+        {/* OAuth State Table */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">OAuth State Table</h3>
+            {oauthStateStatus === 'unchecked' && (
+              <Badge variant="outline">Not checked</Badge>
+            )}
+            {oauthStateStatus === 'checking' && (
+              <Badge variant="outline" className="animate-pulse">Checking...</Badge>
+            )}
+            {oauthStateStatus === 'success' && (
+              <Badge variant="outline" className="border-green-500 text-green-500 bg-green-50 dark:bg-green-950 dark:border-green-700">
+                <CheckCircle className="h-3.5 w-3.5 mr-1" /> Success
+              </Badge>
+            )}
+            {oauthStateStatus === 'error' && (
+              <Badge variant="destructive">
+                <XCircle className="h-3.5 w-3.5 mr-1" /> Failed
+              </Badge>
+            )}
+          </div>
+          {oauthStateError && (
+            <p className="text-sm text-red-500 mt-1">{oauthStateError}</p>
+          )}
         </div>
       </CardContent>
+      
+      <CardFooter>
+        <Button 
+          onClick={runAllDiagnostics} 
+          disabled={isRunningDiagnostics}
+          className="w-full"
+        >
+          {isRunningDiagnostics && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+          {isRunningDiagnostics ? 'Running Diagnostics...' : 'Run All Diagnostics'}
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

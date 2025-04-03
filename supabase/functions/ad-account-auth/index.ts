@@ -88,42 +88,7 @@ serve(async (req) => {
             
           if (error) {
             console.error('Error storing OAuth state:', error);
-            // Try to create the table if it doesn't exist
-            if (error.code === 'PGRST204') {
-              console.log('Table might not exist, attempting to create it...');
-              const createTableRes = await fetch(`${supabaseUrl}/functions/v1/create-oauth-states`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${supabaseKey}`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (!createTableRes.ok) {
-                throw new Error('Failed to create oauth_states table: ' + await createTableRes.text());
-              }
-              
-              // Try again to insert the state
-              console.log('Retrying state insertion after table creation');
-              const { error: retryError } = await supabase
-                .from('oauth_states')
-                .insert({
-                  state: secureState,
-                  user_id: userId,
-                  platform,
-                  redirect_uri: effectiveRedirectUri,
-                  created_at: new Date().toISOString(),
-                  expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 min expiry
-                });
-                
-              if (retryError) {
-                throw new Error('Failed to prepare OAuth flow: ' + retryError.message);
-              }
-              
-              console.log('Successfully stored OAuth state after table creation');
-            } else {
-              throw new Error('Failed to prepare OAuth flow: ' + error.message);
-            }
+            throw new Error(`Failed to prepare OAuth flow: ${error.message}`);
           } else {
             console.log('Successfully stored OAuth state in database');
           }
