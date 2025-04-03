@@ -31,7 +31,7 @@ export const useConnectionInitiation = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Use the consistent redirect URI
+      // IMPORTANT: Use the consistent redirect URI
       const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
       
       console.log(`Initiating ${platform} connection with redirect URI:`, redirectUri);
@@ -82,9 +82,6 @@ export const useConnectionInitiation = () => {
     } catch (error: any) {
       console.error(`Error initiating ${platform} connection:`, error);
       
-      // Get the redirectUri for error messages (define it again in this scope)
-      const errorRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
-      
       // Show error toast
       toast({
         title: "Connection Failed",
@@ -104,14 +101,14 @@ export const useConnectionInitiation = () => {
         } 
         else if (platform === 'google' && error.message.includes("redirect_uri_mismatch")) {
           setErrorType("oauth_config");
-          setErrorDetails(`Google OAuth redirect URI mismatch. Please ensure the redirect URI "${errorRedirectUri}" is registered in your Google Cloud Console.`);
+          setErrorDetails(`Google OAuth redirect URI mismatch. Please ensure the redirect URI "https://auth.zeroagency.ai/auth/v1/callback" is registered in your Google Cloud Console.`);
         }
         else if (error.message.includes("Missing") && error.message.includes("credentials")) {
           setErrorType("configuration");
           setErrorDetails(`Missing ${platform} API credentials in server configuration. Please contact support.`);
         } else if (error.message.includes("redirect_uri_mismatch")) {
           setErrorType("oauth_config");
-          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "${errorRedirectUri}" is registered in your ${platform} developer console.`);
+          setErrorDetails(`OAuth redirect URI mismatch. Please ensure the redirect URI "https://auth.zeroagency.ai/auth/v1/callback" is registered in your ${platform} developer console.`);
         } else {
           setErrorDetails(error.message);
         }

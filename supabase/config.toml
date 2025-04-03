@@ -1,2 +1,29 @@
 
-project_id = "svnockyhgohttzgbgydo"
+project_id = "YOUR_PROJECT_ID"
+
+[api]
+enabled = true
+port = 9999
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 5432
+shadow_port = 5433
+major_version = 15
+
+[studio]
+enabled = true
+port = 8000
+api_url = "http://localhost:9999"
+
+[functions.create-oauth-states]
+verify_jwt = true
+
+[functions.ad-account-auth]
+verify_jwt = true
+
+[functions.ad-account-test]
+verify_jwt = true
+
+[functions.google-ads-accounts]
+verify_jwt = true

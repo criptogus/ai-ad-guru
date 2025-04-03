@@ -106,7 +106,7 @@ const ConnectionDiagnostics: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Test Google Ads API connectivity</p>
               </div>
               {googleStatus && (
-                <Badge variant={googleStatus.success ? "success" : "destructive"}>
+                <Badge variant={googleStatus.success ? "default" : "destructive"}>
                   {googleStatus.success ? "Success" : "Failed"}
                 </Badge>
               )}
@@ -133,7 +133,7 @@ const ConnectionDiagnostics: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Test LinkedIn API connectivity</p>
               </div>
               {linkedInStatus && (
-                <Badge variant={linkedInStatus.success ? "success" : "destructive"}>
+                <Badge variant={linkedInStatus.success ? "default" : "destructive"}>
                   {linkedInStatus.success ? "Success" : "Failed"}
                 </Badge>
               )}
@@ -160,7 +160,7 @@ const ConnectionDiagnostics: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Test Supabase edge function connectivity</p>
               </div>
               {edgeFunctionStatus && (
-                <Badge variant={edgeFunctionStatus.success ? "success" : "destructive"}>
+                <Badge variant={edgeFunctionStatus.success ? "default" : "destructive"}>
                   {edgeFunctionStatus.success ? "Success" : "Failed"}
                 </Badge>
               )}

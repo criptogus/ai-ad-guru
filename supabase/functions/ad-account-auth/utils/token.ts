@@ -1,88 +1,88 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
-
-// Store tokens in Supabase with enhanced security
-export const storeTokens = async (
+export async function storeTokens(
   supabaseClient: any,
   userId: string,
   platform: string,
   accessToken: string,
   refreshToken: string | null,
   accountId: string,
-  expiresAt: string | null
-) => {
+  expiresAt: string,
+  metadata: any = {}
+) {
   try {
-    // Log the connection attempt (not the tokens)
-    console.log(`Storing secure connection for user ${userId} with ${platform}. Account ID: ${accountId}`);
-    
-    // Security check to ensure the token appears valid
-    if (!accessToken || accessToken.length < 20) {
-      throw new Error("Invalid access token format");
-    }
-    
-    // Insert security log entry
-    await supabaseClient
-      .from('security_logs')
-      .insert({
-        event: 'token_stored',
-        user_id: userId,
-        platform,
-        details: {
-          has_refresh_token: !!refreshToken,
-          has_expiry: !!expiresAt,
-          account_id: accountId || 'unknown'
-        }
-      });
-
-    // Store tokens securely
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
       .from('user_integrations')
-      .upsert({
-        user_id: userId,
-        platform,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        account_id: accountId,
-        expires_at: expiresAt
-      }, {
-        onConflict: 'user_id,platform'
-      });
-    
+      .upsert(
+        {
+          user_id: userId,
+          platform,
+          access_token: accessToken,
+          refresh_token: refreshToken || null,
+          account_id: accountId,
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+          metadata
+        },
+        { onConflict: 'user_id,platform' }
+      );
+      
     if (error) {
-      console.error('Error storing tokens:', error);
-      throw new Error(error.message || "Failed to store connection details");
+      console.error(`Error storing ${platform} tokens:`, error);
+      throw new Error(`Failed to store tokens: ${error.message}`);
     }
     
-    // Log successful storage (without sensitive data)
-    console.log(`Successfully stored ${platform} connection for user ${userId}`);
-    
-    return data;
-  } catch (error) {
-    console.error('Error in storeTokens:', error);
-    throw error;
+    console.log(`Successfully stored ${platform} tokens for user ${userId}`);
+    return true;
+  } catch (err) {
+    console.error(`Exception storing ${platform} tokens:`, err);
+    throw err;
   }
-};
+}
 
-// Revoke tokens when disconnecting
-export const revokeTokens = async (
+export async function revokeTokens(
   supabaseClient: any,
   userId: string,
-  platform: string,
-  accessToken: string | null
-) => {
+  platform: string
+) {
   try {
-    // Log revocation attempt
-    console.log(`Revoking ${platform} tokens for user ${userId}`);
+    // Get the existing tokens first
+    const { data, error: fetchError } = await supabaseClient
+      .from('user_integrations')
+      .select('access_token, refresh_token')
+      .eq('user_id', userId)
+      .eq('platform', platform)
+      .single();
+      
+    if (fetchError && fetchError.code !== 'PGRST116') { // Not found error
+      console.error(`Error fetching ${platform} tokens:`, fetchError);
+      throw new Error(`Failed to fetch tokens: ${fetchError.message}`);
+    }
     
-    // Platform-specific token revocation logic would go here
-    // This would typically call the respective platform's API to revoke the token
+    // If no tokens found, nothing to revoke
+    if (!data) {
+      console.log(`No ${platform} tokens found for user ${userId}`);
+      return true;
+    }
     
-    // Log completion
-    console.log(`Completed ${platform} token revocation process`);
+    // Platform-specific revocation logic would go here
+    // ...
     
+    // Delete tokens from database regardless of revocation result
+    const { error: deleteError } = await supabaseClient
+      .from('user_integrations')
+      .delete()
+      .eq('user_id', userId)
+      .eq('platform', platform);
+      
+    if (deleteError) {
+      console.error(`Error deleting ${platform} tokens:`, deleteError);
+      throw new Error(`Failed to delete tokens: ${deleteError.message}`);
+    }
+    
+    console.log(`Successfully deleted ${platform} tokens for user ${userId}`);
     return true;
-  } catch (error) {
-    console.error(`Error revoking ${platform} tokens:`, error);
-    return false;
+  } catch (err) {
+    console.error(`Exception revoking ${platform} tokens:`, err);
+    throw err;
   }
-};
+}
