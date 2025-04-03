@@ -20,23 +20,25 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {
     return (
-      <main className="h-screen w-full overflow-y-auto bg-[#0c121f]">
+      <main className="h-screen w-full overflow-y-auto bg-background">
         {children}
       </main>
     );
   }
   
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-[#0c121f]">
+    <div className="h-screen w-full flex overflow-hidden bg-background">
       {withSidebar && (
         <TooltipProvider>
           <SidebarNavigation activePage={activePage} />
         </TooltipProvider>
       )}
 
-      {/* Main Content - Using flex-1 to take all available space */}
-      <main className="flex-1 overflow-hidden flex flex-col">
-        {children}
+      {/* Main Content - Using flex-1 and proper padding to ensure spacing from sidebar */}
+      <main className="flex-1 overflow-hidden flex flex-col p-6">
+        <div className="w-full h-full overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

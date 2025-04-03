@@ -42,16 +42,16 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       <DashboardHeader user={dashboardUser} />
       
       {/* Full width Notifications */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <SmartNotifications />
       </div>
       
       {/* Credits Status as a solo horizontal column */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <CreditsStatus user={dashboardUser} />
       </div>
       
@@ -61,9 +61,9 @@ const DashboardPage: React.FC = () => {
       {/* Business Overview */}
       <BusinessOverview campaigns={campaigns} />
       
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Vertical column for campaigns taking up full width */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6">
           <CampaignSummaryCards campaigns={campaigns} />
           <ActiveCampaigns campaigns={campaigns} />
         </div>
