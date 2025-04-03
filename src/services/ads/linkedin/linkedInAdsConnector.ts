@@ -1,4 +1,3 @@
-
 /**
  * LinkedIn Ads Connector Service
  * Handles authentication and connection to LinkedIn Marketing API
@@ -29,7 +28,18 @@ export interface LinkedInConnectionStatus {
 export const testLinkedInCredentials = async (): Promise<{ success: boolean; message: string }> => {
   try {
     const result = await secureApi.invokeFunction('ad-account-test', { platform: 'linkedin' });
-    return result;
+    // Ensure we return the expected type structure
+    if (result && typeof result === 'object') {
+      return { 
+        success: result.success === true, 
+        message: result.message || 'LinkedIn credentials test completed'
+      };
+    }
+    // Default response if result format is unexpected
+    return { 
+      success: false, 
+      message: 'Invalid response format from LinkedIn credentials test'
+    };
   } catch (error) {
     errorLogger.logError(error, 'testLinkedInCredentials');
     return { 
