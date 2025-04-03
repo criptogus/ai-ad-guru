@@ -1,6 +1,7 @@
 
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { RocketIcon } from "lucide-react";
 
 interface AccountStatusAlertProps {
   isLowCredits: boolean;
@@ -10,28 +11,27 @@ interface AccountStatusAlertProps {
 const AccountStatusAlert: React.FC<AccountStatusAlertProps> = ({ isLowCredits, hasPaid }) => {
   if (isLowCredits) {
     return (
-      <div className="flex items-center bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg mb-4">
-        <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-        <span className="text-sm text-amber-700 dark:text-amber-400">
-          Credits running low. Consider purchasing more.
-        </span>
-      </div>
+      <Alert className="bg-amber-50 text-amber-800 border-amber-200">
+        <RocketIcon className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="text-amber-800">Low Credits</AlertTitle>
+        <AlertDescription className="text-amber-700">
+          You're running low on credits. Purchase more to continue using all features.
+        </AlertDescription>
+      </Alert>
     );
   }
-
-  if (hasPaid) {
-    return (
-      <div className="flex items-center bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4">
-        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-        <span className="text-sm text-green-700 dark:text-green-400">Premium account active</span>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="mb-4">
-      <p className="text-sm text-muted-foreground mb-2">Upgrade to premium for unlimited campaigns</p>
-    </div>
+    <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+      <RocketIcon className="h-4 w-4 text-blue-600" />
+      <AlertTitle className="text-blue-800">Account Status</AlertTitle>
+      <AlertDescription className="text-blue-700">
+        {hasPaid 
+          ? "Your account is active with sufficient credits."
+          : "You're using the free plan. Upgrade for more features."
+        }
+      </AlertDescription>
+    </Alert>
   );
 };
 

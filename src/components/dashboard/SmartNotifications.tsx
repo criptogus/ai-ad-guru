@@ -97,13 +97,13 @@ const SmartNotifications: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <Card className="h-full overflow-hidden">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+    <Card className="h-full overflow-hidden bg-white">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between bg-white">
         <CardTitle className="text-lg font-medium flex items-center">
           <Bell className="mr-2 h-5 w-5 text-foreground" />
           <span>Notifications</span>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="ml-2 bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400">
+            <Badge variant="secondary" className="ml-2 bg-red-100 text-red-800 hover:bg-red-200">
               {unreadCount} new
             </Badge>
           )}
@@ -144,7 +144,7 @@ const SmartNotifications: React.FC = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-0 max-h-[180px] overflow-y-auto">
+      <CardContent className="p-0 max-h-[180px] overflow-y-auto bg-white">
         {filteredNotifications.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No notifications to display
@@ -180,7 +180,7 @@ const SmartNotifications: React.FC = () => {
                       )}
                       
                       {notification.type === "critical" && (
-                        <Button size="sm" className="text-xs h-7 px-2">
+                        <Button size="sm" className="text-xs h-7 px-2 bg-blue-500">
                           Take action
                         </Button>
                       )}

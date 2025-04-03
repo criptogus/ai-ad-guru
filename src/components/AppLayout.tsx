@@ -35,8 +35,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       )}
 
       {/* Main Content - Using flex-1 to take all available space */}
-      <main className="flex-1 overflow-hidden flex flex-col">
-        {children}
+      <main className="flex-1 overflow-hidden flex flex-col bg-[#f9fafb]">
+        <div className="flex-1 overflow-y-auto p-6">
+          {children}
+        </div>
       </main>
     </div>
   );
