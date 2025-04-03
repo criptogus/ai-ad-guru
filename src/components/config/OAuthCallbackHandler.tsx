@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -26,6 +25,8 @@ const OAuthCallbackHandler: React.FC = () => {
         console.log("Path:", window.location.pathname);
         console.log("Search params:", window.location.search);
         console.log("Hash:", window.location.hash);
+        console.log("Consistent redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
+        console.log("===================================");
         
         // Check for required OAuth parameters
         const searchParams = new URLSearchParams(window.location.search);
@@ -45,10 +46,6 @@ const OAuthCallbackHandler: React.FC = () => {
           code: code ? "present" : "missing", 
           state: state || "missing"
         });
-        
-        // Log the consistent redirect URI
-        console.log("Consistent redirect URI:", "https://auth.zeroagency.ai/auth/v1/callback");
-        console.log("===================================");
         
         // Process the OAuth callback
         await processOAuthCallback(user.id);
@@ -136,7 +133,7 @@ const OAuthCallbackHandler: React.FC = () => {
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       <h2 className="mt-4 text-xl font-semibold">Processing authentication...</h2>
       <p className="mt-2 text-muted-foreground">Please wait while we complete your ad account connection.</p>
-      <p className="mt-4 text-sm text-muted-foreground">Redirect URI: {window.location.origin}/callback</p>
+      <p className="mt-4 text-sm text-muted-foreground">Original Redirect URI: {window.location.origin}/callback</p>
       <p className="mt-1 text-sm text-muted-foreground">Auth Domain: https://auth.zeroagency.ai/auth/v1/callback</p>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAdAccountConnections } from "@/hooks/adConnections";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,11 +106,87 @@ const ConnectionsSection: React.FC = () => {
                 </Accordion>
               </div>
             )}
+
+            {errorType === 'google' && errorDetails && errorDetails.toLowerCase().includes('redirect') && (
+              <div className="mt-4">
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="google-help">
+                    <AccordionTrigger className="text-sm">
+                      <div className="flex items-center gap-1">
+                        <HelpCircle className="h-4 w-4" />
+                        <span>Google OAuth Configuration Help</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 text-sm">
+                        <p>Google requires exact redirect URI configuration:</p>
+                        <ol className="list-decimal list-inside space-y-1 ml-2">
+                          <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a></li>
+                          <li>Select your OAuth 2.0 Client ID</li>
+                          <li>Under "Authorized redirect URIs", add <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">https://auth.zeroagency.ai/auth/v1/callback</code></li>
+                          <li>Save your changes</li>
+                          <li>Make sure the Google Ads API is enabled in your project</li>
+                        </ol>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            )}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Improved Security Information Card */}
+      <Card className="bg-card border-border shadow-sm mb-6">
+        <CardHeader className="pb-3">
+          <div className="flex items-center space-x-2">
+            <ShieldCheck className="h-5 w-5 text-blue-500" />
+            <CardTitle className="text-lg">OAuth Connection Diagnostic</CardTitle>
+          </div>
+          <CardDescription>
+            Use this information to verify your OAuth configuration for Google & LinkedIn
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="p-2 bg-slate-50 dark:bg-slate-900 rounded-md">
+              <p className="font-mono text-xs mb-2">Required Redirect URI:</p>
+              <code className="bg-white dark:bg-black px-2 py-1 rounded border font-mono text-xs select-all">
+                https://auth.zeroagency.ai/auth/v1/callback
+              </code>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">Google Configuration:</p>
+              <p>Make sure this exact URI is added to your OAuth Client in Google Cloud Console</p>
+              <a 
+                href="https://console.cloud.google.com/apis/credentials" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline inline-flex items-center text-xs mt-1"
+              >
+                Open Google Cloud Credentials
+                <ExternalLink className="h-3 w-3 ml-1" />
+              </a>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">LinkedIn Configuration:</p>
+              <p>Add this URI to the "Redirect URLs" in your LinkedIn Developer App settings</p>
+              <a 
+                href="https://www.linkedin.com/developers/apps" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline inline-flex items-center text-xs mt-1"
+              >
+                Open LinkedIn Developer Apps
+                <ExternalLink className="h-3 w-3 ml-1" />
+              </a>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="bg-card border-border shadow-sm mb-6">
         <CardHeader className="pb-3">
           <div className="flex items-center space-x-2">
@@ -145,7 +220,6 @@ const ConnectionsSection: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Google Ads Connection Card */}
         <PlatformConnectionCard
           platform="google"
           isConnecting={isConnecting}
@@ -156,7 +230,6 @@ const ConnectionsSection: React.FC = () => {
           onRemove={removeConnection}
         />
 
-        {/* Meta Ads Connection Card */}
         <PlatformConnectionCard
           platform="meta"
           isConnecting={isConnecting}
@@ -167,7 +240,6 @@ const ConnectionsSection: React.FC = () => {
           onRemove={removeConnection}
         />
 
-        {/* LinkedIn Ads Connection Card */}
         <PlatformConnectionCard
           platform="linkedin"
           isConnecting={isConnecting}
@@ -178,7 +250,6 @@ const ConnectionsSection: React.FC = () => {
           onRemove={removeConnection}
         />
 
-        {/* Microsoft Ads Connection Card */}
         <PlatformConnectionCard
           platform="microsoft"
           isConnecting={isConnecting}
@@ -190,7 +261,6 @@ const ConnectionsSection: React.FC = () => {
         />
       </div>
       
-      {/* Continue Button - Only enabled when at least one connection is established */}
       <div className="mt-8 flex justify-end">
         <Button 
           size="lg"

@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "./utils/cors.ts";
-import { storeTokens, revokeTokens } from "./utils/token.ts";
+import { storeTokens } from "./utils/token.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
 import { getGoogleAuthUrl, exchangeGoogleToken, verifyGoogleAdsAccess } from "./platforms/google.ts";
 import { getLinkedInAuthUrl, exchangeLinkedInToken } from "./platforms/linkedin.ts";
@@ -23,7 +23,7 @@ serve(async (req) => {
     const { action, platform, redirectUri, code, state, userId } = body;
 
     console.log(`Processing ${action} for ${platform} account${userId ? ', user: ' + userId : ''}`);
-    console.log(`Using redirect URI: ${redirectUri}`);
+    console.log(`Provided redirect URI: ${redirectUri}`);
 
     // Validation
     if (!action) {
@@ -40,8 +40,8 @@ serve(async (req) => {
 
     // Route the request based on the action
     if (action === 'getAuthUrl') {
-      if (!redirectUri) {
-        throw new Error('Redirect URI is required');
+      if (!userId) {
+        throw new Error('User ID is required');
       }
 
       // Use provided state or generate a new one
@@ -78,6 +78,7 @@ serve(async (req) => {
           const { error } = await supabase
             .from('oauth_states')
             .insert({
+              id: crypto.randomUUID(),
               state: secureState,
               user_id: userId,
               platform,

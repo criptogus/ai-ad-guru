@@ -6,7 +6,8 @@ export function getLinkedInAuthUrl(clientId: string, redirectUri: string, state:
     'rw_ads',
     'r_ads',
     'r_ads_reporting',
-    'r_organization_social'
+    'r_organization_social',
+    'rw_organization_admin'
   ].join(' ');
   
   const url = new URL('https://www.linkedin.com/oauth/v2/authorization');
@@ -26,6 +27,8 @@ export async function exchangeLinkedInToken(
   redirectUri: string
 ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
   try {
+    console.log('Exchanging LinkedIn token with redirect URI:', redirectUri);
+    
     const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
       method: 'POST',
       headers: {

@@ -1,4 +1,3 @@
-
 /**
  * Google Ads Connector Service
  * Manages OAuth connection to Google Ads platform
@@ -72,13 +71,16 @@ export const testGoogleCredentials = async (): Promise<{ success: boolean; messa
  */
 export const initiateGoogleConnection = async (redirectUri: string): Promise<string> => {
   try {
-    console.log('Initiating Google Ads connection with redirect URI:', redirectUri);
+    // Always use the consistent redirect URI
+    const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
+    
+    console.log('Initiating Google Ads connection with redirect URI:', effectiveRedirectUri);
     
     const { data, error } = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'getAuthUrl',
         platform: 'google',
-        redirectUri
+        redirectUri: effectiveRedirectUri
       }
     });
     
@@ -110,14 +112,17 @@ export const handleGoogleCallback = async (
   redirectUri: string
 ): Promise<GoogleOAuthCredentials | null> => {
   try {
-    console.log('Handling Google callback with code and redirect URI:', redirectUri);
+    // Always use the consistent redirect URI
+    const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
+    
+    console.log('Handling Google callback with code and redirect URI:', effectiveRedirectUri);
     
     const { data, error } = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'exchangeToken',
         code,
         platform: 'google',
-        redirectUri
+        redirectUri: effectiveRedirectUri
       }
     });
     

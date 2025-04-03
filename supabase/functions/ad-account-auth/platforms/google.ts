@@ -25,6 +25,8 @@ export async function exchangeGoogleToken(
   redirectUri: string
 ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
   try {
+    console.log('Exchanging Google token with redirect URI:', redirectUri);
+    
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {

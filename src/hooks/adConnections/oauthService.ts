@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";
@@ -6,7 +5,7 @@ import { tokenSecurity } from "@/services/security/tokenSecurity";
 const OAUTH_STORAGE_KEY = 'adPlatformAuth';
 
 export const initiateOAuth = async (params: OAuthParams) => {
-  const { platform, userId, redirectUri } = params;
+  const { platform, userId } = params;
   
   if (!userId) {
     throw new Error('User must be authenticated to connect ad accounts');
