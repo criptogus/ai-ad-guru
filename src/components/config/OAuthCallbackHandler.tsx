@@ -31,6 +31,8 @@ const OAuthCallbackHandler: React.FC = () => {
         const searchParams = new URLSearchParams(window.location.search);
         const code = searchParams.get('code');
         const state = searchParams.get('state');
+        const error = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
         
         if (!code || !state) {
           console.error("Missing required OAuth parameters:", { code, state });

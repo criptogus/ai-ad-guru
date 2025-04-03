@@ -6,6 +6,7 @@
 
 import { errorLogger } from '@/services/libs/error-handling';
 import { supabase } from '@/integrations/supabase/client';
+import { secureApi } from '@/services/api/secureApi';
 
 export interface LinkedInOAuthCredentials {
   accessToken: string;
@@ -21,6 +22,22 @@ export interface LinkedInConnectionStatus {
   adsAccessGranted?: boolean;
   error?: string;
 }
+
+/**
+ * Test LinkedIn API credentials in the Edge Function
+ */
+export const testLinkedInCredentials = async (): Promise<{ success: boolean; message: string }> => {
+  try {
+    const result = await secureApi.invokeFunction('ad-account-test', { platform: 'linkedin' });
+    return result;
+  } catch (error) {
+    errorLogger.logError(error, 'testLinkedInCredentials');
+    return { 
+      success: false, 
+      message: `Failed to test LinkedIn credentials: ${error.message}` 
+    };
+  }
+};
 
 /**
  * Initiate LinkedIn OAuth connection flow with proper LinkedIn Ads API scopes
