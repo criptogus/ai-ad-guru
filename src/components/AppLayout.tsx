@@ -20,14 +20,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {
     return (
-      <main className="h-screen w-full overflow-y-auto bg-[#0c121f]">
+      <main className="h-screen w-full overflow-y-auto bg-[#f9fafb]">
         {children}
       </main>
     );
   }
   
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-[#0c121f]">
+    <div className="h-screen w-full flex overflow-hidden bg-[#f9fafb]">
       {withSidebar && (
         <TooltipProvider>
           <SidebarNavigation activePage={activePage} />

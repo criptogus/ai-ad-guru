@@ -2,7 +2,6 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './hooks/use-theme.tsx';
 import { Toaster } from '@/components/ui/toaster';
 import AppLayout from './components/AppLayout';
 import DashboardPage from './pages/DashboardPage';
@@ -31,100 +30,98 @@ import CreateCampaignPage from './pages/CreateCampaignPage';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
-      <AuthProvider>
-        <Routes>
-          {/* Public routes that don't require authentication */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
-          <Route path="/cookie-policy" element={<CookiePolicyPage />} />
-          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-          
-          {/* Authentication routes */}
-          <Route path="/auth/*" element={<AuthPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/mfa-verification" element={<MFAPage />} />
-          
-          {/* Protected routes requiring authentication */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/campaigns" element={
-            <ProtectedRoute>
-              <CampaignsPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/create-campaign" element={
-            <ProtectedRoute>
-              <CreateCampaignPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/analytics" element={
-            <ProtectedRoute>
-              <AnalyticsPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/credits-info" element={
-            <ProtectedRoute>
-              <CreditsInfoPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings/*" element={
-            <ProtectedRoute>
-              <SettingsPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/billing" element={
-            <ProtectedRoute>
-              <BillingPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/website-analysis" element={
-            <ProtectedRoute>
-              <WebsiteAnalysisPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/campaign/:campaignId" element={
-            <ProtectedRoute>
-              <CampaignPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/testing" element={
-            <ProtectedRoute>
-              <TestAdsPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/template-example" element={
-            <ProtectedRoute>
-              <TemplateExamplePage />
-            </ProtectedRoute>
-          } />
-          <Route path="/connections" element={
-            <ProtectedRoute>
-              <ConnectionsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/callback" element={
-            <ProtectedRoute>
-              <OAuthCallbackHandler />
-            </ProtectedRoute>
-          } />
-          
-          {/* Redirect /roles to /settings/team */}
-          <Route path="/roles" element={
-            <ProtectedRoute>
-              <Navigate to="/settings/team" replace />
-            </ProtectedRoute>
-          } />
-        </Routes>
-        <Toaster />
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <Routes>
+        {/* Public routes that don't require authentication */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
+        <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        
+        {/* Authentication routes */}
+        <Route path="/auth/*" element={<AuthPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/mfa-verification" element={<MFAPage />} />
+        
+        {/* Protected routes requiring authentication */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/campaigns" element={
+          <ProtectedRoute>
+            <CampaignsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/create-campaign" element={
+          <ProtectedRoute>
+            <CreateCampaignPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <AnalyticsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/credits-info" element={
+          <ProtectedRoute>
+            <CreditsInfoPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/*" element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/billing" element={
+          <ProtectedRoute>
+            <BillingPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/website-analysis" element={
+          <ProtectedRoute>
+            <WebsiteAnalysisPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/campaign/:campaignId" element={
+          <ProtectedRoute>
+            <CampaignPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/testing" element={
+          <ProtectedRoute>
+            <TestAdsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/template-example" element={
+          <ProtectedRoute>
+            <TemplateExamplePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/connections" element={
+          <ProtectedRoute>
+            <ConnectionsPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/callback" element={
+          <ProtectedRoute>
+            <OAuthCallbackHandler />
+          </ProtectedRoute>
+        } />
+        
+        {/* Redirect /roles to /settings/team */}
+        <Route path="/roles" element={
+          <ProtectedRoute>
+            <Navigate to="/settings/team" replace />
+          </ProtectedRoute>
+        } />
+      </Routes>
+      <Toaster />
+    </AuthProvider>
   );
 }
 

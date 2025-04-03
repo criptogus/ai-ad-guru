@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import CompanyInfoSettings from "@/components/settings/CompanyInfoSettings";
 import ConnectionsSettings from "@/components/settings/ConnectionsSettings";
-import AppearanceSettings from "@/components/settings/AppearanceSettings";
 import NotificationsSettings from "@/components/settings/NotificationsSettings";
 import TeamSettings from "@/components/settings/TeamSettings";
 
@@ -29,7 +28,6 @@ const SettingsPage: React.FC = () => {
               <TabsTrigger value="company">Company</TabsTrigger>
               <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="connections">Connections</TabsTrigger>
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
             </TabsList>
             
@@ -38,7 +36,6 @@ const SettingsPage: React.FC = () => {
               <Route path="/company" element={<CompanyInfoSettings />} />
               <Route path="/team" element={<TeamSettings />} />
               <Route path="/connections" element={<ConnectionsSettings />} />
-              <Route path="/appearance" element={<AppearanceSettings />} />
               <Route path="/notifications" element={<NotificationsSettings />} />
             </Routes>
           </Tabs>

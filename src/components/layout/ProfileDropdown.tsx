@@ -2,7 +2,6 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -15,21 +14,16 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, Moon, Sun, CreditCard } from 'lucide-react';
+import { LogOut, Settings, CreditCard } from 'lucide-react';
 import CreditsHeaderDisplay from './CreditsHeaderDisplay';
 
 const ProfileDropdown = () => {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   // Get user initials for avatar fallback
@@ -82,15 +76,6 @@ const ProfileDropdown = () => {
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
               <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={toggleTheme}>
-              {theme === 'dark' ? (
-                <Sun className="mr-2 h-4 w-4" />
-              ) : (
-                <Moon className="mr-2 h-4 w-4" />
-              )}
-              <span>Toggle Theme</span>
-              <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
