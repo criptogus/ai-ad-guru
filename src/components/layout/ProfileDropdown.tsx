@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, Moon, Sun, CreditCard } from 'lucide-react';
+import { LogOut, Settings, Moon, Sun, CreditCard } from 'lucide-react';
 import CreditsHeaderDisplay from './CreditsHeaderDisplay';
 
 const ProfileDropdown = () => {
