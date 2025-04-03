@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OAuthParams, AdPlatform, OAuthCallbackResult } from "./types";
 import { tokenSecurity } from "@/services/security/tokenSecurity";

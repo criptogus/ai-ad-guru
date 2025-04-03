@@ -1,4 +1,8 @@
 
+/**
+ * LinkedIn Ads OAuth utilities
+ */
+
 export function getLinkedInAuthUrl(clientId: string, redirectUri: string, state: string): string {
   // Modified scopes to ensure we request exactly what we need for LinkedIn Ads
   const scopes = [
