@@ -1,10 +1,17 @@
 
+/**
+ * Google Ads OAuth utilities
+ */
+
 export function getGoogleAuthUrl(clientId: string, redirectUri: string, state: string): string {
+  // Use specific scopes needed for Google Ads API
   const scopes = [
-    'https://www.googleapis.com/auth/userinfo.email', 
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/adwords'
+    'https://www.googleapis.com/auth/adwords',
+    'email',
+    'profile'
   ].join(' ');
+  
+  console.log(`Generating Google OAuth URL with clientId=${clientId ? 'present' : 'missing'} and redirect=${redirectUri}`);
   
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   url.searchParams.append('client_id', clientId);
@@ -12,7 +19,7 @@ export function getGoogleAuthUrl(clientId: string, redirectUri: string, state: s
   url.searchParams.append('response_type', 'code');
   url.searchParams.append('scope', scopes);
   url.searchParams.append('access_type', 'offline');
-  url.searchParams.append('prompt', 'consent');
+  url.searchParams.append('prompt', 'consent'); // Force refresh token to be returned
   url.searchParams.append('state', state);
   
   return url.toString();
@@ -25,12 +32,21 @@ export async function exchangeGoogleToken(
   redirectUri: string
 ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
   try {
-    console.log('Exchanging Google token with redirect URI:', redirectUri);
+    console.log('Exchanging Google token with:', { 
+      hasClientId: !!clientId,
+      hasClientSecret: !!clientSecret,
+      hasCode: !!code,
+      redirectUri 
+    });
     
-    const response = await fetch('https://oauth2.googleapis.com/token', {
+    if (!clientId || !clientSecret) {
+      throw new Error('Google OAuth credentials are not configured. Please check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+    }
+    
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
         client_id: clientId,
@@ -41,13 +57,27 @@ export async function exchangeGoogleToken(
       }).toString()
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Google token exchange error:', errorText);
-      throw new Error(`Google token exchange failed: ${response.status} - ${errorText}`);
+    // Always get response text first for better error logging
+    const responseText = await tokenResponse.text();
+    console.log(`Google token exchange response status: ${tokenResponse.status}`);
+    
+    if (!tokenResponse.ok) {
+      throw new Error(`Google OAuth token exchange failed with status ${tokenResponse.status}: ${responseText}`);
     }
     
-    const data = await response.json();
+    // Parse JSON response
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      throw new Error(`Failed to parse Google token response: ${error.message}`);
+    }
+    
+    if (!data.access_token) {
+      throw new Error('Google OAuth token exchange response did not include an access token');
+    }
+    
+    console.log('Google token exchange successful');
     
     return {
       accessToken: data.access_token,
@@ -60,38 +90,40 @@ export async function exchangeGoogleToken(
   }
 }
 
-export async function verifyGoogleAdsAccess(
-  accessToken: string, 
-  developerToken: string
-): Promise<{ 
+// Verify Google Ads API access
+export async function verifyGoogleAdsAccess(accessToken: string, developerToken: string): Promise<{ 
   verified: boolean; 
-  error?: string; 
-  accounts?: string[];
   accountCount?: number;
+  accounts?: string[];
+  error?: string;
 }> {
   try {
     if (!developerToken) {
-      return {
-        verified: false,
-        error: 'Missing Google Ads developer token'
+      return { 
+        verified: false, 
+        error: 'Google Ads Developer Token is not configured'
       };
     }
     
-    // Call the Google Ads API to list accessible customers
-    const response = await fetch(
-      'https://googleads.googleapis.com/v15/customers:listAccessibleCustomers',
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'developer-token': developerToken
-        }
+    // First get the customer ID list
+    const response = await fetch('https://googleads.googleapis.com/v15/customers:listAccessibleCustomers', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'developer-token': developerToken
       }
-    );
+    });
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Google Ads API error:', errorText);
+      
+      if (response.status === 403) {
+        return {
+          verified: false,
+          error: 'Access denied. You may not have permission to access Google Ads API.'
+        };
+      }
+      
       return {
         verified: false,
         error: `Google Ads API error: ${response.status} - ${errorText}`
@@ -103,14 +135,14 @@ export async function verifyGoogleAdsAccess(
     
     return {
       verified: true,
-      accounts,
-      accountCount: accounts.length
+      accountCount: accounts.length,
+      accounts
     };
   } catch (error) {
     console.error('Error verifying Google Ads access:', error);
     return {
       verified: false,
-      error: `Exception: ${error.message}`
+      error: error.message
     };
   }
 }
