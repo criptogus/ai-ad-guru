@@ -54,7 +54,7 @@ const OAuthCallbackHandler: React.FC = () => {
         // After processing is complete, set isProcessed to true
         setIsProcessed(true);
         
-        // Show success message - no need to change, already using sonner format
+        // Show success message - updated to use sonner format
         toast.success("Ad account connection successful!");
         
         // Check how many connections the user has to determine the correct redirect path
@@ -85,8 +85,10 @@ const OAuthCallbackHandler: React.FC = () => {
         setError(error.message || "Unknown error occurred during authentication");
         setIsProcessed(true); // Set to true even on error to prevent endless loading
         
-        // Show error message - no need to change, already using sonner format
-        toast.error(`Authentication error: ${error.message || "Unknown error"}`);
+        // Show error message - updated to use sonner format
+        toast.error("Authentication Error", {
+          description: error.message || "Unknown error"
+        });
       }
     };
 

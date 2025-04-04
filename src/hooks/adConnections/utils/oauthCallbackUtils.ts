@@ -60,7 +60,7 @@ export function handleOAuthError(errorResponse: OAuthErrorResponse): void {
   const { error, errorDescription } = errorResponse;
   const errorMsg = errorDescription ? `${error}: ${errorDescription}` : error;
   
-  // Fixed: Using sonner toast API format instead of useToast format
+  // Fixed: Using correct sonner toast API format
   toast.error("Authentication Error", {
     description: `Error: ${errorMsg}. The platform denied access.`
   });
