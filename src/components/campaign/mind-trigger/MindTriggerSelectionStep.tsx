@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoveRight } from 'lucide-react';
+import { MoveRight, CheckCircle2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TriggerSelectorSection from './TriggerSelectorSection';
+import { useTriggerData } from './useTriggerData';
 
 interface MindTriggerSelectionStepProps {
   selectedPlatforms: string[];
@@ -23,6 +24,7 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
 }) => {
   const [localTriggers, setLocalTriggers] = useState<Record<string, string>>(selectedTriggers);
   const [activeTab, setActiveTab] = useState<string>(selectedPlatforms[0] || '');
+  const { getPlatformDisplayName, getPlatformIcon } = useTriggerData();
   
   // Find the next platform tab that needs a trigger
   const findNextPlatformTab = (currentTab: string): string | null => {
@@ -59,17 +61,6 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
   const allTriggersSelected = selectedPlatforms.every(platform => 
     localTriggers[platform] && localTriggers[platform].trim() !== '');
   
-  // Get platform display name
-  const getPlatformDisplayName = (platform: string): string => {
-    switch (platform) {
-      case 'google': return 'Google Ads';
-      case 'meta': return 'Instagram Ads';
-      case 'linkedin': return 'LinkedIn Ads';
-      case 'microsoft': return 'Microsoft Ads';
-      default: return platform.charAt(0).toUpperCase() + platform.slice(1);
-    }
-  };
-  
   return (
     <Card className="shadow-md border border-border">
       <CardHeader>
@@ -85,11 +76,14 @@ export const MindTriggerSelectionStep: React.FC<MindTriggerSelectionStepProps> =
           // Scroll to top when changing tabs
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}>
-          <TabsList className="w-full mb-4">
+          <TabsList className="w-full mb-6 grid" style={{ gridTemplateColumns: `repeat(${selectedPlatforms.length}, 1fr)` }}>
             {selectedPlatforms.map(platform => (
-              <TabsTrigger key={platform} value={platform} className="relative">
-                {getPlatformDisplayName(platform)}
-                {!localTriggers[platform] && (
+              <TabsTrigger key={platform} value={platform} className="relative flex items-center gap-1.5">
+                <span className="text-lg">{getPlatformIcon(platform)}</span>
+                <span>{getPlatformDisplayName(platform)}</span>
+                {localTriggers[platform] ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500 absolute -top-1 -right-1" />
+                ) : (
                   <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
                 )}
               </TabsTrigger>

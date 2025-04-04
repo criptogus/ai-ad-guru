@@ -1,10 +1,10 @@
 
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTriggerData } from './useTriggerData';
-import TriggerCard from './TriggerCard';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { HelpCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { SparklesIcon } from 'lucide-react';
 
 interface TriggerSelectorSectionProps {
   title: string;
@@ -19,53 +19,46 @@ const TriggerSelectorSection: React.FC<TriggerSelectorSectionProps> = ({
   selected,
   onSelect
 }) => {
-  const { getPlatformTriggers, getPlatformIcon } = useTriggerData();
-  const triggers = getPlatformTriggers(platform);
-  const icon = getPlatformIcon(platform);
+  const { getTriggers } = useTriggerData();
+  const triggers = getTriggers(platform);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="text-xl">{icon}</div>
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full p-0">
-                <HelpCircle className="h-4 w-4" />
-                <span className="sr-only">Help</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-xs">Choose the mental trigger that best aligns with this platform's audience and goals.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-      
-      <p className="text-sm text-muted-foreground">
-        Choose the mental trigger that will guide your {title}
-      </p>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {triggers.map(trigger => (
-          <TriggerCard
-            key={trigger.id}
-            trigger={trigger}
-            isSelected={selected === trigger.id}
-            onSelect={() => onSelect(trigger.id)}
-          />
-        ))}
-      </div>
-      
-      {selected && (
-        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-          <p className="text-sm text-blue-800 dark:text-blue-300">
-            <span className="font-medium">Selected:</span> {triggers.find(t => t.id === selected)?.name}
-          </p>
-        </div>
-      )}
-    </div>
+    <Card className="border border-border shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center text-lg font-semibold">
+          <SparklesIcon className="h-5 w-5 mr-2 text-primary" />
+          {title} Mind Triggers
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-6">
+          Select a psychological trigger to enhance your ad copy. Different platforms respond better to different psychological approaches.
+        </p>
+        
+        <RadioGroup 
+          value={selected} 
+          onValueChange={onSelect}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+          {triggers.map((trigger) => (
+            <div key={trigger.id} className="relative">
+              <RadioGroupItem
+                value={trigger.id}
+                id={`trigger-${trigger.id}`}
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor={`trigger-${trigger.id}`}
+                className="flex flex-col h-full p-4 rounded-xl border border-border peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"
+              >
+                <span className="text-base font-medium mb-1">{trigger.name}</span>
+                <span className="text-sm text-muted-foreground">{trigger.description}</span>
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </CardContent>
+    </Card>
   );
 };
 
