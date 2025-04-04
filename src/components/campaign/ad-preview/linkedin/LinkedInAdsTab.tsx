@@ -96,7 +96,8 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
           ads={linkedInAds}
           analysisResult={analysisResult}
           loadingImageIndex={loadingImageIndex}
-          isGeneratingImage={isGenerating}
+          isGenerating={isGenerating}
+          onGenerateAds={onGenerateAds}
           onGenerateImage={onGenerateImage}
           onUpdateAd={handleUpdateAd}
           onDuplicate={(index) => {

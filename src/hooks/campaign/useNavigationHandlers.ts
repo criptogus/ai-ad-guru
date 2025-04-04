@@ -9,7 +9,7 @@ export const useNavigationHandlers = (
 
   const handleBack = () => {
     window.scrollTo(0, 0);
-    setCurrentStep((prev) => Math.max(0, prev - 1));
+    setCurrentStep((prev: number) => Math.max(0, prev - 1));
   };
 
   const handleNext = (data?: any) => {
@@ -25,14 +25,14 @@ export const useNavigationHandlers = (
       // IMPORTANT: We're not auto-advancing here anymore
       // Only advance if explicitly set to autoAdvance
       if (autoAdvance) {
-        setCurrentStep((prev) => prev + 1);
+        setCurrentStep((prev: number) => prev + 1);
         return true;
       }
       
       return false;
     } else {
       // If no data is provided, just advance to the next step
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev: number) => prev + 1);
       return true;
     }
   };

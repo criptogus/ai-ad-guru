@@ -13,8 +13,11 @@ interface LinkedInAdsListProps {
   loadingImageIndex: number | null;
   onGenerateAds: () => Promise<void>;
   onGenerateImage: (ad: any, index: number) => Promise<void>;
-  onUpdateLinkedInAd: (index: number, updatedAd: any) => void;
+  onUpdateAd: (index: number, updatedAd: any) => void;
+  onDuplicate?: (index: number) => void;
+  onDelete?: (index: number) => void;
   mindTrigger?: string;
+  onMindTriggerChange?: (trigger: string) => void;
 }
 
 const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
@@ -24,8 +27,11 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
   loadingImageIndex,
   onGenerateAds,
   onGenerateImage,
-  onUpdateLinkedInAd,
-  mindTrigger
+  onUpdateAd,
+  onDuplicate,
+  onDelete,
+  mindTrigger,
+  onMindTriggerChange
 }) => {
   // Ensure ads is always an array
   const safeAds = Array.isArray(ads) ? ads : [];
@@ -114,7 +120,9 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
               analysisResult={analysisResult}
               isGeneratingImage={loadingImageIndex === index}
               onGenerateImage={() => handleGenerateImage(ad, index)}
-              onUpdateAd={(updatedAd) => onUpdateLinkedInAd(index, updatedAd)}
+              onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
+              onCopy={() => onDuplicate && onDuplicate(index)}
+              onDelete={() => onDelete && onDelete(index)}
             />
           ))}
         </div>
