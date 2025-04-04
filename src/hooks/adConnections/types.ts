@@ -1,4 +1,3 @@
-
 export type AdPlatform = 'google' | 'meta' | 'linkedin' | 'microsoft';
 
 export interface Connection {
@@ -14,6 +13,7 @@ export interface OAuthParams {
   platform: AdPlatform;
   userId: string;
   redirectUri: string;
+  state?: string; // Added state parameter as optional
 }
 
 export interface AdConnectionsState {

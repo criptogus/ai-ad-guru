@@ -1,4 +1,3 @@
-
 /**
  * OAuth service types
  */
@@ -9,6 +8,7 @@ export interface OAuthParams {
   platform: AdPlatform;
   userId: string;
   redirectUri?: string;
+  state?: string; // Added state parameter as optional
 }
 
 export interface OAuthStorageData {

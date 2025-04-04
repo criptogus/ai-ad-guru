@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { initiateOAuth } from './oauthService';
@@ -81,7 +80,7 @@ export const useConnectionInitiation = () => {
         platform,
         userId,
         redirectUri,
-        state: secureState
+        state: secureState  // Now properly typed and included in the interface
       });
       
       console.log(`Received authUrl from initiateOAuth:`, authUrl ? `${authUrl.substring(0, 50)}...` : 'No URL returned');

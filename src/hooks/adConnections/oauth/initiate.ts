@@ -13,7 +13,7 @@ import { DEFAULT_REDIRECT_URI } from "./constants";
  * Initiate OAuth flow for the specified platform
  */
 export const initiateOAuth = async (params: OAuthParams): Promise<string> => {
-  const { platform, userId } = params;
+  const { platform, userId, state } = params;
   
   if (!userId) {
     throw new Error('User must be authenticated to connect ad accounts');
@@ -26,22 +26,23 @@ export const initiateOAuth = async (params: OAuthParams): Promise<string> => {
   console.log(`Initiating ${platform} OAuth flow`);
   console.log(`Using redirect URI: ${effectiveRedirectUri}`);
   console.log(`For user: ${userId}`);
+  console.log(`With state: ${state || 'not provided'}`);
   console.log(`Make sure this URI is registered in your ${platform} developer console: ${effectiveRedirectUri}`);
   console.log(`=====================================`);
   
   try {
-    // Generate a secure state
-    const state = crypto.randomUUID();
+    // Generate a secure state if not provided
+    const secureState = state || crypto.randomUUID();
     
     // Generate the OAuth URL from our edge function
-    console.log(`Invoking edge function for ${platform} OAuth URL generation with state: ${state}`);
+    console.log(`Invoking edge function for ${platform} OAuth URL generation with state: ${secureState}`);
     const response = await supabase.functions.invoke('ad-account-auth', {
       body: {
         action: 'getAuthUrl',
         platform,
         redirectUri: effectiveRedirectUri,
         userId,
-        state // Pass the state parameter to the edge function
+        state: secureState // Pass the state parameter to the edge function
       }
     });
     
@@ -94,7 +95,7 @@ export const initiateOAuth = async (params: OAuthParams): Promise<string> => {
       userId,
       startTime: Date.now(),
       redirectUri: effectiveRedirectUri,
-      state: data.state || state // Use the state from response if available, fallback to local state
+      state: data.state || secureState // Use the state from response if available, fallback to local state
     };
     
     storeOAuthData(oauthData);
