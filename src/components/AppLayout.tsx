@@ -3,6 +3,7 @@ import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SidebarNavigation from "@/components/navigation/SidebarNavigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   withSidebar = true 
 }) => {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {

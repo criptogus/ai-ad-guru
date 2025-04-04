@@ -11,6 +11,7 @@ import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
 import SmartNotifications from "@/components/dashboard/SmartNotifications";
 import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AppLayout from "@/components/AppLayout";
 
 // Create an interface that matches what the dashboard components expect
 interface DashboardUser {
@@ -42,36 +43,38 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader user={dashboardUser} />
-      
-      {/* Full width Notifications */}
-      <div className="grid grid-cols-1 gap-6">
-        <SmartNotifications />
-      </div>
-      
-      {/* Credits Status as a solo horizontal column */}
-      <div className="grid grid-cols-1 gap-6">
-        <CreditsStatus user={dashboardUser} />
-      </div>
-      
-      {/* Leaderboard (Top Performing and Needs Attention) */}
-      <LeaderboardSection campaigns={campaigns} />
-      
-      {/* Business Overview */}
-      <BusinessOverview campaigns={campaigns} />
-      
-      <div className="grid grid-cols-1 gap-6">
-        {/* Vertical column for campaigns taking up full width */}
-        <div className="space-y-6">
-          <CampaignSummaryCards campaigns={campaigns} />
-          <ActiveCampaigns campaigns={campaigns} />
+    <AppLayout activePage="dashboard" withSidebar={true}>
+      <div className="space-y-6">
+        <DashboardHeader user={dashboardUser} />
+        
+        {/* Full width Notifications */}
+        <div className="grid grid-cols-1 gap-6">
+          <SmartNotifications />
         </div>
         
-        {/* AI Insights at the bottom */}
-        <AiInsights />
+        {/* Credits Status as a solo horizontal column */}
+        <div className="grid grid-cols-1 gap-6">
+          <CreditsStatus user={dashboardUser} />
+        </div>
+        
+        {/* Leaderboard (Top Performing and Needs Attention) */}
+        <LeaderboardSection campaigns={campaigns} />
+        
+        {/* Business Overview */}
+        <BusinessOverview campaigns={campaigns} />
+        
+        <div className="grid grid-cols-1 gap-6">
+          {/* Vertical column for campaigns taking up full width */}
+          <div className="space-y-6">
+            <CampaignSummaryCards campaigns={campaigns} />
+            <ActiveCampaigns campaigns={campaigns} />
+          </div>
+          
+          {/* AI Insights at the bottom */}
+          <AiInsights />
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
