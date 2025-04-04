@@ -1,148 +1,124 @@
 
-import React, { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, RefreshCw, Plus } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./LinkedInAdCard";
-import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle } from "lucide-react";
-import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LinkedInAdsListProps {
-  ads: MetaAd[];
+  ads: any[] | null; // Change to accept null
   analysisResult: WebsiteAnalysisResult;
-  isGeneratingImage: boolean;
+  isGenerating: boolean;
   loadingImageIndex: number | null;
-  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
-  onUpdateAd: (index: number, updatedAd: MetaAd) => void;
-  onDuplicate?: (index: number) => void;
-  onDelete?: (index: number) => void;
+  onGenerateAds: () => Promise<void>;
+  onGenerateImage: (ad: any, index: number) => Promise<void>;
+  onUpdateLinkedInAd: (index: number, updatedAd: any) => void;
   mindTrigger?: string;
-  onMindTriggerChange?: (trigger: string) => void;
 }
 
 const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
   ads,
   analysisResult,
-  isGeneratingImage,
+  isGenerating,
   loadingImageIndex,
+  onGenerateAds,
   onGenerateImage,
-  onUpdateAd,
-  onDuplicate,
-  onDelete,
-  mindTrigger,
-  onMindTriggerChange
+  onUpdateLinkedInAd,
+  mindTrigger
 }) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [showTriggerGallery, setShowTriggerGallery] = useState(false);
-  const [previewType, setPreviewType] = useState<"feed" | "message" | "sidebar">("feed");
-
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-  };
-
-  const handleSave = (index: number, updatedAd: MetaAd) => {
-    onUpdateAd(index, updatedAd);
-    setEditingIndex(null);
-  };
-
-  const handleCancel = () => {
-    setEditingIndex(null);
-  };
-
-  const handleGenerateImage = (ad: MetaAd, index: number) => {
-    return onGenerateImage(ad, index);
-  };
-
-  const handleSelectTrigger = (trigger: string) => {
-    if (onMindTriggerChange) {
-      onMindTriggerChange(trigger);
+  // Ensure ads is always an array
+  const safeAds = Array.isArray(ads) ? ads : [];
+  
+  const handleGenerateImage = async (ad: any, index: number) => {
+    if (onGenerateImage) {
+      await onGenerateImage(ad, index);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Mind Trigger Section */}
-      {onMindTriggerChange && (
-        <div className="flex items-center justify-between mb-4 p-4 bg-muted/30 border rounded-lg">
-          <div className="flex flex-col">
-            <h3 className="text-sm font-medium">Mind Trigger</h3>
-            <p className="text-sm text-muted-foreground">
-              {mindTrigger ? `Using: ${mindTrigger}` : "No mind trigger applied"}
-            </p>
-          </div>
-          <Button size="sm" variant="outline" onClick={() => setShowTriggerGallery(true)}>
-            {mindTrigger ? "Change Trigger" : "Add Trigger"}
-          </Button>
+      {/* Generate Button */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold">LinkedIn Ads</h3>
+          <p className="text-sm text-muted-foreground">
+            Generate and customize LinkedIn ads for your campaign
+          </p>
         </div>
-      )}
-      
-      {/* LinkedIn Preview Type Selector */}
-      <div className="mb-4">
-        <h3 className="text-sm font-medium mb-2">Preview Type</h3>
-        <Tabs value={previewType} onValueChange={(value: "feed" | "message" | "sidebar") => setPreviewType(value)} className="w-full">
-          <TabsList className="grid grid-cols-3 w-full max-w-md mb-4">
-            <TabsTrigger value="feed">Feed</TabsTrigger>
-            <TabsTrigger value="message">Message</TabsTrigger>
-            <TabsTrigger value="sidebar">Sidebar</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      
-      {/* LinkedIn Ads List */}
-      <div className="space-y-6">
-        {ads.map((ad, index) => (
-          <LinkedInAdCard
-            key={`linkedin-ad-${index}`}
-            ad={ad}
-            index={index}
-            analysisResult={analysisResult}
-            isGeneratingImage={isGeneratingImage && loadingImageIndex === index}
-            isEditing={editingIndex === index}
-            onGenerateImage={() => handleGenerateImage(ad, index)}
-            onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
-            onEdit={() => handleEdit(index)}
-            onSave={(updatedAd) => handleSave(index, updatedAd)}
-            onCancel={handleCancel}
-            onCopy={() => onDuplicate && onDuplicate(index)}
-            previewType={previewType === "message" ? "feed" : previewType}
-          />
-        ))}
-      </div>
-
-      {/* Add New Ad Button */}
-      {onDuplicate && ads.length > 0 && (
+        
         <Button
-          variant="outline"
-          className="w-full border-dashed"
-          onClick={() => onDuplicate(ads.length - 1)}
+          onClick={onGenerateAds}
+          disabled={isGenerating}
+          variant={safeAds.length > 0 ? "outline" : "default"}
+          className="ml-auto"
         >
-          <PlusCircle className="w-4 h-4 mr-2" />
-          Add New LinkedIn Ad Variation
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : safeAds.length > 0 ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Regenerate Ads
+            </>
+          ) : (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Generate Ads
+            </>
+          )}
         </Button>
+      </div>
+
+      {/* Show loading state */}
+      {isGenerating && safeAds.length === 0 && (
+        <Card>
+          <CardContent className="py-10 flex flex-col items-center justify-center">
+            <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+            <p className="text-muted-foreground">
+              Generating LinkedIn ads using AI...
+            </p>
+            {mindTrigger && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Applying Mind Trigger: <span className="font-medium">{mindTrigger}</span>
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
 
-      {/* Placeholder when no ads */}
-      {ads.length === 0 && !isGeneratingImage && (
-        <div className="border border-dashed rounded-md p-8 text-center">
-          <p className="text-muted-foreground">No LinkedIn ads generated yet</p>
+      {/* Show empty state */}
+      {!isGenerating && safeAds.length === 0 && (
+        <Card>
+          <CardContent className="py-10 flex flex-col items-center justify-center">
+            <p className="text-muted-foreground mb-4">
+              No LinkedIn ads generated yet
+            </p>
+            <Button onClick={onGenerateAds} disabled={isGenerating}>
+              Generate LinkedIn Ads
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Show ads */}
+      {safeAds.length > 0 && (
+        <div className="space-y-6">
+          {safeAds.map((ad, index) => (
+            <LinkedInAdCard
+              key={index}
+              ad={ad}
+              index={index}
+              analysisResult={analysisResult}
+              isGeneratingImage={loadingImageIndex === index}
+              onGenerateImage={() => handleGenerateImage(ad, index)}
+              onUpdateAd={(updatedAd) => onUpdateLinkedInAd(index, updatedAd)}
+            />
+          ))}
         </div>
       )}
-
-      {/* Loading state */}
-      {isGeneratingImage && loadingImageIndex === null && (
-        <div className="flex items-center justify-center p-8">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          <span>Generating LinkedIn ads...</span>
-        </div>
-      )}
-
-      {/* Mind Trigger Gallery */}
-      <TriggerGallery
-        open={showTriggerGallery}
-        onOpenChange={setShowTriggerGallery}
-        onSelectTrigger={handleSelectTrigger}
-      />
     </div>
   );
 };

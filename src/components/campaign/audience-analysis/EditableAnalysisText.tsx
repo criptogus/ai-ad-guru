@@ -1,12 +1,13 @@
 
 import React, { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from "react-markdown";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Check } from "lucide-react";
+import { Pencil, Check, X } from "lucide-react";
 
 interface EditableAnalysisTextProps {
   text: string;
-  onSave: (text: string) => void;
+  onSave?: (text: string) => void;
 }
 
 const EditableAnalysisText: React.FC<EditableAnalysisTextProps> = ({
@@ -16,46 +17,73 @@ const EditableAnalysisText: React.FC<EditableAnalysisTextProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(text);
 
-  const handleEdit = () => {
+  const handleEditClick = () => {
     setIsEditing(true);
     setEditedText(text);
   };
 
-  const handleSave = () => {
-    onSave(editedText);
+  const handleSaveClick = () => {
+    if (onSave) {
+      onSave(editedText);
+    }
     setIsEditing(false);
   };
 
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    setEditedText(text);
+  };
+
   return (
-    <div className="relative">
-      {isEditing ? (
-        <div className="space-y-2">
-          <Textarea
-            value={editedText}
-            onChange={(e) => setEditedText(e.target.value)}
-            className="min-h-[150px] text-sm"
-          />
-          <Button size="sm" onClick={handleSave}>
-            <Check className="h-4 w-4 mr-2" />
-            Save Changes
-          </Button>
-        </div>
-      ) : (
-        <div className="group relative">
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {text}
-          </p>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={handleEdit}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-    </div>
+    <Card className="overflow-hidden">
+      <CardContent className="p-4 relative">
+        {!isEditing ? (
+          <>
+            <div className="prose dark:prose-invert max-w-none">
+              <ReactMarkdown>{text}</ReactMarkdown>
+            </div>
+            {onSave && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="absolute top-2 right-2"
+                onClick={handleEditClick}
+              >
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            <textarea
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              className="w-full min-h-[200px] p-3 border rounded-md"
+              autoFocus
+            />
+            <div className="flex justify-end mt-3 space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleCancelClick}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={handleSaveClick}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,4 +1,3 @@
-
 interface ParsedAnalysis {
   success: boolean;
   platform: string;
@@ -32,29 +31,8 @@ export const parseAnalysisResponse = (responseText: string, platform?: string): 
   };
   
   try {
-    // Extract paragraphs text for the audience analysis
-    const paragraphs = responseText.split("\n\n");
-    
-    // The first few paragraphs are likely the main analysis text
-    // Let's use everything before structured data sections as analysis text
-    const demographicsIndex = responseText.toLowerCase().indexOf("demographics");
-    const interestsIndex = responseText.toLowerCase().indexOf("interests");
-    const painPointsIndex = responseText.toLowerCase().indexOf("pain points");
-    
-    if (demographicsIndex > 0 || interestsIndex > 0 || painPointsIndex > 0) {
-      // Find the earliest section index
-      const firstSectionIndex = Math.min(
-        demographicsIndex > 0 ? demographicsIndex : Number.MAX_SAFE_INTEGER,
-        interestsIndex > 0 ? interestsIndex : Number.MAX_SAFE_INTEGER,
-        painPointsIndex > 0 ? painPointsIndex : Number.MAX_SAFE_INTEGER
-      );
-      
-      // Set analysis text to everything before the first structured section
-      result.analysisText = responseText.substring(0, firstSectionIndex).trim();
-    } else {
-      // If no structured sections found, use the first few paragraphs
-      result.analysisText = paragraphs.slice(0, Math.min(3, paragraphs.length)).join("\n\n");
-    }
+    // Extract paragraphs text for the audience analysis - preserve all the original formatting
+    result.analysisText = responseText;
     
     // Parse demographics
     result.demographics = parseDemographics(responseText);

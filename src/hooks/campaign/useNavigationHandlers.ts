@@ -1,24 +1,47 @@
 
+import { useState } from "react";
+
 export const useNavigationHandlers = (
-  setCurrentStep: (updater: (prev: number) => number) => void,
-  setCampaignData: (updater: (prev: any) => any) => void
+  setCurrentStep: (step: number) => void,
+  setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const handleNext = (data?: any) => {
-    if (data) {
-      setCampaignData(prev => ({
-        ...prev,
-        ...data
-      }));
-    }
-    setCurrentStep(prev => prev + 1);
-  };
+  const [autoAdvance, setAutoAdvance] = useState(false);
 
   const handleBack = () => {
-    setCurrentStep(prev => Math.max(1, prev - 1));
+    window.scrollTo(0, 0);
+    setCurrentStep((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = (data?: any) => {
+    window.scrollTo(0, 0);
+    
+    // If data is provided, update the campaign data
+    if (data) {
+      setCampaignData((prev: any) => ({
+        ...prev,
+        ...data,
+      }));
+      
+      // IMPORTANT: We're not auto-advancing here anymore
+      // Only advance if explicitly set to autoAdvance
+      if (autoAdvance) {
+        setCurrentStep((prev) => prev + 1);
+        return true;
+      }
+      
+      return false;
+    } else {
+      // If no data is provided, just advance to the next step
+      setCurrentStep((prev) => prev + 1);
+      return true;
+    }
   };
 
   return {
+    handleBack,
     handleNext,
-    handleBack
+    setAutoAdvance
   };
 };
+
+export default useNavigationHandlers;
