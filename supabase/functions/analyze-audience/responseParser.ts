@@ -1,5 +1,5 @@
 
-export interface AnalysisResult {
+interface ParsedAnalysis {
   success: boolean;
   platform: string;
   analysisText: string;
@@ -12,163 +12,169 @@ export interface AnalysisResult {
   interests?: string[];
   painPoints?: string[];
   decisionFactors?: string[];
-  language?: string;
 }
 
-export const parseAnalysisResponse = (responseText: string, platform?: string): AnalysisResult => {
+export const parseAnalysisResponse = (responseText: string, platform?: string): ParsedAnalysis => {
+  // Initialize the result
+  const result: ParsedAnalysis = {
+    success: true,
+    platform: platform || 'all',
+    analysisText: '',
+    demographics: {
+      ageGroups: [],
+      gender: [],
+      educationLevel: [],
+      incomeLevel: []
+    },
+    interests: [],
+    painPoints: [],
+    decisionFactors: []
+  };
+  
   try {
-    // Default structure for the analysis result
-    const analysisResult: AnalysisResult = {
-      success: true,
-      platform: platform || 'all',
-      analysisText: responseText,
-      demographics: {
-        ageGroups: [],
-        gender: [],
-        educationLevel: [],
-        incomeLevel: []
-      },
-      interests: [],
-      painPoints: [],
-      decisionFactors: []
-    };
-
-    // Attempt to extract structured data from the response
-    // This basic implementation looks for certain keywords in different languages
+    // Extract paragraphs text for the audience analysis
+    const paragraphs = responseText.split("\n\n");
     
-    // Extract age groups
-    analysisResult.demographics!.ageGroups = extractDataByKeywords(
-      responseText, 
-      ['age', 'idade', 'edad'], 
-      ['years', 'anos', 'años']
-    );
+    // The first few paragraphs are likely the main analysis text
+    // Let's use everything before structured data sections as analysis text
+    const demographicsIndex = responseText.toLowerCase().indexOf("demographics");
+    const interestsIndex = responseText.toLowerCase().indexOf("interests");
+    const painPointsIndex = responseText.toLowerCase().indexOf("pain points");
     
-    // Extract gender
-    analysisResult.demographics!.gender = extractDataByKeywords(
-      responseText, 
-      ['gender', 'gênero', 'género'], 
-      ['male', 'female', 'masculino', 'feminino', 'hombre', 'mujer']
-    );
-    
-    // Extract education level
-    analysisResult.demographics!.educationLevel = extractDataByKeywords(
-      responseText, 
-      ['education', 'educação', 'educación'], 
-      ['college', 'university', 'graduate', 'faculdade', 'universidade', 'graduado', 'universidad']
-    );
-    
-    // Extract income level
-    analysisResult.demographics!.incomeLevel = extractDataByKeywords(
-      responseText, 
-      ['income', 'renda', 'ingresos'], 
-      ['high', 'middle', 'low', 'alto', 'médio', 'baixo', 'medio', 'bajo']
-    );
-    
-    // Extract interests
-    analysisResult.interests = extractDataByKeywords(
-      responseText, 
-      ['interests', 'interesses', 'intereses'], 
-      ['technology', 'business', 'tecnologia', 'negócios', 'negocios']
-    );
-    
-    // Extract pain points
-    analysisResult.painPoints = extractDataByKeywords(
-      responseText, 
-      ['pain points', 'pontos de dor', 'puntos de dolor'], 
-      ['time', 'money', 'tempo', 'dinheiro', 'tiempo', 'dinero']
-    );
-    
-    // Extract decision factors
-    analysisResult.decisionFactors = extractDataByKeywords(
-      responseText, 
-      ['decision factors', 'fatores de decisão', 'factores de decisión'], 
-      ['price', 'quality', 'preço', 'qualidade', 'precio', 'calidad']
-    );
-
-    // If we couldn't extract structured data, provide default values
-    if (analysisResult.demographics!.ageGroups.length === 0) {
-      analysisResult.demographics!.ageGroups = ['25-34', '35-44'];
+    if (demographicsIndex > 0 || interestsIndex > 0 || painPointsIndex > 0) {
+      // Find the earliest section index
+      const firstSectionIndex = Math.min(
+        demographicsIndex > 0 ? demographicsIndex : Number.MAX_SAFE_INTEGER,
+        interestsIndex > 0 ? interestsIndex : Number.MAX_SAFE_INTEGER,
+        painPointsIndex > 0 ? painPointsIndex : Number.MAX_SAFE_INTEGER
+      );
+      
+      // Set analysis text to everything before the first structured section
+      result.analysisText = responseText.substring(0, firstSectionIndex).trim();
+    } else {
+      // If no structured sections found, use the first few paragraphs
+      result.analysisText = paragraphs.slice(0, Math.min(3, paragraphs.length)).join("\n\n");
     }
     
-    if (analysisResult.demographics!.gender.length === 0) {
-      analysisResult.demographics!.gender = ['All'];
-    }
+    // Parse demographics
+    result.demographics = parseDemographics(responseText);
     
-    if (analysisResult.demographics!.educationLevel.length === 0) {
-      analysisResult.demographics!.educationLevel = ['College', 'Graduate'];
-    }
+    // Parse interests
+    result.interests = parseListSection(responseText, "interests");
     
-    if (analysisResult.demographics!.incomeLevel.length === 0) {
-      analysisResult.demographics!.incomeLevel = ['Middle', 'Upper-middle'];
-    }
+    // Parse pain points
+    result.painPoints = parseListSection(responseText, "pain points");
     
-    if (analysisResult.interests!.length === 0) {
-      analysisResult.interests = ['Technology', 'Business', 'Digital Marketing'];
-    }
+    // Parse decision factors
+    result.decisionFactors = parseListSection(responseText, "decision factors");
     
-    if (analysisResult.painPoints!.length === 0) {
-      analysisResult.painPoints = ['Time management', 'Cost efficiency', 'Technical complexity'];
-    }
-    
-    if (analysisResult.decisionFactors!.length === 0) {
-      analysisResult.decisionFactors = ['Quality', 'Price', 'Support'];
-    }
-
-    return analysisResult;
+    return result;
   } catch (error) {
-    console.error('Error parsing analysis response:', error);
+    console.error("Error parsing analysis response:", error);
+    
+    // Return with the original text even if parsing failed
     return {
       success: false,
       platform: platform || 'all',
-      analysisText: 'Error parsing analysis: ' + (error as Error).message,
+      analysisText: responseText,
     };
   }
 };
 
-// Helper function to extract data from text using keywords
-function extractDataByKeywords(text: string, sectionKeywords: string[], dataKeywords: string[]): string[] {
-  const results: string[] = [];
+// Helper function to parse demographics section
+function parseDemographics(text: string): { ageGroups: string[], gender: string[], educationLevel: string[], incomeLevel: string[] } {
+  const result = {
+    ageGroups: [] as string[],
+    gender: [] as string[],
+    educationLevel: [] as string[],
+    incomeLevel: [] as string[]
+  };
   
-  // Find paragraphs that might contain the section keywords
-  const paragraphs = text.split('\n').filter(p => p.trim().length > 0);
+  // Age groups
+  result.ageGroups = extractDemographicTrait(text, "age", ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]);
   
-  for (const paragraph of paragraphs) {
-    const lowerParagraph = paragraph.toLowerCase();
+  // Gender
+  result.gender = extractDemographicTrait(text, "gender", ["male", "female", "all"]);
+  
+  // Education level
+  result.educationLevel = extractDemographicTrait(text, "education", ["high school", "college", "graduate", "undergraduate", "bachelor", "master", "phd"]);
+  
+  // Income level
+  result.incomeLevel = extractDemographicTrait(text, "income", ["low", "middle", "high", "affluent"]);
+  
+  return result;
+}
+
+// Helper function to extract demographic traits
+function extractDemographicTrait(text: string, traitName: string, possibleValues: string[]): string[] {
+  const lowerText = text.toLowerCase();
+  const regex = new RegExp(`${traitName}[^\\n.]*?(?:${possibleValues.join('|')})`, 'gi');
+  const matches = lowerText.match(regex) || [];
+  
+  return matches.length > 0 
+    ? possibleValues.filter(value => matches.some(match => match.includes(value))) 
+    : determineDefaultTraits(traitName);
+}
+
+// Helper function to provide default traits if none are found
+function determineDefaultTraits(traitName: string): string[] {
+  switch (traitName) {
+    case "age":
+      return ["25-34", "35-44"]; // Default age range
+    case "gender":
+      return ["All"]; // Default gender targeting
+    case "education":
+      return ["College", "Graduate"]; // Default education level
+    case "income":
+      return ["Middle", "Upper-middle"]; // Default income level
+    default:
+      return [];
+  }
+}
+
+// Helper function to parse list sections
+function parseListSection(text: string, sectionName: string): string[] {
+  const lowerText = text.toLowerCase();
+  
+  // Try to find the section and extract items
+  const sectionRegex = new RegExp(`${sectionName}[^:]*:\\s*([\\s\\S]*?)(?:(?:\\n\\n)|$)`, 'i');
+  const sectionMatch = lowerText.match(sectionRegex);
+  
+  if (sectionMatch && sectionMatch[1]) {
+    // Extract items that are in bullet points or newlines
+    const itemsText = sectionMatch[1];
+    const itemsRegex = /(?:^|\n)\s*(?:-|\*|\d+\.)\s*(.*?)(?=(?:\n\s*(?:-|\*|\d+\.)|$))/g;
+    const itemMatches = [...itemsText.matchAll(itemsRegex)];
     
-    // Check if the paragraph contains any of the section keywords
-    const hasSectionKeyword = sectionKeywords.some(keyword => 
-      lowerParagraph.includes(keyword.toLowerCase())
-    );
-    
-    if (hasSectionKeyword) {
-      // Extract items that include data keywords
-      for (const dataKeyword of dataKeywords) {
-        if (lowerParagraph.includes(dataKeyword.toLowerCase())) {
-          // Try to extract the specific item
-          const words = paragraph.split(/[,;:]/).map(w => w.trim());
-          for (const word of words) {
-            if (word.toLowerCase().includes(dataKeyword.toLowerCase()) && !results.includes(word)) {
-              results.push(word);
-            }
-          }
-          
-          // If we couldn't extract specific items, just add the data keyword
-          if (results.length === 0) {
-            results.push(dataKeyword);
-          }
-        }
-      }
+    if (itemMatches.length > 0) {
+      return itemMatches.map(match => 
+        match[1]
+          .replace(/^\s+|\s+$/g, '') // Trim whitespace
+          .replace(/^["']|["']$/g, '') // Remove quotes if present
+      ).filter(item => item.length > 0);
     }
+    
+    // If no bullet points, try splitting by newlines or commas
+    return itemsText
+      .split(/[,\n]/)
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
   }
   
-  // If we still don't have results, try to find any mentions of the data keywords in the text
-  if (results.length === 0) {
-    for (const dataKeyword of dataKeywords) {
-      if (text.toLowerCase().includes(dataKeyword.toLowerCase())) {
-        results.push(dataKeyword);
-      }
-    }
+  // Return default items based on section name if no matches found
+  return getDefaultItems(sectionName);
+}
+
+// Helper function to provide default items if none are found
+function getDefaultItems(sectionName: string): string[] {
+  switch (sectionName.toLowerCase()) {
+    case "interests":
+      return ["Digital Marketing", "Technology", "Business Growth", "Efficiency", "Innovation"];
+    case "pain points":
+      return ["Time Management", "Cost Efficiency", "ROI Tracking", "Ad Performance", "Targeting Accuracy"];
+    case "decision factors":
+      return ["Price", "Ease of Use", "Support Quality", "Results", "Integration Capabilities"];
+    default:
+      return [];
   }
-  
-  return results;
 }
