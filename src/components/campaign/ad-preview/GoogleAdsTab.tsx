@@ -42,6 +42,11 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
     setEditingIndex(null);
   };
 
+  // Create a wrapper function to handle the GoogleAdCard's onUpdateAd call
+  const handleUpdateAd = (index: number) => (updatedAd: GoogleAd) => {
+    onUpdateGoogleAd(index, updatedAd);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with generate button */}
@@ -118,7 +123,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               ad={ad}
               index={index}
               domain={extractDomain(analysisResult.websiteUrl)}
-              onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
+              onUpdateAd={handleUpdateAd(index)}
             />
           ))}
         </div>

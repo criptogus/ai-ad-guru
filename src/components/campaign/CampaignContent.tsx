@@ -127,7 +127,8 @@ const CampaignContent: React.FC = () => {
   );
 
   const handleNextWrapper = (data?: any) => {
-    handleNext(data);
+    const result = handleNext(data);
+    return result;
   };
 
   const { getStepContent } = useCampaignStepRenderer({

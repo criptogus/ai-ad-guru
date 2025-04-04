@@ -22,7 +22,6 @@ export const useNavigationHandlers = (
         ...data,
       }));
       
-      // IMPORTANT: We're not auto-advancing here anymore
       // Only advance if explicitly set to autoAdvance
       if (autoAdvance) {
         setCurrentStep((prev) => prev + 1);

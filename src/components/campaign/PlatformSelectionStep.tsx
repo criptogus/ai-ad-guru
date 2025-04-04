@@ -7,7 +7,7 @@ import { AlertCircle, Chrome, Linkedin, Instagram, Target } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
 
 interface PlatformSelectionStepProps {
-  onNext: (data?: { platforms: string[] }) => void;
+  onNext: (data?: { platforms: string[] }) => boolean | void;
   onBack: () => void;
 }
 
