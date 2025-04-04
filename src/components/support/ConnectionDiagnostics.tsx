@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -75,13 +74,15 @@ const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className
     try {
       setOauthStateStatus('checking');
       
-      // First, check if the table exists and get its structure
-      const { data: tableInfo, error: tableError } = await supabase
-        .rpc('create_oauth_states_table');
+      // First, check if the table exists
+      const { count, error: checkTableError } = await supabase
+        .from('oauth_states')
+        .select('*', { count: 'exact', head: true });
       
-      if (tableError) {
-        console.error('OAuth state table check error:', tableError);
-        setOauthStateError(`Table check error: ${tableError.message}`);
+      if (checkTableError && checkTableError.code !== 'PGRST116') {
+        // PGRST116 is "No rows returned" which is fine - just means the table exists but is empty
+        console.error('OAuth state table check error:', checkTableError);
+        setOauthStateError(`Table check error: ${checkTableError.message}`);
         setOauthStateStatus('error');
         return false;
       }
@@ -90,10 +91,11 @@ const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className
       const testState = `test-${Date.now()}`;
       const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
       
-      // Insert a test record with the correct column names based on the table structure
+      // Insert a test record
       const { error: insertError } = await supabase
         .from('oauth_states')
         .insert({
+          id: crypto.randomUUID(), // Generate a UUID for the record
           state: testState,
           user_id: testUserId,
           platform: 'test',
