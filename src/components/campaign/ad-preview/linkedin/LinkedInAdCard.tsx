@@ -20,6 +20,7 @@ interface LinkedInAdCardProps {
   onSave?: (updatedAd: MetaAd) => void;
   onCancel?: () => void;
   onCopy?: () => void;
+  onDelete?: () => void;
   previewType?: "feed" | "message" | "sidebar" | "spotlight";
 }
 
@@ -35,6 +36,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
   onSave,
   onCancel,
   onCopy,
+  onDelete,
   previewType = "feed"
 }) => {
   const {
@@ -65,6 +67,7 @@ const LinkedInAdCard: React.FC<LinkedInAdCardProps> = ({
         onSave={handleSave}
         onCancel={handleCancel}
         onCopy={handleCopy}
+        onDelete={onDelete}
       />
       <CardContent className="p-4">
         <div className="grid md:grid-cols-2 gap-6">

@@ -1,8 +1,7 @@
 
 import React from "react";
-import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, Save, X, Linkedin, Copy } from "lucide-react";
+import { Save, X, Edit, Copy, Trash } from "lucide-react";
 
 interface LinkedInAdCardHeaderProps {
   adIndex: number;
@@ -11,40 +10,36 @@ interface LinkedInAdCardHeaderProps {
   onSave: () => void;
   onCancel: () => void;
   onCopy?: () => void;
+  onDelete?: () => void;
 }
 
 const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
-  adIndex,
+  adIndex, 
   isEditing,
   onEdit,
   onSave,
   onCancel,
-  onCopy
+  onCopy,
+  onDelete
 }) => {
   return (
-    <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
-      <CardTitle className="text-lg flex items-center gap-2">
-        <Linkedin className="h-5 w-5 text-blue-700" />
-        <span>LinkedIn Ad {adIndex + 1}</span>
-      </CardTitle>
-      
-      <div className="flex items-center gap-2">
+    <div className="flex justify-between items-center bg-muted p-3 border-b">
+      <h3 className="text-sm font-medium">LinkedIn Ad #{adIndex + 1}</h3>
+      <div className="flex gap-2">
         {isEditing ? (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={onCancel}
-              className="text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4 mr-1" />
               Cancel
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            <Button 
+              variant="default" 
+              size="sm" 
               onClick={onSave}
-              className="text-green-600 hover:text-green-700"
             >
               <Save className="h-4 w-4 mr-1" />
               Save
@@ -53,29 +48,37 @@ const LinkedInAdCardHeader: React.FC<LinkedInAdCardHeaderProps> = ({
         ) : (
           <>
             {onCopy && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <Button 
+                variant="ghost" 
+                size="sm" 
                 onClick={onCopy}
-                className="text-gray-500 hover:text-gray-700"
               >
                 <Copy className="h-4 w-4 mr-1" />
                 Copy
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={onEdit}
-              className="text-blue-600 hover:text-blue-700"
             >
-              <Edit2 className="h-4 w-4 mr-1" />
+              <Edit className="h-4 w-4 mr-1" />
               Edit
             </Button>
+            {onDelete && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onDelete}
+              >
+                <Trash className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
           </>
         )}
       </div>
-    </CardHeader>
+    </div>
   );
 };
 
