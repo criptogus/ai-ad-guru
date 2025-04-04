@@ -24,19 +24,22 @@ serve(async (req) => {
   const cacheHandler = new CacheHandler(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const { websiteData, platform } = await req.json();
+    const { websiteData, platform, language } = await req.json();
     
     if (!websiteData) {
       return createErrorResponse("Website data is required", 400);
     }
 
+    // Ensure websiteData has the language property, defaulting to 'en' if not provided
+    websiteData.language = language || websiteData.language || 'en';
+    
     const websiteUrl = websiteData.websiteUrl || "";
-    const cacheKey = `${websiteUrl}:${platform || 'all'}`;
-    console.log(`Analyzing audience for ${platform || 'all platforms'} using website with URL: ${websiteUrl}`);
+    const cacheKey = `${websiteUrl}:${platform || 'all'}:${websiteData.language}`;
+    console.log(`Analyzing audience for ${platform || 'all platforms'} using website with URL: ${websiteUrl} in language: ${websiteData.language}`);
     
     // Check cache first if we have a valid URL
     if (websiteUrl) {
-      const { data: cachedResult, fromCache, cachedAt } = await cacheHandler.checkCache(websiteUrl, platform || 'all');
+      const { data: cachedResult, fromCache, cachedAt } = await cacheHandler.checkCache(cacheKey);
       
       // If we have a valid cached result, return it
       if (cachedResult && fromCache) {
@@ -50,8 +53,8 @@ serve(async (req) => {
       }
     }
     
-    // Create a prompt based on the provided website data
-    const prompt = createAudienceAnalysisPrompt(websiteData as WebsiteData, platform);
+    // Create a prompt based on the provided website data and language
+    const prompt = createAudienceAnalysisPrompt(websiteData as WebsiteData, platform, websiteData.language);
     
     // Initialize OpenAI client
     const openai = new OpenAI({
@@ -72,9 +75,12 @@ serve(async (req) => {
     // Parse the response and extract structured data
     const analysisResult = parseAnalysisResponse(response.choices[0].message.content, platform);
     
+    // Add language information to result
+    analysisResult.language = websiteData.language;
+    
     // Cache the analysis result if we have a URL
     if (websiteUrl) {
-      await cacheHandler.cacheResult(websiteUrl, platform || 'all', analysisResult);
+      await cacheHandler.cacheResult(cacheKey, analysisResult);
     }
     
     // Return the analysis result

@@ -6,15 +6,30 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+export function createErrorResponse(message: string, status: number = 400) {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: message
+    }),
+    {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    }
+  );
+}
+
 export interface WebsiteData {
-  companyName?: string;
-  businessDescription?: string;
-  targetAudience?: string;
-  brandTone?: string;
-  keywords?: string[];
-  callToAction?: string[];
-  uniqueSellingPoints?: string[];
+  companyName: string;
+  businessDescription: string;
+  targetAudience: string;
+  brandTone: string;
+  keywords: string[];
+  callToAction: string[];
+  uniqueSellingPoints: string[];
   websiteUrl?: string;
+  industry?: string;
+  language?: string; // Added language property
 }
 
 export interface AudienceAnalysisResult {
@@ -30,14 +45,5 @@ export interface AudienceAnalysisResult {
   interests?: string[];
   painPoints?: string[];
   decisionFactors?: string[];
-  fromCache?: boolean;
-  cachedAt?: string;
+  language?: string;
 }
-
-// Helper function to handle error responses
-export const createErrorResponse = (message: string, status = 500) => {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
-};

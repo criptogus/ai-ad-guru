@@ -2,7 +2,7 @@
 import { WebsiteData } from "./utils.ts";
 
 // Create audience analysis prompts based on website data and platform
-export function createAudienceAnalysisPrompt(websiteData: WebsiteData, platform?: string): string {
+export function createAudienceAnalysisPrompt(websiteData: WebsiteData, platform?: string, language: string = 'en'): string {
   // Extract the relevant content from website data
   const content = `
 Company Name: ${websiteData.companyName || 'Unknown'}
@@ -15,10 +15,13 @@ Call to Action: ${websiteData.callToAction ? websiteData.callToAction.join(', ')
 Website URL: ${websiteData.websiteUrl || 'Not provided'}
   `;
 
+  // Get language name for prompt
+  const languageName = getLanguageName(language);
+  
   // Create the prompt based on whether a specific platform is requested
   if (platform) {
     return `
-You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation specifically for ${platform} ads.
+You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation specifically for ${platform} ads. Write your entire response in ${languageName}.
 
 ${content}
 
@@ -50,12 +53,12 @@ Provide your response as structured JSON with the following fields but ALSO incl
   "decisionFactors": ["Factor1", "Factor2", "Factor3"]
 }
 
-After the JSON, provide a narrative analysis explaining your recommendations.
+After the JSON, provide a narrative analysis explaining your recommendations in ${languageName}.
 `;
   } else {
     // If no specific platform is requested, provide analysis for all platforms
     return `
-You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation for Google Ads, Meta Ads (Facebook/Instagram), and LinkedIn Ads.
+You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation for Google Ads, Meta Ads (Facebook/Instagram), and LinkedIn Ads. Write your entire response in ${languageName}.
 
 ${content}
 
@@ -80,7 +83,27 @@ Provide your response as structured JSON with the following fields but ALSO incl
   "decisionFactors": ["Factor1", "Factor2", "Factor3"]
 }
 
-After the JSON, provide a narrative analysis explaining your recommendations.
+After the JSON, provide a narrative analysis explaining your recommendations in ${languageName}.
 `;
   }
+}
+
+// Helper function to get language name from ISO code
+function getLanguageName(langCode: string): string {
+  const languages: Record<string, string> = {
+    'en': 'English',
+    'pt': 'Portuguese',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'nl': 'Dutch',
+    'ru': 'Russian',
+    'zh': 'Chinese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'ar': 'Arabic'
+  };
+  
+  return languages[langCode] || 'English';
 }

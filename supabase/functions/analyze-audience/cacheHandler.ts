@@ -1,88 +1,127 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AudienceAnalysisResult, WebsiteData } from "./utils.ts";
+// Cache handler for audience analysis
 
-// Cache operations for audience analysis results
+interface CacheResponse<T> {
+  data: T | null;
+  fromCache: boolean;
+  cachedAt?: string;
+}
+
 export class CacheHandler {
-  private supabase: ReturnType<typeof createClient> | null;
-  
-  constructor(supabaseUrl?: string, supabaseKey?: string) {
-    this.supabase = (supabaseUrl && supabaseKey) 
-      ? createClient(supabaseUrl, supabaseKey)
-      : null;
+  private supabaseUrl: string | undefined;
+  private supabaseServiceKey: string | undefined;
+  private cacheExpiryHours = 24; // Cache valid for 24 hours
+
+  constructor(supabaseUrl?: string, supabaseServiceKey?: string) {
+    this.supabaseUrl = supabaseUrl;
+    this.supabaseServiceKey = supabaseServiceKey;
   }
 
-  async checkCache(
-    websiteUrl: string, 
-    platform: string = 'all'
-  ): Promise<{ data: AudienceAnalysisResult | null, fromCache: boolean, cachedAt?: string }> {
-    if (!websiteUrl || !this.supabase) {
+  async checkCache(cacheKey: string): Promise<CacheResponse<any>> {
+    if (!this.supabaseUrl || !this.supabaseServiceKey) {
+      console.warn('Supabase credentials not found, skipping cache check');
       return { data: null, fromCache: false };
     }
 
     try {
-      // Check if we have a cached result (within the last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data: cachedData, error: cacheError } = await this.supabase
-        .from('audience_analysis_cache')
-        .select('*')
-        .eq('url', websiteUrl)
-        .eq('platform', platform)
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .maybeSingle();
-      
-      if (cacheError) {
-        console.error("Error checking audience cache:", cacheError);
+      // Fetch from cache table
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/audience_analysis_cache?key=eq.${encodeURIComponent(cacheKey)}`, {
+        headers: {
+          'Authorization': `Bearer ${this.supabaseServiceKey}`,
+          'apikey': this.supabaseServiceKey,
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Error checking cache:', response.statusText);
         return { data: null, fromCache: false };
       }
+
+      const data = await response.json();
       
-      // If we have a valid cached result, return it
-      if (cachedData && cachedData.analysis_result) {
-        console.log("Using cached audience analysis result from:", cachedData.created_at);
-        return { 
-          data: cachedData.analysis_result, 
-          fromCache: true, 
-          cachedAt: cachedData.created_at 
-        };
+      if (data && data.length > 0) {
+        const cachedResult = data[0];
+        const cachedAt = new Date(cachedResult.created_at);
+        const now = new Date();
+        
+        // Check if cache is expired (older than cacheExpiryHours)
+        const cacheAgeHours = (now.getTime() - cachedAt.getTime()) / (1000 * 60 * 60);
+        
+        if (cacheAgeHours < this.cacheExpiryHours) {
+          console.log(`Cache hit for ${cacheKey}`);
+          return { 
+            data: cachedResult.data, 
+            fromCache: true,
+            cachedAt: cachedAt.toISOString()
+          };
+        } else {
+          console.log(`Cache expired for ${cacheKey}`);
+          return { data: null, fromCache: false };
+        }
       }
       
+      console.log(`Cache miss for ${cacheKey}`);
       return { data: null, fromCache: false };
+      
     } catch (error) {
-      console.error("Error in cache operation:", error);
+      console.error('Error checking audience analysis cache:', error);
       return { data: null, fromCache: false };
     }
   }
 
-  async cacheResult(
-    websiteUrl: string, 
-    platform: string = 'all', 
-    analysisResult: AudienceAnalysisResult
-  ): Promise<boolean> {
-    if (!websiteUrl || !this.supabase) {
-      return false;
+  async cacheResult(cacheKey: string, data: any): Promise<void> {
+    if (!this.supabaseUrl || !this.supabaseServiceKey) {
+      console.warn('Supabase credentials not found, skipping cache write');
+      return;
     }
 
     try {
-      const { error: upsertError } = await this.supabase
-        .from('audience_analysis_cache')
-        .upsert({
-          url: websiteUrl,
-          platform: platform || 'all',
-          analysis_result: analysisResult
-        }, { onConflict: 'url,platform' });
+      // First check if this key already exists
+      const checkResponse = await fetch(`${this.supabaseUrl}/rest/v1/audience_analysis_cache?key=eq.${encodeURIComponent(cacheKey)}`, {
+        headers: {
+          'Authorization': `Bearer ${this.supabaseServiceKey}`,
+          'apikey': this.supabaseServiceKey,
+        }
+      });
       
-      if (upsertError) {
-        console.error("Error caching audience analysis result:", upsertError);
-        return false;
+      if (!checkResponse.ok) {
+        console.error('Error checking existing cache:', checkResponse.statusText);
+        return;
       }
       
-      console.log("Audience analysis result cached successfully");
-      return true;
+      const existingData = await checkResponse.json();
+      let method = 'POST';
+      let url = `${this.supabaseUrl}/rest/v1/audience_analysis_cache`;
+      
+      // If entry exists, update it instead of creating a new one
+      if (existingData && existingData.length > 0) {
+        method = 'PATCH';
+        url = `${url}?key=eq.${encodeURIComponent(cacheKey)}`;
+      }
+      
+      // Store in cache table
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${this.supabaseServiceKey}`,
+          'apikey': this.supabaseServiceKey,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          key: cacheKey,
+          data,
+          created_at: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Error caching audience analysis:', response.statusText);
+      } else {
+        console.log(`Successfully cached audience analysis for ${cacheKey}`);
+      }
     } catch (error) {
-      console.error("Error in cache operation:", error);
-      return false;
+      console.error('Error writing to audience analysis cache:', error);
     }
   }
 }
