@@ -5,10 +5,11 @@ import PageHeader from '@/components/layout/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ConnectionDiagnostics from '@/components/support/ConnectionDiagnostics';
+import AppLayout from '@/components/AppLayout';
 
 const SupportPage: React.FC = () => {
   return (
-    <>
+    <AppLayout activePage="support" withSidebar={true}>
       <Helmet>
         <title>Support | ZeroAgency AI</title>
       </Helmet>
@@ -97,12 +98,57 @@ const SupportPage: React.FC = () => {
                     </p>
                   </AccordionContent>
                 </AccordionItem>
+
+                <AccordionItem value="item-5">
+                  <AccordionTrigger>Why am I redirected to the landing page after connecting?</AccordionTrigger>
+                  <AccordionContent>
+                    <p>
+                      This could be a misconfiguration. After connecting, you should land on the Create Campaign page. If this issue persists, please check your OAuth callback configuration in the Supabase dashboard or contact support for assistance.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-6">
+                  <AccordionTrigger>How do I stay logged in across sessions?</AccordionTrigger>
+                  <AccordionContent>
+                    <p>
+                      Your login should persist unless you explicitly log out. If you're frequently being logged out, try clearing your browser cache or checking your local storage settings. Make sure you don't have browser extensions that might be clearing cookies or blocking storage access.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-7">
+                  <AccordionTrigger>Can I connect multiple ad accounts?</AccordionTrigger>
+                  <AccordionContent>
+                    <p>
+                      Currently, you can connect one account per platform (Google Ads, Meta Ads, LinkedIn Ads, etc.) per user. If you need to manage multiple accounts, you may need to create separate users for each account. Contact us if you require multi-account support for your agency.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-8">
+                  <AccordionTrigger>What happens if I forget my password?</AccordionTrigger>
+                  <AccordionContent>
+                    <p>
+                      Click the "Forgot Password" link on the login page, enter your email address, and follow the password reset instructions sent to your inbox. The reset link expires after 24 hours, so be sure to use it promptly.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-9">
+                  <AccordionTrigger>How do I switch between light and dark mode?</AccordionTrigger>
+                  <AccordionContent>
+                    <p>
+                      ZeroAgency AI automatically adapts to your system preference. To change the theme, adjust your system or browser settings. You can also toggle the theme manually by clicking the theme icon in the sidebar navigation.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
             </CardContent>
           </Card>
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 };
 
