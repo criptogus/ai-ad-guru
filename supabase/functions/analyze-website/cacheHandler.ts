@@ -1,84 +1,86 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
 
 export class CacheHandler {
-  private supabase: ReturnType<typeof createClient> | null;
+  private supabaseClient;
   
-  constructor(supabaseUrl?: string, supabaseKey?: string) {
-    this.supabase = (supabaseUrl && supabaseKey) 
-      ? createClient(supabaseUrl, supabaseKey)
-      : null;
+  constructor(supabaseUrl: string, supabaseKey: string) {
+    this.supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
 
-  /**
-   * Check if there's a cached analysis for the given URL
-   */
-  async checkCache(url: string): Promise<{ data: any | null, fromCache: boolean, cachedAt?: string }> {
-    if (!url || !this.supabase) {
-      return { data: null, fromCache: false };
-    }
-
+  async checkCache(url: string) {
     try {
-      // Check if we have a cached result (within the last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Normalize URL for consistent caching
+      const normalizedUrl = this.normalizeUrl(url);
       
-      const { data: cachedData, error: cacheError } = await this.supabase
+      // Query the cache table
+      const { data, error } = await this.supabaseClient
         .from('website_analysis_cache')
-        .select('*')
-        .eq('url', url)
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .maybeSingle();
+        .select('analysis_data, created_at, language')
+        .eq('url', normalizedUrl)
+        .single();
       
-      if (cacheError) {
-        console.error("Error checking cache:", cacheError);
+      if (error) {
+        console.log("Cache miss or error:", error.message);
         return { data: null, fromCache: false };
       }
       
-      // If we have a valid cached result, return it
-      if (cachedData && cachedData.analysis_result) {
-        console.log("Using cached analysis result from:", cachedData.created_at);
+      if (data) {
+        console.log("Cache hit:", normalizedUrl);
+        const cachedData = data.analysis_data;
+        
+        // Add language to cached result if it exists
+        if (data.language) {
+          cachedData.language = data.language;
+        }
+        
         return { 
-          data: cachedData.analysis_result, 
-          fromCache: true, 
-          cachedAt: cachedData.created_at 
+          data: cachedData, 
+          fromCache: true,
+          cachedAt: data.created_at
         };
       }
       
       return { data: null, fromCache: false };
     } catch (error) {
-      console.error("Error in cache operation:", error);
+      console.error("Error checking cache:", error);
       return { data: null, fromCache: false };
     }
   }
 
-  /**
-   * Cache the analysis result for future use
-   */
-  async cacheResult(url: string, analysisResult: any, language?: string): Promise<boolean> {
-    if (!url || !this.supabase) {
-      return false;
-    }
-
+  async cacheResult(url: string, analysisData: any, language: string = 'en') {
     try {
-      const { error: upsertError } = await this.supabase
+      // Normalize URL for consistent caching
+      const normalizedUrl = this.normalizeUrl(url);
+      
+      // Store in cache
+      const { error } = await this.supabaseClient
         .from('website_analysis_cache')
         .upsert({
-          url: url,
-          analysis_result: analysisResult,
-          language: language || analysisResult.language || 'en'
+          url: normalizedUrl,
+          analysis_data: analysisData,
+          language,
+          created_at: new Date().toISOString()
         }, { onConflict: 'url' });
       
-      if (upsertError) {
-        console.error("Error caching analysis result:", upsertError);
+      if (error) {
+        console.error("Error caching result:", error);
         return false;
       }
       
-      console.log("Analysis result cached successfully");
+      console.log("Successfully cached result for:", normalizedUrl);
       return true;
     } catch (error) {
-      console.error("Error in cache operation:", error);
+      console.error("Error in cacheResult:", error);
       return false;
     }
+  }
+
+  private normalizeUrl(url: string): string {
+    // Remove protocol, trailing slashes, and www. for consistent caching
+    return url.replace(/^https?:\/\//, '')
+              .replace(/^www\./, '')
+              .replace(/\/$/, '')
+              .toLowerCase();
   }
 }

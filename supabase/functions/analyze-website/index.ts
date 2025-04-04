@@ -83,9 +83,10 @@ serve(async (req) => {
       const websiteAnalysis = await analyzeWebsiteWithAI(websiteData, openaiApiKey);
       
       console.log("Website analysis completed successfully");
+      console.log("Detected language:", websiteAnalysis.language || "en");
       
       // Cache the analysis result
-      await cacheHandler.cacheResult(url, websiteAnalysis, websiteAnalysis.language);
+      await cacheHandler.cacheResult(url, websiteAnalysis, websiteAnalysis.language || "en");
       
       return handleResponse({ success: true, data: websiteAnalysis }, 200);
     } catch (openAiError) {

@@ -154,6 +154,7 @@ export const useTriggerData = () => {
     getPlatformIcon,
     getTriggerDescription,
     getPlatformTriggers,
-    getPlatformTemplates
+    getPlatformTemplates,
+    getExampleForTrigger
   };
 };

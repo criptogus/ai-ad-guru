@@ -1,58 +1,57 @@
-// CORS headers for cross-origin requests
+
+// Utility functions for the analyze-website edge function
+
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to create standardized responses
-export function handleResponse(data: any, status: number = 200) {
-  return new Response(
-    JSON.stringify(data),
-    { 
-      status, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+export const handleResponse = (data: any, status: number = 200) => {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'application/json'
     }
-  );
-}
+  });
+};
 
-// Validate that a website analysis object has all required fields
-export function validateAnalysisResult(analysis: any): boolean {
+// Validates if the analysis result has all required fields
+export function validateAnalysisResult(result: any) {
   const requiredFields = [
-    'companyName', 
-    'businessDescription', 
-    'targetAudience', 
-    'brandTone', 
-    'keywords', 
-    'callToAction', 
+    'companyName',
+    'businessDescription',
+    'targetAudience',
+    'brandTone',
+    'keywords',
+    'callToAction',
     'uniqueSellingPoints'
   ];
   
-  for (const field of requiredFields) {
-    if (!analysis[field]) {
-      console.error(`Missing required field in analysis: ${field}`);
-      return false;
+  return requiredFields.every(field => {
+    if (Array.isArray(result[field])) {
+      return Array.isArray(result[field]) && result[field].length > 0;
     }
-  }
-  
-  return true;
+    return result[field] !== undefined && result[field] !== null && result[field] !== '';
+  });
 }
 
-// Ensure all array fields are properly formatted as arrays
-export function normalizeArrayFields(analysis: any): any {
+// Normalizes array fields to ensure they're always arrays
+export function normalizeArrayFields(result: any) {
   const arrayFields = ['keywords', 'callToAction', 'uniqueSellingPoints'];
   
+  const normalized = { ...result };
+  
   arrayFields.forEach(field => {
-    if (!Array.isArray(analysis[field])) {
-      console.log(`Converting ${field} to array`);
-      if (typeof analysis[field] === 'string') {
-        // If it's a string, try to split it
-        analysis[field] = analysis[field].split(',').map((item: string) => item.trim());
+    if (!Array.isArray(normalized[field])) {
+      // If it's a string, try to split by commas or convert to array
+      if (typeof normalized[field] === 'string') {
+        normalized[field] = normalized[field].split(',').map((item: string) => item.trim());
       } else {
-        // Otherwise create a default array
-        analysis[field] = [`Default ${field} item`];
+        normalized[field] = normalized[field] ? [normalized[field]] : [];
       }
     }
   });
   
-  return analysis;
+  return normalized;
 }

@@ -14,6 +14,7 @@ export interface WebsiteAnalysisResult {
   keySellingPoints?: string[]; // Added this property for backward compatibility
   websiteUrl?: string;
   usps?: string[]; // Added this property for backward compatibility
+  language?: string; // Added language property
 }
 
 export interface AnalysisCache {
@@ -74,6 +75,14 @@ export const useWebsiteAnalysis = () => {
       
       // Store the website URL in the result
       result.websiteUrl = formattedUrl;
+      
+      // Ensure language is set, default to English
+      if (!result.language) {
+        result.language = 'en';
+      }
+      
+      console.log('Detected language:', result.language);
+      
       setAnalysisResult(result);
       
       // Set cache info if available

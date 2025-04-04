@@ -23,7 +23,9 @@ function createAnalysisPrompt(websiteData: any): string {
     IMPORTANT: Your analysis must be in the SAME LANGUAGE as the content of the website. If the website is in Spanish, your analysis should be in Spanish. If it's in English, respond in English, etc. NEVER translate the content to another language.
     
     Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
-    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"]}
+    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"], "language": "en"}
+    
+    Include a "language" field with the ISO code of the language you detected (e.g., "en" for English, "pt" for Portuguese, "es" for Spanish).
     `;
 }
 
@@ -61,7 +63,14 @@ export async function analyzeWebsiteWithAI(websiteData: any, openaiApiKey: strin
     }
     
     // Ensure arrays are properly formatted
-    return normalizeArrayFields(websiteAnalysis);
+    const normalizedAnalysis = normalizeArrayFields(websiteAnalysis);
+    
+    // Make sure language is set, default to "en" if not provided
+    if (!normalizedAnalysis.language) {
+      normalizedAnalysis.language = "en";
+    }
+    
+    return normalizedAnalysis;
     
   } catch (error) {
     console.error("Failed to parse OpenAI response as JSON:", error);

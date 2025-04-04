@@ -21,6 +21,8 @@ export interface AudienceAnalysisResult {
   // Cache information
   fromCache?: boolean;
   cachedAt?: string;
+  // Language information
+  language?: string;
 }
 
 export interface AudienceCacheInfo {
@@ -45,12 +47,15 @@ export const useAudienceAnalysis = () => {
         throw new Error("Website data is required for audience analysis");
       }
 
-      console.log(`Analyzing audience for ${platform || 'all platforms'} using website: ${websiteData.websiteUrl || 'unknown'}`);
+      // Extract the language from website analysis, default to English
+      const language = websiteData.language || 'en';
+      console.log(`Analyzing audience for ${platform || 'all platforms'} using website: ${websiteData.websiteUrl || 'unknown'} in language: ${language}`);
       
       const { data, error } = await supabase.functions.invoke('analyze-audience', {
         body: { 
           websiteData, 
-          platform 
+          platform,
+          language
         }
       });
 
@@ -73,7 +78,8 @@ export const useAudienceAnalysis = () => {
         },
         interests: data.interests || ["Digital Marketing", "Technology", "Business"],
         painPoints: data.painPoints || ["Time management", "ROI tracking", "Ad performance"],
-        decisionFactors: data.decisionFactors || ["Cost effectiveness", "Ease of use", "Support"]
+        decisionFactors: data.decisionFactors || ["Cost effectiveness", "Ease of use", "Support"],
+        language: language // Set the language from website data
       };
       
       setAnalysisResult(processedData);
