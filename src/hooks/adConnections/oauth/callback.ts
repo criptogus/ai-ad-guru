@@ -91,7 +91,8 @@ export const handleOAuthCallback = async (redirectUri: string): Promise<OAuthCal
         code,
         state,
         platform,
-        redirectUri: effectiveRedirectUri
+        redirectUri: effectiveRedirectUri,
+        userId  // Include userId in case state lookup fails
       }
     });
     

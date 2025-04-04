@@ -23,12 +23,41 @@ export const checkTableExists = async (tableName: string): Promise<boolean> => {
  */
 export const getTableColumns = async (tableName: string): Promise<string[]> => {
   try {
+    // Create a database function to get table columns if it doesn't exist
+    const { data: fnExists } = await supabase
+      .rpc('function_exists', { function_name: 'get_table_columns' });
+      
+    if (!fnExists) {
+      // Function doesn't exist, create it
+      const { error: createFnError } = await supabase.rpc('create_get_columns_function');
+      if (createFnError) {
+        console.error('Error creating get_table_columns function:', createFnError);
+        // Fallback to a simpler approach - just get a row and extract keys
+        const { data: sampleRow } = await supabase
+          .from(tableName)
+          .select('*')
+          .limit(1)
+          .single();
+          
+        return sampleRow ? Object.keys(sampleRow) : [];
+      }
+    }
+    
+    // Use the function to get columns
     const { data, error } = await supabase
       .rpc('get_table_columns', { table_name: tableName });
     
     if (error) {
       console.error(`Error getting columns for table ${tableName}:`, error);
-      return [];
+      
+      // Fallback to a simpler approach - just get a row and extract keys
+      const { data: sampleRow } = await supabase
+        .from(tableName)
+        .select('*')
+        .limit(1)
+        .single();
+        
+      return sampleRow ? Object.keys(sampleRow) : [];
     }
     
     return Array.isArray(data) 
@@ -38,5 +67,18 @@ export const getTableColumns = async (tableName: string): Promise<string[]> => {
     console.error(`Exception getting columns for table ${tableName}:`, error);
     errorLogger.logError(error, 'getTableColumns');
     return [];
+  }
+};
+
+/**
+ * Create a function to add the get_table_columns function if it doesn't exist
+ */
+export const createGetColumnsFunction = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase.rpc('create_get_columns_function');
+    return !error;
+  } catch (error) {
+    console.error('Error creating function for columns retrieval:', error);
+    return false;
   }
 };

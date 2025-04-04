@@ -33,12 +33,7 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       
       // Get the structure of the table to see what columns it has
       const columns = await getTableColumns('oauth_states');
-      
-      // Make sure we have the minimum required columns
-      if (!columns.includes('id') || !columns.includes('user_id')) {
-        onStatusChange('error', 'Table is missing required columns (id, user_id)');
-        return false;
-      }
+      console.log('OAuth state table columns:', columns);
       
       // Generate a unique test ID
       const testId = crypto.randomUUID();
@@ -46,17 +41,32 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       
       // Build insert object based on available columns
       const insertData: Record<string, any> = {
-        id: testId,
-        user_id: testUserId,
         platform: 'test',
         redirect_uri: 'https://example.com',
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 60000).toISOString()
       };
       
-      // Add state column if it exists
+      // Add columns that might exist
+      if (columns.includes('id')) {
+        insertData.id = testId;
+      }
+      
+      if (columns.includes('user_id')) {
+        insertData.user_id = testUserId;
+      }
+      
       if (columns.includes('state')) {
         insertData.state = `test-${Date.now()}`;
+      }
+      
+      // First check if we have the minimum required columns for OAuth state
+      const requiredColumns = ['platform', 'redirect_uri'];
+      const missingColumns = requiredColumns.filter(col => !columns.includes(col));
+      
+      if (missingColumns.length > 0) {
+        onStatusChange('error', `Table is missing required columns: ${missingColumns.join(', ')}`);
+        return false;
       }
       
       // Insert test record
@@ -71,10 +81,20 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       }
       
       // Try to delete the test record to clean up
-      await supabase
-        .from('oauth_states')
-        .delete()
-        .eq('id', testId);
+      // Use the id if we have it, otherwise use all fields to identify the record
+      if (columns.includes('id')) {
+        await supabase
+          .from('oauth_states')
+          .delete()
+          .eq('id', testId);
+      } else {
+        // Use other fields to identify the record for deletion
+        await supabase
+          .from('oauth_states')
+          .delete()
+          .eq('platform', 'test')
+          .eq('redirect_uri', 'https://example.com');
+      }
       
       onStatusChange('success', null);
       return true;

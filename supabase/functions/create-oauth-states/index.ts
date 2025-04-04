@@ -39,8 +39,22 @@ serve(async (req) => {
       );
     }
 
+    // If we get here, let's check the columns in the table
+    const { data: columnsData, error: columnsError } = await supabase
+      .rpc('get_table_columns', { table_name: 'oauth_states' });
+      
+    if (columnsError) {
+      console.error('Error getting columns:', columnsError);
+    } else {
+      console.log('OAuth states table columns:', columnsData);
+    }
+
     return new Response(
-      JSON.stringify({ success: true, message: 'OAuth states table already exists' }),
+      JSON.stringify({ 
+        success: true, 
+        message: 'OAuth states table already exists',
+        columns: columnsData || []
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
