@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../generate-image/utils.ts";
+import { corsHeaders } from "./utils.ts";
 
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 
