@@ -112,6 +112,33 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <FormError error={errors.objective} />
         </div>
       </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="country" className="flex items-center">
+            Target Country
+          </Label>
+          <Input
+            id="country"
+            name="country"
+            type="text"
+            value={campaignData.country || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="language" className="flex items-center">
+            Campaign Language
+          </Label>
+          <Input
+            id="language"
+            name="language"
+            type="text"
+            value={campaignData.language || ""}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

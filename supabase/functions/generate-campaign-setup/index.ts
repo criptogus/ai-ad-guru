@@ -22,27 +22,117 @@ serve(async (req) => {
   }
 
   try {
-    const { websiteInfo, platform } = await req.json();
+    const { analysisResult, platform, language = 'en' } = await req.json();
     
     console.log("Generating campaign setup data for:", platform);
-    console.log("Using website info:", websiteInfo);
+    console.log("Using website analysis:", analysisResult);
+    console.log("Using language:", language);
     
     const openai = new OpenAI({
       apiKey: OPENAI_API_KEY,
     });
 
-    const systemPrompt = `You are an expert digital advertising assistant that helps users create effective ad campaigns.
+    // Adjust system prompt based on language
+    let systemPrompt = "";
+    if (language === 'pt') {
+      systemPrompt = `Você é um assistente especializado em marketing digital que ajuda os usuários a criar campanhas publicitárias eficazes.
+Com base nas informações do site fornecidas, gere uma configuração completa de campanha para anúncios do ${platform}.`;
+    } else if (language === 'es') {
+      systemPrompt = `Eres un asistente experto en marketing digital que ayuda a los usuarios a crear campañas publicitarias efectivas.
+Basado en la información del sitio web proporcionada, genera una configuración completa de campaña para anuncios de ${platform}.`;
+    } else {
+      systemPrompt = `You are an expert digital advertising assistant that helps users create effective ad campaigns.
 Based on the provided website information, generate a complete campaign setup for ${platform} ads.`;
+    }
 
-    const userPrompt = `Please create a complete campaign setup based on this information:
+    // Adjust user prompt based on language
+    let userPrompt = "";
+    if (language === 'pt') {
+      userPrompt = `Por favor, crie uma configuração completa de campanha com base nessas informações:
     
-Company: ${websiteInfo.companyName}
-Description: ${websiteInfo.businessDescription}
-Target Audience: ${websiteInfo.targetAudience}
-Brand Tone: ${websiteInfo.brandTone}
-Keywords: ${websiteInfo.keywords.join(', ')}
-Call To Actions: ${websiteInfo.callToAction.join(', ')}
-Unique Selling Points: ${websiteInfo.uniqueSellingPoints.join(', ')}
+Empresa: ${analysisResult.companyName}
+Descrição: ${analysisResult.businessDescription}
+Público-alvo: ${analysisResult.targetAudience}
+Tom da marca: ${analysisResult.brandTone}
+Palavras-chave: ${analysisResult.keywords.join(', ')}
+Chamadas para ação: ${analysisResult.callToAction.join(', ')}
+Pontos de venda exclusivos: ${analysisResult.uniqueSellingPoints.join(', ')}
+
+Gere o seguinte:
+1. Um nome criativo para a campanha
+2. Uma descrição concisa da campanha
+3. Uma descrição específica do público-alvo
+4. Palavras-chave relevantes (separadas por vírgula)
+5. Um orçamento diário razoável (entre R$100-R$500)
+6. O objetivo de campanha mais apropriado (conscientização, consideração, conversão)
+7. Uma data de início (a partir de amanhã)
+8. Uma data de término (opcional, 30 dias a partir do início)
+9. Uma frequência de otimização recomendada (diária, 3 dias, semanal ou manual)
+10. País alvo principal para esta campanha
+11. Idioma principal desta campanha
+
+Formate sua resposta como um objeto JSON válido com estes campos:
+{
+  "name": "Nome da campanha",
+  "description": "Descrição da campanha",
+  "targetAudience": "Descrição do público-alvo",
+  "keywords": "palavra-chave1, palavra-chave2, palavra-chave3",
+  "budget": 250,
+  "objective": "conversão",
+  "startDate": "YYYY-MM-DD",
+  "endDate": "YYYY-MM-DD",
+  "optimizationFrequency": "diária",
+  "country": "Brasil",
+  "language": "pt-BR"
+}`;
+    } else if (language === 'es') {
+      userPrompt = `Por favor, crea una configuración completa de campaña basada en esta información:
+    
+Empresa: ${analysisResult.companyName}
+Descripción: ${analysisResult.businessDescription}
+Público objetivo: ${analysisResult.targetAudience}
+Tono de marca: ${analysisResult.brandTone}
+Palabras clave: ${analysisResult.keywords.join(', ')}
+Llamadas a la acción: ${analysisResult.callToAction.join(', ')}
+Puntos de venta únicos: ${analysisResult.uniqueSellingPoints.join(', ')}
+
+Genera lo siguiente:
+1. Un nombre creativo para la campaña
+2. Una descripción concisa de la campaña
+3. Una descripción específica del público objetivo
+4. Palabras clave relevantes (separadas por comas)
+5. Un presupuesto diario razonable (entre $20-$100 USD)
+6. El objetivo de campaña más apropiado (conciencia, consideración, conversión)
+7. Una fecha de inicio (a partir de mañana)
+8. Una fecha de finalización (opcional, 30 días desde el inicio)
+9. Una frecuencia de optimización recomendada (diaria, 3días, semanal o manual)
+10. País objetivo principal para esta campaña
+11. Idioma principal de esta campaña
+
+Formatea tu respuesta como un objeto JSON válido con estos campos:
+{
+  "name": "Nombre de campaña",
+  "description": "Descripción de campaña",
+  "targetAudience": "Descripción del público objetivo",
+  "keywords": "palabraclave1, palabraclave2, palabraclave3",
+  "budget": 50,
+  "objective": "conversión",
+  "startDate": "YYYY-MM-DD",
+  "endDate": "YYYY-MM-DD",
+  "optimizationFrequency": "diario",
+  "country": "España",
+  "language": "es-ES"
+}`;
+    } else {
+      userPrompt = `Please create a complete campaign setup based on this information:
+    
+Company: ${analysisResult.companyName}
+Description: ${analysisResult.businessDescription}
+Target Audience: ${analysisResult.targetAudience}
+Brand Tone: ${analysisResult.brandTone}
+Keywords: ${analysisResult.keywords.join(', ')}
+Call To Actions: ${analysisResult.callToAction.join(', ')}
+Unique Selling Points: ${analysisResult.uniqueSellingPoints.join(', ')}
 
 Generate the following:
 1. A creative campaign name
@@ -54,6 +144,8 @@ Generate the following:
 7. A start date (from tomorrow)
 8. An end date (optional, 30 days from start)
 9. A recommended optimization frequency (daily, 3days, weekly, or manual)
+10. Primary target country for this campaign
+11. Primary language of this campaign
 
 Format your response as a valid JSON object with these fields:
 {
@@ -65,8 +157,11 @@ Format your response as a valid JSON object with these fields:
   "objective": "conversion",
   "startDate": "YYYY-MM-DD",
   "endDate": "YYYY-MM-DD",
-  "optimizationFrequency": "daily"
+  "optimizationFrequency": "daily",
+  "country": "United States",
+  "language": "en-US"
 }`;
+    }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -90,11 +185,21 @@ Format your response as a valid JSON object with these fields:
       if (data.startDate) {
         // Ensure it's a valid date string
         data.startDate = new Date(data.startDate).toISOString();
+      } else {
+        // Set default start date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        data.startDate = tomorrow.toISOString();
       }
       
       if (data.endDate) {
         // Ensure it's a valid date string
         data.endDate = new Date(data.endDate).toISOString();
+      } else {
+        // Set default end date to 30 days from start
+        const endDate = new Date(data.startDate);
+        endDate.setDate(endDate.getDate() + 30);
+        data.endDate = endDate.toISOString();
       }
       
       console.log("Parsed data:", data);

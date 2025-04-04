@@ -8,6 +8,7 @@ import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAn
 import { Loader2, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import EditableAnalysisText from "./EditableAnalysisText";
 
 interface AudienceAnalysisPanelProps {
   websiteData: WebsiteAnalysisResult;
@@ -28,10 +29,27 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
 }) => {
   const [platform, setPlatform] = useState(selectedPlatform);
   const { t } = useLanguage();
+  const [editedAnalysisResult, setEditedAnalysisResult] = useState<AudienceAnalysisResult | null>(analysisResult);
+  
+  // Update local state when new analysis result comes in
+  React.useEffect(() => {
+    if (analysisResult) {
+      setEditedAnalysisResult(analysisResult);
+    }
+  }, [analysisResult]);
   
   const handlePlatformChange = (value: string) => {
     setPlatform(value);
     onAnalyze(value === "all" ? undefined : value);
+  };
+
+  const handleTextChange = (newText: string) => {
+    if (!editedAnalysisResult) return;
+    
+    setEditedAnalysisResult({
+      ...editedAnalysisResult,
+      analysisText: newText
+    });
   };
 
   return (
@@ -81,40 +99,41 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
         ) : (
           <>
             <TabsContent value="all" className="mt-0">
-              {analysisResult && renderAnalysisResult(analysisResult)}
+              {editedAnalysisResult && renderAnalysisResult(editedAnalysisResult, handleTextChange)}
             </TabsContent>
             
             <TabsContent value="google" className="mt-0">
-              {analysisResult && platform === "google" && renderAnalysisResult(analysisResult)}
+              {editedAnalysisResult && platform === "google" && renderAnalysisResult(editedAnalysisResult, handleTextChange)}
             </TabsContent>
             
             <TabsContent value="meta" className="mt-0">
-              {analysisResult && platform === "meta" && renderAnalysisResult(analysisResult)}
+              {editedAnalysisResult && platform === "meta" && renderAnalysisResult(editedAnalysisResult, handleTextChange)}
             </TabsContent>
             
             <TabsContent value="linkedin" className="mt-0">
-              {analysisResult && platform === "linkedin" && renderAnalysisResult(analysisResult)}
+              {editedAnalysisResult && platform === "linkedin" && renderAnalysisResult(editedAnalysisResult, handleTextChange)}
             </TabsContent>
           </>
         )}
       </Tabs>
       
-      {analysisResult && !isAnalyzing && renderAudienceDataBreakdown(analysisResult)}
+      {editedAnalysisResult && !isAnalyzing && renderAudienceDataBreakdown(editedAnalysisResult)}
     </div>
   );
 };
 
-// Helper function to render the analysis result
-const renderAnalysisResult = (analysisResult: AudienceAnalysisResult) => {
+// Helper function to render the analysis result with editable text
+const renderAnalysisResult = (analysisResult: AudienceAnalysisResult, onTextChange: (text: string) => void) => {
   return (
     <Card className="mb-4">
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="mb-4">
             <h3 className="text-lg font-medium mb-2">Audience Analysis</h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {analysisResult.analysisText}
-            </p>
+            <EditableAnalysisText 
+              text={analysisResult.analysisText}
+              onSave={onTextChange}
+            />
           </div>
         </div>
       </CardContent>
