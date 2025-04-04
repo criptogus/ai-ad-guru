@@ -13,8 +13,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 const LandingPage: React.FC = () => {
-  // Use the new auth redirect hook to handle redirection for authenticated users
-  useAuthRedirect();
+  // Use the enhanced auth redirect hook to handle redirection for authenticated users
+  useAuthRedirect({ redirectAuthenticated: true, redirectPath: '/dashboard' });
   
   return (
     <div className="min-h-screen bg-background">

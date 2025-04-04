@@ -1,71 +1,50 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const useAuthRedirect = () => {
+/**
+ * Hook to redirect authenticated users to the dashboard
+ * and unauthenticated users to the login page (depending on context)
+ */
+export const useAuthRedirect = (options?: { 
+  redirectAuthenticated?: boolean; // Whether to redirect authenticated users (default: true)
+  redirectPath?: string;          // Path to redirect to (default: '/dashboard')
+  requireAuth?: boolean;          // Whether authentication is required (default: false)
+}) => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  
+  const {
+    redirectAuthenticated = true,
+    redirectPath = '/dashboard',
+    requireAuth = false
+  } = options || {};
 
   useEffect(() => {
-    // Only redirect when authentication status is determined and user is authenticated
-    if (isLoading || !isAuthenticated || !user) return;
-
-    const redirectLoggedInUser = async () => {
+    const checkAuth = async () => {
       try {
-        console.log('Redirecting authenticated user from landing page...');
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
         
-        // First check if user has paid billing status
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('has_paid')
-          .eq('id', user.id)
-          .single();
-        
-        if (profileError) {
-          console.error('Error fetching user profile:', profileError);
-          // Default redirect to dashboard on error
-          navigate('/dashboard');
-          return;
-        }
-        
-        // Check if user has set up billing
-        if (!profile.has_paid) {
-          console.log('User not paid, redirecting to billing');
-          navigate('/billing');
-          return;
-        }
-          
-        // Check if user has connected any ad platforms
-        const { count, error: connectionError } = await supabase
-          .from('user_integrations')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-          
-        if (connectionError) {
-          console.error('Error checking ad connections:', connectionError);
-          navigate('/dashboard');
-          return;
-        }
-          
-        // Redirect based on whether user has connections
-        if (count === 0) {
-          console.log('No ad platforms connected, redirecting to connections');
-          navigate('/connections');
-        } else {
-          console.log('User has connected platforms, redirecting to dashboard');
-          navigate('/dashboard');
+        // If authenticated and redirectAuthenticated is true, redirect to dashboard
+        if (session && redirectAuthenticated) {
+          console.log('useAuthRedirect: User authenticated, redirecting to dashboard');
+          navigate(redirectPath);
+        } 
+        // If authentication is required but user is not authenticated, redirect to login
+        else if (requireAuth && !session) {
+          console.log('useAuthRedirect: Authentication required but user not authenticated, redirecting to login');
+          toast.info('Please log in to continue');
+          navigate('/auth/login');
         }
       } catch (error) {
-        console.error('Error in redirect logic:', error);
-        // Fallback to dashboard
-        navigate('/dashboard');
+        console.error('useAuthRedirect: Error checking authentication status:', error);
       }
     };
 
-    // Execute the redirect
-    redirectLoggedInUser();
-  }, [navigate, user, isAuthenticated, isLoading]);
+    checkAuth();
+  }, [navigate, redirectAuthenticated, redirectPath, requireAuth]);
 };
+
+export default useAuthRedirect;
