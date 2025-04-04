@@ -22,13 +22,9 @@ export const useNavigationHandlers = (
         ...data,
       }));
       
-      // Only advance if explicitly set to autoAdvance
-      if (autoAdvance) {
-        setCurrentStep((prev) => prev + 1);
-        return true;
-      }
-      
-      return false;
+      // Always advance to the next step when data is provided
+      setCurrentStep((prev) => prev + 1);
+      return true;
     } else {
       // If no data is provided, just advance to the next step
       setCurrentStep((prev) => prev + 1);

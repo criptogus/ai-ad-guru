@@ -65,6 +65,7 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   };
 
   const handleNextClick = () => {
+    // Directly call onNext with the platforms data
     onNext({ platforms: selectedPlatforms });
   };
 

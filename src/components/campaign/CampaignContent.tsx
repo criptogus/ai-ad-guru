@@ -126,9 +126,10 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
+  // This wrapper function is crucial for proper navigation
   const handleNextWrapper = (data?: any) => {
-    const result = handleNext(data);
-    return result;
+    // Call handleNext and return its result
+    return handleNext(data);
   };
 
   const { getStepContent } = useCampaignStepRenderer({
