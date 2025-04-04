@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ConnectionDiagnostics from '@/components/support/ConnectionDiagnostics';
 import AppLayout from '@/components/AppLayout';
+import { ContactForm } from '@/components/contact';
 
 const SupportPage: React.FC = () => {
   return (
@@ -144,6 +145,18 @@ const SupportPage: React.FC = () => {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Support</CardTitle>
+              <CardDescription>
+                Need personalized help? Fill out the form below and we'll get back to you as soon as possible.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContactForm />
             </CardContent>
           </Card>
         </div>
