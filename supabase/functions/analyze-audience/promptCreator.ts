@@ -1,109 +1,90 @@
 
 import { WebsiteData } from "./utils.ts";
 
-// Create audience analysis prompts based on website data and platform
-export function createAudienceAnalysisPrompt(websiteData: WebsiteData, platform?: string, language: string = 'en'): string {
-  // Extract the relevant content from website data
-  const content = `
-Company Name: ${websiteData.companyName || 'Unknown'}
-Business Description: ${websiteData.businessDescription || 'Not provided'}
-Target Audience: ${websiteData.targetAudience || 'Not specified'}
-Brand Tone: ${websiteData.brandTone || 'Not specified'}
-Keywords: ${websiteData.keywords ? websiteData.keywords.join(', ') : 'None provided'}
-Unique Selling Points: ${websiteData.uniqueSellingPoints ? websiteData.uniqueSellingPoints.join(', ') : 'None provided'}
-Call to Action: ${websiteData.callToAction ? websiteData.callToAction.join(', ') : 'None provided'}
-Website URL: ${websiteData.websiteUrl || 'Not provided'}
-  `;
-
-  // Get language name for prompt
-  const languageName = getLanguageName(language);
+export const createAudienceAnalysisPrompt = (websiteData: WebsiteData, platform?: string, language = 'en'): string => {
+  // Determine the language-specific instructions
+  const languageInstructions = getLanguageSpecificInstructions(language);
   
-  // Create the prompt based on whether a specific platform is requested
-  if (platform) {
-    return `
-You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation specifically for ${platform} ads. Write your entire response in ${languageName}.
+  // Determine which platform to analyze for
+  const platformText = platform ? 
+    `Focus specifically on the ${platform.toUpperCase()} ads platform.` : 
+    'Analyze audience data for all major ad platforms (Google, Meta, LinkedIn).';
+  
+  // Construct the prompt with the language-specific instructions
+  const prompt = `
+${languageInstructions.systemPrompt}
 
-${content}
+${languageInstructions.analysisTask}
 
-Analyze this content to identify:
-1. The company's market segment
-2. Products or services offered
-3. Positioning and tone of voice
-4. Communication objective (sales, branding, lead generation, etc.)
+Company Information:
+- Company Name: ${websiteData.companyName}
+- Business Description: ${websiteData.businessDescription}
+- Current Target Audience: ${websiteData.targetAudience}
+- Brand Tone: ${websiteData.brandTone}
+- Keywords: ${websiteData.keywords.join(', ')}
+- Call To Action phrases: ${websiteData.callToAction.join(', ')}
+- Unique Selling Points: ${websiteData.uniqueSellingPoints.join(', ')}
+${websiteData.industry ? '- Industry: ' + websiteData.industry : ''}
+${websiteData.websiteUrl ? '- Website URL: ' + websiteData.websiteUrl : ''}
 
-Then, provide detailed targeting recommendations for ${platform} including:
-- Recommended audience segments
-- Demographics (age, gender, income, education level if applicable)
-- Geographic targeting
-- Interests and behaviors
-- Device targeting
-- Ad format recommendations
-- Campaign objective recommendations
+${platformText}
 
-Provide your response as structured JSON with the following fields but ALSO include a detailed narrative analysis outside of the JSON structure:
-{
-  "demographics": {
-    "ageGroups": ["25-34", "35-44"],
-    "gender": ["Male", "Female"],
-    "educationLevel": ["College", "Graduate"],
-    "incomeLevel": ["Middle", "Upper-middle"]
-  },
-  "interests": ["Interest1", "Interest2", "Interest3"],
-  "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
-  "decisionFactors": ["Factor1", "Factor2", "Factor3"]
-}
-
-After the JSON, provide a narrative analysis explaining your recommendations in ${languageName}.
+${languageInstructions.outputFormat}
 `;
-  } else {
-    // If no specific platform is requested, provide analysis for all platforms
-    return `
-You are a media strategist and audience analysis expert. Based on the following website content, provide a detailed audience targeting recommendation for Google Ads, Meta Ads (Facebook/Instagram), and LinkedIn Ads. Write your entire response in ${languageName}.
 
-${content}
+  return prompt;
+};
 
-Analyze this content to identify:
-1. The company's market segment
-2. Products or services offered
-3. Positioning and tone of voice
-4. Communication objective (sales, branding, lead generation, etc.)
-
-Then, provide detailed targeting recommendations for each platform.
-
-Provide your response as structured JSON with the following fields but ALSO include a detailed narrative analysis outside of the JSON structure:
-{
-  "demographics": {
-    "ageGroups": ["25-34", "35-44"],
-    "gender": ["Male", "Female"],
-    "educationLevel": ["College", "Graduate"],
-    "incomeLevel": ["Middle", "Upper-middle"]
-  },
-  "interests": ["Interest1", "Interest2", "Interest3"],
-  "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
-  "decisionFactors": ["Factor1", "Factor2", "Factor3"]
+interface LanguageInstructions {
+  systemPrompt: string;
+  analysisTask: string;
+  outputFormat: string;
 }
 
-After the JSON, provide a narrative analysis explaining your recommendations in ${languageName}.
-`;
-  }
-}
-
-// Helper function to get language name from ISO code
-function getLanguageName(langCode: string): string {
-  const languages: Record<string, string> = {
-    'en': 'English',
-    'pt': 'Portuguese',
-    'es': 'Spanish',
-    'fr': 'French',
-    'de': 'German',
-    'it': 'Italian',
-    'nl': 'Dutch',
-    'ru': 'Russian',
-    'zh': 'Chinese',
-    'ja': 'Japanese',
-    'ko': 'Korean',
-    'ar': 'Arabic'
+function getLanguageSpecificInstructions(language: string): LanguageInstructions {
+  // Default English instructions
+  const defaultInstructions: LanguageInstructions = {
+    systemPrompt: "You are an expert in digital marketing audience analysis with deep knowledge of all advertising platforms including Google Ads, Meta (Facebook/Instagram), and LinkedIn advertising. Your task is to analyze business information and determine the ideal target audience.",
+    analysisTask: "Based on the following business information, provide a detailed audience analysis for digital advertising campaigns:",
+    outputFormat: `Please provide your analysis in the following format:
+1. A detailed overview of the ideal audience for this business
+2. Demographic details (age groups, gender distribution, education level, income level)
+3. Key interests that this audience has
+4. Pain points this audience experiences that the business can solve
+5. Decision factors that influence this audience's purchasing decisions`
   };
   
-  return languages[langCode] || 'English';
+  // Portuguese instructions
+  const ptInstructions: LanguageInstructions = {
+    systemPrompt: "Você é um especialista em análise de público-alvo para marketing digital com profundo conhecimento de todas as plataformas de publicidade, incluindo Google Ads, Meta (Facebook/Instagram) e publicidade LinkedIn. Sua tarefa é analisar informações de negócios e determinar o público-alvo ideal.",
+    analysisTask: "Com base nas seguintes informações comerciais, forneça uma análise detalhada do público-alvo para campanhas de publicidade digital:",
+    outputFormat: `Por favor, forneça sua análise no seguinte formato:
+1. Uma visão geral detalhada do público ideal para este negócio
+2. Detalhes demográficos (faixas etárias, distribuição de gênero, nível de educação, nível de renda)
+3. Principais interesses que este público possui
+4. Pontos de dor que este público experimenta e que o negócio pode resolver
+5. Fatores de decisão que influenciam as decisões de compra deste público`
+  };
+  
+  // Spanish instructions
+  const esInstructions: LanguageInstructions = {
+    systemPrompt: "Eres un experto en análisis de audiencia para marketing digital con un profundo conocimiento de todas las plataformas publicitarias, incluyendo Google Ads, Meta (Facebook/Instagram) y publicidad en LinkedIn. Tu tarea es analizar la información del negocio y determinar la audiencia objetivo ideal.",
+    analysisTask: "Basado en la siguiente información del negocio, proporciona un análisis detallado de la audiencia para campañas publicitarias digitales:",
+    outputFormat: `Por favor, proporciona tu análisis en el siguiente formato:
+1. Una descripción detallada de la audiencia ideal para este negocio
+2. Detalles demográficos (grupos de edad, distribución de género, nivel educativo, nivel de ingresos)
+3. Intereses clave que tiene esta audiencia
+4. Puntos de dolor que experimenta esta audiencia y que el negocio puede resolver
+5. Factores de decisión que influyen en las decisiones de compra de esta audiencia`
+  };
+  
+  // Return the appropriate instructions based on the language
+  switch (language.toLowerCase()) {
+    case 'pt':
+      return ptInstructions;
+    case 'es':
+      return esInstructions;
+    default:
+      return defaultInstructions;
+  }
 }
