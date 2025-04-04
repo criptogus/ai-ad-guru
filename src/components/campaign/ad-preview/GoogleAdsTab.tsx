@@ -17,7 +17,7 @@ interface GoogleAdsTabProps {
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
-  googleAds,
+  googleAds = [], // Provide default empty array
   analysisResult,
   isGenerating,
   onGenerateAds,
@@ -29,7 +29,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   
   // If we have form context, ensure googleAds field exists
   if (formMethods && !formMethods.getValues("googleAds")) {
-    formMethods.setValue("googleAds", googleAds || []);
+    formMethods.setValue("googleAds", Array.isArray(googleAds) ? googleAds : []);
   }
   
   const handleUpdateAd = (index: number, updatedAd: GoogleAd) => {
@@ -43,6 +43,9 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
       formMethods.setValue("googleAds", updatedAds);
     }
   };
+
+  // Ensure googleAds is always an array
+  const adsArray = Array.isArray(googleAds) ? googleAds : [];
 
   return (
     <div className="space-y-6">
@@ -58,7 +61,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         </Alert>
       )}
     
-      {googleAds.length === 0 ? (
+      {adsArray.length === 0 ? (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
             Generate Google ads based on your website content and mind triggers. Our AI will create optimized headline and description variations.
@@ -105,17 +108,17 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
           </div>
           
           <div className="space-y-4">
-            {googleAds.map((ad, index) => (
+            {adsArray.map((ad, index) => (
               <div key={index} className="border rounded-md p-4">
                 <div className="space-y-2">
                   <h4 className="font-medium text-blue-600">
-                    {ad.headline1} | {ad.headline2} | {ad.headline3}
+                    {ad.headline1 || ad.headlines?.[0] || ""} | {ad.headline2 || ad.headlines?.[1] || ""} | {ad.headline3 || ad.headlines?.[2] || ""}
                   </h4>
                   <div className="text-green-700 text-sm">
                     {analysisResult.websiteUrl && new URL(analysisResult.websiteUrl).hostname}
                   </div>
-                  <div className="text-sm">{ad.description1}</div>
-                  {ad.description2 && <div className="text-sm">{ad.description2}</div>}
+                  <div className="text-sm">{ad.description1 || ad.descriptions?.[0] || ""}</div>
+                  {(ad.description2 || ad.descriptions?.[1]) && <div className="text-sm">{ad.description2 || ad.descriptions?.[1]}</div>}
                 </div>
                 <div className="mt-3">
                   <Button 
@@ -131,7 +134,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
                 
                 {index === editingIndex && (
                   <div className="mt-4 space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                    {/* Add edit form fields here */}
+                    {/* Edit form fields would go here */}
                     <Button 
                       size="sm" 
                       onClick={() => {
