@@ -100,17 +100,12 @@ export const useTriggerData = () => {
   // Get templates for a platform
   const getPlatformTemplates = (platform: string) => {
     const platformTriggers = getTriggers(platform);
-    return platformTriggers.map(trigger => ({
-      id: trigger.id,
-      name: trigger.name,
-      description: trigger.description,
-      example: `Example: "${getExampleForTrigger(trigger.id, platform)}"`
-    }));
+    return platformTriggers.map(trigger => `${trigger.name} - ${trigger.description}`);
   };
 
   // Helper function to get an example for a trigger
   const getExampleForTrigger = (triggerId: string, platform: string) => {
-    const examples = {
+    const examples: Record<string, Record<string, string>> = {
       scarcity: {
         google: "Limited time offer: Get 20% off today only!",
         meta: "Only 5 spots left! Join our exclusive program now.",

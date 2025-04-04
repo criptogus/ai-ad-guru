@@ -19,7 +19,7 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
       {selectedTrigger ? (
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
           <p className="text-blue-800 dark:text-blue-300">
-            {getTriggerDescription(platform, selectedTrigger)}
+            {getTriggerDescription(selectedTrigger)}
           </p>
         </div>
       ) : (
