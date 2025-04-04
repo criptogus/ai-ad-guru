@@ -3,3 +3,6 @@
 export * from './googleAdsApi';
 export * from './googleAdGenerator';
 export * from './googleAdsConnector';
+export * from './googleOAuthService';
+export * from './googleConnectionService';
+export * from './types/googleConnector';
