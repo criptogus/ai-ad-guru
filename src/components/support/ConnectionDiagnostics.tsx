@@ -74,24 +74,51 @@ const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className
   const runOAuthStateDiagnostic = async (): Promise<boolean> => {
     try {
       setOauthStateStatus('checking');
-      // Check if we can insert and delete from oauth_states table
-      const testState = `test-${Date.now()}`;
       
-      // Insert a test record
+      // First, check if the table exists and get its structure
+      const { data: tableInfo, error: tableError } = await supabase
+        .rpc('create_oauth_states_table');
+      
+      if (tableError) {
+        console.error('OAuth state table check error:', tableError);
+        setOauthStateError(`Table check error: ${tableError.message}`);
+        setOauthStateStatus('error');
+        return false;
+      }
+      
+      // Generate a unique test state string
+      const testState = `test-${Date.now()}`;
+      const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
+      
+      // Insert a test record with the correct column names based on the table structure
       const { error: insertError } = await supabase
         .from('oauth_states')
         .insert({
           state: testState,
-          user_id: '00000000-0000-0000-0000-000000000000', // Dummy UUID
+          user_id: testUserId,
           platform: 'test',
           redirect_uri: 'https://example.com',
           created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 60000).toISOString(), // 1 minute from now
+          expires_at: new Date(Date.now() + 60000).toISOString() // 1 minute from now
         });
       
       if (insertError) {
         console.error('OAuth state insert error:', insertError);
         setOauthStateError(`Insert error: ${insertError.message}`);
+        setOauthStateStatus('error');
+        return false;
+      }
+      
+      // Try to query the record to validate it was inserted correctly
+      const { data: queryData, error: queryError } = await supabase
+        .from('oauth_states')
+        .select('*')
+        .eq('state', testState)
+        .single();
+        
+      if (queryError) {
+        console.error('OAuth state query error:', queryError);
+        setOauthStateError(`Query error: ${queryError.message}`);
         setOauthStateStatus('error');
         return false;
       }
