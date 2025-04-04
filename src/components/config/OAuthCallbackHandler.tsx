@@ -36,6 +36,11 @@ const OAuthCallbackHandler: React.FC = () => {
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
         
+        if (error) {
+          console.error("OAuth error in URL:", { error, errorDescription });
+          throw new Error(errorDescription || error);
+        }
+        
         if (!code || !state) {
           console.error("Missing required OAuth parameters:", { code, state });
           setError("Missing required OAuth parameters");

@@ -27,6 +27,12 @@ export function extractOAuthParams(location: {
   const errorDescription = searchParams.get('error_description');
   const platformParam = searchParams.get('platform') || '';
 
+  // Enhanced debug logging for the OAuth callback URL
+  console.log("==== OAUTH URL DEBUG INFO ====");
+  console.log("Full URL:", location.search);
+  console.log("Extracted Parameters:", { code: code ? "present" : "missing", state, error, errorDescription, platformParam });
+  console.log("================================");
+
   // If no code or error, this is not an OAuth redirect
   if (!code && !error) {
     console.log("No OAuth callback parameters detected");
@@ -34,6 +40,7 @@ export function extractOAuthParams(location: {
   }
 
   if (error) {
+    console.error("OAuth error response:", { error, errorDescription });
     return { 
       error, 
       errorDescription: errorDescription || undefined 
@@ -41,6 +48,7 @@ export function extractOAuthParams(location: {
   }
 
   if (!code || !state) {
+    console.error("Missing required OAuth parameters:", { code: code ? "present" : "missing", state: state ? "present" : "missing" });
     return {
       error: "Missing required OAuth parameters"
     };
@@ -73,11 +81,18 @@ export function getStoredOAuthData() {
   try {
     const storedData = sessionStorage.getItem('adPlatformAuth');
     if (storedData) {
-      return JSON.parse(storedData);
+      const parsedData = JSON.parse(storedData);
+      console.log("Retrieved stored OAuth data:", { 
+        platform: parsedData?.platform,
+        hasStoredState: !!parsedData?.state,
+        stateValue: parsedData?.state?.substring(0, 8) + '...'
+      });
+      return parsedData;
     }
+    console.warn("No OAuth data found in session storage");
     return null;
   } catch (storageErr) {
-    console.warn("Error retrieving stored OAuth state:", storageErr);
+    console.error("Error retrieving stored OAuth state:", storageErr);
     return null;
   }
 }
@@ -88,6 +103,7 @@ export function getStoredOAuthData() {
 export function cleanupOAuthData() {
   try {
     sessionStorage.removeItem('adPlatformAuth');
+    console.log("Cleaned up OAuth data from session storage");
   } catch (e) {
     console.warn("Error removing OAuth state from sessionStorage:", e);
   }
@@ -106,6 +122,14 @@ export async function exchangeToken(
   // Use the consistent redirect URI
   const effectiveRedirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
   console.log("Using redirect URI for token exchange:", effectiveRedirectUri);
+
+  // Log the token exchange parameters for debugging
+  console.log("Token exchange parameters:", {
+    code: code ? code.substring(0, 8) + '...' : 'missing',
+    state: state ? state.substring(0, 8) + '...' : 'missing',
+    platform,
+    userId: userId ? userId.substring(0, 8) + '...' : 'missing'
+  });
 
   // Exchange code for token using Supabase function
   const response = await supabase.functions.invoke('ad-account-auth', {

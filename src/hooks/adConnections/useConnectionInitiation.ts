@@ -56,6 +56,23 @@ export const useConnectionInitiation = () => {
         });
       }
       
+      // Generate secure state parameter
+      const secureState = crypto.randomUUID();
+      console.log(`Generated secure state parameter: ${secureState.substring(0, 8)}...`);
+      
+      // Store the state in sessionStorage for verification during callback
+      try {
+        sessionStorage.setItem('adPlatformAuth', JSON.stringify({
+          platform,
+          state: secureState,
+          startTime: Date.now(),
+          redirectUri
+        }));
+        console.log('Stored OAuth state in sessionStorage');
+      } catch (e) {
+        console.warn('Could not store OAuth state in sessionStorage:', e);
+      }
+      
       // Log before getting OAuth URL
       console.log(`Requesting OAuth URL for ${platform} with userId ${userId} and redirectUri ${redirectUri}`);
       
@@ -63,7 +80,8 @@ export const useConnectionInitiation = () => {
       const authUrl = await initiateOAuth({
         platform,
         userId,
-        redirectUri
+        redirectUri,
+        state: secureState
       });
       
       console.log(`Received authUrl from initiateOAuth:`, authUrl ? `${authUrl.substring(0, 50)}...` : 'No URL returned');
