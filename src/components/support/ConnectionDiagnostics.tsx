@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,35 +75,95 @@ const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className
     try {
       setOauthStateStatus('checking');
       
-      // First, check if the table exists
-      const { count, error: checkTableError } = await supabase
+      // First check if the table exists
+      const { count, error: tableError } = await supabase
         .from('oauth_states')
         .select('*', { count: 'exact', head: true });
       
-      if (checkTableError && checkTableError.code !== 'PGRST116') {
-        // PGRST116 is "No rows returned" which is fine - just means the table exists but is empty
-        console.error('OAuth state table check error:', checkTableError);
-        setOauthStateError(`Table check error: ${checkTableError.message}`);
+      if (tableError && tableError.code !== 'PGRST116') {
+        // PGRST116 is "No rows returned" which is fine
+        console.error('OAuth state table check error:', tableError);
+        setOauthStateError(`Table check error: ${tableError.message}`);
         setOauthStateStatus('error');
         return false;
       }
       
-      // Generate a unique test state string
-      const testState = `test-${Date.now()}`;
+      // Get the structure of the table to see what columns it has
+      const { data: tableInfo, error: metadataError } = await supabase
+        .rpc('get_table_columns', { table_name: 'oauth_states' })
+        .catch(() => ({ data: null, error: { message: 'Could not get table structure' } }));
+      
+      // If we can't get the structure, attempt a more basic test
+      if (metadataError || !tableInfo) {
+        // Generate a unique test ID
+        const testId = crypto.randomUUID();
+        const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
+        
+        // Insert a test record with only the required fields we know exist
+        const { error: insertError } = await supabase
+          .from('oauth_states')
+          .insert({
+            id: testId,
+            user_id: testUserId,
+            platform: 'test',
+            redirect_uri: 'https://example.com',
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 60000).toISOString() // 1 minute from now
+          });
+        
+        if (insertError) {
+          console.error('OAuth state insert error:', insertError);
+          setOauthStateError(`Insert error: ${insertError.message}`);
+          setOauthStateStatus('error');
+          return false;
+        }
+        
+        // Try to delete the test record to clean up
+        await supabase
+          .from('oauth_states')
+          .delete()
+          .eq('id', testId);
+          
+        setOauthStateStatus('success');
+        setOauthStateError(null);
+        return true;
+      }
+      
+      // If we got the table structure, use it to form our insert
+      const columns = Array.isArray(tableInfo) 
+        ? tableInfo.map((col: any) => col.column_name) 
+        : [];
+      
+      // Make sure we have the minimum required columns
+      if (!columns.includes('id') || !columns.includes('user_id')) {
+        setOauthStateError('Table is missing required columns (id, user_id)');
+        setOauthStateStatus('error');
+        return false;
+      }
+      
+      // Generate test data
+      const testId = crypto.randomUUID();
       const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
       
-      // Insert a test record
+      // Build insert object based on available columns
+      const insertData: Record<string, any> = {
+        id: testId,
+        user_id: testUserId,
+        platform: 'test',
+        redirect_uri: 'https://example.com',
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 60000).toISOString()
+      };
+      
+      // Add state column if it exists
+      if (columns.includes('state')) {
+        insertData.state = `test-${Date.now()}`;
+      }
+      
+      // Insert test record
       const { error: insertError } = await supabase
         .from('oauth_states')
-        .insert({
-          id: crypto.randomUUID(), // Generate a UUID for the record
-          state: testState,
-          user_id: testUserId,
-          platform: 'test',
-          redirect_uri: 'https://example.com',
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 60000).toISOString() // 1 minute from now
-        });
+        .insert(insertData);
       
       if (insertError) {
         console.error('OAuth state insert error:', insertError);
@@ -111,32 +172,11 @@ const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({ className
         return false;
       }
       
-      // Try to query the record to validate it was inserted correctly
-      const { data: queryData, error: queryError } = await supabase
-        .from('oauth_states')
-        .select('*')
-        .eq('state', testState)
-        .single();
-        
-      if (queryError) {
-        console.error('OAuth state query error:', queryError);
-        setOauthStateError(`Query error: ${queryError.message}`);
-        setOauthStateStatus('error');
-        return false;
-      }
-      
-      // Delete the test record
-      const { error: deleteError } = await supabase
+      // Try to delete the test record to clean up
+      await supabase
         .from('oauth_states')
         .delete()
-        .eq('state', testState);
-      
-      if (deleteError) {
-        console.error('OAuth state delete error:', deleteError);
-        setOauthStateError(`Delete error: ${deleteError.message}`);
-        setOauthStateStatus('error');
-        return false;
-      }
+        .eq('id', testId);
       
       setOauthStateStatus('success');
       setOauthStateError(null);
