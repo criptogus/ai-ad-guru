@@ -2,7 +2,6 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { OAuthCallbackResult } from '../types';
-import { navigate } from '../utils/navigationUtils';
 
 interface OAuthErrorResponse {
   error: string;
@@ -61,15 +60,14 @@ export function handleOAuthError(errorResponse: OAuthErrorResponse): void {
   const { error, errorDescription } = errorResponse;
   const errorMsg = errorDescription ? `${error}: ${errorDescription}` : error;
   
-  toast({
-    title: "Authentication Error",
-    description: `Error: ${errorMsg}. The platform denied access.`,
-    variant: "destructive",
+  // Fixed: Using sonner toast API format instead of useToast format
+  toast.error("Authentication Error", {
+    description: `Error: ${errorMsg}. The platform denied access.`
   });
 }
 
 /**
- * Retrieve stored OAuth state from session storage
+ * Retrieve stored OAuth data from session storage
  */
 export function getStoredOAuthData() {
   try {

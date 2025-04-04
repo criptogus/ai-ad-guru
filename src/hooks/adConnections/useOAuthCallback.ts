@@ -1,10 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { AdPlatform } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { AdPlatform } from './types';
 import { 
   extractOAuthParams, 
   handleOAuthError, 
@@ -17,7 +16,6 @@ import {
 import { setNavigate } from './utils/navigationUtils';
 
 export const useOAuthCallback = () => {
-  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [isConnecting, setIsConnecting] = useState(false);
@@ -118,9 +116,9 @@ export const useOAuthCallback = () => {
       // Show success message
       const platformName = getPlatformDisplayName(platform);
       
-      toast({
-        title: "Connection Successful",
-        description: `Your ${platformName} account has been connected.`,
+      // Updated to sonner toast API format
+      toast.success("Connection Successful", {
+        description: `Your ${platformName} account has been connected.`
       });
       
       // Call success callback if provided
@@ -140,11 +138,9 @@ export const useOAuthCallback = () => {
       setErrorDetails(error.message);
       setErrorType('oauth');
       
-      // Show error toast
-      toast({
-        title: "Connection Failed",
-        description: error.message || "There was an error connecting your ad account",
-        variant: "destructive",
+      // Show error toast - updated to sonner toast API format
+      toast.error("Connection Failed", {
+        description: error.message || "There was an error connecting your ad account"
       });
       
       // Redirect to connections page on error

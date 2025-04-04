@@ -1,12 +1,11 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { initiateOAuth } from './oauthService';
 import { AdPlatform } from './types';
 import { useNavigate } from 'react-router-dom';
 
 export const useConnectionInitiation = () => {
-  const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectingPlatform, setConnectingPlatform] = useState<AdPlatform | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,10 +15,9 @@ export const useConnectionInitiation = () => {
 
   const handleConnectionInitiation = async (platform: AdPlatform, userId?: string) => {
     if (!userId) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to connect an ad account",
-        variant: "destructive",
+      // Updated to sonner toast API format
+      toast.error("Authentication Required", {
+        description: "You must be logged in to connect an ad account"
       });
       return;
     }
@@ -45,14 +43,14 @@ export const useConnectionInitiation = () => {
       
       // Additional platform-specific instructions
       if (platform === 'google') {
-        toast({
-          title: "Connecting Google Ads",
+        // Updated to sonner toast API format
+        toast.info("Connecting Google Ads", {
           description: "Make sure to grant permission to manage your Google Ads account, not just basic Google login.",
           duration: 5000,
         });
       } else if (platform === 'linkedin') {
-        toast({
-          title: "Connecting LinkedIn Ads",
+        // Updated to sonner toast API format
+        toast.info("Connecting LinkedIn Ads", {
           description: "LinkedIn requires Marketing Developer Platform approval for ads management. Make sure your app has the necessary permissions.",
           duration: 6000,
         });
@@ -82,11 +80,9 @@ export const useConnectionInitiation = () => {
     } catch (error: any) {
       console.error(`Error initiating ${platform} connection:`, error);
       
-      // Show error toast
-      toast({
-        title: "Connection Failed",
-        description: error.message || `Failed to connect to ${platform}`,
-        variant: "destructive",
+      // Show error toast - updated to sonner toast API format
+      toast.error("Connection Failed", {
+        description: error.message || `Failed to connect to ${platform}`
       });
       
       // Set detailed error information
