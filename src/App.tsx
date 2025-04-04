@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -30,6 +31,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import CookiePolicyPage from './pages/CookiePolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
+import SupportPage from './pages/SupportPage';
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -132,6 +134,11 @@ function App() {
             <Route path="/connections" element={
               <ProtectedRoute>
                 <ConnectionsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/support" element={
+              <ProtectedRoute>
+                <SupportPage />
               </ProtectedRoute>
             } />
             
