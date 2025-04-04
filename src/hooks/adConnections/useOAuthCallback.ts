@@ -2,9 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { AdPlatform, OAuthCallbackResult } from './types';
+import { AdPlatform } from './types';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  extractOAuthParams, 
+  handleOAuthError, 
+  getStoredOAuthData, 
+  cleanupOAuthData,
+  exchangeToken,
+  getPlatformDisplayName,
+  determineRedirectPath
+} from './utils/oauthCallbackUtils';
+import { setNavigate } from './utils/navigationUtils';
 
 export const useOAuthCallback = () => {
   const { toast } = useToast();
@@ -14,6 +24,11 @@ export const useOAuthCallback = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
+  
+  // Set navigate function for utility use
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate]);
   
   // Handle any OAuth token in the URL fragment
   useEffect(() => {
@@ -38,51 +53,24 @@ export const useOAuthCallback = () => {
   }, [location.hash]);
   
   const processOAuthCallback = async (userId: string, onSuccess?: () => void) => {
-    // Parse URL search params
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    const error = searchParams.get('error');
-    const errorDescription = searchParams.get('error_description');
-    const platformParam = searchParams.get('platform') || '';
+    // Extract OAuth parameters
+    const oauthParams = extractOAuthParams(location);
     
-    // If no code or error, this is not an OAuth redirect
-    if (!code && !error) {
-      console.log("No OAuth callback parameters detected");
+    if (!oauthParams) {
+      console.log("Not an OAuth callback");
       return;
     }
     
     console.log("Processing OAuth callback:", { 
-      hasCode: !!code, 
-      error, 
-      errorDescription,
-      hasState: !!state, 
-      platform: platformParam,
+      hasCode: 'code' in oauthParams, 
+      hasError: 'error' in oauthParams,
       fullUrl: window.location.href,
       origin: window.location.origin
     });
     
-    if (error) {
-      const errorMsg = errorDescription ? `${error}: ${errorDescription}` : error;
-      toast({
-        title: "Authentication Error",
-        description: `Error: ${errorMsg}. The platform denied access.`,
-        variant: "destructive",
-      });
-      
-      // Clear URL params and redirect to connections page
-      navigate('/connections', { replace: true });
-      return;
-    }
-    
-    if (!code || !state) {
-      toast({
-        title: "Authentication Error",
-        description: "Missing required OAuth parameters",
-        variant: "destructive",
-      });
-      
-      // Clear URL params and redirect to connections page
+    // Handle error case
+    if ('error' in oauthParams) {
+      handleOAuthError(oauthParams);
       navigate('/connections', { replace: true });
       return;
     }
@@ -93,78 +81,42 @@ export const useOAuthCallback = () => {
       setErrorDetails(null);
       setErrorType(null);
       
-      // Retrieve stored OAuth state data
-      let storedOAuthData;
-      try {
-        const storedData = sessionStorage.getItem('adPlatformAuth');
-        if (storedData) {
-          storedOAuthData = JSON.parse(storedData);
-          console.log("Retrieved stored OAuth data:", { 
-            platform: storedOAuthData.platform,
-            hasStoredState: !!storedOAuthData.state
-          });
-          
-          // Validate the returned state matches our stored state
-          if (storedOAuthData.state && storedOAuthData.state !== state) {
-            console.error("State mismatch!", { 
-              returnedState: state,
-              storedState: storedOAuthData.state
-            });
-            throw new Error("Invalid OAuth state parameter. Security validation failed.");
-          }
-        } else {
-          console.log("No stored OAuth data found in session storage");
-          // Even without session storage, we can proceed as the state validation
-          // will be handled on the server-side as well
-        }
-      } catch (storageErr) {
-        console.warn("Error retrieving stored OAuth state:", storageErr);
-        // Continue as the server will also validate the state
-      }
+      // Get the stored OAuth data
+      const storedOAuthData = getStoredOAuthData();
       
-      // UPDATED: Use the consistent redirect URI
-      const redirectUri = 'https://auth.zeroagency.ai/auth/v1/callback';
-      console.log("Using redirect URI for token exchange:", redirectUri);
-      
-      // Exchange code for token directly using the Supabase function
-      const response = await supabase.functions.invoke('ad-account-auth', {
-        body: {
-          action: 'exchangeToken',
-          code,
-          state,
-          redirectUri,
-          userId,
-          platform: storedOAuthData?.platform || 'unknown' // Pass platform if available
-        }
+      console.log("Retrieved stored OAuth data:", { 
+        platform: storedOAuthData?.platform,
+        hasStoredState: !!storedOAuthData?.state
       });
       
-      if (response.error) {
-        console.error("Token exchange error response:", response.error);
-        throw new Error(`Token exchange failed: ${response.error.message}`);
+      // Validate state if we have stored data
+      if (storedOAuthData?.state && storedOAuthData.state !== oauthParams.state) {
+        console.error("State mismatch!", { 
+          returnedState: oauthParams.state,
+          storedState: storedOAuthData.state
+        });
+        throw new Error("Invalid OAuth state parameter. Security validation failed.");
       }
       
-      const data = response.data;
-      console.log("Token exchange response:", data);
+      // Exchange code for token
+      const platform = storedOAuthData?.platform || 'unknown';
+      const data = await exchangeToken(
+        oauthParams.code, 
+        oauthParams.state, 
+        'https://auth.zeroagency.ai/auth/v1/callback',
+        platform,
+        userId
+      );
       
       if (!data.success) {
         throw new Error(data.error || 'Failed to exchange token');
       }
       
-      // Clean up saved OAuth state
-      try {
-        sessionStorage.removeItem('adPlatformAuth');
-      } catch (e) {
-        console.warn("Error removing OAuth state from sessionStorage:", e);
-      }
+      // Clean up stored OAuth data
+      cleanupOAuthData();
       
-      // Success
-      const platform = storedOAuthData?.platform || data.platform || 'unknown';
-      const platformName = 
-        platform === 'google' ? 'Google Ads' :
-        platform === 'meta' ? 'Meta Ads' :
-        platform === 'linkedin' ? 'LinkedIn Ads' :
-        platform === 'microsoft' ? 'Microsoft Ads' : 
-        'Ad Platform';
+      // Show success message
+      const platformName = getPlatformDisplayName(platform);
       
       toast({
         title: "Connection Successful",
@@ -176,24 +128,9 @@ export const useOAuthCallback = () => {
         onSuccess();
       }
       
-      // Check how many connections the user has
-      const { count, error: countError } = await supabase
-        .from('user_integrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
-        
-      if (countError) {
-        console.error('Error checking connection count:', countError);
-      }
-      
-      // Determine where to redirect based on connection count
-      if (count === 1) {
-        // First connection, stay on connections page
-        navigate('/connections', { replace: true });
-      } else {
-        // User has multiple connections, redirect to campaign creation
-        navigate('/campaign/create', { replace: true });
-      }
+      // Determine where to redirect
+      const redirectPath = await determineRedirectPath(userId);
+      navigate(redirectPath, { replace: true });
       
     } catch (error: any) {
       console.error("OAuth callback error:", error);
@@ -216,7 +153,7 @@ export const useOAuthCallback = () => {
       setIsConnecting(false);
     }
   };
-  
+
   return {
     isConnecting,
     error,
