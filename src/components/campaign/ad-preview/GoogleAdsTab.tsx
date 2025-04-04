@@ -118,7 +118,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               ad={ad}
               index={index}
               domain={extractDomain(analysisResult.websiteUrl)}
-              onUpdateAd={(updatedAd) => handleEditSave(index, updatedAd)}
+              onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
             />
           ))}
         </div>
