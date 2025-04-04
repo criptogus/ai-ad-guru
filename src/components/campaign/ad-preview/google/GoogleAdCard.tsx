@@ -12,7 +12,7 @@ interface GoogleAdCardProps {
   ad: GoogleAd;
   index: number;
   domain: string;
-  onUpdateAd: (index: number, updatedAd: GoogleAd) => void;
+  onUpdateAd: (updatedAd: GoogleAd) => void;
 }
 
 const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
@@ -29,7 +29,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   };
 
   const handleSave = () => {
-    onUpdateAd(index, editedAd);
+    onUpdateAd(editedAd);
     setIsEditing(false);
   };
 
