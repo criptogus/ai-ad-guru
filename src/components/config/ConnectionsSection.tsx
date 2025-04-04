@@ -138,55 +138,7 @@ const ConnectionsSection: React.FC = () => {
         </Alert>
       )}
 
-      <Card className="bg-card border-border shadow-sm mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <ShieldCheck className="h-5 w-5 text-blue-500" />
-            <CardTitle className="text-lg">OAuth Connection Diagnostic</CardTitle>
-          </div>
-          <CardDescription>
-            Use this information to verify your OAuth configuration for Google & LinkedIn
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <div className="p-2 bg-slate-50 dark:bg-slate-900 rounded-md">
-              <p className="font-mono text-xs mb-2">Required Redirect URI:</p>
-              <code className="bg-white dark:bg-black px-2 py-1 rounded border font-mono text-xs select-all">
-                https://auth.zeroagency.ai/auth/v1/callback
-              </code>
-            </div>
-
-            <div>
-              <p className="font-semibold mb-1">Google Configuration:</p>
-              <p>Make sure this exact URI is added to your OAuth Client in Google Cloud Console</p>
-              <a 
-                href="https://console.cloud.google.com/apis/credentials" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline inline-flex items-center text-xs mt-1"
-              >
-                Open Google Cloud Credentials
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </a>
-            </div>
-
-            <div>
-              <p className="font-semibold mb-1">LinkedIn Configuration:</p>
-              <p>Add this URI to the "Redirect URLs" in your LinkedIn Developer App settings</p>
-              <a 
-                href="https://www.linkedin.com/developers/apps" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline inline-flex items-center text-xs mt-1"
-              >
-                Open LinkedIn Developer Apps
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </a>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* OAuth Connection Diagnostic Box removed */}
 
       <Card className="bg-card border-border shadow-sm mb-6">
         <CardHeader className="pb-3">
