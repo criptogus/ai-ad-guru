@@ -83,6 +83,53 @@ export const useTriggerData = () => {
     );
   };
 
+  // Get description for a trigger by ID
+  const getTriggerDescription = (triggerId: string) => {
+    const trigger = triggers.find(t => t.id === triggerId);
+    return trigger ? trigger.description : '';
+  };
+
+  // Get triggers for a platform with additional formatting
+  const getPlatformTriggers = (platform: string) => {
+    return getTriggers(platform).map(trigger => ({
+      ...trigger,
+      formatted: `${trigger.name} - ${trigger.description}`
+    }));
+  };
+
+  // Get templates for a platform
+  const getPlatformTemplates = (platform: string) => {
+    const platformTriggers = getTriggers(platform);
+    return platformTriggers.map(trigger => ({
+      id: trigger.id,
+      name: trigger.name,
+      description: trigger.description,
+      example: `Example: "${getExampleForTrigger(trigger.id, platform)}"`
+    }));
+  };
+
+  // Helper function to get an example for a trigger
+  const getExampleForTrigger = (triggerId: string, platform: string) => {
+    const examples = {
+      scarcity: {
+        google: "Limited time offer: Get 20% off today only!",
+        meta: "Only 5 spots left! Join our exclusive program now.",
+        linkedin: "Last chance to register for our industry webinar.",
+        microsoft: "Ends tonight: Special pricing on premium features."
+      },
+      social_proof: {
+        google: "Join 10,000+ satisfied customers",
+        meta: "See why professionals love our platform",
+        linkedin: "Trusted by 500+ Fortune 1000 companies",
+        microsoft: "4.9 star rating from over 1000 reviews"
+      },
+      // Add more examples as needed
+    };
+    
+    // @ts-ignore - We know this is dynamic access
+    return examples[triggerId]?.[platform] || "Use social proof to establish credibility";
+  };
+
   // Get platform display name
   const getPlatformDisplayName = (platform: string): string => {
     switch (platform) {
@@ -109,6 +156,9 @@ export const useTriggerData = () => {
     triggers,
     getTriggers,
     getPlatformDisplayName,
-    getPlatformIcon
+    getPlatformIcon,
+    getTriggerDescription,
+    getPlatformTriggers,
+    getPlatformTemplates
   };
 };
