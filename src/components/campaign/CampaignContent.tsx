@@ -97,7 +97,7 @@ const CampaignContent: React.FC = () => {
   const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     const result = await generateAdImage(prompt, additionalInfo);
     // Ensure we return a string or null
-    return result ? (typeof result === 'string' ? result : result.imageUrl) : null;
+    return result ? (typeof result === 'string' ? result : null) : null;
   };
 
   const { 

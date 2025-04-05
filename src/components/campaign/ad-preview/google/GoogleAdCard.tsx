@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { Button } from "@/components/ui/button";
 import { Copy, Edit, Save, X } from "lucide-react";
 import GoogleAdPreview from "./GoogleAdPreview";
