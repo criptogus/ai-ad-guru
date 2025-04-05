@@ -1,21 +1,17 @@
 
-import React, { useRef } from "react";
+import React from "react";
 
 interface ImageUploadHandlerProps {
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  acceptedFormats?: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({
-  onChange,
-  acceptedFormats = "image/jpeg,image/png,image/webp"
-}) => {
+const ImageUploadHandler: React.FC<ImageUploadHandlerProps> = ({ onChange }) => {
   return (
-    <input 
-      type="file" 
-      className="hidden" 
+    <input
+      type="file"
+      accept="image/*"
+      className="hidden"
       onChange={onChange}
-      accept={acceptedFormats}
     />
   );
 };

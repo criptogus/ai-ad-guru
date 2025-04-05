@@ -1,134 +1,111 @@
 
-import React from "react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import React, { useState } from "react";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import TriggerButtonInline from "@/components/campaign/ad-preview/TriggerButtonInline";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { normalizeGoogleAd } from "@/lib/utils";
 
-interface MicrosoftAdDetailsProps {
+export interface MicrosoftAdDetailsProps {
   ad: GoogleAd;
-  isEditing: boolean;
-  editedAd?: GoogleAd;
-  onHeadlineChange?: (index: number, value: string) => void;
-  onDescriptionChange?: (index: number, value: string) => void;
-  onUpdate?: (updatedAd: GoogleAd) => void;
+  isEditing?: boolean;
+  onUpdate: (updatedAd: GoogleAd) => void;
 }
 
 const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
   ad,
-  isEditing,
-  editedAd = ad,
-  onHeadlineChange,
-  onDescriptionChange,
+  isEditing = true,
   onUpdate
 }) => {
-  // Helper to insert trigger text
-  const insertTrigger = (text: string, fieldType: 'headline' | 'description', index: number) => {
-    if (fieldType === 'headline' && onHeadlineChange) {
-      // Get headlines array or create from individual properties
-      const headlines = editedAd.headlines || [
-        editedAd.headline1, 
-        editedAd.headline2, 
-        editedAd.headline3
-      ];
-      const currentHeadline = headlines[index] || '';
-      onHeadlineChange(index, `${currentHeadline} ${text}`.trim());
-    } else if (fieldType === 'description' && onDescriptionChange) {
-      // Get descriptions array or create from individual properties
-      const descriptions = editedAd.descriptions || [
-        editedAd.description1,
-        editedAd.description2
-      ];
-      const currentDescription = descriptions[index] || '';
-      onDescriptionChange(index, `${currentDescription} ${text}`.trim());
-    }
+  // Normalize the ad to ensure arrays are present
+  const normalizedAd = normalizeGoogleAd(ad);
+  
+  // Create state from the normalized ad
+  const [editedAd, setEditedAd] = useState<GoogleAd>(normalizedAd);
+
+  const handleHeadlineChange = (headlineIndex: number, value: string) => {
+    const newHeadlines = [...editedAd.headlines];
+    newHeadlines[headlineIndex] = value;
+    
+    const updatedAd = { ...editedAd, headlines: newHeadlines };
+    
+    // Also update individual headline properties for compatibility
+    if (headlineIndex === 0) updatedAd.headline1 = value;
+    if (headlineIndex === 1) updatedAd.headline2 = value;
+    if (headlineIndex === 2) updatedAd.headline3 = value;
+    
+    setEditedAd(updatedAd);
+    onUpdate(updatedAd);
   };
 
-  if (isEditing) {
-    return (
-      <div className="space-y-4">
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Headlines (30 chars max)</h4>
-          {(editedAd.headlines || [
-            editedAd.headline1 || '',
-            editedAd.headline2 || '',
-            editedAd.headline3 || ''
-          ]).map((headline, hIndex) => (
-            <div key={`headline-${hIndex}`} className="relative">
-              <Input
-                value={headline}
-                onChange={(e) => onHeadlineChange && onHeadlineChange(hIndex, e.target.value)}
-                maxLength={30}
-                placeholder={`Headline ${hIndex + 1}`}
-                className="pr-20"
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">
-                  {headline.length}/30
-                </span>
-                <TriggerButtonInline
-                  onInsert={(text) => insertTrigger(text, 'headline', hIndex)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Descriptions (90 chars max)</h4>
-          {(editedAd.descriptions || [
-            editedAd.description1 || '',
-            editedAd.description2 || ''
-          ]).map((description, dIndex) => (
-            <div key={`description-${dIndex}`} className="relative">
-              <Textarea
-                value={description}
-                onChange={(e) => onDescriptionChange && onDescriptionChange(dIndex, e.target.value)}
-                maxLength={90}
-                placeholder={`Description ${dIndex + 1}`}
-                className="min-h-[80px] pr-20"
-              />
-              <div className="absolute right-2 top-2 flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">
-                  {description.length}/90
-                </span>
-                <TriggerButtonInline
-                  onInsert={(text) => insertTrigger(text, 'description', dIndex)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const handleDescriptionChange = (descIndex: number, value: string) => {
+    const newDescriptions = [...editedAd.descriptions];
+    newDescriptions[descIndex] = value;
+    
+    const updatedAd = { ...editedAd, descriptions: newDescriptions };
+    
+    // Also update individual description properties for compatibility
+    if (descIndex === 0) updatedAd.description1 = value;
+    if (descIndex === 1) updatedAd.description2 = value;
+    
+    setEditedAd(updatedAd);
+    onUpdate(updatedAd);
+  };
 
   return (
-    <div className="space-y-2">
-      <div>
-        <h4 className="text-sm font-medium">Headlines</h4>
-        <ul className="list-disc pl-5 text-sm">
-          {(ad.headlines || [
-            ad.headline1 || '',
-            ad.headline2 || '',
-            ad.headline3 || ''
-          ]).map((headline, index) => (
-            <li key={index}>{headline}</li>
+    <Card className="border shadow-sm">
+      <CardContent className="p-4 space-y-4">
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">Headlines (30 char limit)</h3>
+          {editedAd.headlines.map((headline, index) => (
+            <div key={`headline-${index}`} className="space-y-1">
+              <Label htmlFor={`headline-${index}`} className="text-xs text-muted-foreground">
+                Headline {index + 1}
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id={`headline-${index}`}
+                  value={headline}
+                  onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                  className="text-sm"
+                  maxLength={30}
+                  readOnly={!isEditing}
+                />
+                <div className="text-xs text-muted-foreground w-16 text-right">
+                  {headline.length}/30
+                </div>
+              </div>
+            </div>
           ))}
-        </ul>
-      </div>
-      <div>
-        <h4 className="text-sm font-medium">Descriptions</h4>
-        <ul className="list-disc pl-5 text-sm">
-          {(ad.descriptions || [
-            ad.description1 || '',
-            ad.description2 || ''
-          ]).map((description, index) => (
-            <li key={index}>{description}</li>
+        </div>
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">Descriptions (90 char limit)</h3>
+          {editedAd.descriptions.map((description, index) => (
+            <div key={`desc-${index}`} className="space-y-1">
+              <Label htmlFor={`desc-${index}`} className="text-xs text-muted-foreground">
+                Description {index + 1}
+              </Label>
+              <div className="flex items-start gap-2">
+                <Textarea
+                  id={`desc-${index}`}
+                  value={description}
+                  onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                  className="text-sm min-h-[80px] resize-none"
+                  maxLength={90}
+                  readOnly={!isEditing}
+                />
+                <div className="text-xs text-muted-foreground w-16 text-right">
+                  {description.length}/90
+                </div>
+              </div>
+            </div>
           ))}
-        </ul>
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

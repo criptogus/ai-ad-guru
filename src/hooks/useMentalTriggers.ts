@@ -1,56 +1,79 @@
 
-import { useState, useCallback } from "react";
+import { useState } from 'react';
 
-interface MentalTriggerHookReturn {
-  insertTrigger: (
+export const useMentalTriggers = () => {
+  const [activeTrigger, setActiveTrigger] = useState<string | null>(null);
+
+  // Insert a trigger into a text field
+  const insertTrigger = (
     trigger: string,
-    field: string,
+    fieldName: string,
     currentValue: string,
-    updateHandler: (field: string, value: string) => void
-  ) => void;
-  selectedTrigger: string | null;
-  setSelectedTrigger: (trigger: string | null) => void;
-}
-
-/**
- * A hook to manage the insertion of mental triggers into ad text
- */
-export function useMentalTriggers(): MentalTriggerHookReturn {
-  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
-
-  const insertTrigger = useCallback(
-    (
-      trigger: string,
-      field: string,
-      currentValue: string,
-      updateHandler: (field: string, value: string) => void
-    ) => {
-      // Check if trigger should replace or append to the current value
-      const shouldReplace = currentValue.trim() === "";
-      let newValue = shouldReplace ? trigger : `${currentValue} ${trigger}`;
-
-      // Apply character limits based on field type
-      const limit = field.startsWith("headline") ? 30 : 90;
-      if (newValue.length > limit) {
-        // If it exceeds limit, try to just use the trigger
-        if (trigger.length <= limit) {
-          newValue = trigger;
-        } else {
-          // If trigger itself is too long, truncate it
-          newValue = trigger.substring(0, limit);
-        }
+    updateFn: (fieldName: string, newValue: string) => void
+  ) => {
+    // Check if the field has a character limit
+    const characterLimits: Record<string, number> = {
+      headline1: 30,
+      headline2: 30,
+      headline3: 30,
+      description1: 90,
+      description2: 90
+    };
+    
+    const limit = characterLimits[fieldName] || 0;
+    
+    // If the trigger would make the field exceed the limit, show warning and truncate
+    if (limit && (currentValue.length + trigger.length) > limit) {
+      console.warn(`Adding this trigger would exceed the ${limit} character limit. Truncating.`);
+      const availableSpace = Math.max(0, limit - currentValue.length);
+      const truncatedTrigger = trigger.substring(0, availableSpace);
+      
+      if (availableSpace <= 0) {
+        console.error(`No space available to add the trigger to ${fieldName}`);
+        return;
       }
-
-      // Update the field with the new value
-      updateHandler(field, newValue);
-      setSelectedTrigger(trigger);
-    },
-    []
-  );
-
-  return {
-    insertTrigger,
-    selectedTrigger,
-    setSelectedTrigger,
+      
+      updateFn(fieldName, (currentValue + ' ' + truncatedTrigger).trim());
+    } else {
+      // Append the trigger to the current value with a space
+      updateFn(fieldName, (currentValue + ' ' + trigger).trim());
+    }
+    
+    setActiveTrigger(trigger);
   };
-}
+  
+  // Replace the entire field with a trigger
+  const replaceTrigger = (
+    trigger: string,
+    fieldName: string,
+    updateFn: (fieldName: string, newValue: string) => void
+  ) => {
+    // Check if the field has a character limit
+    const characterLimits: Record<string, number> = {
+      headline1: 30,
+      headline2: 30,
+      headline3: 30,
+      description1: 90,
+      description2: 90
+    };
+    
+    const limit = characterLimits[fieldName] || 0;
+    
+    // If the trigger exceeds the limit, truncate
+    if (limit && trigger.length > limit) {
+      console.warn(`Trigger exceeds ${limit} character limit. Truncating.`);
+      updateFn(fieldName, trigger.substring(0, limit));
+    } else {
+      updateFn(fieldName, trigger);
+    }
+    
+    setActiveTrigger(trigger);
+  };
+  
+  return {
+    activeTrigger,
+    insertTrigger,
+    replaceTrigger,
+    setActiveTrigger
+  };
+};

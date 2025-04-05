@@ -1,6 +1,7 @@
 
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
+import { normalizeMetaAd } from "@/lib/utils";
 
 interface ContentSectionProps {
   ad: MetaAd;
@@ -8,14 +9,17 @@ interface ContentSectionProps {
 }
 
 const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
+  // Normalize the ad to ensure it has hashtags
+  const normalizedAd = normalizeMetaAd(ad);
+  
   // Process hashtags - might be string or array
   const renderHashtags = () => {
-    if (!ad.hashtags) return null;
+    if (!normalizedAd.hashtags) return null;
     
     // Handle both string and array formats
-    const hashtagArray = Array.isArray(ad.hashtags) 
-      ? ad.hashtags 
-      : ad.hashtags.split(/[\s,]+/);
+    const hashtagArray = Array.isArray(normalizedAd.hashtags) 
+      ? normalizedAd.hashtags 
+      : normalizedAd.hashtags.split(/[\s,]+/);
     
     if (hashtagArray.length === 0) return null;
     
@@ -50,7 +54,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
       {/* Caption */}
       <div className="mb-2 text-sm">
         <span className="font-medium">{companyName}</span>{" "}
-        <span>{ad.primaryText}</span>
+        <span>{normalizedAd.primaryText}</span>
       </div>
       
       {/* Hashtags */}

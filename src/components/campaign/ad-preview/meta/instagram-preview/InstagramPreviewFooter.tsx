@@ -1,24 +1,28 @@
 
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
+import { normalizeMetaAd } from "@/lib/utils";
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
   companyName: string;
 }
 
-const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({
-  ad,
-  companyName
+const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ 
+  ad, 
+  companyName 
 }) => {
+  // Normalize the ad to ensure it has hashtags
+  const normalizedAd = normalizeMetaAd(ad);
+  
   // Process hashtags - might be string or array
   const renderHashtags = () => {
-    if (!ad.hashtags) return null;
+    if (!normalizedAd.hashtags) return null;
     
     // Handle both string and array formats
-    const hashtagArray = Array.isArray(ad.hashtags) 
-      ? ad.hashtags 
-      : ad.hashtags.split(/[\s,]+/);
+    const hashtagArray = Array.isArray(normalizedAd.hashtags) 
+      ? normalizedAd.hashtags 
+      : normalizedAd.hashtags.split(/[\s,]+/);
     
     if (hashtagArray.length === 0) return null;
     
@@ -36,10 +40,17 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({
   };
 
   return (
-    <div className="mt-2 text-xs text-gray-500">
-      <div>View all comments</div>
-      <div className="mt-1 text-gray-400">3 DAYS AGO</div>
-      {renderHashtags()}
+    <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 text-xs text-muted-foreground">
+      <div className="flex justify-between">
+        <div>
+          {normalizedAd.description && (
+            <span>{normalizedAd.description}</span>
+          )}
+        </div>
+        <div>
+          <span>Sponsored</span>
+        </div>
+      </div>
     </div>
   );
 };

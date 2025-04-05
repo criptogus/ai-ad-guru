@@ -1,12 +1,12 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
 interface EmptyAdsStateProps {
   platform: "google" | "meta" | "linkedin" | "microsoft";
   isGenerating: boolean;
-  onGenerate?: () => Promise<void>;
+  onGenerate: () => Promise<void>;
 }
 
 const EmptyAdsState: React.FC<EmptyAdsStateProps> = ({
@@ -14,41 +14,41 @@ const EmptyAdsState: React.FC<EmptyAdsStateProps> = ({
   isGenerating,
   onGenerate
 }) => {
-  const platformDisplayNames = {
-    google: "Google Search Ads",
-    meta: "Instagram Ads",
-    linkedin: "LinkedIn Ads",
-    microsoft: "Microsoft Ads"
+  const platformLabels = {
+    google: "Google Search",
+    meta: "Instagram",
+    linkedin: "LinkedIn",
+    microsoft: "Microsoft/Bing"
   };
 
-  const displayName = platformDisplayNames[platform] || platform;
+  const platformName = platformLabels[platform] || platform;
 
   return (
-    <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-md space-y-4 text-center">
-      <div className="text-muted-foreground mb-2">
-        <p className="text-lg font-medium">No {displayName} Created Yet</p>
-        <p className="text-sm">Generate ads with AI to see them appear here</p>
-      </div>
-      
-      {onGenerate && (
+    <div className="flex flex-col items-center justify-center py-10 border border-dashed rounded-lg">
+      <div className="text-center">
+        <h3 className="text-lg font-medium mb-2">No {platformName} Ads</h3>
+        <p className="text-muted-foreground mb-6">
+          You haven't generated any {platformName} Ads yet. 
+          Click below to create ad variations.
+        </p>
         <Button 
           onClick={onGenerate}
           disabled={isGenerating}
-          className="mt-2"
+          size="lg"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate {displayName}
+              <Plus className="w-4 h-4 mr-2" />
+              Generate {platformName} Ads
             </>
           )}
         </Button>
-      )}
+      </div>
     </div>
   );
 };

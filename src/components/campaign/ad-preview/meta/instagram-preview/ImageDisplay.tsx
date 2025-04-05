@@ -1,72 +1,89 @@
 
 import React from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Image, RefreshCw } from "lucide-react";
 
 interface ImageDisplayProps {
   imageUrl: string;
-  alt: string;
-  onGenerateImage?: () => Promise<void>;
+  alt?: string;
   isLoading?: boolean;
-  format?: string;
+  onGenerateImage?: () => Promise<void>;
   imagePrompt?: string;
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   imageUrl,
-  alt,
-  onGenerateImage,
+  alt = "Instagram ad image",
   isLoading = false,
-  format = "feed",
+  onGenerateImage,
   imagePrompt
 }) => {
-  const handleRegenerateClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onGenerateImage && !isLoading) {
+  const handleGenerateImage = async () => {
+    if (onGenerateImage) {
       await onGenerateImage();
     }
   };
 
   return (
-    <div className="relative w-full h-full group">
+    <div className="relative w-full aspect-square bg-muted/30">
       {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={alt}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          {isLoading ? (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              <span className="text-gray-400 text-sm">Generating with GPT-4o...</span>
+        <div className="relative w-full h-full">
+          <img
+            src={imageUrl}
+            alt={alt}
+            className="w-full h-full object-cover"
+          />
+          {onGenerateImage && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateImage}
+                disabled={isLoading}
+                className="bg-black/70 text-white border-white/20"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Regenerate
+                  </>
+                )}
+              </Button>
             </div>
-          ) : (
-            <span className="text-gray-400 text-sm">No image generated yet</span>
           )}
         </div>
-      )}
-      
-      {/* Overlay with image prompt - only show when hovering */}
-      {imagePrompt && (
-        <div className="absolute top-2 left-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs p-1.5 rounded opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity">
-          <p className="line-clamp-2">{imagePrompt}</p>
-        </div>
-      )}
-      
-      {onGenerateImage && (
-        <button
-          onClick={handleRegenerateClick}
-          disabled={isLoading}
-          className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors opacity-0 group-hover:opacity-100 hover:opacity-100"
-          title={isLoading ? "Generating..." : "Regenerate image with GPT-4o"}
-        >
+      ) : (
+        <div className="flex flex-col items-center justify-center h-full p-4">
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <>
+              <Loader2 className="w-8 h-8 animate-spin mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground text-center">
+                Generating image...
+              </p>
+            </>
           ) : (
-            <RefreshCw className="h-4 w-4" />
+            <>
+              <Image className="w-12 h-12 mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                {imagePrompt ? "Click to generate image" : "No image available"}
+              </p>
+              {imagePrompt && onGenerateImage && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleGenerateImage}
+                >
+                  Generate Image
+                </Button>
+              )}
+            </>
           )}
-        </button>
+        </div>
       )}
     </div>
   );

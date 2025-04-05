@@ -8,10 +8,8 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
-  // Add headlines and descriptions arrays for compatibility
-  headlines: string[];
-  descriptions: string[];
-  // Update siteLinks to include the link property
+  headlines: string[];  // Add this for compatibility
+  descriptions: string[];  // Add this for compatibility
   siteLinks?: Array<{title: string, link: string, description?: string}>;
   finalUrl?: string;
   id?: string;
@@ -23,9 +21,7 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  // Add format property
   format?: "feed" | "story" | "reel";
-  // Add hashtags property
   hashtags?: string[] | string;
   companyName?: string;
   finalUrl?: string;

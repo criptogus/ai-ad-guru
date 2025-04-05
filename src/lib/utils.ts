@@ -19,7 +19,7 @@ export function getDomain(url: string): string {
 /**
  * Normalize a GoogleAd object to ensure it has headlines and descriptions arrays
  */
-export const normalizeGoogleAd = (ad: any): GoogleAd => {
+export const normalizeGoogleAd = (ad: GoogleAd): GoogleAd => {
   if (!ad) return {} as GoogleAd;
   
   // Create a new object with all properties from the original ad
@@ -56,7 +56,7 @@ export const normalizeGoogleAd = (ad: any): GoogleAd => {
 /**
  * Normalize a MetaAd object to ensure it has all required properties
  */
-export const normalizeMetaAd = (ad: any): MetaAd => {
+export const normalizeMetaAd = (ad: MetaAd): MetaAd => {
   if (!ad) return {} as MetaAd;
   
   // Create a new object with all properties from the original ad

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,23 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   mindTrigger
 }) => {
   const [selectedAd, setSelectedAd] = useState<GoogleAd | null>(null);
+  const [selectedAdIndex, setSelectedAdIndex] = useState<number>(-1);
+
+  const handleSelectAd = (ad: GoogleAd) => {
+    setSelectedAd(ad);
+    // Find the index of the selected ad
+    const index = microsoftAds.findIndex(a => 
+      a.headline1 === ad.headline1 && 
+      a.description1 === ad.description1
+    );
+    setSelectedAdIndex(index);
+  };
+
+  const handleUpdateAd = (updatedAd: GoogleAd) => {
+    if (selectedAdIndex >= 0) {
+      onUpdateMicrosoftAd(selectedAdIndex, updatedAd);
+    }
+  };
 
   return (
     <Card>
@@ -49,9 +67,9 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
               />
             ) : (
               <MicrosoftAdsList
-                ads={microsoftAds}
-                domain={analysisResult?.websiteUrl ? getDomain(analysisResult.websiteUrl) : 'example.com'}
-                onSelectAd={setSelectedAd}
+                microsoftAds={microsoftAds}
+                analysisResult={analysisResult}
+                onSelectAd={handleSelectAd}
               />
             )}
           </TabsContent>
@@ -60,7 +78,8 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
             {selectedAd ? (
               <MicrosoftAdDetails
                 ad={selectedAd}
-                onUpdate={onUpdateMicrosoftAd}
+                onUpdate={handleUpdateAd}
+                isEditing={true}
               />
             ) : (
               <div className="text-muted-foreground">
