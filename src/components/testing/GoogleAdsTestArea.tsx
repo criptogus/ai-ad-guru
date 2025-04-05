@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { GoogleAd } from "@/hooks/useAdGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import GoogleAdPreview from "@/components/campaign/ad-preview/google/GoogleAdPreview";
 
 const GoogleAdsTestArea: React.FC = () => {
@@ -16,6 +16,8 @@ const GoogleAdsTestArea: React.FC = () => {
     headline3: "Final Call To Action",
     description1: "This is the first description line that explains what your product or service does and why people should care.",
     description2: "This is the second description line with additional details about features, benefits, or special offers.",
+    path1: "services",
+    path2: "offers",
     headlines: [
       "Google Ad Headline 1",
       "Second Headline Here",
@@ -69,6 +71,8 @@ const GoogleAdsTestArea: React.FC = () => {
       headline3: "Final Call To Action",
       description1: "This is the first description line that explains what your product or service does and why people should care.",
       description2: "This is the second description line with additional details about features, benefits, or special offers.",
+      path1: "services",
+      path2: "offers",
       headlines: [
         "Google Ad Headline 1",
         "Second Headline Here",

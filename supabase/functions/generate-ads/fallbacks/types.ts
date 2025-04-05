@@ -8,10 +8,10 @@ export interface GoogleAd {
   headlines: string[];
   descriptions: string[];
   finalUrl?: string;
-  path1?: string;
-  path2?: string;
+  path1: string;
+  path2: string;
   displayPath?: string;
-  siteLinks?: {title: string, link: string}[];
+  siteLinks?: {title: string, link: string, description?: string}[];
 }
 
 export interface MetaAd {
@@ -21,7 +21,7 @@ export interface MetaAd {
   imagePrompt?: string;
   imageUrl?: string;
   format?: string;
-  hashtags?: string[];
+  hashtags?: string[] | string;
 }
 
 // Define LinkedIn ads as a MetaAd for now for simplicity

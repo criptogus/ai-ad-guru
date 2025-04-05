@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { MicrosoftAdPreview } from "@/components/campaign/ad-preview/microsoft";
 
 const MicrosoftAdsTestArea: React.FC = () => {
@@ -15,7 +15,9 @@ const MicrosoftAdsTestArea: React.FC = () => {
     headline2: "Second Headline Here",
     headline3: "Final Call To Action",
     description1: "This is the first description line that explains your business value proposition to Bing users.",
-    description2: "This is the second description with more details about your services for Microsoft users.",
+    description2: "This is the second description line with more details about your services for Microsoft users.",
+    path1: "services",
+    path2: "offers",
     headlines: [
       "Microsoft Ad Headline 1",
       "Second Headline Here",
@@ -23,7 +25,7 @@ const MicrosoftAdsTestArea: React.FC = () => {
     ],
     descriptions: [
       "This is the first description line that explains your business value proposition to Bing users.",
-      "This is the second description with more details about your services for Microsoft users."
+      "This is the second description line with more details about your services for Microsoft users."
     ]
   });
   
@@ -68,7 +70,9 @@ const MicrosoftAdsTestArea: React.FC = () => {
       headline2: "Second Headline Here",
       headline3: "Final Call To Action",
       description1: "This is the first description line that explains your business value proposition to Bing users.",
-      description2: "This is the second description with more details about your services for Microsoft users.",
+      description2: "This is the second description line with more details about your services for Microsoft users.",
+      path1: "services",
+      path2: "offers",
       headlines: [
         "Microsoft Ad Headline 1",
         "Second Headline Here",
@@ -76,7 +80,7 @@ const MicrosoftAdsTestArea: React.FC = () => {
       ],
       descriptions: [
         "This is the first description line that explains your business value proposition to Bing users.",
-        "This is the second description with more details about your services for Microsoft users."
+        "This is the second description line with more details about your services for Microsoft users."
       ]
     });
     setDomain("yourbusiness.com");

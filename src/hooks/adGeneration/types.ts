@@ -1,4 +1,3 @@
-
 export interface GoogleAd {
   headline1: string;
   headline2: string;
@@ -8,11 +7,11 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
-  siteLinks?: Array<{title: string, link: string}>;
-  // Add these properties that are being used throughout the codebase
+  siteLinks?: Array<{title: string, link: string, description?: string}>;
   headlines?: string[];
   descriptions?: string[];
   finalUrl?: string;
+  id?: string;
 }
 
 export interface MetaAd {
@@ -21,9 +20,10 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  // Add these properties that are being used throughout the codebase
   format?: "feed" | "story" | "reel";
   hashtags?: string[] | string;
+  companyName?: string;
+  finalUrl?: string;
 }
 
 export interface AdGenerationInput {
