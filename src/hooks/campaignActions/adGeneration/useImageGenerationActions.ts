@@ -41,7 +41,6 @@ export const useImageGenerationActions = (
       // Add detailed context information from the ad to improve relevance
       const additionalInfo = {
         imagePrompt: ad.imagePrompt,
-        format: ad.format || "feed",
         platform: "meta",
         headline: ad.headline,
         primaryText: ad.primaryText,

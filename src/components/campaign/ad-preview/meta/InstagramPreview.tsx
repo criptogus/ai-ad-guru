@@ -17,6 +17,7 @@ interface InstagramPreviewProps {
   loadingImageIndex?: number | null;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
+  viewMode?: string;
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
@@ -26,13 +27,14 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   loadingImageIndex = null,
   onGenerateImage,
   onUpdateAd,
+  viewMode = "feed"
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isLoading = loadingImageIndex === index;
 
   // Ensure format is one of the allowed values
-  const normalizeFormat = (format: string | undefined): "feed" | "story" | "reel" => {
+  const normalizeFormat = (format?: string): "feed" | "story" | "reel" => {
     if (format === "story" || format === "reel") {
       return format;
     }
@@ -61,7 +63,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       // Update the ad with the new image URL
       onUpdateAd({
         ...ad,
-        imageUrl: localUrl,
+        imageUrl: localUrl
       });
 
     } catch (error) {
@@ -81,9 +83,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     // Update the ad with the template information
     onUpdateAd({
       ...ad,
-      imagePrompt: template.prompt,
-      format: template.dimensions.width === template.dimensions.height ? "square" : 
-              template.dimensions.width > template.dimensions.height ? "landscape" : "portrait"
+      imagePrompt: template.prompt
     });
     
     // Generate new image based on the template
@@ -92,6 +92,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       onGenerateImage();
     }
   };
+
+  // Determine which format to use (from props, ad, or default)
+  const format = viewMode ? viewMode as "feed" | "story" | "reel" : normalizeFormat(ad.format);
 
   return (
     <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">
@@ -104,7 +107,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}
-        format={normalizeFormat(ad.format)} // Use the normalized format here
+        format={format}
         onTemplateSelect={handleTemplateSelect}
       />
       

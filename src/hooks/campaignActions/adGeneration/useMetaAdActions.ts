@@ -83,22 +83,19 @@ export const useMetaAdActions = (
         headline: `Transform with ${companyName}`,
         primaryText: businessDescription || `Discover how ${companyName} can transform your experience with our professional services.`,
         description: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Learn More",
-        imagePrompt: `Professional photo representing ${businessDescription?.substring(0, 100)}`,
-        format: "feed"
+        imagePrompt: `Professional photo representing ${businessDescription?.substring(0, 100)}`
       },
       {
         headline: `Experience ${companyName}`,
         primaryText: `${sellingPoint}. ${businessDescription?.substring(0, 100) || `At ${companyName}, we deliver exceptional results.`}`,
         description: typeof callToAction === 'string' ? callToAction : callToAction?.[1] || "Explore Now",
-        imagePrompt: `Creative branded image for ${companyName}`,
-        format: "feed"
+        imagePrompt: `Creative branded image for ${companyName}`
       },
       {
         headline: `${companyName} - Your Solution`,
         primaryText: businessDescription || `Looking for the best? ${companyName} delivers results that exceed expectations every time.`,
         description: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Contact Us",
-        imagePrompt: `Professional ${companyName} service image`,
-        format: "feed"
+        imagePrompt: `Professional ${companyName} service image`
       }
     ];
   };

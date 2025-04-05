@@ -22,8 +22,28 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
   const [localAd, setLocalAd] = useState<GoogleAd>(ad);
   const { insertTrigger } = useMentalTriggers();
 
+  // Initialize headlines and descriptions arrays if they don't exist
   useEffect(() => {
-    setLocalAd(ad);
+    let updatedAd = { ...ad };
+    
+    // Ensure headlines array exists
+    if (!updatedAd.headlines) {
+      updatedAd.headlines = [
+        updatedAd.headline1 || '',
+        updatedAd.headline2 || '',
+        updatedAd.headline3 || ''
+      ];
+    }
+    
+    // Ensure descriptions array exists
+    if (!updatedAd.descriptions) {
+      updatedAd.descriptions = [
+        updatedAd.description1 || '',
+        updatedAd.description2 || ''
+      ];
+    }
+    
+    setLocalAd(updatedAd);
   }, [ad]);
 
   const handleChange = (field: string, value: string, index?: number) => {
@@ -31,16 +51,43 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
       const updatedAd = { ...prev };
       
       if (field.startsWith('headline') && index !== undefined) {
-        const headlines = [...prev.headlines];
+        // Update both the traditional field and the array
+        const headlineNum = parseInt(field.replace('headline', ''));
+        (updatedAd as any)[field] = value;
+        
+        // Ensure headlines array exists
+        if (!updatedAd.headlines) {
+          updatedAd.headlines = [
+            updatedAd.headline1 || '',
+            updatedAd.headline2 || '',
+            updatedAd.headline3 || ''
+          ];
+        }
+        
+        const headlines = [...updatedAd.headlines];
         headlines[index] = value;
         updatedAd.headlines = headlines;
       } else if (field.startsWith('description') && index !== undefined) {
-        const descriptions = [...prev.descriptions];
+        // Update both the traditional field and the array
+        const descNum = parseInt(field.replace('description', ''));
+        (updatedAd as any)[field] = value;
+        
+        // Ensure descriptions array exists
+        if (!updatedAd.descriptions) {
+          updatedAd.descriptions = [
+            updatedAd.description1 || '',
+            updatedAd.description2 || ''
+          ];
+        }
+        
+        const descriptions = [...updatedAd.descriptions];
         descriptions[index] = value;
         updatedAd.descriptions = descriptions;
       } else if (field === 'path1') {
+        updatedAd.path1 = value;
         updatedAd.displayPath = `${value}/${prev.displayPath?.split('/')[1] || ''}`;
       } else if (field === 'path2') {
+        updatedAd.path2 = value;
         updatedAd.displayPath = `${prev.displayPath?.split('/')[0] || ''}/${value}`;
       } else {
         (updatedAd as any)[field] = value;
@@ -67,7 +114,9 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 
   const handleInsertTrigger = (field: string, trigger: string, index?: number) => {
     if (field.startsWith('headline') && index !== undefined) {
-      const value = localAd.headlines[index] || '';
+      const value = localAd.headlines && localAd.headlines[index] ? 
+        localAd.headlines[index] : (localAd as any)[field] || '';
+        
       insertTrigger(
         trigger, 
         field, 
@@ -75,13 +124,42 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
       );
     } else if (field.startsWith('description') && index !== undefined) {
-      const value = localAd.descriptions[index] || '';
+      const value = localAd.descriptions && localAd.descriptions[index] ? 
+        localAd.descriptions[index] : (localAd as any)[field] || '';
+        
       insertTrigger(
         trigger, 
         field, 
         value, 
         (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
       );
+    }
+  };
+
+  // Helper function to get headline value safely
+  const getHeadlineValue = (index: number): string => {
+    if (localAd.headlines && localAd.headlines.length > index) {
+      return localAd.headlines[index];
+    }
+    
+    switch (index) {
+      case 0: return localAd.headline1 || '';
+      case 1: return localAd.headline2 || '';
+      case 2: return localAd.headline3 || '';
+      default: return '';
+    }
+  };
+  
+  // Helper function to get description value safely
+  const getDescriptionValue = (index: number): string => {
+    if (localAd.descriptions && localAd.descriptions.length > index) {
+      return localAd.descriptions[index];
+    }
+    
+    switch (index) {
+      case 0: return localAd.description1 || '';
+      case 1: return localAd.description2 || '';
+      default: return '';
     }
   };
 
@@ -92,7 +170,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           <label className="text-sm font-medium">Headline 1</label>
           {isEditing && (
             <div className="flex items-center">
-              <CharacterCountIndicator text={localAd.headlines[0] || ''} limit={30} />
+              <CharacterCountIndicator text={getHeadlineValue(0)} limit={30} />
               <TriggerButtonInline onInsert={(trigger) => handleInsertTrigger('headline1', trigger, 0)} />
             </div>
           )}
@@ -103,7 +181,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           render={({ field }) => (
             <FormControl>
               <Input
-                value={localAd.headlines[0] || ''}
+                value={getHeadlineValue(0)}
                 onChange={(e) => handleChange("headline1", e.target.value, 0)}
                 placeholder="Enter headline"
                 readOnly={!isEditing}
@@ -120,7 +198,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           <label className="text-sm font-medium">Headline 2</label>
           {isEditing && (
             <div className="flex items-center">
-              <CharacterCountIndicator text={localAd.headlines[1] || ''} limit={30} />
+              <CharacterCountIndicator text={getHeadlineValue(1)} limit={30} />
               <TriggerButtonInline onInsert={(trigger) => handleInsertTrigger('headline2', trigger, 1)} />
             </div>
           )}
@@ -131,7 +209,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           render={({ field }) => (
             <FormControl>
               <Input
-                value={localAd.headlines[1] || ''}
+                value={getHeadlineValue(1)}
                 onChange={(e) => handleChange("headline2", e.target.value, 1)}
                 placeholder="Enter headline"
                 readOnly={!isEditing}
@@ -148,7 +226,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           <label className="text-sm font-medium">Headline 3</label>
           {isEditing && (
             <div className="flex items-center">
-              <CharacterCountIndicator text={localAd.headlines[2] || ''} limit={30} />
+              <CharacterCountIndicator text={getHeadlineValue(2)} limit={30} />
               <TriggerButtonInline onInsert={(trigger) => handleInsertTrigger('headline3', trigger, 2)} />
             </div>
           )}
@@ -159,7 +237,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           render={({ field }) => (
             <FormControl>
               <Input
-                value={localAd.headlines[2] || ''}
+                value={getHeadlineValue(2)}
                 onChange={(e) => handleChange("headline3", e.target.value, 2)}
                 placeholder="Enter headline"
                 readOnly={!isEditing}
@@ -176,7 +254,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           <label className="text-sm font-medium">Description 1</label>
           {isEditing && (
             <div className="flex items-center">
-              <CharacterCountIndicator text={localAd.descriptions[0] || ''} limit={90} />
+              <CharacterCountIndicator text={getDescriptionValue(0)} limit={90} />
               <TriggerButtonInline onInsert={(trigger) => handleInsertTrigger('description1', trigger, 0)} />
             </div>
           )}
@@ -187,7 +265,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           render={({ field }) => (
             <FormControl>
               <Textarea
-                value={localAd.descriptions[0] || ''}
+                value={getDescriptionValue(0)}
                 onChange={(e) => handleChange("description1", e.target.value, 0)}
                 placeholder="Enter description"
                 readOnly={!isEditing}
@@ -204,7 +282,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           <label className="text-sm font-medium">Description 2</label>
           {isEditing && (
             <div className="flex items-center">
-              <CharacterCountIndicator text={localAd.descriptions[1] || ''} limit={90} />
+              <CharacterCountIndicator text={getDescriptionValue(1)} limit={90} />
               <TriggerButtonInline onInsert={(trigger) => handleInsertTrigger('description2', trigger, 1)} />
             </div>
           )}
@@ -215,7 +293,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           render={({ field }) => (
             <FormControl>
               <Textarea
-                value={localAd.descriptions[1] || ''}
+                value={getDescriptionValue(1)}
                 onChange={(e) => handleChange("description2", e.target.value, 1)}
                 placeholder="Enter description"
                 readOnly={!isEditing}

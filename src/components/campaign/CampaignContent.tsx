@@ -61,7 +61,7 @@ const CampaignContent: React.FC = () => {
     metaAds
   );
 
-  // Using the extracted hooks
+  // Using the extracted hooks - fix argument counts
   const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
     handleAnalyzeWebsite: analyzeWebsite,
     setAnalysisResult,
@@ -104,7 +104,7 @@ const CampaignContent: React.FC = () => {
     campaignData
   });
 
-  // Fix the way we call useAdUpdateHandlers by passing an object with the setters
+  // Fix: pass an object with all setter functions instead of individual arguments
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,

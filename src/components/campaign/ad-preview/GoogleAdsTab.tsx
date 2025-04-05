@@ -6,7 +6,7 @@ import { MoveRight, Sparkles, Loader2 } from "lucide-react";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdCard from "./google/GoogleAdCard";
-import TriggerGallery from "./TriggerGallery";
+import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
 import EmptyAdsState from "./EmptyAdsState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -88,7 +88,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               Click a trigger to add it to the current trigger selection
             </p>
             <ScrollArea className="h-32 w-full">
-              <TriggerGallery platform="google" />
+              <TriggerGallery />
             </ScrollArea>
           </CardContent>
         </Card>
@@ -117,7 +117,6 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
       ) : (
         <EmptyAdsState
           platform="Google Ads"
-          onGenerate={handleGenerateClick}
           isGenerating={isGenerating}
         />
       )}

@@ -1,9 +1,9 @@
 
-import { useState } from "react";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd } from "@/hooks/adGeneration";
-import { toast } from "sonner";
-import { errorLogger } from "@/services/libs/error-handling";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
+import { GoogleAd } from '@/hooks/adGeneration';
+import { errorLogger } from '@/services/libs/error-handling';
 
 export const useGoogleAdActions = (
   analysisResult: WebsiteAnalysisResult | null,
@@ -15,162 +15,127 @@ export const useGoogleAdActions = (
 
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) {
-      toast("Website analysis required", {
-        description: "Please analyze a website before generating ads"
-      });
+      toast.error("Website analysis required before generating ads");
       return;
     }
 
     try {
       setIsGenerating(true);
-
-      // Get the mind trigger from the campaign data
-      const mindTrigger = (window as any).campaignContext?.campaignData?.mindTriggers?.google || "";
       
-      console.log("Generating Google ads with mind trigger:", mindTrigger);
+      // Get the Google mind trigger from campaignData if available
+      const mindTrigger = (window as any).campaignContext?.campaignData?.mindTriggers?.google || '';
       
-      // Use fallback ads if the API call fails
-      let ads = await generateGoogleAds(analysisResult, mindTrigger);
+      console.log("Generating Google ads with trigger:", mindTrigger);
+      const generatedAds = await generateGoogleAds(analysisResult, mindTrigger);
       
-      if (!ads || ads.length === 0) {
-        // Generate fallback ads if API fails
-        console.log("Using fallback Google ads");
-        ads = generateFallbackGoogleAds(analysisResult);
+      if (generatedAds) {
+        // Create a consistent data structure with both individual fields and arrays
+        const enrichedAds = generatedAds.map(ad => {
+          return {
+            ...ad,
+            headline1: ad.headline1 || '',
+            headline2: ad.headline2 || '',
+            headline3: ad.headline3 || '',
+            description1: ad.description1 || '',
+            description2: ad.description2 || ''
+          };
+        });
+        
+        toast.success(`Generated ${enrichedAds.length} Google ad variations`);
+        
+        // Update campaign data with the new ads
+        setCampaignData(prev => ({
+          ...prev,
+          googleAds: enrichedAds
+        }));
+      } else {
+        // Generate fallback ads
+        const fallbackAds = generateFallbackGoogleAds();
+        setCampaignData(prev => ({
+          ...prev,
+          googleAds: fallbackAds
+        }));
+        
+        toast.warning("Using fallback Google ads", {
+          description: "Generated fallback ads due to API connection issues"
+        });
       }
-
-      // Update campaign data with the generated ads
-      setCampaignData((prev: any) => ({
-        ...prev,
-        googleAds: ads,
-      }));
-
-      toast("Google Ads Generated", {
-        description: `${ads.length} ad variations created. 5 credits used.`
-      });
-
     } catch (error) {
       errorLogger.logError(error, "handleGenerateGoogleAds");
       console.error("Error generating Google ads:", error);
       
-      // Generate fallback ads if there was an error
-      const fallbackAds = generateFallbackGoogleAds(analysisResult);
-      
-      setCampaignData((prev: any) => ({
+      // Generate fallback ads
+      const fallbackAds = generateFallbackGoogleAds();
+      setCampaignData(prev => ({
         ...prev,
-        googleAds: fallbackAds,
+        googleAds: fallbackAds
       }));
       
-      toast("Used fallback ads", {
-        description: "Generated fallback ads due to connection issues"
+      toast.error("An error occurred while generating Google ads", {
+        description: "Using fallback ad variations instead"
       });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Generate fallback Google ads
-  const generateFallbackGoogleAds = (analysisResult: WebsiteAnalysisResult | null): GoogleAd[] => {
-    if (!analysisResult) return [];
+  // Fallback ad generation for when the API fails
+  const generateFallbackGoogleAds = (): GoogleAd[] => {
+    const companyName = analysisResult?.companyName || "Company";
+    const businessDesc = analysisResult?.businessDescription || "Quality service provider";
     
-    const { companyName, businessDescription, callToAction } = analysisResult;
-    
-    // Create 5 ad variations with the available data
+    // Create 5 fallback ads
     return [
       {
-        headline1: `${companyName} | Professional Services`,
-        headline2: "High-Quality Solutions",
-        headline3: "Get Started Today",
-        description1: businessDescription?.substring(0, 80) || "Transform your business with our professional services.",
-        description2: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Contact us today!",
-        headlines: [
-          `${companyName} | Professional Services`,
-          "High-Quality Solutions",
-          "Get Started Today"
-        ],
-        descriptions: [
-          businessDescription?.substring(0, 80) || "Transform your business with our professional services.",
-          typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Contact us today!"
-        ],
+        headline1: `${companyName} - Official Site`,
+        headline2: "Quality Solutions",
+        headline3: "Expert Service",
+        description1: `${businessDesc.substring(0, 80)}`,
+        description2: "Contact Us Today for a Free Quote!",
         path1: "services",
-        path2: "professional"
+        path2: "solutions"
       },
       {
-        headline1: `Best ${companyName} Solutions`,
-        headline2: "Expert Services & Support",
-        headline3: "Start Your Journey",
-        description1: businessDescription?.substring(0, 80) || "Discover how our services can help your business grow.",
-        description2: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Learn more now!",
-        headlines: [
-          `Best ${companyName} Solutions`,
-          "Expert Services & Support",
-          "Start Your Journey"
-        ],
-        descriptions: [
-          businessDescription?.substring(0, 80) || "Discover how our services can help your business grow.",
-          typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Learn more now!"
-        ],
-        path1: "solutions",
-        path2: "expert"
+        headline1: `Top Rated ${companyName}`,
+        headline2: "Professional Services",
+        headline3: "Save 15% Today",
+        description1: `${businessDesc.substring(0, 80)}`,
+        description2: "Trusted by Thousands of Satisfied Customers.",
+        path1: "offers",
+        path2: "discount"
       },
       {
-        headline1: `${companyName} - Trusted Provider`,
-        headline2: "Quality Results Guaranteed",
-        headline3: "Book a Consultation",
-        description1: businessDescription?.substring(0, 80) || "Join our satisfied customers and experience the difference.",
-        description2: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Get in touch now!",
-        headlines: [
-          `${companyName} - Trusted Provider`,
-          "Quality Results Guaranteed",
-          "Book a Consultation"
-        ],
-        descriptions: [
-          businessDescription?.substring(0, 80) || "Join our satisfied customers and experience the difference.",
-          typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Get in touch now!"
-        ],
-        path1: "consultation",
-        path2: "trusted"
+        headline1: `${companyName} - #1 Choice`,
+        headline2: "Fast & Reliable Service",
+        headline3: "30-Day Guarantee",
+        description1: `${businessDesc.substring(0, 80)}`,
+        description2: "Free Consultation & Quick Response Time.",
+        path1: "guarantee",
+        path2: "service"
       },
       {
-        headline1: `Transform with ${companyName}`,
-        headline2: "Innovative Solutions",
-        headline3: "See Results Fast",
-        description1: businessDescription?.substring(0, 80) || "Our proven approach delivers the results you're looking for.",
-        description2: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Request info today!",
-        headlines: [
-          `Transform with ${companyName}`,
-          "Innovative Solutions",
-          "See Results Fast"
-        ],
-        descriptions: [
-          businessDescription?.substring(0, 80) || "Our proven approach delivers the results you're looking for.",
-          typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Request info today!"
-        ],
-        path1: "transform",
-        path2: "results"
+        headline1: `${companyName} Solutions`,
+        headline2: "Premium Quality",
+        headline3: "Available 24/7",
+        description1: `${businessDesc.substring(0, 80)}`,
+        description2: "Customized Solutions for Your Specific Needs.",
+        path1: "premium",
+        path2: "solutions"
       },
       {
-        headline1: `${companyName} | Special Offer`,
-        headline2: "Limited Time Opportunity",
-        headline3: "Act Now & Save",
-        description1: businessDescription?.substring(0, 80) || "Take advantage of our special promotional offer today.",
-        description2: typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Contact us for details!",
-        headlines: [
-          `${companyName} | Special Offer`,
-          "Limited Time Opportunity",
-          "Act Now & Save"
-        ],
-        descriptions: [
-          businessDescription?.substring(0, 80) || "Take advantage of our special promotional offer today.",
-          typeof callToAction === 'string' ? callToAction : callToAction?.[0] || "Contact us for details!"
-        ],
-        path1: "special",
-        path2: "offer"
+        headline1: `Discover ${companyName}`,
+        headline2: "Award-Winning Service",
+        headline3: "Expert Team",
+        description1: `${businessDesc.substring(0, 80)}`,
+        description2: "Call Now for Exclusive Offers & Free Consultation.",
+        path1: "experts",
+        path2: "consultation"
       }
     ];
   };
 
   return {
     handleGenerateGoogleAds,
-    isGenerating,
+    isGenerating
   };
 };
