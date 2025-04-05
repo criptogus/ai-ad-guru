@@ -1,38 +1,51 @@
 
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 
-export const useAdUpdateHandlers = (
-  googleAds: GoogleAd[],
-  metaAds: MetaAd[],
-  microsoftAds: any[],
-  linkedInAds: any[],
-  setGoogleAds: (ads: GoogleAd[]) => void,
-  setMetaAds: (ads: MetaAd[]) => void,
-  setMicrosoftAds: (ads: any[]) => void,
-  setLinkedInAds: (ads: any[]) => void
-) => {
+export interface UseAdUpdateHandlersProps {
+  setGoogleAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
+  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  setMicrosoftAds: React.Dispatch<React.SetStateAction<any[]>>;
+  setLinkedInAds?: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+export const useAdUpdateHandlers = ({
+  setGoogleAds,
+  setMetaAds,
+  setMicrosoftAds,
+  setLinkedInAds
+}: UseAdUpdateHandlersProps) => {
   const handleUpdateGoogleAd = (index: number, updatedAd: GoogleAd) => {
-    const newAds = [...googleAds];
-    newAds[index] = updatedAd;
-    setGoogleAds(newAds);
+    setGoogleAds(prev => {
+      const newAds = [...prev];
+      newAds[index] = updatedAd;
+      return newAds;
+    });
   };
 
   const handleUpdateMetaAd = (index: number, updatedAd: MetaAd) => {
-    const newAds = [...metaAds];
-    newAds[index] = updatedAd;
-    setMetaAds(newAds);
+    setMetaAds(prev => {
+      const newAds = [...prev];
+      newAds[index] = updatedAd;
+      return newAds;
+    });
   };
 
   const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
-    const newAds = [...microsoftAds];
-    newAds[index] = updatedAd;
-    setMicrosoftAds(newAds);
+    setMicrosoftAds(prev => {
+      const newAds = [...prev];
+      newAds[index] = updatedAd;
+      return newAds;
+    });
   };
 
   const handleUpdateLinkedInAd = (index: number, updatedAd: any) => {
-    const newAds = [...linkedInAds];
-    newAds[index] = updatedAd;
-    setLinkedInAds(newAds);
+    if (setLinkedInAds) {
+      setLinkedInAds(prev => {
+        const newAds = [...prev];
+        newAds[index] = updatedAd;
+        return newAds;
+      });
+    }
   };
 
   return {
