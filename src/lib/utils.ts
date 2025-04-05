@@ -7,22 +7,37 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getDomain(url: string): string {
+export function getDomain(url?: string): string {
+  if (!url) return 'example.com';
   try {
-    return new URL(url).hostname.replace('www.', '');
-  } catch (e) {
-    // If URL parsing fails, just return the string
-    return url.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+    const domain = new URL(url).hostname;
+    return domain.startsWith('www.') ? domain.slice(4) : domain;
+  } catch (error) {
+    return 'example.com';
   }
 }
 
-/**
- * Normalize a GoogleAd object to ensure it has headlines and descriptions arrays
- */
-export const normalizeGoogleAd = (ad: GoogleAd): GoogleAd => {
-  if (!ad) return {} as GoogleAd;
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+// Normalize GoogleAd objects to ensure they have headlines and descriptions arrays
+export function normalizeGoogleAd(ad: GoogleAd): GoogleAd {
+  if (!ad) return ad;
   
-  // Create a new object with all properties from the original ad
   const normalizedAd = { ...ad };
   
   // Ensure headlines array exists
@@ -41,36 +56,25 @@ export const normalizeGoogleAd = (ad: GoogleAd): GoogleAd => {
       normalizedAd.description2 || ''
     ];
   }
-
-  // Ensure siteLinks array includes link property
-  if (normalizedAd.siteLinks) {
-    normalizedAd.siteLinks = normalizedAd.siteLinks.map((link: any) => ({
-      ...link,
-      link: link.link || '#'
-    }));
-  }
   
-  return normalizedAd as GoogleAd;
-};
+  return normalizedAd;
+}
 
-/**
- * Normalize a MetaAd object to ensure it has all required properties
- */
-export const normalizeMetaAd = (ad: MetaAd): MetaAd => {
-  if (!ad) return {} as MetaAd;
+// Normalize MetaAd objects to ensure they have format and hashtags
+export function normalizeMetaAd(ad: MetaAd): MetaAd {
+  if (!ad) return ad;
   
-  // Create a new object with all properties from the original ad
   const normalizedAd = { ...ad };
   
-  // Ensure format property exists with default value
+  // Ensure format exists
   if (!normalizedAd.format) {
     normalizedAd.format = "feed";
   }
   
-  // Ensure hashtags property exists as empty array if not present
+  // Ensure hashtags exist
   if (!normalizedAd.hashtags) {
     normalizedAd.hashtags = [];
   }
   
-  return normalizedAd as MetaAd;
-};
+  return normalizedAd;
+}

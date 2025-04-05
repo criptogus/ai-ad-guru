@@ -1,67 +1,78 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { TriggerButtonInline } from "@/components/campaign/ad-preview/TriggerButtonInline";
+import { Button } from "@/components/ui/button";
+import TriggerButtonInline from "../ad-preview/TriggerButtonInline";
+import { useMentalTriggers } from "@/hooks/useMentalTriggers";
 
 interface AdTextEditorProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  maxLength?: number;
-  placeholder?: string;
-  rows?: number;
-  className?: string;
-  showInsertTrigger?: boolean;
+  headline: string;
+  description: string;
+  onHeadlineChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  isEditable?: boolean;
+  headlineLimit?: number;
+  descriptionLimit?: number;
 }
 
 const AdTextEditor: React.FC<AdTextEditorProps> = ({
-  label,
-  value,
-  onChange,
-  maxLength,
-  placeholder,
-  rows = 3,
-  className = "",
-  showInsertTrigger = true
+  headline,
+  description,
+  onHeadlineChange,
+  onDescriptionChange,
+  isEditable = true,
+  headlineLimit = 30,
+  descriptionLimit = 90
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    if (maxLength !== undefined && newValue.length > maxLength) {
-      return;
-    }
-    onChange(newValue);
-  };
+  const { insertTrigger } = useMentalTriggers();
 
-  const handleInsertTrigger = (text: string) => {
-    // Insert the text at cursor position or at the end
-    onChange(value ? `${value}\n\n${text}` : text);
+  const handleInsertTrigger = (triggerText: string) => {
+    insertTrigger(triggerText, 'headline', headline, (_, value) => onHeadlineChange(value));
   };
 
   return (
-    <div className={`space-y-1.5 ${className}`}>
-      <div className="flex justify-between items-center">
-        <Label htmlFor={`text-${label}`}>{label}</Label>
-        <div className="flex items-center gap-2">
-          {showInsertTrigger && (
-            <TriggerButtonInline onInsert={handleInsertTrigger} />
-          )}
-          {maxLength && (
-            <span className="text-xs text-muted-foreground">
-              {value.length}/{maxLength}
-            </span>
+    <div className="space-y-4">
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="headline">Headline</Label>
+          {isEditable && (
+            <div className="flex items-center">
+              <span className="text-xs text-muted-foreground mr-2">
+                {headline.length}/{headlineLimit}
+              </span>
+              <TriggerButtonInline onInsert={handleInsertTrigger} />
+            </div>
           )}
         </div>
+        <Input
+          id="headline"
+          value={headline}
+          onChange={(e) => onHeadlineChange(e.target.value)}
+          maxLength={headlineLimit}
+          disabled={!isEditable}
+          className={!isEditable ? "bg-muted" : ""}
+        />
       </div>
-      
-      <Textarea
-        id={`text-${label}`}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
-        rows={rows}
-      />
+
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="description">Description</Label>
+          <span className="text-xs text-muted-foreground">
+            {description.length}/{descriptionLimit}
+          </span>
+        </div>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+          maxLength={descriptionLimit}
+          disabled={!isEditable}
+          className={`resize-none ${!isEditable ? "bg-muted" : ""}`}
+          rows={3}
+        />
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
     // Implementation of trigger selection
   };
 
-  // Ensure we normalize the GoogleAd objects to have headlines and descriptions arrays
   const normalizedAds = googleAds.map(ad => normalizeGoogleAd(ad));
 
   return (

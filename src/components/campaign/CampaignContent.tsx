@@ -94,7 +94,9 @@ const CampaignContent: React.FC = () => {
 
   const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     try {
-      return await generateAdImage(prompt, additionalInfo);
+      // Fixed: Return the string URL only, not an object
+      const imageUrl = await generateAdImage(prompt, additionalInfo);
+      return imageUrl;
     } catch (error) {
       console.error("Error generating image:", error);
       return null;

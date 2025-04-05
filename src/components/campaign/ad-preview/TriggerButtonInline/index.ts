@@ -1,3 +1,3 @@
 
-export { TriggerButtonInline } from "../TriggerButtonInline";
-export { default } from "../TriggerButtonInline";
+import TriggerButtonInline from "../TriggerButtonInline";
+export default TriggerButtonInline;

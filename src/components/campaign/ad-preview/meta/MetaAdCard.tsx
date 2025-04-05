@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Edit, Copy, Image, Save, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { MetaAd } from "@/hooks/adGeneration";
-import { TriggerButtonInline } from "../TriggerButtonInline";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { InstagramPreview } from "./instagram-preview";
+import { Edit, Save, X, Copy, Loader2 } from "lucide-react";
+import InstagramAdEditor from "./InstagramAdEditor";
+import TriggerButtonInline from "../TriggerButtonInline";
 
 interface MetaAdCardProps {
   index: number;

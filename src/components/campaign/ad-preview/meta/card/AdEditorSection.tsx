@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Image, Sparkles, BookOpen } from "lucide-react";
 import { EditorSectionProps } from "./types";
-import { TriggerButtonInline } from "../../TriggerButtonInline";
+import TriggerButtonInline from "../../TriggerButtonInline";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
 import AdvancedPromptTemplates from "../../ad-prompts/AdvancedPromptTemplates";
