@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { FormField, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,22 +29,18 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 
   const handleChange = (field: string, value: string, index?: number) => {
     setLocalAd(prev => {
-      const updatedAd = { ...prev };
+      const updatedAd = normalizeGoogleAd({ ...prev });
       
       if (field.startsWith('headline') && index !== undefined) {
         const headlineNum = parseInt(field.replace('headline', ''));
         (updatedAd as any)[field] = value;
         
-        const headlines = [...updatedAd.headlines];
-        headlines[index] = value;
-        updatedAd.headlines = headlines;
+        updatedAd.headlines[index] = value;
       } else if (field.startsWith('description') && index !== undefined) {
         const descNum = parseInt(field.replace('description', ''));
         (updatedAd as any)[field] = value;
         
-        const descriptions = [...updatedAd.descriptions];
-        descriptions[index] = value;
-        updatedAd.descriptions = descriptions;
+        updatedAd.descriptions[index] = value;
       } else if (field === 'path1') {
         updatedAd.path1 = value;
         updatedAd.displayPath = `${value}/${prev.displayPath?.split('/')[1] || ''}`;
@@ -76,10 +72,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 
   const handleInsertTrigger = (field: string, trigger: string, index?: number) => {
     if (field.startsWith('headline') && index !== undefined) {
-      const value = localAd.headlines?.[index] || 
-                   (field === 'headline1' ? localAd.headline1 : 
-                    field === 'headline2' ? localAd.headline2 : 
-                    field === 'headline3' ? localAd.headline3 : '');
+      const value = localAd.headlines[index] || '';
       
       insertTrigger(
         trigger, 
@@ -88,9 +81,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
       );
     } else if (field.startsWith('description') && index !== undefined) {
-      const value = localAd.descriptions?.[index] || 
-                   (field === 'description1' ? localAd.description1 : 
-                    field === 'description2' ? localAd.description2 : '');
+      const value = localAd.descriptions[index] || '';
       
       insertTrigger(
         trigger, 
@@ -102,28 +93,11 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
   };
 
   const getHeadlineValue = (index: number): string => {
-    if (localAd.headlines && localAd.headlines.length > index) {
-      return localAd.headlines[index];
-    }
-    
-    switch (index) {
-      case 0: return localAd.headline1 || '';
-      case 1: return localAd.headline2 || '';
-      case 2: return localAd.headline3 || '';
-      default: return '';
-    }
+    return localAd.headlines[index] || '';
   };
   
   const getDescriptionValue = (index: number): string => {
-    if (localAd.descriptions && localAd.descriptions.length > index) {
-      return localAd.descriptions[index];
-    }
-    
-    switch (index) {
-      case 0: return localAd.description1 || '';
-      case 1: return localAd.description2 || '';
-      default: return '';
-    }
+    return localAd.descriptions[index] || '';
   };
 
   return (

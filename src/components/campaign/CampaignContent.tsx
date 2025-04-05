@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
@@ -33,6 +33,8 @@ const CampaignContent: React.FC = () => {
     setMicrosoftAds,
     setAudienceAnalysisResult
   } = useCampaign();
+
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
   const {
     analyzeWebsite,
@@ -94,25 +96,46 @@ const CampaignContent: React.FC = () => {
 
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
-      return await generateAdImage(prompt, additionalContext);
+      const result = await generateAdImage(prompt, additionalContext);
+      return typeof result === 'string' ? result : null;
     } catch (error) {
       console.error("Error generating image:", error);
       return null;
     }
   };
 
-  // Update the image generation handler to match the expected signature
-  const customImageHandler = async (ad: MetaAd, index: number): Promise<void> => {
-    const { handleGenerateImage } = useImageGenerationHandler({
-      generateAdImage: handleGenerateImageWrapper,
-      metaAds,
-      linkedInAds,
-      setMetaAds,
-      setLinkedInAds,
-      campaignData
-    });
-    
-    await handleGenerateImage(ad, index);
+  // Create the actual image generation handler
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    try {
+      setLoadingImageIndex(index);
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
+      
+      // Add format context if it exists
+      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
+      const finalPrompt = promptWithContext + formatContext;
+      
+      const imageUrl = await handleGenerateImageWrapper(finalPrompt, {
+        ad,
+        campaignData,
+        index
+      });
+
+      if (imageUrl) {
+        if (metaAds[index]) {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          setMetaAds(updatedAds);
+        } else if (linkedInAds[index]) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          setLinkedInAds(updatedAds);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleGenerateImage:", error);
+    } finally {
+      setLoadingImageIndex(null);
+    }
   };
 
   const {
@@ -155,7 +178,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateLinkedInAds,
-    handleGenerateImage: customImageHandler,
+    handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,

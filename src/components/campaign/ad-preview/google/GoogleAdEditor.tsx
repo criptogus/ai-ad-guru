@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { Button } from "@/components/ui/button";
 import { Edit, Check, X, Copy } from "lucide-react";
 import GoogleAdDetails from "./GoogleAdDetails";
 import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
+import { normalizeGoogleAd } from "@/lib/utils";
 
 interface GoogleAdEditorProps {
   ad: GoogleAd;
@@ -18,108 +18,56 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   onUpdateAd,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
+  const normalizedAd = normalizeGoogleAd(ad);
+  const [editedAd, setEditedAd] = useState<GoogleAd>(normalizedAd);
 
   const handleStartEditing = () => {
-    // Ensure headlines/descriptions arrays by creating a new object
-    const updatedAd = { 
-      ...ad,
-      headlines: ad.headlines || [
-        ad.headline1 || '', 
-        ad.headline2 || '', 
-        ad.headline3 || ''
-      ],
-      descriptions: ad.descriptions || [
-        ad.description1 || '',
-        ad.description2 || ''
-      ]
-    };
-    
-    setEditedAd(updatedAd);
+    setEditedAd(normalizeGoogleAd(ad));
     setIsEditing(true);
   };
 
   const handleSaveChanges = () => {
-    onUpdateAd(index, editedAd);
+    onUpdateAd(index, normalizeGoogleAd(editedAd));
     setIsEditing(false);
   };
 
   const handleCancelEditing = () => {
-    setEditedAd(ad);
+    setEditedAd(normalizeGoogleAd(ad));
     setIsEditing(false);
   };
 
   const handleCopyContent = () => {
-    // Create fallback for copying if headlines/descriptions arrays don't exist
-    let headlinesText;
-    if (Array.isArray(ad.headlines)) {
-      headlinesText = ad.headlines.join('\n');
-    } else {
-      headlinesText = `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
-    }
-      
-    let descriptionsText;
-    if (Array.isArray(ad.descriptions)) {
-      descriptionsText = ad.descriptions.join('\n');
-    } else {
-      descriptionsText = `${ad.description1}\n${ad.description2}`;
-    }
-      
+    const headlinesText = normalizedAd.headlines.join('\n');
+    const descriptionsText = normalizedAd.descriptions.join('\n');
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);
   };
 
   const handleUpdateAd = (updatedAd: GoogleAd) => {
-    setEditedAd(updatedAd);
+    setEditedAd(normalizeGoogleAd(updatedAd));
   };
 
   const handleInsertTrigger = (triggerText: string) => {
-    // Create a new object with headlines and descriptions arrays if they don't exist
-    const updatedAd = { ...editedAd };
+    const updatedAd = normalizeGoogleAd(editedAd);
     
-    if (!updatedAd.headlines) {
-      updatedAd.headlines = [
-        updatedAd.headline1 || '',
-        updatedAd.headline2 || '',
-        updatedAd.headline3 || ''
-      ];
-    }
-    
-    if (!updatedAd.descriptions) {
-      updatedAd.descriptions = [
-        updatedAd.description1 || '',
-        updatedAd.description2 || ''
-      ];
-    }
-    
-    // Choose where to insert the trigger (e.g., first headline)
-    const updatedHeadlines = [...(updatedAd.headlines || [])];
-    
-    if (updatedHeadlines[0].length + triggerText.length <= 30) {
-      // If it fits in the first headline
-      updatedHeadlines[0] = triggerText;
+    if (updatedAd.headlines[0].length + triggerText.length <= 30) {
+      updatedAd.headlines[0] = triggerText;
       updatedAd.headline1 = triggerText;
-    } else if (updatedHeadlines[1].length + triggerText.length <= 30) {
-      // If it fits in the second headline
-      updatedHeadlines[1] = triggerText;
+    } else if (updatedAd.headlines[1].length + triggerText.length <= 30) {
+      updatedAd.headlines[1] = triggerText;
       updatedAd.headline2 = triggerText;
-    } else if (updatedHeadlines[2].length + triggerText.length <= 30) {
-      // If it fits in the third headline
-      updatedHeadlines[2] = triggerText;
+    } else if (updatedAd.headlines[2].length + triggerText.length <= 30) {
+      updatedAd.headlines[2] = triggerText;
       updatedAd.headline3 = triggerText;
     } else {
-      // If it doesn't fit in any headline, try to add to description
-      const updatedDescriptions = [...(updatedAd.descriptions || [])];
-      if (updatedDescriptions[0].length + triggerText.length <= 90) {
-        updatedDescriptions[0] = triggerText;
+      if (updatedAd.descriptions[0].length + triggerText.length <= 90) {
+        updatedAd.descriptions[0] = triggerText;
         updatedAd.description1 = triggerText;
-        updatedAd.descriptions = updatedDescriptions;
         setEditedAd(updatedAd);
         return;
       }
     }
     
-    updatedAd.headlines = updatedHeadlines;
     setEditedAd(updatedAd);
   };
 
