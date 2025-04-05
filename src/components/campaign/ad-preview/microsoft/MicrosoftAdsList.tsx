@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
-import { MicrosoftAd } from "@/hooks/adGeneration";
+import { MicrosoftAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import MicrosoftAdCard from "./MicrosoftAdCard";
 import { getDomain } from "@/lib/utils";
@@ -35,7 +36,7 @@ const MicrosoftAdsList: React.FC<MicrosoftAdsListProps> = ({
             onClick={() => onUpdateMicrosoftAd && onUpdateMicrosoftAd(index, ad)}
           >
             <h3 className="text-sm font-medium">Microsoft Ad #{index + 1}</h3>
-            <MicrosoftAdCard ad={ad} domain={domain} />
+            <MicrosoftAdCard ad={ad} domain={domain} index={index} />
           </div>
         ))}
       </div>

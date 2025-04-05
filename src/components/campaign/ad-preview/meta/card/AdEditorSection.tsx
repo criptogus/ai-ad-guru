@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MetaAd } from "@/hooks/adGeneration";
+import { MetaAd } from "@/hooks/adGeneration/types";
 import TriggerButtonInline from "../../TriggerButtonInline";
 import { EditorSectionProps } from "./types";
 import {
@@ -32,12 +32,12 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
     }
   };
 
-  // Custom handler for format which uses a string literal type
+  // Custom handler for format which is optional and uses a string literal type
   const handleFormatChange = (format: "feed" | "story" | "reel") => {
     if (onUpdate) {
       onUpdate({
         ...ad,
-        format
+        format // This is now allowed since we updated the type definition
       });
     }
   };

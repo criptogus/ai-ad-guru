@@ -51,3 +51,6 @@ export interface AdGenerationInput {
   websiteUrl?: string;
   [key: string]: any;
 }
+
+// MicrosoftAd type definition (extending GoogleAd)
+export interface MicrosoftAd extends GoogleAd {}

@@ -34,14 +34,19 @@ export const useImageGenerationHandler = ({
       const imageUrl = await generateAdImage(finalPrompt, ad);
 
       if (imageUrl) {
-        if (metaAds[index]) {
+        // Check if this is a Meta ad or LinkedIn ad
+        if (index < metaAds.length) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-        } else if (linkedInAds[index]) {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setLinkedInAds(updatedAds);
+        } else {
+          // If not in metaAds array, it must be a LinkedIn ad
+          const linkedInIndex = index - metaAds.length;
+          if (linkedInAds[linkedInIndex]) {
+            const updatedAds = [...linkedInAds];
+            updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
+            setLinkedInAds(updatedAds);
+          }
         }
       }
     } catch (error) {

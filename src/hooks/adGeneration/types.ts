@@ -47,3 +47,6 @@ export interface UseAdGenerationReturn {
   generateAdImage: (prompt: string, additionalContext?: any) => Promise<string | null>;
   isGenerating: boolean;
 }
+
+// MicrosoftAd type definition (extending GoogleAd)
+export interface MicrosoftAd extends GoogleAd {}

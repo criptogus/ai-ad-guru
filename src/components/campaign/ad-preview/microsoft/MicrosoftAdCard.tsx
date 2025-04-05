@@ -1,48 +1,31 @@
 
 import React from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { GoogleAd } from "@/hooks/adGeneration";
-import { MicrosoftAdCardHeader } from "./MicrosoftAdCardHeader";
-import { MicrosoftAdPreview } from "./MicrosoftAdPreview";
+import { Card, CardContent } from "@/components/ui/card";
+import { MicrosoftAd } from "@/hooks/adGeneration/types";
+import { normalizeGoogleAd } from "@/lib/utils";
 
-export interface MicrosoftAdCardProps {
-  ad: GoogleAd;
+interface MicrosoftAdCardProps {
+  ad: MicrosoftAd;
+  domain: string;
   index: number;
-  domain?: string;
-  isSelected?: boolean;
-  onSelect?: () => void;
-  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
-export const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
-  ad,
-  index,
-  domain = "example.com",
-  isSelected = false,
-  onSelect,
-  onUpdate,
-}) => {
+const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({ ad, domain, index }) => {
+  // Normalize the ad to ensure it has headlines and descriptions arrays
+  const normalizedAd = normalizeGoogleAd(ad);
+  
   return (
-    <Card className={`${isSelected ? 'border-primary shadow-sm' : ''} transition-all`}>
-      <MicrosoftAdCardHeader 
-        label={`Variation ${index + 1}`} 
-        isSelected={isSelected}
-      />
-      <CardContent className="pt-4 pb-2">
-        <MicrosoftAdPreview ad={ad} domain={domain} onUpdate={onUpdate} />
-      </CardContent>
-      <CardFooter className="pt-0 pb-4">
-        <Button 
-          variant={isSelected ? "default" : "outline"} 
-          size="sm" 
-          className="w-full" 
-          onClick={onSelect}
-        >
-          {isSelected ? "Selected" : "Select"}
-        </Button>
-      </CardFooter>
-    </Card>
+    <div className="mt-2">
+      <div className="text-blue-600 text-sm font-medium">
+        {normalizedAd.headlines?.join(" | ") || `${normalizedAd.headline1} | ${normalizedAd.headline2} | ${normalizedAd.headline3}`}
+      </div>
+      <div className="text-green-700 text-xs">
+        {domain}/{normalizedAd.path1}/{normalizedAd.path2}
+      </div>
+      <div className="text-gray-700 dark:text-gray-300 text-xs mt-1">
+        {normalizedAd.descriptions?.join(" ") || `${normalizedAd.description1} ${normalizedAd.description2}`}
+      </div>
+    </div>
   );
 };
 
