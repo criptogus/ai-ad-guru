@@ -1,6 +1,7 @@
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
+import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -49,6 +50,14 @@ export function normalizeGoogleAd(ad: any): GoogleAd {
     descriptions: descriptions,
     siteLinks: siteLinks
   };
+}
+
+/**
+ * Normalizes a MicrosoftAd object to ensure it has all required fields
+ * Microsoft ads use the same structure as Google Ads
+ */
+export function normalizeMicrosoftAd(ad: any): MicrosoftAd {
+  return normalizeGoogleAd(ad) as MicrosoftAd;
 }
 
 /**

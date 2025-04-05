@@ -8,7 +8,7 @@ import { useCampaign } from "@/contexts/CampaignContext";
 import { GoogleAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MicrosoftAdCard } from "./";
-import { normalizeGoogleAd, normalizeMicrosoftAd, getDomain } from "@/lib/utils";
+import { normalizeGoogleAd, getDomain } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -73,7 +73,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
         <div className="grid grid-cols-1 gap-4">
           {microsoftAds.map((ad, index) => {
             // Always normalize to ensure consistent structure
-            const normalizedAd = normalizeMicrosoftAd(ad);
+            const normalizedAd = normalizeGoogleAd(ad);
             return (
               <MicrosoftAdCard
                 key={index}
