@@ -1,55 +1,44 @@
 
-import { useState } from "react";
+import { useState, useEffect } from 'react';
+import { TriggerCategory } from '@/components/mental-triggers/types';
 
-export function useMindTriggers() {
-  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
+// Re-export from useMentalTriggers for compatibility
+import { useMentalTriggers } from '@/components/mental-triggers/useMentalTriggers';
 
-  const insertTrigger = (
-    triggerText: string,
-    fieldName: string,
-    currentValue: string,
-    onUpdate: (field: string, value: string) => void
-  ) => {
-    // If there's existing text, append the trigger with line breaks
-    const updatedValue = currentValue 
-      ? `${currentValue}\n\n${triggerText}` 
-      : triggerText;
-    
-    onUpdate(fieldName, updatedValue);
-    setSelectedTrigger(triggerText);
-  };
-
-  const getTriggers = () => {
-    return [
-      "Limited Time Offer",
-      "Exclusive Deal",
-      "Save Up To 50%",
-      "Free Shipping",
-      "Buy Now",
-      "Act Fast",
-      "New Arrival",
-      "Best Seller",
-      "Sale Ends Soon",
-      "Join Now",
-      "Don't Miss Out",
-      "Special Promotion",
-      "Today Only",
-      "Last Chance",
-      "Get Started",
-      "Sign Up Today"
-    ];
-  };
-
-  return {
-    selectedTrigger,
-    setSelectedTrigger,
-    insertTrigger,
-    getTriggers
-  };
+export interface MindTrigger {
+  id: string;
+  title: string;
+  description: string;
+  examples: string[];
+  category: TriggerCategory;
+  text: string;
 }
 
-// Also export as useMentalTriggers for backward compatibility
-export const useMentalTriggers = useMindTriggers;
+export const useMindTriggers = () => {
+  const { triggers, selectedTrigger, setSelectedTrigger, categories } = useMentalTriggers();
+  
+  // Provide additional functionality for mind triggers specifically
+  const [recentTriggers, setRecentTriggers] = useState<MindTrigger[]>([]);
+  
+  // Store recently used triggers
+  useEffect(() => {
+    if (selectedTrigger) {
+      setRecentTriggers(prev => {
+        // Remove if already exists
+        const filtered = prev.filter(t => t.id !== selectedTrigger.id);
+        // Add to beginning
+        return [selectedTrigger, ...filtered].slice(0, 5);
+      });
+    }
+  }, [selectedTrigger]);
+  
+  return {
+    triggers,
+    selectedTrigger,
+    setSelectedTrigger,
+    categories,
+    recentTriggers
+  };
+};
 
-// Default export for more flexibility
 export default useMindTriggers;

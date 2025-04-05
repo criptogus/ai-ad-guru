@@ -6,7 +6,7 @@ import GoogleAdPreview from "../ad-preview/google/GoogleAdPreview";
 import { InstagramPreview } from "../ad-preview/meta";
 import { MicrosoftAdPreview } from "../ad-preview/microsoft";
 import LinkedInAdPreview from "../ad-preview/linkedin/LinkedInAdPreview";
-import { normalizeGoogleAd, normalizeMicrosoftAd } from "@/lib/utils";
+import { normalizeGoogleAd, normalizeMetaAd, getDomain } from "@/lib/utils";
 
 interface AdPreviewsSectionProps {
   platform: string;
@@ -27,14 +27,8 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   websiteUrl,
   analysisResult,
 }) => {
-  // Extract domain from websiteUrl
-  const getDomain = (url: string) => {
-    try {
-      return new URL(url).hostname.replace('www.', '');
-    } catch (e) {
-      return url;
-    }
-  };
+  // Extract domain from websiteUrl using the utility function
+  const domain = getDomain(websiteUrl);
 
   // Get the appropriate ads to display based on platform
   const getAdPreviews = () => {
@@ -46,7 +40,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {googleAds.slice(0, 2).map((ad, index) => (
                 <div key={index} className="border rounded-md p-2">
-                  <GoogleAdPreview ad={ad} domain={getDomain(websiteUrl)} />
+                  <GoogleAdPreview ad={ad} domain={domain} />
                 </div>
               ))}
             </div>
@@ -95,10 +89,10 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {microsoftAds.slice(0, 2).map((ad, index) => {
                 // Always normalize Microsoft ads
-                const normalizedAd = normalizeMicrosoftAd(ad);
+                const normalizedAd = normalizeGoogleAd(ad);
                 return (
                   <div key={index} className="border rounded-md p-2">
-                    <MicrosoftAdPreview ad={normalizedAd} domain={getDomain(websiteUrl)} />
+                    <MicrosoftAdPreview ad={normalizedAd} domain={domain} />
                   </div>
                 );
               })}

@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
@@ -24,6 +25,17 @@ export function slugify(str: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+export function getDomain(url: string): string {
+  try {
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+    return new URL(url).hostname.replace('www.', '');
+  } catch (e) {
+    return url;
+  }
 }
 
 export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
@@ -57,6 +69,11 @@ export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
       link: site.link || '#'
     })) || []
   };
+}
+
+export function normalizeMicrosoftAd(ad: Partial<GoogleAd>): GoogleAd {
+  // Microsoft ads use the same structure as Google Ads
+  return normalizeGoogleAd(ad);
 }
 
 export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {

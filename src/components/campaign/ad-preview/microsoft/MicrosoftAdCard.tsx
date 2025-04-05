@@ -1,17 +1,18 @@
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { GoogleAd } from "@/hooks/adGeneration/types";
+import { Edit, Check, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Save, X } from "lucide-react";
-import { MicrosoftAd } from "@/hooks/adGeneration/types";
-import { MicrosoftAdPreview } from ".";
+import MicrosoftAdDetails from "./MicrosoftAdDetails";
+import MicrosoftAdPreview from "./MicrosoftAdPreview";
 import { normalizeGoogleAd } from "@/lib/utils";
 
-export interface MicrosoftAdCardProps {
-  ad: MicrosoftAd;
+interface MicrosoftAdCardProps {
+  ad: GoogleAd;
   domain: string;
   index: number;
-  onUpdate: (updatedAd: MicrosoftAd) => void;
+  onUpdate: (updatedAd: GoogleAd) => void;
 }
 
 const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
@@ -21,71 +22,74 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
   onUpdate
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedAd, setEditedAd] = useState<MicrosoftAd>(normalizeGoogleAd(ad) as MicrosoftAd);
+  const [editedAd, setEditedAd] = useState<GoogleAd>(normalizeGoogleAd(ad));
 
-  const handleEdit = () => {
+  const handleEditClick = () => {
+    setEditedAd(normalizeGoogleAd(ad));
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    onUpdate(editedAd);
+  const handleCancelEdit = () => {
     setIsEditing(false);
   };
 
-  const handleCancel = () => {
-    setEditedAd(normalizeGoogleAd(ad) as MicrosoftAd);
+  const handleSaveEdit = () => {
+    onUpdate(normalizeGoogleAd(editedAd));
     setIsEditing(false);
   };
 
-  const handleCopy = () => {
-    // Create text representation for copying
+  const handleCopyContent = () => {
     const headlinesText = ad.headlines.join('\n');
     const descriptionsText = ad.descriptions.join('\n');
-    const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     
-    navigator.clipboard.writeText(content);
+    navigator.clipboard.writeText(
+      `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`
+    );
+  };
+
+  const handleUpdateAd = (updatedAd: GoogleAd) => {
+    setEditedAd(normalizeGoogleAd(updatedAd));
   };
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        {/* Card Header */}
-        <div className="flex justify-between items-center bg-muted p-3 border-b">
-          <h3 className="text-sm font-medium">Microsoft Ad #{index + 1}</h3>
-          <div className="flex gap-2">
+    <Card className="overflow-hidden">
+      <CardHeader className="bg-gray-50 dark:bg-gray-800 p-4 border-b">
+        <div className="flex justify-between items-center">
+          <h3 className="text-md font-medium">Microsoft Ad {index + 1}</h3>
+          <div className="flex space-x-2">
             {isEditing ? (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleCancel}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEdit}
                 >
                   <X className="h-4 w-4 mr-1" />
                   Cancel
                 </Button>
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  onClick={handleSave}
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleSaveEdit}
                 >
-                  <Save className="h-4 w-4 mr-1" />
+                  <Check className="h-4 w-4 mr-1" />
                   Save
                 </Button>
               </>
             ) : (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleCopy}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyContent}
                 >
                   <Copy className="h-4 w-4 mr-1" />
                   Copy
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleEdit}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEditClick}
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
@@ -94,14 +98,22 @@ const MicrosoftAdCard: React.FC<MicrosoftAdCardProps> = ({
             )}
           </div>
         </div>
-
-        {/* Ad Content */}
-        <div className="p-4">
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="mb-4">
           <MicrosoftAdPreview 
             ad={isEditing ? editedAd : ad} 
             domain={domain} 
           />
         </div>
+        
+        {isEditing && (
+          <MicrosoftAdDetails
+            ad={editedAd}
+            onUpdate={handleUpdateAd}
+            isEditing={true}
+          />
+        )}
       </CardContent>
     </Card>
   );

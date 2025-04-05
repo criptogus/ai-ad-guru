@@ -76,6 +76,27 @@ const CampaignContent: React.FC = () => {
     setCampaignData,
   });
 
+  // Create properly typed wrapper functions to ensure consistent type handling
+  const typedGenerateGoogleAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
+    const result = await generateGoogleAds(input, trigger);
+    return result ? result.map(ad => normalizeGoogleAd(ad)) : [];
+  };
+
+  const typedGenerateMetaAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
+    const result = await generateMetaAds(input, trigger);
+    return result ? result.map(ad => normalizeMetaAd(ad)) : [];
+  };
+
+  const typedGenerateLinkedInAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
+    const result = await generateLinkedInAds(input, trigger);
+    return result ? result.map(ad => normalizeMetaAd(ad)) : [];
+  };
+
+  const typedGenerateMicrosoftAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
+    const result = await generateMicrosoftAds(input, trigger);
+    return result ? result.map(ad => normalizeGoogleAd(ad)) : [];
+  };
+
   const {
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
@@ -88,12 +109,13 @@ const CampaignContent: React.FC = () => {
     setMetaAds,
     setLinkedInAds,
     setMicrosoftAds,
-    generateGoogleAds: (input: any, trigger?: string) => generateGoogleAds(input, trigger),
-    generateMetaAds: (input: any, trigger?: string) => generateMetaAds(input, trigger),
-    generateLinkedInAds: (input: any, trigger?: string) => generateLinkedInAds(input, trigger),
-    generateMicrosoftAds: (input: any, trigger?: string) => generateMicrosoftAds(input, trigger)
+    generateGoogleAds: typedGenerateGoogleAds,
+    generateMetaAds: typedGenerateMetaAds,
+    generateLinkedInAds: typedGenerateLinkedInAds,
+    generateMicrosoftAds: typedGenerateMicrosoftAds
   });
 
+  // Create a properly typed wrapper for image generation
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
       const result = await generateAdImage(prompt, additionalContext);

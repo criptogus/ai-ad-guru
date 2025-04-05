@@ -71,12 +71,4 @@ const AdTextEditor: React.FC<AdTextEditorProps> = ({
   );
 };
 
-// Example of using TriggerButtonInline with onInsert
-const TriggerInsertExample = ({ onInsert }: { onInsert: (text: string) => void }) => (
-  <TriggerButtonInline 
-    onSelectTrigger={onInsert} 
-    onInsert={onInsert} 
-  />
-);
-
 export default AdTextEditor;
