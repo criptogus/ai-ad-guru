@@ -5,9 +5,10 @@ import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
+  companyName: string;
 }
 
-const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad }) => {
+const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName }) => {
   // Parse hashtags from the ad
   const renderHashtags = () => {
     if (!ad.hashtags || (Array.isArray(ad.hashtags) && ad.hashtags.length === 0)) {
@@ -46,7 +47,7 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad }) =
       <div className="text-sm">
         <p className="font-semibold mb-1">127 likes</p>
         <p>
-          <span className="font-semibold mr-1">{ad.companyName || "sponsor"}</span>
+          <span className="font-semibold mr-1">{companyName}</span>
           {ad.description}
         </p>
         {renderHashtags() && (

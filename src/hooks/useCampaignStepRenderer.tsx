@@ -1,3 +1,4 @@
+
 import React from "react";
 import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
 import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
@@ -7,7 +8,7 @@ import AudienceAnalysisStep from "@/components/campaign/audience-analysis/Audien
 import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
 import AdPreviewStep from "@/components/campaign/ad-preview/AdPreviewStep";
 import CampaignSummary from "@/components/campaign/CampaignSummary";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 
 interface UseCampaignStepRendererProps {
   currentStep: number;
@@ -15,8 +16,8 @@ interface UseCampaignStepRendererProps {
   campaignData: any;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  microsoftAds: any[];
-  linkedInAds: any[];
+  microsoftAds: GoogleAd[];
+  linkedInAds: MetaAd[];
   isAnalyzing: boolean;
   isGenerating: boolean;
   loadingImageIndex: number | null;
@@ -29,8 +30,8 @@ interface UseCampaignStepRendererProps {
   handleGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   handleUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   handleUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
-  handleUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
-  handleUpdateLinkedInAd: (index: number, updatedAd: any) => void;
+  handleUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
+  handleUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   setCampaignData: React.Dispatch<React.SetStateAction<any>>;
   handleBack: () => void;
   handleNextWrapper: (data?: any) => void;
