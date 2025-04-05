@@ -11,6 +11,7 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
+  // Update siteLinks to include link property
   siteLinks?: {title: string, link: string, description?: string}[];
 }
 

@@ -10,11 +10,7 @@ export function getDomain(url: string): string {
   try {
     return new URL(url).hostname.replace('www.', '');
   } catch (e) {
-    // If the URL is invalid, return it as is
-    return url;
+    // If URL parsing fails, just return the string
+    return url.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
   }
-}
-
-export function getDomainFromUrl(url: string): string {
-  return getDomain(url);
 }

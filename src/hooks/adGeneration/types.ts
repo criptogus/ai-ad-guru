@@ -1,3 +1,4 @@
+
 export interface GoogleAd {
   headline1: string;
   headline2: string;
@@ -7,7 +8,9 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
+  // Update siteLinks to include link property
   siteLinks?: Array<{title: string, link: string, description?: string}>;
+  // Add headlines and descriptions arrays
   headlines?: string[];
   descriptions?: string[];
   finalUrl?: string;
@@ -20,7 +23,9 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
+  // Add format property
   format?: "feed" | "story" | "reel";
+  // Add hashtags property
   hashtags?: string[] | string;
   companyName?: string;
   finalUrl?: string;

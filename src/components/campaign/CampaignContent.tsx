@@ -1,9 +1,8 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
-import { useAdGeneration } from "@/hooks/adGeneration";
+import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { useCampaignCreation } from "@/hooks/campaignActions/useCampaignCreation";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import CampaignLayout from "./CampaignLayout";
@@ -13,7 +12,6 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
-import { MetaAd, GoogleAd } from "@/hooks/adGeneration/types";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -62,7 +60,6 @@ const CampaignContent: React.FC = () => {
     metaAds
   );
 
-  // Using the extracted hooks with proper props objects
   const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
     handleAnalyzeWebsite: analyzeWebsite,
     setAnalysisResult,
@@ -93,11 +90,8 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds
   });
 
-  // Create a wrapper function that matches the expected type for generateAdImage
   const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
-    const result = await generateAdImage(prompt, additionalInfo);
-    // Ensure we return a string or null
-    return result ? (typeof result === 'string' ? result : null) : null;
+    return await generateAdImage(prompt, additionalInfo);
   };
 
   const { 
@@ -130,11 +124,8 @@ const CampaignContent: React.FC = () => {
     setCampaignData
   );
 
-  // This wrapper function is crucial for proper navigation
   const handleNextWrapper = (data?: any) => {
-    // Set autoAdvance to false to prevent automatic progression after AI fills
     setAutoAdvance(false);
-    // Call handleNext and return its result
     return handleNext(data);
   };
 

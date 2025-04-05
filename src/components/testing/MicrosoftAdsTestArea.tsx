@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ const MicrosoftAdsTestArea: React.FC = () => {
     const newHeadlines = [...testAd.headlines!];
     newHeadlines[index] = value;
     
-    // Also update the individual headline properties
     const updatedAd = { 
       ...testAd, 
       headlines: newHeadlines 
@@ -52,7 +50,6 @@ const MicrosoftAdsTestArea: React.FC = () => {
     const newDescriptions = [...testAd.descriptions!];
     newDescriptions[index] = value;
     
-    // Also update the individual description properties
     const updatedAd = { 
       ...testAd, 
       descriptions: newDescriptions 
