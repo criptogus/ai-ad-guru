@@ -1,4 +1,3 @@
-
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";

@@ -1,18 +1,18 @@
-
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 
-interface AdGenerationHandlersProps {
-  analysisResult: WebsiteAnalysisResult | null;
+interface UseAdGenerationHandlersProps {
+  analysisResult: WebsiteAnalysisResult;
   campaignData: any;
-  setGoogleAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
-  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  setMicrosoftAds: React.Dispatch<React.SetStateAction<GoogleAd[]>>;
-  generateGoogleAds: (input: WebsiteAnalysisResult, mindTrigger?: string) => Promise<GoogleAd[] | null>;
-  generateMetaAds: (input: WebsiteAnalysisResult, mindTrigger?: string) => Promise<MetaAd[] | null>;
-  generateLinkedInAds: (input: WebsiteAnalysisResult, mindTrigger?: string) => Promise<MetaAd[] | null>;
-  generateMicrosoftAds: (input: WebsiteAnalysisResult, mindTrigger?: string) => Promise<GoogleAd[] | null>;
+  setGoogleAds: (ads: GoogleAd[]) => void;
+  setMetaAds: (ads: MetaAd[]) => void;
+  setLinkedInAds: (ads: MetaAd[]) => void;
+  setMicrosoftAds: (ads: GoogleAd[]) => void;
+  generateGoogleAds: (input: any, trigger?: string) => Promise<GoogleAd[] | null>;
+  generateMetaAds: (input: any, trigger?: string) => Promise<MetaAd[] | null>;
+  generateLinkedInAds: (input: any, trigger?: string) => Promise<MetaAd[] | null>;
+  generateMicrosoftAds: (input: any, trigger?: string) => Promise<GoogleAd[] | null>;
 }
 
 export const useAdGenerationHandlers = ({
@@ -26,52 +26,63 @@ export const useAdGenerationHandlers = ({
   generateMetaAds,
   generateLinkedInAds,
   generateMicrosoftAds
-}: AdGenerationHandlersProps) => {
+}: UseAdGenerationHandlersProps) => {
   const handleGenerateGoogleAds = async () => {
-    if (!analysisResult) return;
-    
-    const platform = "google";
-    const mindTrigger = campaignData?.mindTriggers?.[platform];
-    
-    const ads = await generateGoogleAds(analysisResult, mindTrigger);
-    if (ads) {
-      setGoogleAds(ads);
+    try {
+      const mindTrigger = campaignData?.mindTriggers?.google;
+      const ads = await generateGoogleAds(analysisResult, mindTrigger);
+      
+      if (ads) {
+        const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
+        setGoogleAds(normalizedAds);
+      }
+    } catch (error) {
+      console.error("Error generating Google ads:", error);
     }
   };
 
   const handleGenerateMetaAds = async () => {
-    if (!analysisResult) return;
-    
-    const platform = "meta";
-    const mindTrigger = campaignData?.mindTriggers?.[platform];
-    
-    const ads = await generateMetaAds(analysisResult, mindTrigger);
-    if (ads) {
-      setMetaAds(ads);
+    try {
+      const mindTrigger = campaignData?.mindTriggers?.meta;
+      const ads = await generateMetaAds(analysisResult, mindTrigger);
+      
+      if (ads) {
+        const normalizedAds = ads.map(ad => normalizeMetaAd(ad));
+        setMetaAds(normalizedAds);
+      }
+    } catch (error) {
+      console.error("Error generating Meta ads:", error);
     }
   };
 
   const handleGenerateLinkedInAds = async () => {
-    if (!analysisResult) return;
-    
-    const platform = "linkedin";
-    const mindTrigger = campaignData?.mindTriggers?.[platform];
-    
-    const ads = await generateLinkedInAds(analysisResult, mindTrigger);
-    if (ads) {
-      setLinkedInAds(ads);
+    try {
+      const mindTrigger = campaignData?.mindTriggers?.linkedin;
+      const ads = await generateLinkedInAds(analysisResult, mindTrigger);
+      
+      if (ads) {
+        const normalizedAds = ads.map(ad => normalizeMetaAd(ad));
+        setLinkedInAds(normalizedAds);
+      }
+    } catch (error) {
+      console.error("Error generating LinkedIn ads:", error);
     }
   };
 
   const handleGenerateMicrosoftAds = async () => {
-    if (!analysisResult) return;
-    
-    const platform = "microsoft";
-    const mindTrigger = campaignData?.mindTriggers?.[platform];
-    
-    const ads = await generateMicrosoftAds(analysisResult, mindTrigger);
-    if (ads) {
-      setMicrosoftAds(ads);
+    try {
+      const mindTrigger = campaignData?.mindTriggers?.microsoft;
+      const ads = await generateMicrosoftAds(analysisResult, mindTrigger);
+      
+      if (ads) {
+        const normalizedAds = ads.map(ad => {
+          const normalizedAd = normalizeGoogleAd(ad);
+          return normalizedAd;
+        });
+        setMicrosoftAds(normalizedAds);
+      }
+    } catch (error) {
+      console.error("Error generating Microsoft ads:", error);
     }
   };
 

@@ -1,15 +1,13 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { MicrosoftAd } from "@/hooks/adGeneration/types";
-import { getDomain } from "@/lib/utils";
 import MicrosoftAdCard from "./MicrosoftAdCard";
-import { Loader2, RefreshCw, Plus } from "lucide-react";
 
 interface MicrosoftAdsListProps {
-  ads: MicrosoftAd[] | null;
-  websiteUrl: string; 
+  ads: MicrosoftAd[];
+  websiteUrl: string;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateAd: (index: number, updatedAd: MicrosoftAd) => void;
@@ -22,88 +20,52 @@ const MicrosoftAdsList: React.FC<MicrosoftAdsListProps> = ({
   onGenerateAds,
   onUpdateAd
 }) => {
-  // Ensure ads is always an array
-  const safeAds = Array.isArray(ads) ? ads : [];
-  
-  // Extract the domain from the website URL
+  // Extract domain from website URL
+  const getDomain = (url: string) => {
+    try {
+      if (!url.startsWith('http')) {
+        url = 'https://' + url;
+      }
+      return new URL(url).hostname.replace('www.', '');
+    } catch (e) {
+      return url;
+    }
+  };
+
   const domain = getDomain(websiteUrl);
 
   return (
     <div className="space-y-6">
-      {/* Generate Button */}
       <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">Microsoft Ads</h3>
-          <p className="text-sm text-muted-foreground">
-            Generate and customize Microsoft ads for your campaign
-          </p>
-        </div>
-        
-        <Button
-          onClick={onGenerateAds}
+        <h3 className="text-lg font-medium">Generated Microsoft Ads</h3>
+        <Button 
+          onClick={onGenerateAds} 
           disabled={isGenerating}
-          variant={safeAds.length > 0 ? "outline" : "default"}
-          className="ml-auto"
+          variant="outline"
+          size="sm"
         >
           {isGenerating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Generating...
             </>
-          ) : safeAds.length > 0 ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Regenerate Ads
-            </>
           ) : (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              Generate Ads
-            </>
+            <>Regenerate Ads</>
           )}
         </Button>
       </div>
-
-      {/* Show loading state */}
-      {isGenerating && safeAds.length === 0 && (
-        <Card>
-          <CardContent className="py-10 flex flex-col items-center justify-center">
-            <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-            <p className="text-muted-foreground">
-              Generating Microsoft ads using AI...
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Show empty state */}
-      {!isGenerating && safeAds.length === 0 && (
-        <Card>
-          <CardContent className="py-10 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground mb-4">
-              No Microsoft ads generated yet
-            </p>
-            <Button onClick={onGenerateAds} disabled={isGenerating}>
-              Generate Microsoft Ads
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Show ads */}
-      {safeAds.length > 0 && (
-        <div className="space-y-6">
-          {safeAds.map((ad, index) => (
-            <MicrosoftAdCard
-              key={index}
-              ad={ad}
-              domain={domain}
-              index={index}
-              onUpdateAd={(updatedAd) => onUpdateAd(index, updatedAd)}
-            />
-          ))}
-        </div>
-      )}
+      
+      <div className="grid grid-cols-1 gap-4">
+        {ads.map((ad, index) => (
+          <MicrosoftAdCard
+            key={index}
+            ad={ad}
+            domain={domain}
+            index={index}
+            onUpdate={(updatedAd) => onUpdateAd(index, updatedAd)}
+          />
+        ))}
+      </div>
     </div>
   );
 };

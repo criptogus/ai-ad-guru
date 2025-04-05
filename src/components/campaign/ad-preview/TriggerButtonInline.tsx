@@ -5,11 +5,13 @@ import { Sparkles } from "lucide-react";
 
 export interface TriggerButtonInlineProps {
   onSelectTrigger: (triggerText: string) => void;
+  onInsert?: (triggerText: string) => void; // Add this prop for compatibility
   size?: "sm" | "default";
 }
 
 const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   onSelectTrigger,
+  onInsert,
   size = "default"
 }) => {
   // Get mental triggers from a utility function directly
@@ -31,12 +33,20 @@ const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   const triggers = getMentalTriggers();
   const randomTrigger = triggers[Math.floor(Math.random() * triggers.length)];
 
+  const handleTriggerClick = () => {
+    // Call both handlers if provided (for backward compatibility)
+    if (onInsert) {
+      onInsert(randomTrigger);
+    }
+    onSelectTrigger(randomTrigger);
+  };
+
   return (
     <Button
       variant="outline"
       size={size}
       className="gap-1 group"
-      onClick={() => onSelectTrigger(randomTrigger)}
+      onClick={handleTriggerClick}
     >
       <Sparkles className="h-3.5 w-3.5 text-blue-500 group-hover:text-blue-600" />
       <span>Add trigger</span>

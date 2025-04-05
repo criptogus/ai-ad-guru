@@ -1,15 +1,13 @@
 
-import { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration/types";
-import { CampaignData } from "@/contexts/CampaignContext";
+import { MetaAd } from "@/hooks/adGeneration";
 
 interface UseImageGenerationHandlerProps {
   generateAdImage: (prompt: string, additionalContext?: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
-  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  campaignData: CampaignData;
+  setMetaAds: (ads: MetaAd[]) => void;
+  setLinkedInAds: (ads: MetaAd[]) => void;
+  campaignData: any;
 }
 
 export const useImageGenerationHandler = ({
@@ -22,42 +20,46 @@ export const useImageGenerationHandler = ({
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
+      if (!ad.imagePrompt) return;
+      
       setLoadingImageIndex(index);
-      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       
-      // Add format context if it exists
-      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
-      const finalPrompt = promptWithContext + formatContext;
+      const imageUrl = await generateAdImage(ad.imagePrompt, {
+        companyName: campaignData?.companyName,
+        businessDescription: campaignData?.businessDescription,
+        ...campaignData
+      });
       
-      const imageUrl = await generateAdImage(finalPrompt, ad);
-
       if (imageUrl) {
-        // Check if this is a Meta ad or LinkedIn ad
-        if (index < metaAds.length) {
+        // Create a copy of the ad with the updated image URL
+        const updatedAd = { ...ad, imageUrl };
+        
+        // Figure out which ad array this ad belongs to
+        if (metaAds.some(metaAd => metaAd === ad)) {
           const updatedAds = [...metaAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          updatedAds[index] = updatedAd;
           setMetaAds(updatedAds);
-        } else {
-          // If not in metaAds array, it must be a LinkedIn ad
-          const linkedInIndex = index - metaAds.length;
-          if (linkedInAds[linkedInIndex]) {
-            const updatedAds = [...linkedInAds];
-            updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
-            setLinkedInAds(updatedAds);
-          }
+        } else if (linkedInAds.some(linkedInAd => linkedInAd === ad)) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = updatedAd;
+          setLinkedInAds(updatedAds);
         }
       }
+      
     } catch (error) {
       console.error("Error generating image:", error);
     } finally {
       setLoadingImageIndex(null);
     }
   };
-
+  
   return {
     handleGenerateImage,
     loadingImageIndex
   };
 };
+
+// Add missing import
+import { useState } from "react";
