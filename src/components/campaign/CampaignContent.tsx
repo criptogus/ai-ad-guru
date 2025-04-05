@@ -133,7 +133,7 @@ const CampaignContent: React.FC = () => {
       });
 
       if (imageUrl) {
-        // Create a new MetaAd object with the updated imageUrl
+        // Create a new updated ad object with the image URL
         const updatedAd: MetaAd = { 
           ...ad, 
           imageUrl 
