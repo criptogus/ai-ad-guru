@@ -47,3 +47,9 @@ export function useMindTriggers() {
     getTriggers
   };
 }
+
+// Also export as useMentalTriggers for backward compatibility
+export const useMentalTriggers = useMindTriggers;
+
+// Default export for more flexibility
+export default useMindTriggers;

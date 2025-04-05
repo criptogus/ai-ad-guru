@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import CharacterCountIndicator from "../CharacterCountIndicator";
 import TriggerButtonInline from "../TriggerButtonInline";
-import { useMentalTriggers } from "@/hooks/useMindTriggers";
+import { useMindTriggers } from "@/hooks/useMindTriggers";
 import { normalizeGoogleAd } from "@/lib/utils";
 
 interface GoogleAdDetailsProps {
@@ -21,7 +21,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 }) => {
   const normalizedAd = normalizeGoogleAd(ad);
   const [localAd, setLocalAd] = useState<GoogleAd>(normalizedAd);
-  const { insertTrigger } = useMentalTriggers();
+  const { insertTrigger } = useMindTriggers();
 
   useEffect(() => {
     setLocalAd(normalizeGoogleAd(ad));
@@ -76,8 +76,11 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 
   const handleInsertTrigger = (field: string, trigger: string, index?: number) => {
     if (field.startsWith('headline') && index !== undefined) {
-      const value = localAd.headlines[index];
-        
+      const value = localAd.headlines?.[index] || 
+                   (field === 'headline1' ? localAd.headline1 : 
+                    field === 'headline2' ? localAd.headline2 : 
+                    field === 'headline3' ? localAd.headline3 : '');
+      
       insertTrigger(
         trigger, 
         field, 
@@ -85,8 +88,10 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
       );
     } else if (field.startsWith('description') && index !== undefined) {
-      const value = localAd.descriptions[index];
-        
+      const value = localAd.descriptions?.[index] || 
+                   (field === 'description1' ? localAd.description1 : 
+                    field === 'description2' ? localAd.description2 : '');
+      
       insertTrigger(
         trigger, 
         field, 
