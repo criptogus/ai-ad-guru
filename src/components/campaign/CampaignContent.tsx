@@ -137,13 +137,15 @@ const CampaignContent: React.FC = () => {
       });
 
       if (imageUrl) {
+        const updatedAd = { ...ad, imageUrl };
+        
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          updatedAds[index] = updatedAd;
           setMetaAds(updatedAds);
         } else if (linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          updatedAds[index] = updatedAd;
           setLinkedInAds(updatedAds);
         }
       }
