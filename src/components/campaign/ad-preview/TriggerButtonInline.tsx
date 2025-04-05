@@ -18,9 +18,17 @@ const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   // Get mental triggers from useMindTriggers hook
   const { getTriggers } = useMindTriggers();
   const triggers = getTriggers();
-  const randomTrigger = triggers[Math.floor(Math.random() * triggers.length)];
+  
+  // Select a random trigger from available triggers
+  const getRandomTrigger = () => {
+    if (triggers.length === 0) return "";
+    const randomIndex = Math.floor(Math.random() * triggers.length);
+    return triggers[randomIndex].text;
+  };
 
   const handleTriggerClick = () => {
+    const randomTrigger = getRandomTrigger();
+    
     // Call both handlers if provided for backward compatibility
     if (onSelectTrigger) {
       onSelectTrigger(randomTrigger);

@@ -1,63 +1,37 @@
 
-import { useCallback } from "react";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
+import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 
-interface AdGenerationWrappersProps {
-  handleGenerateGoogleAds: () => Promise<any>;
-  handleGenerateMetaAds: () => Promise<any>;
-  handleGenerateMicrosoftAds: () => Promise<any>;
-  handleGenerateLinkedInAds: () => Promise<any>;
-}
+export const useAdGenerationWrappers = (
+  generateGoogleAds: any,
+  generateMetaAds: any,
+  generateLinkedInAds: any,
+  generateMicrosoftAds: any
+) => {
+  const wrappedGenerateGoogleAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
+    const ads = await generateGoogleAds(input, trigger);
+    return Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
+  };
 
-export const useAdGenerationWrappers = (props: AdGenerationWrappersProps) => {
-  const { 
-    handleGenerateGoogleAds, 
-    handleGenerateMetaAds, 
-    handleGenerateMicrosoftAds,
-    handleGenerateLinkedInAds
-  } = props;
+  const wrappedGenerateMetaAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
+    const ads = await generateMetaAds(input, trigger);
+    return Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
+  };
 
-  // Wrap Google ad generation to ensure Promise<void> return type
-  const wrappedHandleGenerateGoogleAds = useCallback(async (): Promise<void> => {
-    try {
-      await handleGenerateGoogleAds();
-    } catch (error) {
-      console.error("Error generating Google ads:", error);
-    }
-  }, [handleGenerateGoogleAds]);
+  const wrappedGenerateLinkedInAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
+    const ads = await generateLinkedInAds(input, trigger);
+    return Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
+  };
 
-  // Wrap Meta ad generation to ensure Promise<void> return type
-  const wrappedHandleGenerateMetaAds = useCallback(async (): Promise<void> => {
-    try {
-      await handleGenerateMetaAds();
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
-    }
-  }, [handleGenerateMetaAds]);
-
-  // Wrap Microsoft ad generation to ensure Promise<void> return type
-  const wrappedHandleGenerateMicrosoftAds = useCallback(async (): Promise<void> => {
-    try {
-      await handleGenerateMicrosoftAds();
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
-    }
-  }, [handleGenerateMicrosoftAds]);
-
-  // Wrap LinkedIn ad generation to ensure Promise<void> return type
-  const wrappedHandleGenerateLinkedInAds = useCallback(async (): Promise<void> => {
-    try {
-      await handleGenerateLinkedInAds();
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-    }
-  }, [handleGenerateLinkedInAds]);
+  const wrappedGenerateMicrosoftAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
+    const ads = await generateMicrosoftAds(input, trigger);
+    return Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
+  };
 
   return {
-    wrappedHandleGenerateGoogleAds,
-    wrappedHandleGenerateMetaAds,
-    wrappedHandleGenerateMicrosoftAds,
-    wrappedHandleGenerateLinkedInAds
+    wrappedGenerateGoogleAds,
+    wrappedGenerateMetaAds,
+    wrappedGenerateLinkedInAds,
+    wrappedGenerateMicrosoftAds
   };
 };
-
-export default useAdGenerationWrappers;

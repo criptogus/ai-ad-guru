@@ -52,6 +52,13 @@ export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
     ad.description2 || ''
   ];
 
+  // Ensure siteLinks have the required link property
+  const siteLinks = ad.siteLinks?.map(site => ({
+    title: site.title || '',
+    description: site.description || '',
+    link: site.link || '#'  // Provide a default link if missing
+  })) || [];
+
   return {
     id: ad.id || crypto.randomUUID(),
     headline1: ad.headline1 || headlines[0] || '',
@@ -64,10 +71,7 @@ export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
     displayPath: ad.displayPath || '',
     headlines: headlines,
     descriptions: descriptions,
-    siteLinks: ad.siteLinks?.map(site => ({
-      ...site,
-      link: site.link || '#'
-    })) || []
+    siteLinks: siteLinks
   };
 }
 

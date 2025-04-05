@@ -3,7 +3,6 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import TriggerButtonInline from "../ad-preview/TriggerButtonInline";
 import { useMindTriggers } from "@/hooks/useMindTriggers";
 
@@ -24,8 +23,20 @@ const AdTextEditor: React.FC<AdTextEditorProps> = ({
   maxLength,
   multiline = false,
 }) => {
-  const handleInsert = (text: string) => {
-    onChange(text);
+  const { insertTrigger } = useMindTriggers();
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+  };
+
+  const handleInsert = (triggerText: string) => {
+    // Use the insertTrigger helper from our useMindTriggers hook
+    insertTrigger(
+      triggerText,
+      "text",
+      value,
+      (_, updatedValue) => onChange(updatedValue)
+    );
   };
 
   return (
@@ -45,7 +56,7 @@ const AdTextEditor: React.FC<AdTextEditorProps> = ({
         {multiline ? (
           <Textarea 
             value={value} 
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleChange}
             placeholder={placeholder}
             maxLength={maxLength}
             className="resize-none"
@@ -54,7 +65,7 @@ const AdTextEditor: React.FC<AdTextEditorProps> = ({
         ) : (
           <Input 
             value={value} 
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleChange}
             placeholder={placeholder}
             maxLength={maxLength}
           />
