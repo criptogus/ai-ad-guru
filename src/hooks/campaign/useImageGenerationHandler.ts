@@ -30,6 +30,7 @@ export const useImageGenerationHandler = ({
       // Create additional context object for image generation
       const additionalInfo = {
         platform: campaignData?.currentEditingPlatform || "meta",
+        format: ad.format || "feed",
         userId: campaignData?.userId,
         // Add any other relevant context
       };

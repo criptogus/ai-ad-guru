@@ -21,7 +21,7 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
 
   const handleStartEditing = () => {
-    // Ensure headlines/descriptions arrays
+    // Ensure headlines/descriptions arrays by creating a new object
     const updatedAd = { 
       ...ad,
       headlines: ad.headlines || [
@@ -50,14 +50,20 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   };
 
   const handleCopyContent = () => {
-    // Create a fallback for copying if headlines/descriptions arrays don't exist
-    const headlinesText = ad.headlines 
-      ? ad.headlines.join('\n') 
-      : `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
+    // Create fallback for copying if headlines/descriptions arrays don't exist
+    let headlinesText;
+    if (Array.isArray(ad.headlines)) {
+      headlinesText = ad.headlines.join('\n');
+    } else {
+      headlinesText = `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
+    }
       
-    const descriptionsText = ad.descriptions 
-      ? ad.descriptions.join('\n') 
-      : `${ad.description1}\n${ad.description2}`;
+    let descriptionsText;
+    if (Array.isArray(ad.descriptions)) {
+      descriptionsText = ad.descriptions.join('\n');
+    } else {
+      descriptionsText = `${ad.description1}\n${ad.description2}`;
+    }
       
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);
@@ -68,24 +74,25 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   };
 
   const handleInsertTrigger = (triggerText: string) => {
-    // Initialize arrays if they don't exist
-    if (!editedAd.headlines) {
-      editedAd.headlines = [
-        editedAd.headline1 || '',
-        editedAd.headline2 || '',
-        editedAd.headline3 || ''
+    // Create a new object with headlines and descriptions arrays if they don't exist
+    const updatedAd = { ...editedAd };
+    
+    if (!updatedAd.headlines) {
+      updatedAd.headlines = [
+        updatedAd.headline1 || '',
+        updatedAd.headline2 || '',
+        updatedAd.headline3 || ''
       ];
     }
     
-    if (!editedAd.descriptions) {
-      editedAd.descriptions = [
-        editedAd.description1 || '',
-        editedAd.description2 || ''
+    if (!updatedAd.descriptions) {
+      updatedAd.descriptions = [
+        updatedAd.description1 || '',
+        updatedAd.description2 || ''
       ];
     }
     
     // Choose where to insert the trigger (e.g., first headline)
-    const updatedAd = { ...editedAd };
     const updatedHeadlines = [...(updatedAd.headlines || [])];
     
     if (updatedHeadlines[0].length + triggerText.length <= 30) {

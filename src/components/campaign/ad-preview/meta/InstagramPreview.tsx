@@ -96,7 +96,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   // Determine which format to use (from props, ad, or default)
   const format = viewMode 
     ? viewMode as "feed" | "story" | "reel" 
-    : normalizeFormat(ad.format as string);
+    : normalizeFormat(ad.format || "feed");
 
   return (
     <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">

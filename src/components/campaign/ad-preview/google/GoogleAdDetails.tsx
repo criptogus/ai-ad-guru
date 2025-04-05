@@ -28,26 +28,32 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
     
     // Ensure headlines array exists
     if (!updatedAd.headlines) {
-      updatedAd.headlines = [
-        updatedAd.headline1 || '',
-        updatedAd.headline2 || '',
-        updatedAd.headline3 || ''
-      ];
+      updatedAd = {
+        ...updatedAd,
+        headlines: [
+          updatedAd.headline1 || '',
+          updatedAd.headline2 || '',
+          updatedAd.headline3 || ''
+        ]
+      };
     }
     
     // Ensure descriptions array exists
     if (!updatedAd.descriptions) {
-      updatedAd.descriptions = [
-        updatedAd.description1 || '',
-        updatedAd.description2 || ''
-      ];
+      updatedAd = {
+        ...updatedAd,
+        descriptions: [
+          updatedAd.description1 || '',
+          updatedAd.description2 || ''
+        ]
+      };
     }
     
     setLocalAd(updatedAd);
   }, [ad]);
 
   const handleChange = (field: string, value: string, index?: number) => {
-    setLocalAd((prev) => {
+    setLocalAd(prev => {
       const updatedAd = { ...prev };
       
       if (field.startsWith('headline') && index !== undefined) {
@@ -55,16 +61,13 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         const headlineNum = parseInt(field.replace('headline', ''));
         (updatedAd as any)[field] = value;
         
-        // Ensure headlines array exists
-        if (!updatedAd.headlines) {
-          updatedAd.headlines = [
-            updatedAd.headline1 || '',
-            updatedAd.headline2 || '',
-            updatedAd.headline3 || ''
-          ];
-        }
+        // Create or update headlines array
+        const headlines = updatedAd.headlines ? [...updatedAd.headlines] : [
+          updatedAd.headline1 || '',
+          updatedAd.headline2 || '',
+          updatedAd.headline3 || ''
+        ];
         
-        const headlines = [...updatedAd.headlines];
         headlines[index] = value;
         updatedAd.headlines = headlines;
       } else if (field.startsWith('description') && index !== undefined) {
@@ -72,15 +75,12 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         const descNum = parseInt(field.replace('description', ''));
         (updatedAd as any)[field] = value;
         
-        // Ensure descriptions array exists
-        if (!updatedAd.descriptions) {
-          updatedAd.descriptions = [
-            updatedAd.description1 || '',
-            updatedAd.description2 || ''
-          ];
-        }
+        // Create or update descriptions array
+        const descriptions = updatedAd.descriptions ? [...updatedAd.descriptions] : [
+          updatedAd.description1 || '',
+          updatedAd.description2 || ''
+        ];
         
-        const descriptions = [...updatedAd.descriptions];
         descriptions[index] = value;
         updatedAd.descriptions = descriptions;
       } else if (field === 'path1') {
@@ -114,8 +114,10 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
 
   const handleInsertTrigger = (field: string, trigger: string, index?: number) => {
     if (field.startsWith('headline') && index !== undefined) {
-      const value = localAd.headlines && localAd.headlines[index] ? 
-        localAd.headlines[index] : (localAd as any)[field] || '';
+      // Get current value from array if available, otherwise from individual property
+      const value = localAd.headlines && localAd.headlines[index] !== undefined 
+        ? localAd.headlines[index] 
+        : (localAd as any)[field] || '';
         
       insertTrigger(
         trigger, 
@@ -124,8 +126,10 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
       );
     } else if (field.startsWith('description') && index !== undefined) {
-      const value = localAd.descriptions && localAd.descriptions[index] ? 
-        localAd.descriptions[index] : (localAd as any)[field] || '';
+      // Get current value from array if available, otherwise from individual property
+      const value = localAd.descriptions && localAd.descriptions[index] !== undefined
+        ? localAd.descriptions[index] 
+        : (localAd as any)[field] || '';
         
       insertTrigger(
         trigger, 

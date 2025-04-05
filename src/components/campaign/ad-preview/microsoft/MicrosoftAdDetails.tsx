@@ -11,7 +11,7 @@ interface MicrosoftAdDetailsProps {
   editedAd?: GoogleAd;
   onHeadlineChange?: (index: number, value: string) => void;
   onDescriptionChange?: (index: number, value: string) => void;
-  onUpdate?: (updatedAd: GoogleAd) => void; // Added the onUpdate prop
+  onUpdate?: (updatedAd: GoogleAd) => void;
 }
 
 const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
@@ -25,10 +25,21 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
   // Helper to insert trigger text
   const insertTrigger = (text: string, fieldType: 'headline' | 'description', index: number) => {
     if (fieldType === 'headline' && onHeadlineChange) {
-      const currentHeadline = editedAd.headlines?.[index] || '';
+      // Get headlines array or create from individual properties
+      const headlines = editedAd.headlines || [
+        editedAd.headline1, 
+        editedAd.headline2, 
+        editedAd.headline3
+      ];
+      const currentHeadline = headlines[index] || '';
       onHeadlineChange(index, `${currentHeadline} ${text}`.trim());
     } else if (fieldType === 'description' && onDescriptionChange) {
-      const currentDescription = editedAd.descriptions?.[index] || '';
+      // Get descriptions array or create from individual properties
+      const descriptions = editedAd.descriptions || [
+        editedAd.description1,
+        editedAd.description2
+      ];
+      const currentDescription = descriptions[index] || '';
       onDescriptionChange(index, `${currentDescription} ${text}`.trim());
     }
   };
@@ -38,7 +49,11 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
       <div className="space-y-4">
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Headlines (30 chars max)</h4>
-          {editedAd.headlines?.map((headline, hIndex) => (
+          {(editedAd.headlines || [
+            editedAd.headline1 || '',
+            editedAd.headline2 || '',
+            editedAd.headline3 || ''
+          ]).map((headline, hIndex) => (
             <div key={`headline-${hIndex}`} className="relative">
               <Input
                 value={headline}
@@ -61,7 +76,10 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
 
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Descriptions (90 chars max)</h4>
-          {editedAd.descriptions?.map((description, dIndex) => (
+          {(editedAd.descriptions || [
+            editedAd.description1 || '',
+            editedAd.description2 || ''
+          ]).map((description, dIndex) => (
             <div key={`description-${dIndex}`} className="relative">
               <Textarea
                 value={description}
@@ -90,7 +108,11 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
       <div>
         <h4 className="text-sm font-medium">Headlines</h4>
         <ul className="list-disc pl-5 text-sm">
-          {ad.headlines?.map((headline, index) => (
+          {(ad.headlines || [
+            ad.headline1 || '',
+            ad.headline2 || '',
+            ad.headline3 || ''
+          ]).map((headline, index) => (
             <li key={index}>{headline}</li>
           ))}
         </ul>
@@ -98,7 +120,10 @@ const MicrosoftAdDetails: React.FC<MicrosoftAdDetailsProps> = ({
       <div>
         <h4 className="text-sm font-medium">Descriptions</h4>
         <ul className="list-disc pl-5 text-sm">
-          {ad.descriptions?.map((description, index) => (
+          {(ad.descriptions || [
+            ad.description1 || '',
+            ad.description2 || ''
+          ]).map((description, index) => (
             <li key={index}>{description}</li>
           ))}
         </ul>

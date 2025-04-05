@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 
 interface ContentSectionProps {
@@ -9,83 +8,65 @@ interface ContentSectionProps {
 }
 
 const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
-  // Extract hashtags if present
-  const extractHashtags = (text?: string): string[] => {
-    if (!text) return [];
-    const hashtagRegex = /#[^\s#]+/g;
-    return text.match(hashtagRegex) || [];
-  };
-
-  // Format the caption text, handling hashtags differently
-  const formatCaption = (text?: string): React.ReactNode => {
-    if (!text) return null;
+  // Process hashtags - might be string or array
+  const renderHashtags = () => {
+    if (!ad.hashtags) return null;
     
-    // Replace hashtags with links
-    const parts = text.split(/(#[^\s#]+)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('#')) {
-        return (
-          <span key={index} className="text-blue-500 dark:text-blue-400">
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
+    // Handle both string and array formats
+    const hashtagArray = Array.isArray(ad.hashtags) 
+      ? ad.hashtags 
+      : ad.hashtags.split(/[\s,]+/);
+    
+    if (hashtagArray.length === 0) return null;
+    
+    return (
+      <div className="mt-1 text-sm text-blue-500">
+        {hashtagArray.map((tag, idx) => {
+          // Ensure the tag has a # prefix
+          const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
+          return (
+            <span key={idx} className="mr-1">{formattedTag}</span>
+          );
+        })}
+      </div>
+    );
   };
-
-  // Get hashtags from ad.hashtags (if it exists) or extract from primaryText
-  const getHashtags = (): string[] => {
-    if (ad.hashtags) {
-      if (Array.isArray(ad.hashtags)) {
-        return ad.hashtags;
-      } else if (typeof ad.hashtags === 'string') {
-        return ad.hashtags.split(/\s+/).filter(tag => tag.startsWith('#'));
-      }
-    }
-    return extractHashtags(ad.primaryText);
-  };
-
-  const hashtags = getHashtags();
 
   return (
     <div className="p-3">
       {/* Action buttons */}
       <div className="flex justify-between mb-2">
-        <div className="flex space-x-4">
-          <Heart className="w-6 h-6" />
-          <MessageCircle className="w-6 h-6" />
-          <Send className="w-6 h-6" />
+        <div className="flex gap-3">
+          <button>❤️</button>
+          <button>💬</button>
+          <button>📤</button>
         </div>
-        <Bookmark className="w-6 h-6" />
+        <button>🔖</button>
       </div>
       
-      {/* Likes */}
-      <div className="text-sm font-semibold mb-2">
-        12,345 likes
-      </div>
+      {/* Likes count */}
+      <div className="mb-2 text-sm font-medium">1,234 likes</div>
       
       {/* Caption */}
-      <div className="text-sm mb-1">
-        <span className="font-semibold mr-1">{companyName}</span>
-        {formatCaption(ad.primaryText)}
+      <div className="mb-2 text-sm">
+        <span className="font-medium">{companyName}</span>{" "}
+        <span>{ad.primaryText}</span>
       </div>
       
-      {/* Hashtags in separate line if not already in the caption */}
-      {hashtags.length > 0 && !ad.primaryText?.includes('#') && (
-        <div className="text-sm text-blue-500 dark:text-blue-400 mb-1">
-          {hashtags.join(' ')}
-        </div>
-      )}
+      {/* Hashtags */}
+      {renderHashtags()}
       
-      {/* View all comments */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-        View all 123 comments
-      </div>
+      {/* View comments */}
+      <div className="mt-2 text-sm text-gray-500">View all 123 comments</div>
       
-      {/* Post date */}
-      <div className="text-xs text-gray-500 dark:text-gray-400">
-        2 HOURS AGO
+      {/* Add comment section */}
+      <div className="mt-4 flex items-center">
+        <input 
+          type="text" 
+          placeholder="Add a comment..." 
+          className="w-full bg-transparent text-sm outline-none"
+        />
+        <button className="text-blue-500 text-sm font-semibold">Post</button>
       </div>
     </div>
   );

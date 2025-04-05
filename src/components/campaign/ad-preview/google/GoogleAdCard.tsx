@@ -39,14 +39,20 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   };
 
   const handleCopy = () => {
-    // Create a fallback for copying if headlines/descriptions arrays don't exist
-    const headlinesText = ad.headlines 
-      ? ad.headlines.join('\n') 
-      : `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
+    // Create fallback for copying if headlines/descriptions arrays don't exist
+    let headlinesText;
+    if (Array.isArray(ad.headlines)) {
+      headlinesText = ad.headlines.join('\n');
+    } else {
+      headlinesText = `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
+    }
       
-    const descriptionsText = ad.descriptions 
-      ? ad.descriptions.join('\n') 
-      : `${ad.description1}\n${ad.description2}`;
+    let descriptionsText;
+    if (Array.isArray(ad.descriptions)) {
+      descriptionsText = ad.descriptions.join('\n');
+    } else {
+      descriptionsText = `${ad.description1}\n${ad.description2}`;
+    }
       
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);

@@ -10,7 +10,7 @@ export interface GoogleAd {
   path2?: string;
   displayPath?: string;
   siteLinks?: Array<{title: string, link: string}>;
-  // Add these properties explicitly in the interface
+  // Add these arrays to match how the components are using GoogleAd
   headlines?: string[];
   descriptions?: string[];
 }
@@ -21,8 +21,8 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  // Add these properties explicitly in the interface
-  format?: string;
+  // Add these properties to match how the components are using MetaAd
+  format?: "feed" | "story" | "reel";
   hashtags?: string[] | string;
 }
 
