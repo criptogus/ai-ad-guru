@@ -1,30 +1,23 @@
-
 import React from "react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
+import { MicrosoftAdPreview } from "./index";
 import { getDomain } from "@/lib/utils";
-import MicrosoftAdCard from "./MicrosoftAdCard";
 
 interface MicrosoftAdsListProps {
-  ads: GoogleAd[];
-  domain: string;
-  onUpdateAd: (index: number, updatedAd: GoogleAd) => void;
+  microsoftAds: GoogleAd[];
+  analysisResult: any;
 }
 
-const MicrosoftAdsList: React.FC<MicrosoftAdsListProps> = ({
-  ads,
-  domain,
-  onUpdateAd
-}) => {
+const MicrosoftAdsList: React.FC<MicrosoftAdsListProps> = ({ microsoftAds, analysisResult }) => {
+  const domain = analysisResult?.websiteUrl ? getDomain(analysisResult.websiteUrl) : 'example.com';
+
   return (
-    <div className="space-y-4">
-      {ads.map((ad, index) => (
-        <MicrosoftAdCard
-          key={`microsoft-ad-${index}`}
-          ad={ad}
-          index={index}
-          domain={domain}
-          onUpdate={(updatedAd) => onUpdateAd(index, updatedAd)}
-        />
+    <div className="grid grid-cols-1 gap-4">
+      {microsoftAds.map((ad, index) => (
+        <div key={index} className="border rounded-md p-4">
+          <h3 className="text-sm font-medium">Microsoft Ad #{index + 1}</h3>
+          <MicrosoftAdPreview ad={ad} domain={domain} />
+        </div>
       ))}
     </div>
   );

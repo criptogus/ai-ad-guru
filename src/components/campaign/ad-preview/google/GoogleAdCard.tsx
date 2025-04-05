@@ -134,7 +134,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           <GoogleAdEditor 
             ad={isEditing ? editedAd : normalizedAd} 
             index={index} 
-            onUpdateAd={(_, updatedAd) => setEditedAd(updatedAd)}
+            onUpdateAd={(_, updatedAd) => setEditedAd(normalizeGoogleAd(updatedAd))}
           />
         </div>
       </CardContent>

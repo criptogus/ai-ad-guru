@@ -1,192 +1,76 @@
-
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { Button } from "@/components/ui/button";
+import { SelectTrigger, SelectValue, SelectContent, SelectItem, Select } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import MicrosoftAdEditor from "./MicrosoftAdEditor";
-import MicrosoftAdPreview from "./MicrosoftAdPreview";
+import { GoogleAd } from "@/hooks/adGeneration/types";
+import MicrosoftAdDetails from "./MicrosoftAdDetails";
+import MicrosoftAdsList from "./MicrosoftAdsList";
 import EmptyAdsState from "../EmptyAdsState";
-import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
-import { getDomain, normalizeGoogleAd } from "@/lib/utils";
+import { getDomain } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
-  ads: GoogleAd[];
+  microsoftAds: GoogleAd[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
-  onUpdateAd: (index: number, updatedAd: GoogleAd) => void;
-  onMindTriggerChange?: (trigger: string) => void;
+  onGenerateAds: () => Promise<void>;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   mindTrigger?: string;
-  onGenerate?: () => Promise<void>;
 }
 
 const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
-  ads,
+  microsoftAds,
   analysisResult,
   isGenerating,
-  onUpdateAd,
-  onMindTriggerChange,
-  mindTrigger,
-  onGenerate
+  onGenerateAds,
+  onUpdateMicrosoftAd,
+  mindTrigger
 }) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [showTriggerGallery, setShowTriggerGallery] = useState(false);
-  const domain = getDomain(analysisResult?.websiteUrl || "example.com");
-  
-  // Normalize all ads to ensure they have headlines and descriptions arrays
-  const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
-
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-  };
-
-  const handleSave = (index: number, updatedAd: GoogleAd) => {
-    onUpdateAd(index, updatedAd);
-    setEditingIndex(null);
-  };
-
-  const handleCancel = () => {
-    setEditingIndex(null);
-  };
-
-  const handleHeadlineChange = (adIndex: number, headlineIndex: number, value: string) => {
-    const ad = normalizedAds[adIndex];
-    
-    // Create a new ad object with updated headlines array
-    const updatedAd = { ...ad };
-    
-    // Update the specific headline in the headlines array
-    const headlines = [...updatedAd.headlines];
-    headlines[headlineIndex] = value;
-    updatedAd.headlines = headlines;
-    
-    // Also update the individual headline property
-    if (headlineIndex === 0) updatedAd.headline1 = value;
-    if (headlineIndex === 1) updatedAd.headline2 = value;
-    if (headlineIndex === 2) updatedAd.headline3 = value;
-    
-    onUpdateAd(adIndex, updatedAd);
-  };
-
-  const handleDescriptionChange = (adIndex: number, descIndex: number, value: string) => {
-    const ad = normalizedAds[adIndex];
-    
-    // Create a new ad object with updated descriptions array
-    const updatedAd = { ...ad };
-    
-    // Update the specific description in the descriptions array
-    const descriptions = [...updatedAd.descriptions];
-    descriptions[descIndex] = value;
-    updatedAd.descriptions = descriptions;
-    
-    // Also update the individual description property
-    if (descIndex === 0) updatedAd.description1 = value;
-    if (descIndex === 1) updatedAd.description2 = value;
-    
-    onUpdateAd(adIndex, updatedAd);
-  };
-
-  const handleSelectTrigger = (trigger: string) => {
-    if (onMindTriggerChange) {
-      onMindTriggerChange(trigger);
-      setShowTriggerGallery(false);
-    }
-  };
-
-  if (normalizedAds.length === 0) {
-    return (
-      <EmptyAdsState 
-        platform="microsoft" 
-        onGenerate={onGenerate}
-        isGenerating={isGenerating}
-      />
-    );
-  }
+  const [selectedAd, setSelectedAd] = useState<GoogleAd | null>(null);
 
   return (
-    <div className="space-y-6">
-      {/* Mind Trigger Section */}
-      {onMindTriggerChange && (
-        <div className="flex items-center justify-between mb-4 p-4 bg-muted/30 border rounded-lg">
-          <div className="flex flex-col">
-            <h3 className="text-sm font-medium">Mind Trigger</h3>
-            <p className="text-sm text-muted-foreground">
-              {mindTrigger ? `Using: ${mindTrigger}` : "No mind trigger applied"}
-            </p>
-          </div>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={() => setShowTriggerGallery(true)}
-          >
-            {mindTrigger ? "Change Trigger" : "Add Trigger"}
-          </Button>
-        </div>
-      )}
-
-      {/* Microsoft Ads */}
-      {normalizedAds.map((ad, index) => (
-        <Card key={index}>
-          <CardContent className="p-0">
-            <div className="flex justify-between items-center bg-muted p-3 border-b">
-              <h3 className="text-sm font-medium">Microsoft Ad #{index + 1}</h3>
-              <div className="flex gap-2">
-                {editingIndex === index ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleSave(index, normalizedAds[index])}
-                    >
-                      Save
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(index)}
-                    >
-                      Edit
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4 p-4">
-              <MicrosoftAdPreview ad={ad} domain={domain} />
-              
-              <MicrosoftAdEditor
-                ad={ad}
-                isEditing={editingIndex === index}
-                onHeadlineChange={(headlineIndex, value) => 
-                  handleHeadlineChange(index, headlineIndex, value)
-                }
-                onDescriptionChange={(descIndex, value) => 
-                  handleDescriptionChange(index, descIndex, value)
-                }
+    <Card>
+      <CardContent className="p-0">
+        <Tabs defaultValue="list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">Variations</TabsTrigger>
+            <TabsTrigger value="details" disabled={!selectedAd}>
+              Details
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="list" className="p-4">
+            {microsoftAds.length === 0 ? (
+              <EmptyAdsState 
+                platform="microsoft"
+                isGenerating={isGenerating}
+                onGenerate={onGenerateAds}
               />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-      
-      {/* Trigger Gallery */}
-      <TriggerGallery
-        open={showTriggerGallery}
-        onOpenChange={setShowTriggerGallery}
-        onSelectTrigger={handleSelectTrigger}
-      />
-    </div>
+            ) : (
+              <MicrosoftAdsList
+                ads={microsoftAds}
+                domain={analysisResult?.websiteUrl ? getDomain(analysisResult.websiteUrl) : 'example.com'}
+                onSelectAd={setSelectedAd}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="details" className="p-4">
+            {selectedAd ? (
+              <MicrosoftAdDetails
+                ad={selectedAd}
+                onUpdate={onUpdateMicrosoftAd}
+              />
+            ) : (
+              <div className="text-muted-foreground">
+                Select an ad variation to view details.
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
