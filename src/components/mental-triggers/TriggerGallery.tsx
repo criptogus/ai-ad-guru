@@ -1,132 +1,99 @@
 
-import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription 
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search } from 'lucide-react';
-import useMentalTriggers from './useMentalTriggers';
-import { TriggerCategory } from './types';
-import { TriggerItem } from './TriggerItem';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronRight } from "lucide-react";
 
-interface TriggerGalleryProps {
+export interface TriggerGalleryProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectTrigger: (trigger: string) => void;
+  platform?: string;
 }
 
 const TriggerGallery: React.FC<TriggerGalleryProps> = ({
   open,
   onOpenChange,
-  onSelectTrigger
+  onSelectTrigger,
+  platform = "google"
 }) => {
-  const { 
-    categories, 
-    filteredTriggers, 
-    selectedCategory, 
-    setSelectedCategory, 
-    searchQuery,
-    setSearchQuery
-  } = useMentalTriggers();
-  
-  const [activeTab, setActiveTab] = useState<string>('all');
-  
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    if (value === 'all') {
-      setSelectedCategory(null);
-    } else {
-      setSelectedCategory(value as TriggerCategory);
-    }
+  // Mental triggers based on platform
+  const triggers = {
+    google: [
+      "Limited Time Offer",
+      "Save 50% Today",
+      "Free Shipping",
+      "Get Started Now",
+      "Learn More",
+      "Fast Results",
+      "Money-Back Guarantee",
+      "Exclusive Access",
+      "Best-Seller",
+      "New Arrival",
+      "Top Rated",
+      "24/7 Support",
+      "No Hidden Fees",
+      "Premium Quality",
+      "Customer Favorite",
+      "Award-Winning",
+      "Secure Checkout",
+      "Expert Approved"
+    ],
+    meta: [
+      "Limited Collection",
+      "Shop Now, Pay Later",
+      "Handcrafted Quality",
+      "Ethically Sourced",
+      "Limited Edition",
+      "Trending Now",
+      "Custom Made For You",
+      "Free Returns",
+      "Join The Community",
+      "Discover More",
+      "Behind The Scenes",
+      "As Seen On Instagram",
+      "Customer Stories"
+    ],
+    linkedin: [
+      "Industry Leader",
+      "Professional Network",
+      "Career Growth",
+      "Expert Insights",
+      "Certified Professional",
+      "Join Our Team",
+      "Business Solutions",
+      "Trusted Partner",
+      "Strategic Advantage",
+      "Professional Development",
+      "Industry Recognition",
+      "Exclusive Webinar",
+      "Limited Seats"
+    ]
   };
-  
-  const handleSelectTrigger = (e: React.MouseEvent, promptTemplate: string) => {
-    // Explicitly prevent default and stop propagation to avoid any navigation
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Call the onSelectTrigger callback with the prompt template
-    onSelectTrigger(promptTemplate);
-    
-    // Close the dialog
-    onOpenChange(false);
-  };
-  
+
+  const currentTriggers = triggers[platform as keyof typeof triggers] || triggers.google;
+
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={onOpenChange}
-    >
-      <DialogContent 
-        className="sm:max-w-2xl max-h-[80vh] flex flex-col" 
-        onPointerDownOutside={(e) => {
-          e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
-        onEscapeKeyDown={(e) => {
-          // We still want Escape to close the dialog
-          onOpenChange(false);
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle>Mental Triggers Gallery</DialogTitle>
-          <DialogDescription>
-            Select a psychological trigger to enhance your ad copy's effectiveness
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="relative mb-4">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search mental triggers..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
-          <TabsList className="mb-4 flex flex-wrap h-auto">
-            <TabsTrigger value="all">All</TabsTrigger>
-            {categories.map(category => (
-              <TabsTrigger 
-                key={category.id} 
-                value={category.id}
-                className="flex items-center gap-1"
-              >
-                <span>{category.emoji}</span> {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          <ScrollArea className="flex-1 pr-4">
-            <div className="grid grid-cols-1 gap-3">
-              {filteredTriggers.map(trigger => (
-                <TriggerItem 
-                  key={trigger.id}
-                  trigger={trigger}
-                  onSelect={(e) => handleSelectTrigger(e, trigger.promptTemplate)}
-                />
-              ))}
-              
-              {filteredTriggers.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No mental triggers found matching your search.
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+    <div className="w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {currentTriggers.map((trigger, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            className="justify-start text-xs h-auto py-1 px-2"
+            onClick={() => onSelectTrigger(trigger)}
+          >
+            {trigger}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 };
 

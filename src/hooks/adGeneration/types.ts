@@ -10,7 +10,7 @@ export interface GoogleAd {
   path2?: string;
   displayPath?: string;
   siteLinks?: Array<{title: string, link: string}>;
-  // Add these arrays to match how the components are using GoogleAd
+  // Add arrays to match how the components are using GoogleAd
   headlines?: string[];
   descriptions?: string[];
 }
