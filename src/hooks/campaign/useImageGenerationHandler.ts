@@ -1,14 +1,15 @@
 
 import { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration";
+import { MetaAd } from "@/hooks/adGeneration/types";
+import { CampaignData } from "@/contexts/CampaignContext";
 
-interface ImageGenerationHandlerProps {
+interface UseImageGenerationHandlerProps {
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
   setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  campaignData: any;
+  campaignData: CampaignData;
 }
 
 export const useImageGenerationHandler = ({
@@ -18,40 +19,37 @@ export const useImageGenerationHandler = ({
   setMetaAds,
   setLinkedInAds,
   campaignData
-}: ImageGenerationHandlerProps) => {
+}: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
-    if (!ad.imagePrompt) return;
-    
-    setLoadingImageIndex(index);
-    
     try {
-      // Create additional context object for image generation
-      const additionalInfo = {
-        platform: campaignData?.currentEditingPlatform || "meta",
-        format: ad.format || "feed",
-        userId: campaignData?.userId,
-        // Add any other relevant context
-      };
+      setLoadingImageIndex(index);
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       
-      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
+      // Add format context if it exists
+      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
+      const finalPrompt = promptWithContext + formatContext;
       
+      const imageUrl = await generateAdImage(finalPrompt, {
+        ad,
+        campaignData,
+        index
+      });
+
       if (imageUrl) {
-        const updatedAd = { ...ad, imageUrl };
-        
-        const platform = campaignData?.currentEditingPlatform || "meta";
-        
-        if (platform === "meta") {
+        if (metaAds[index]) {
           const updatedAds = [...metaAds];
-          updatedAds[index] = updatedAd;
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-        } else if (platform === "linkedin") {
+        } else if (linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
-          updatedAds[index] = updatedAd;
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
         }
       }
+    } catch (error) {
+      console.error("Error generating image:", error);
     } finally {
       setLoadingImageIndex(null);
     }

@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import React from "react";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 
 export interface MicrosoftAdEditorProps {
   ad: GoogleAd;
+  isEditing?: boolean;
   onHeadlineChange: (headlineIndex: number, value: string) => void;
   onDescriptionChange: (descIndex: number, value: string) => void;
 }
 
 const MicrosoftAdEditor: React.FC<MicrosoftAdEditorProps> = ({
   ad,
+  isEditing = true,
   onHeadlineChange,
   onDescriptionChange
 }) => {
@@ -39,6 +41,7 @@ const MicrosoftAdEditor: React.FC<MicrosoftAdEditorProps> = ({
                   onChange={(e) => onHeadlineChange(index, e.target.value)}
                   className="text-sm"
                   maxLength={30}
+                  readOnly={!isEditing}
                 />
                 <div className="text-xs text-muted-foreground w-16 text-right">
                   {headline.length}/30
@@ -62,6 +65,7 @@ const MicrosoftAdEditor: React.FC<MicrosoftAdEditorProps> = ({
                   onChange={(e) => onDescriptionChange(index, e.target.value)}
                   className="text-sm min-h-[80px] resize-none"
                   maxLength={90}
+                  readOnly={!isEditing}
                 />
                 <div className="text-xs text-muted-foreground w-16 text-right">
                   {description.length}/90

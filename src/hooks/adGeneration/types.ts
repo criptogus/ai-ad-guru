@@ -5,14 +5,14 @@ export interface GoogleAd {
   headline3: string;
   description1: string;
   description2: string;
-  finalUrl?: string;
-  path1?: string;
-  path2?: string;
+  path1: string;
+  path2: string;
   displayPath?: string;
   siteLinks?: Array<{title: string, link: string}>;
-  // Add arrays to match how the components are using GoogleAd
+  // Add these properties that are being used throughout the codebase
   headlines?: string[];
   descriptions?: string[];
+  finalUrl?: string;
 }
 
 export interface MetaAd {
@@ -21,7 +21,7 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  // Add these properties to match how the components are using MetaAd
+  // Add these properties that are being used throughout the codebase
   format?: "feed" | "story" | "reel";
   hashtags?: string[] | string;
 }

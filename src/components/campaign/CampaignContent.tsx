@@ -13,7 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
-import { MetaAd } from "@/hooks/adGeneration/types";
+import { MetaAd, GoogleAd } from "@/hooks/adGeneration/types";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -93,9 +93,11 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds
   });
 
-  // Create a wrapper function that matches the expected type
+  // Create a wrapper function that matches the expected type for generateAdImage
   const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
-    return await generateAdImage(prompt, additionalInfo);
+    const result = await generateAdImage(prompt, additionalInfo);
+    // Ensure we return a string or null
+    return result ? (typeof result === 'string' ? result : result.imageUrl) : null;
   };
 
   const { 
