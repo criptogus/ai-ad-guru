@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -12,4 +13,8 @@ export function getDomain(url: string): string {
     // If the URL is invalid, return it as is
     return url;
   }
+}
+
+export function getDomainFromUrl(url: string): string {
+  return getDomain(url);
 }

@@ -13,6 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
+import { MetaAd } from "@/hooks/adGeneration/types";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -92,52 +93,16 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds
   });
 
-  // Adjust the handler to match the expected signature for generateAdImage
-  const handleGenerateImageWrapper = async (ad: MetaAd, index: number): Promise<void> => {
-    if (!ad.imagePrompt) return;
-    
-    try {
-      // Extract the prompt from the ad
-      const prompt = ad.imagePrompt;
-      
-      // Create additional context from the ad
-      const additionalInfo = {
-        headline: ad.headline,
-        primaryText: ad.primaryText,
-        description: ad.description,
-        format: ad.format || "feed",
-        platform: "meta",
-        index
-      };
-      
-      // Call the generateAdImage with the correct parameters
-      const imageUrl = await generateAdImage(prompt, additionalInfo);
-      
-      if (imageUrl) {
-        // Update the ad with the generated image URL
-        const updatedAd = { ...ad, imageUrl };
-        
-        // Update the correct ad array based on the current editing platform
-        if (campaignData?.currentEditingPlatform === "linkedin") {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = updatedAd;
-          setLinkedInAds(updatedAds);
-        } else {
-          // Default to meta
-          const updatedAds = [...metaAds];
-          updatedAds[index] = updatedAd;
-          setMetaAds(updatedAds);
-        }
-      }
-    } catch (error) {
-      console.error("Error generating image:", error);
-    }
+  // Create a wrapper function that matches the expected type
+  const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
+    return await generateAdImage(prompt, additionalInfo);
   };
 
   const { 
+    handleGenerateImage,
     loadingImageIndex 
   } = useImageGenerationHandler({
-    generateAdImage,
+    generateAdImage: handleGenerateImageWrapper,
     metaAds,
     linkedInAds,
     setMetaAds,
@@ -188,7 +153,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateLinkedInAds,
-    handleGenerateImage: handleGenerateImageWrapper,
+    handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,

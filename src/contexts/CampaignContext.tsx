@@ -1,7 +1,6 @@
-
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState } from "react";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
 
 export type LinkedInAd = MetaAd;
@@ -64,7 +63,6 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [audienceAnalysisResult, setAudienceAnalysisResult] = useState<AudienceAnalysisResult | null>(null);
   const [audienceCacheInfo, setAudienceCacheInfo] = useState<AudienceCacheInfo | null>(null);
 
-  // Make the campaign context available globally for direct access
   useEffect(() => {
     const contextValue = {
       currentStep,
@@ -78,10 +76,8 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       audienceCacheInfo
     };
     
-    // Add the context to the window object for global access
     (window as any).campaignContext = contextValue;
     
-    // Clean up when the component unmounts
     return () => {
       delete (window as any).campaignContext;
     };

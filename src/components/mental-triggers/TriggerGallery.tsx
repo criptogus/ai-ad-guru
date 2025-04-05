@@ -14,13 +14,15 @@ export interface TriggerGalleryProps {
   onOpenChange: (open: boolean) => void;
   onSelectTrigger: (trigger: string) => void;
   platform?: string;
+  buttonText?: string;
 }
 
 const TriggerGallery: React.FC<TriggerGalleryProps> = ({
   open,
   onOpenChange,
   onSelectTrigger,
-  platform = "google"
+  platform = "google",
+  buttonText = "Add Mind Trigger"
 }) => {
   // Mental triggers based on platform
   const triggers = {
