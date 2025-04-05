@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -58,7 +57,6 @@ const CampaignContent: React.FC = () => {
     isGenerating
   } = useAdGeneration();
 
-  // Create wrappers for ad generation functions
   const {
     wrappedGenerateGoogleAds,
     wrappedGenerateMetaAds,
@@ -109,7 +107,6 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Create a properly typed wrapper for image generation
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
       const result = await generateAdImage(prompt, additionalContext);
@@ -120,13 +117,11 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Create the actual image generation handler
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
       setLoadingImageIndex(index);
       const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
       
-      // Add format context if it exists
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
@@ -137,7 +132,10 @@ const CampaignContent: React.FC = () => {
       });
 
       if (imageUrl) {
-        const updatedAd = { ...ad, imageUrl };
+        const updatedAd: MetaAd = { 
+          ...ad, 
+          imageUrl 
+        };
         
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
