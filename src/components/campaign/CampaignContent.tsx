@@ -61,7 +61,7 @@ const CampaignContent: React.FC = () => {
     metaAds
   );
 
-  // Using the extracted hooks - fix argument counts
+  // Using the extracted hooks with proper props objects
   const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
     handleAnalyzeWebsite: analyzeWebsite,
     setAnalysisResult,
@@ -80,7 +80,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateLinkedInAds,
     handleGenerateMicrosoftAds
   } = useAdGenerationHandlers({
-    analysisResult, 
+    analysisResult,
     campaignData,
     setGoogleAds,
     setMetaAds,
@@ -104,7 +104,6 @@ const CampaignContent: React.FC = () => {
     campaignData
   });
 
-  // Fix: pass an object with all setter functions instead of individual arguments
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
@@ -118,6 +117,7 @@ const CampaignContent: React.FC = () => {
   });
 
   const { handleBack, handleNext, autoAdvance, setAutoAdvance } = useNavigationHandlers(
+    currentStep,
     setCurrentStep,
     setCampaignData
   );

@@ -10,7 +10,7 @@ export interface GoogleAd {
   path2?: string;
   displayPath?: string;
   siteLinks?: Array<{title: string, link: string}>;
-  // Add these properties to match code usage
+  // Add these properties explicitly in the interface
   headlines?: string[];
   descriptions?: string[];
 }
@@ -21,9 +21,9 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  // Add missing properties that are being used in the code
+  // Add these properties explicitly in the interface
   format?: string;
-  hashtags?: string[];
+  hashtags?: string[] | string;
 }
 
 export interface AdGenerationInput {
@@ -32,7 +32,7 @@ export interface AdGenerationInput {
   targetAudience: string;
   brandTone?: string;
   keywords?: string[] | string;
-  callToAction?: string[] | string; // Update to allow string[] type
+  callToAction?: string[] | string;
   uniqueSellingPoints?: string[] | string;
   websiteUrl?: string;
   [key: string]: any;

@@ -1,23 +1,26 @@
 
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
-export const useWebsiteAnalysisHandler = (
-  analyzeWebsite: (url: string) => Promise<WebsiteAnalysisResult | null>,
-  setAnalysisResult: (result: WebsiteAnalysisResult) => void,
-  setCampaignData: (updater: (prev: any) => any) => void
-) => {
+interface WebsiteAnalysisHandlerProps {
+  handleAnalyzeWebsite: (url: string) => Promise<WebsiteAnalysisResult | null>;
+  setAnalysisResult: (result: WebsiteAnalysisResult) => void;
+}
+
+export const useWebsiteAnalysisHandler = ({
+  handleAnalyzeWebsite,
+  setAnalysisResult,
+}: WebsiteAnalysisHandlerProps) => {
   const handleWebsiteAnalysis = async (url: string) => {
-    const result = await analyzeWebsite(url);
-    if (result) {
-      setAnalysisResult(result);
-      
-      setCampaignData(prev => ({
-        ...prev,
-        targetUrl: result.websiteUrl,
-        targetAudience: result.targetAudience
-      }));
+    try {
+      const result = await handleAnalyzeWebsite(url);
+      if (result) {
+        setAnalysisResult(result);
+        return result;
+      }
+    } catch (error) {
+      console.error("Error analyzing website:", error);
     }
-    return result;
+    return null;
   };
 
   return { handleWebsiteAnalysis };

@@ -28,6 +28,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   mindTrigger,
 }) => {
   const [showTriggers, setShowTriggers] = useState(false);
+  const [open, setOpen] = useState(false);
   const companyName = analysisResult?.companyName || "";
 
   const handleGenerateClick = async () => {
@@ -38,6 +39,11 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
     } catch (error) {
       console.error("Error generating Google Ads:", error);
     }
+  };
+
+  const handleSelectTrigger = (trigger: string) => {
+    console.log("Selected trigger:", trigger);
+    // Implementation of trigger selection
   };
 
   return (
@@ -88,7 +94,11 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
               Click a trigger to add it to the current trigger selection
             </p>
             <ScrollArea className="h-32 w-full">
-              <TriggerGallery />
+              <TriggerGallery 
+                open={open} 
+                onOpenChange={setOpen}
+                onSelectTrigger={handleSelectTrigger}
+              />
             </ScrollArea>
           </CardContent>
         </Card>

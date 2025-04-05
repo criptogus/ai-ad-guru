@@ -34,7 +34,19 @@ const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
     });
   };
 
-  const hashtags = ad.hashtags || extractHashtags(ad.primaryText);
+  // Get hashtags from ad.hashtags (if it exists) or extract from primaryText
+  const getHashtags = (): string[] => {
+    if (ad.hashtags) {
+      if (Array.isArray(ad.hashtags)) {
+        return ad.hashtags;
+      } else if (typeof ad.hashtags === 'string') {
+        return ad.hashtags.split(/\s+/).filter(tag => tag.startsWith('#'));
+      }
+    }
+    return extractHashtags(ad.primaryText);
+  };
+
+  const hashtags = getHashtags();
 
   return (
     <div className="p-3">
