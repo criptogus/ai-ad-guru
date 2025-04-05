@@ -1,171 +1,167 @@
 
 import React from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import TriggerButtonInline from "../../TriggerButtonInline";
-import { EditorSectionProps } from "./types";
-import {
-  FileImage,
-  Type,
-  Hash,
-  AlignLeft,
-  MessageSquare,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
+import { Smartphone, Video, Newspaper } from "lucide-react";
 
-const AdEditorSection: React.FC<EditorSectionProps> = ({
+interface AdEditorSectionProps {
+  ad: MetaAd;
+  isEditing: boolean;
+  onUpdate: (updatedAd: MetaAd) => void;
+  onSelectTrigger?: (trigger: string) => void;
+}
+
+const AdEditorSection: React.FC<AdEditorSectionProps> = ({
   ad,
   isEditing,
   onUpdate,
-  onSelectTrigger,
+  onSelectTrigger
 }) => {
-  const [activeTab, setActiveTab] = React.useState("content");
-
-  const handleChange = (field: keyof MetaAd, value: string) => {
-    if (onUpdate) {
-      onUpdate({
-        ...ad,
-        [field]: value,
-      });
-    }
+  const handleFieldChange = (field: keyof MetaAd, value: string) => {
+    onUpdate({
+      ...ad,
+      [field]: value
+    });
   };
 
-  // Custom handler for format which is optional and uses a string literal type
-  const handleFormatChange = (format: "feed" | "story" | "reel") => {
-    if (onUpdate) {
-      onUpdate({
-        ...ad,
-        format // This is now allowed since we updated the type definition
-      });
-    }
-  };
-
-  const handleInsertTrigger = (trigger: string) => {
-    if (onSelectTrigger) {
-      onSelectTrigger(trigger);
-    }
-  };
-
-  const getCharCount = (text: string) => {
-    return text ? text.length : 0;
+  const handleFormatChange = (value: string) => {
+    onUpdate({
+      ...ad,
+      format: value as "feed" | "story" | "reel"
+    });
   };
 
   return (
-    <div>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="image">Image</TabsTrigger>
-        </TabsList>
+    <div className="space-y-4">
+      {/* Format selection */}
+      <div>
+        <Label className="mb-2 block">Ad Format</Label>
+        <ToggleGroup 
+          type="single" 
+          variant="outline"
+          value={ad.format || "feed"}
+          onValueChange={handleFormatChange}
+          className="justify-start"
+          disabled={!isEditing}
+        >
+          <ToggleGroupItem value="feed" className="gap-1">
+            <Newspaper className="h-4 w-4" />
+            <span>Feed</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="story" className="gap-1">
+            <Smartphone className="h-4 w-4" />
+            <span>Story</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="reel" className="gap-1">
+            <Video className="h-4 w-4" />
+            <span>Reel</span>
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
 
-        <TabsContent value="content" className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium">Headline</label>
-              <div className="flex items-center">
-                <span className="text-xs text-muted-foreground mr-2">
-                  {getCharCount(ad.headline)}/40
-                </span>
-                {isEditing && <TriggerButtonInline onInsert={handleInsertTrigger} />}
-              </div>
-            </div>
-            <Input
-              value={ad.headline}
-              onChange={(e) => handleChange("headline", e.target.value)}
-              placeholder="Enter ad headline"
-              disabled={!isEditing}
-              className={!isEditing ? "bg-muted" : ""}
-              maxLength={40}
+      {/* Headline */}
+      <div>
+        <Label htmlFor="headline" className="mb-2 block">
+          Headline (40 char limit)
+        </Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="headline"
+            value={ad.headline}
+            onChange={(e) => handleFieldChange("headline", e.target.value)}
+            maxLength={40}
+            className="font-medium"
+            readOnly={!isEditing}
+          />
+          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
+            {ad.headline.length}/40
+          </span>
+        </div>
+      </div>
+
+      {/* Primary Text */}
+      <div>
+        <Label htmlFor="primaryText" className="mb-2 block">
+          Primary Text (125 char limit)
+        </Label>
+        <div className="flex items-start gap-2">
+          <Textarea
+            id="primaryText"
+            value={ad.primaryText}
+            onChange={(e) => handleFieldChange("primaryText", e.target.value)}
+            maxLength={125}
+            className="min-h-24 resize-none"
+            readOnly={!isEditing}
+          />
+          <span className="text-xs text-muted-foreground w-12 flex-shrink-0 pt-2">
+            {ad.primaryText.length}/125
+          </span>
+        </div>
+      </div>
+
+      {/* Description */}
+      <div>
+        <Label htmlFor="description" className="mb-2 block">
+          Description / Call to Action (30 char limit)
+        </Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="description"
+            value={ad.description}
+            onChange={(e) => handleFieldChange("description", e.target.value)}
+            maxLength={30}
+            readOnly={!isEditing}
+          />
+          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
+            {ad.description.length}/30
+          </span>
+        </div>
+      </div>
+
+      {/* Image Prompt */}
+      <div>
+        <Label htmlFor="imagePrompt" className="mb-2 block">
+          Image Prompt
+        </Label>
+        <div className="flex items-start gap-2">
+          <Textarea
+            id="imagePrompt"
+            value={ad.imagePrompt || ""}
+            onChange={(e) => handleFieldChange("imagePrompt", e.target.value)}
+            className="min-h-24 resize-none"
+            placeholder={isEditing ? "Describe the image you want to generate..." : "No image prompt provided"}
+            readOnly={!isEditing}
+          />
+        </div>
+      </div>
+
+      {/* Mind Triggers */}
+      {isEditing && onSelectTrigger && (
+        <div>
+          <Label className="mb-2 block">Mind Triggers</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <TriggerButton
+              triggerType="feed"
+              format={ad.format === "feed" ? "feed" : "story"}
+              onSelectTrigger={onSelectTrigger}
+            />
+            <TriggerButton
+              triggerType="story"
+              format={ad.format === "feed" ? "feed" : "story"}
+              onSelectTrigger={onSelectTrigger}
+            />
+            <TriggerButton
+              triggerType="reel"
+              format={ad.format === "feed" ? "feed" : "story"}
+              onSelectTrigger={onSelectTrigger}
             />
           </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium">Primary Text</label>
-              <div className="flex items-center">
-                <span className="text-xs text-muted-foreground mr-2">
-                  {getCharCount(ad.primaryText)}/125
-                </span>
-                {isEditing && <TriggerButtonInline onInsert={handleInsertTrigger} />}
-              </div>
-            </div>
-            <Textarea
-              value={ad.primaryText}
-              onChange={(e) => handleChange("primaryText", e.target.value)}
-              placeholder="Enter primary text for your ad"
-              disabled={!isEditing}
-              className={`min-h-[100px] ${!isEditing ? "bg-muted" : ""}`}
-              maxLength={125}
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium">Call to Action</label>
-              <span className="text-xs text-muted-foreground">
-                {getCharCount(ad.description)}/20
-              </span>
-            </div>
-            <Input
-              value={ad.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              placeholder="Enter call to action (e.g., Learn More)"
-              disabled={!isEditing}
-              className={!isEditing ? "bg-muted" : ""}
-              maxLength={20}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="image" className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium">Image Prompt</label>
-            </div>
-            <Textarea
-              value={ad.imagePrompt || ""}
-              onChange={(e) => handleChange("imagePrompt", e.target.value)}
-              placeholder="Describe the image you want to generate"
-              disabled={!isEditing}
-              className={`min-h-[100px] ${!isEditing ? "bg-muted" : ""}`}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Describe the image in detail for better results
-            </p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium">Format</label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant={ad.format === "feed" ? "default" : "outline"}
-                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleFormatChange("feed")}
-              >
-                Feed
-              </Badge>
-              <Badge
-                variant={ad.format === "story" ? "default" : "outline"}
-                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleFormatChange("story")}
-              >
-                Story
-              </Badge>
-              <Badge
-                variant={ad.format === "reel" ? "default" : "outline"}
-                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleFormatChange("reel")}
-              >
-                Reel
-              </Badge>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,17 +1,15 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { MicrosoftAd } from "@/hooks/adGeneration/types";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { Loader2, Sparkles } from "lucide-react";
-import MicrosoftAdsList from "./MicrosoftAdsList";
-import EmptyAdsState from "../EmptyAdsState";
 import { getDomain } from "@/lib/utils";
+import MicrosoftAdsList from "./MicrosoftAdsList";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: MicrosoftAd[];
-  analysisResult: WebsiteAnalysisResult;
+  websiteUrl: string;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateMicrosoftAd: (index: number, updatedAd: MicrosoftAd) => void;
@@ -20,71 +18,48 @@ interface MicrosoftAdsTabProps {
 
 const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   microsoftAds,
-  analysisResult,
+  websiteUrl,
   isGenerating,
   onGenerateAds,
   onUpdateMicrosoftAd,
   mindTrigger
 }) => {
-  const handleGenerateClick = async () => {
-    try {
-      await onGenerateAds();
-    } catch (error) {
-      console.error("Error generating Microsoft Ads:", error);
-    }
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3 className="text-lg font-semibold mb-1">Microsoft Ads</h3>
-          <p className="text-sm text-muted-foreground">
-            Create text ads for Microsoft Advertising (Bing)
-          </p>
-        </div>
-
-        <Button
-          onClick={handleGenerateClick}
-          disabled={isGenerating}
-          size="sm"
-          className="flex items-center gap-2 self-end sm:self-auto"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              Generate Ads
-            </>
-          )}
-        </Button>
-      </div>
-
+    <div>
       {mindTrigger && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            <span className="font-semibold">Selected Mind Trigger:</span> {mindTrigger}
-          </p>
-        </div>
+        <Alert className="mb-4">
+          <AlertTitle>Active Mind Trigger</AlertTitle>
+          <AlertDescription>{mindTrigger}</AlertDescription>
+        </Alert>
       )}
 
-      {microsoftAds.length > 0 ? (
+      {microsoftAds.length === 0 ? (
+        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
+            Generate Microsoft ads based on your website content and mind triggers. Our AI will create optimized ad copy for Microsoft Advertising.
+          </p>
+          <Button 
+            onClick={onGenerateAds} 
+            disabled={isGenerating}
+            className="min-w-[200px]"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Ads...
+              </>
+            ) : (
+              <>Generate Microsoft Ads</>
+            )}
+          </Button>
+        </div>
+      ) : (
         <MicrosoftAdsList
-          microsoftAds={microsoftAds}
-          analysisResult={analysisResult}
+          ads={microsoftAds}
+          websiteUrl={websiteUrl}
           isGenerating={isGenerating}
           onGenerateAds={onGenerateAds}
-          onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-        />
-      ) : (
-        <EmptyAdsState
-          platform="microsoft"
-          isGenerating={isGenerating}
-          onGenerate={onGenerateAds}
+          onUpdateAd={onUpdateMicrosoftAd}
         />
       )}
     </div>

@@ -1,60 +1,33 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useMentalTriggers } from "@/hooks/useMentalTriggers";
+import { Sparkles } from "lucide-react";
+import { useMindTriggers } from "@/hooks/useMindTriggers";
 
-export interface TriggerButtonInlineProps {
-  onInsert: (trigger: string) => void;
+interface TriggerButtonInlineProps {
+  onSelectTrigger: (triggerText: string) => void;
+  size?: "sm" | "default";
 }
 
-const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert }) => {
-  const { triggers } = useMentalTriggers();
-  const [open, setOpen] = React.useState(false);
-
-  const handleSelectTrigger = (trigger: string) => {
-    onInsert(trigger);
-    setOpen(false);
-  };
+const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
+  onSelectTrigger,
+  size = "default"
+}) => {
+  const { selectedTrigger, getTriggers } = useMindTriggers();
+  
+  const triggers = getTriggers();
+  const randomTrigger = triggers[Math.floor(Math.random() * triggers.length)];
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 rounded-full"
-          title="Insert psychological trigger"
-        >
-          <Wand2 className="h-3.5 w-3.5" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-3 border-b">
-          <h4 className="font-medium text-sm">Insert Mind Trigger</h4>
-          <p className="text-xs text-muted-foreground">
-            Select a psychological trigger to enhance your ad
-          </p>
-        </div>
-        <div className="max-h-60 overflow-y-auto">
-          {triggers.map((trigger, index) => (
-            <div
-              key={index}
-              className="p-2 hover:bg-muted cursor-pointer border-b last:border-0"
-              onClick={() => handleSelectTrigger(trigger.text)}
-            >
-              <p className="text-sm font-medium">{trigger.name}</p>
-              <p className="text-xs text-muted-foreground">{trigger.text}</p>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <Button
+      variant="outline"
+      size={size}
+      className="gap-1 group"
+      onClick={() => onSelectTrigger(randomTrigger)}
+    >
+      <Sparkles className="h-3.5 w-3.5 text-blue-500 group-hover:text-blue-600" />
+      <span>Add trigger</span>
+    </Button>
   );
 };
 
