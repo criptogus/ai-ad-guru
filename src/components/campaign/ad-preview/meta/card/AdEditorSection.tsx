@@ -32,6 +32,16 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
     }
   };
 
+  // Custom handler for format which is a specific enum type
+  const handleFormatChange = (format: "feed" | "story" | "reel") => {
+    if (onUpdate) {
+      onUpdate({
+        ...ad,
+        format
+      });
+    }
+  };
+
   const handleInsertTrigger = (trigger: string) => {
     if (onSelectTrigger) {
       onSelectTrigger(trigger);
@@ -132,23 +142,23 @@ const AdEditorSection: React.FC<EditorSectionProps> = ({
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge
-                variant={ad.format === "feed" ? "default" : "outline"}
+                variant={(ad.format === "feed") ? "default" : "outline"}
                 className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleChange("format", "feed")}
+                onClick={() => isEditing && handleFormatChange("feed")}
               >
                 Feed
               </Badge>
               <Badge
-                variant={ad.format === "story" ? "default" : "outline"}
+                variant={(ad.format === "story") ? "default" : "outline"}
                 className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleChange("format", "story")}
+                onClick={() => isEditing && handleFormatChange("story")}
               >
                 Story
               </Badge>
               <Badge
-                variant={ad.format === "reel" ? "default" : "outline"}
+                variant={(ad.format === "reel") ? "default" : "outline"}
                 className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
-                onClick={() => isEditing && handleChange("format", "reel")}
+                onClick={() => isEditing && handleFormatChange("reel")}
               >
                 Reel
               </Badge>

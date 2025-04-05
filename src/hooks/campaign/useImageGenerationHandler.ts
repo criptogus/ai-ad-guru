@@ -32,7 +32,6 @@ export const useImageGenerationHandler = ({
       const finalPrompt = promptWithContext + formatContext;
       
       const imageUrl = await generateAdImage(finalPrompt, {
-        prompt: finalPrompt,
         ad
       });
 
