@@ -65,8 +65,9 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   };
 
   const handleNextClick = () => {
-    // Directly call onNext with the platforms data
+    // Call onNext with the platforms data but don't rely on its return value for navigation
     onNext({ platforms: selectedPlatforms });
+    // Navigation is now handled by the onNext function itself
   };
 
   const showWarning = selectedPlatforms.length === 0;

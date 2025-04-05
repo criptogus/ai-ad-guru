@@ -62,25 +62,24 @@ const CampaignContent: React.FC = () => {
   );
 
   // Using the extracted hooks
-  const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler(
-    analyzeWebsite,
+  const { handleWebsiteAnalysis } = useWebsiteAnalysisHandler({
+    handleAnalyzeWebsite: analyzeWebsite,
     setAnalysisResult,
-    setCampaignData
-  );
+  });
 
-  const { handleAudienceAnalysis } = useAudienceAnalysisHandler(
+  const { handleAudienceAnalysis } = useAudienceAnalysisHandler({
     analyzeAudience,
     analysisResult,
     setAudienceAnalysisResult,
-    setCampaignData
-  );
+    setCampaignData,
+  });
 
   const {
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateLinkedInAds,
     handleGenerateMicrosoftAds
-  } = useAdGenerationHandlers(
+  } = useAdGenerationHandlers({
     analysisResult, 
     campaignData,
     setGoogleAds,
@@ -91,20 +90,21 @@ const CampaignContent: React.FC = () => {
     generateMetaAds,
     generateLinkedInAds,
     generateMicrosoftAds
-  );
+  });
 
   const { 
     handleGenerateImage, 
     loadingImageIndex 
-  } = useImageGenerationHandler(
+  } = useImageGenerationHandler({
     generateAdImage,
     metaAds,
     linkedInAds,
     setMetaAds,
     setLinkedInAds,
     campaignData
-  );
+  });
 
+  // Fix the way we call useAdUpdateHandlers by passing an object with the setters
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
@@ -117,13 +117,15 @@ const CampaignContent: React.FC = () => {
     setLinkedInAds
   });
 
-  const { handleBack, handleNext } = useNavigationHandlers(
+  const { handleBack, handleNext, autoAdvance, setAutoAdvance } = useNavigationHandlers(
     setCurrentStep,
     setCampaignData
   );
 
   // This wrapper function is crucial for proper navigation
   const handleNextWrapper = (data?: any) => {
+    // Set autoAdvance to false to prevent automatic progression after AI fills
+    setAutoAdvance(false);
     // Call handleNext and return its result
     return handleNext(data);
   };

@@ -1,146 +1,128 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, RefreshCw, Plus } from "lucide-react";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { Button } from "@/components/ui/button";
+import { MoveRight, Sparkles, Loader2 } from "lucide-react";
 import { GoogleAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdCard from "./google/GoogleAdCard";
+import TriggerGallery from "./TriggerGallery";
+import EmptyAdsState from "./EmptyAdsState";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface GoogleAdsTabProps {
-  googleAds: GoogleAd[] | null; // Change to accept null
-  analysisResult: WebsiteAnalysisResult;
+  googleAds: GoogleAd[];
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
+  analysisResult: WebsiteAnalysisResult;
   mindTrigger?: string;
 }
 
 const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   googleAds,
-  analysisResult,
   isGenerating,
   onGenerateAds,
   onUpdateGoogleAd,
+  analysisResult,
   mindTrigger,
 }) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  
-  // Ensure googleAds is always an array
-  const safeAds = Array.isArray(googleAds) ? googleAds : [];
+  const [showTriggers, setShowTriggers] = useState(false);
+  const companyName = analysisResult?.companyName || "";
 
-  const handleEditStart = (index: number) => {
-    setEditingIndex(index);
-  };
-
-  const handleEditCancel = () => {
-    setEditingIndex(null);
-  };
-
-  const handleEditSave = (index: number, updatedAd: GoogleAd) => {
-    onUpdateGoogleAd(index, updatedAd);
-    setEditingIndex(null);
-  };
-
-  // Create a wrapper function to handle the GoogleAdCard's onUpdateAd call
-  const handleUpdateAd = (index: number) => (updatedAd: GoogleAd) => {
-    onUpdateGoogleAd(index, updatedAd);
+  const handleGenerateClick = async () => {
+    try {
+      console.log("Generating Google Ads...");
+      await onGenerateAds();
+      console.log("Google Ads generated successfully");
+    } catch (error) {
+      console.error("Error generating Google Ads:", error);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header with generate button */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h3 className="text-lg font-semibold">Google Search Ads</h3>
+          <h3 className="text-lg font-semibold mb-1">Google Search Ads</h3>
           <p className="text-sm text-muted-foreground">
-            Generate and customize Google text ads for your campaign
+            Create text ads for Google Search Network
           </p>
         </div>
-        
-        <Button
-          onClick={onGenerateAds}
-          disabled={isGenerating}
-          variant={safeAds.length > 0 ? "outline" : "default"}
-          className="ml-auto"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : safeAds.length > 0 ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Regenerate Ads
-            </>
-          ) : (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              Generate Ads
-            </>
-          )}
-        </Button>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <Button
+            variant="outline"
+            onClick={() => setShowTriggers(!showTriggers)}
+            size="sm"
+          >
+            {showTriggers ? "Hide Mind Triggers" : "Show Mind Triggers"}
+          </Button>
+
+          <Button
+            onClick={handleGenerateClick}
+            disabled={isGenerating}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                Generate Ads
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Loading state */}
-      {isGenerating && safeAds.length === 0 && (
-        <Card>
-          <CardContent className="py-10 flex flex-col items-center justify-center">
-            <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-            <p className="text-muted-foreground">
-              Generating Google search ads using AI...
+      {showTriggers && (
+        <Card className="bg-muted/30">
+          <CardContent className="p-4">
+            <h4 className="text-sm font-medium mb-2">Ad Triggers Library</h4>
+            <p className="text-xs text-muted-foreground mb-3">
+              Click a trigger to add it to the current trigger selection
             </p>
-            {mindTrigger && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Applying Mind Trigger: <span className="font-medium">{mindTrigger}</span>
-              </p>
-            )}
+            <ScrollArea className="h-32 w-full">
+              <TriggerGallery platform="google" />
+            </ScrollArea>
           </CardContent>
         </Card>
       )}
 
-      {/* Empty state */}
-      {!isGenerating && safeAds.length === 0 && (
-        <Card>
-          <CardContent className="py-10 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground mb-4">
-              No Google ads generated yet
-            </p>
-            <Button onClick={onGenerateAds} disabled={isGenerating}>
-              Generate Google Search Ads
-            </Button>
-          </CardContent>
-        </Card>
+      {mindTrigger && (
+        <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+          <p className="text-blue-700 dark:text-blue-300 text-sm">
+            <span className="font-semibold">Selected Mind Trigger:</span> {mindTrigger}
+          </p>
+        </div>
       )}
 
-      {/* Ads list */}
-      {safeAds.length > 0 && (
+      {googleAds.length > 0 ? (
         <div className="space-y-6">
-          {safeAds.map((ad, index) => (
-            <GoogleAdCard 
-              key={index}
+          {googleAds.map((ad, index) => (
+            <GoogleAdCard
+              key={`google-ad-${index}`}
               ad={ad}
               index={index}
-              domain={extractDomain(analysisResult.websiteUrl)}
-              onUpdateAd={handleUpdateAd(index)}
+              domain={companyName}
+              onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
             />
           ))}
         </div>
+      ) : (
+        <EmptyAdsState
+          platform="Google Ads"
+          onGenerate={handleGenerateClick}
+          isGenerating={isGenerating}
+        />
       )}
     </div>
   );
-};
-
-// Helper function to extract domain from URL
-const extractDomain = (url: string): string => {
-  try {
-    if (!url) return 'example.com';
-    const domain = new URL(url).hostname;
-    return domain.startsWith('www.') ? domain.slice(4) : domain;
-  } catch (e) {
-    return url || 'example.com';
-  }
 };
 
 export default GoogleAdsTab;
