@@ -10,7 +10,7 @@ export interface GoogleAd {
   displayPath?: string;
   headlines: string[];  // Making headlines explicit 
   descriptions: string[];  // Making descriptions explicit
-  siteLinks?: Array<{title: string, link: string, description?: string}>;
+  siteLinks?: Array<{title: string; link: string; description?: string}>;
   finalUrl?: string;
   id?: string;
 }

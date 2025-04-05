@@ -2,9 +2,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { useMindTriggers } from "@/hooks/useMindTriggers";
 
-interface TriggerButtonInlineProps {
+export interface TriggerButtonInlineProps {
   onSelectTrigger: (triggerText: string) => void;
   size?: "sm" | "default";
 }
@@ -13,9 +12,23 @@ const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({
   onSelectTrigger,
   size = "default"
 }) => {
-  const { selectedTrigger, getTriggers } = useMindTriggers();
+  // Get mental triggers from a utility function directly
+  const getMentalTriggers = () => [
+    "Limited Time Offer",
+    "Exclusive Deal",
+    "Save Up To 50%",
+    "Free Shipping",
+    "Buy Now",
+    "Act Fast",
+    "New Arrival",
+    "Best Seller",
+    "Sale Ends Soon",
+    "Join Now",
+    "Don't Miss Out",
+    "Special Promotion"
+  ];
   
-  const triggers = getTriggers();
+  const triggers = getMentalTriggers();
   const randomTrigger = triggers[Math.floor(Math.random() * triggers.length)];
 
   return (

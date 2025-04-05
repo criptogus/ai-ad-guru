@@ -143,21 +143,11 @@ const AdEditorSection: React.FC<AdEditorSectionProps> = ({
       {isEditing && onSelectTrigger && (
         <div>
           <Label className="mb-2 block">Mind Triggers</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <TriggerButton
-              triggerType="feed"
-              format={ad.format === "feed" ? "feed" : "story"}
               onSelectTrigger={onSelectTrigger}
-            />
-            <TriggerButton
-              triggerType="story"
-              format={ad.format === "feed" ? "feed" : "story"}
-              onSelectTrigger={onSelectTrigger}
-            />
-            <TriggerButton
-              triggerType="reel"
-              format={ad.format === "feed" ? "feed" : "story"}
-              onSelectTrigger={onSelectTrigger}
+              buttonText="Add Mind Trigger"
+              className="w-full"
             />
           </div>
         </div>

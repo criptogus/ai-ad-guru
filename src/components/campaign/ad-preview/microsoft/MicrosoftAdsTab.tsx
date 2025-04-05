@@ -6,10 +6,12 @@ import { MicrosoftAd } from "@/hooks/adGeneration/types";
 import { getDomain } from "@/lib/utils";
 import MicrosoftAdsList from "./MicrosoftAdsList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: MicrosoftAd[];
-  websiteUrl: string;
+  websiteUrl?: string;
+  analysisResult?: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
   onUpdateMicrosoftAd: (index: number, updatedAd: MicrosoftAd) => void;
@@ -18,12 +20,15 @@ interface MicrosoftAdsTabProps {
 
 const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   microsoftAds,
-  websiteUrl,
+  websiteUrl = "",
+  analysisResult,
   isGenerating,
   onGenerateAds,
   onUpdateMicrosoftAd,
   mindTrigger
 }) => {
+  const domain = getDomain(websiteUrl || (analysisResult?.websiteUrl || ""));
+  
   return (
     <div>
       {mindTrigger && (
@@ -56,7 +61,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
       ) : (
         <MicrosoftAdsList
           ads={microsoftAds}
-          websiteUrl={websiteUrl}
+          websiteUrl={websiteUrl || (analysisResult?.websiteUrl || "")}
           isGenerating={isGenerating}
           onGenerateAds={onGenerateAds}
           onUpdateAd={onUpdateMicrosoftAd}

@@ -81,5 +81,10 @@ export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
  * Normalize MicrosoftAd object (reusing Google Ad normalization as they share structure)
  */
 export function normalizeMicrosoftAd(ad: Partial<MicrosoftAd>): MicrosoftAd {
-  return normalizeGoogleAd(ad) as MicrosoftAd;
+  // Ensure Microsoft Ad has the same structure as Google Ad plus any specific properties
+  const normalizedGoogleAd = normalizeGoogleAd(ad);
+  return {
+    ...normalizedGoogleAd,
+    // Add any Microsoft-specific properties here if needed
+  };
 }
