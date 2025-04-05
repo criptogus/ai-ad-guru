@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -132,11 +133,13 @@ const CampaignContent: React.FC = () => {
       });
 
       if (imageUrl) {
+        // Create a new MetaAd object with the updated imageUrl
         const updatedAd: MetaAd = { 
           ...ad, 
           imageUrl 
         };
         
+        // Update the appropriate ads array based on which ad type it is
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = updatedAd;
