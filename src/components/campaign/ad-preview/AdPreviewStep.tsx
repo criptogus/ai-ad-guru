@@ -7,7 +7,7 @@ import MetaAdsTab from "./MetaAdsTab";
 import LinkedInAdsTab from "./linkedin/LinkedInAdsTab";
 import MicrosoftAdsTab from "./MicrosoftAdsTab";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoveRight } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";

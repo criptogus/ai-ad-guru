@@ -1,4 +1,3 @@
-
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
@@ -7,90 +6,65 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function absoluteUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_APP_URL}${path}`
-}
-
-export function formatDate(input: string | number): string {
-  const date = new Date(input)
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
-}
-
-export function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
-export function getDomain(url: string): string {
+export const getDomain = (url: string): string => {
   try {
-    if (!url.startsWith('http')) {
-      url = 'https://' + url;
-    }
-    return new URL(url).hostname.replace('www.', '');
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname.replace(/^www\./, '');
   } catch (e) {
-    return url;
+    console.error("Invalid URL", url, e);
+    return '';
   }
-}
+};
 
-export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
-  // Convert individual headline fields to a headlines array if not present
-  const headlines = ad.headlines || [
-    ad.headline1 || '',
-    ad.headline2 || '',
-    ad.headline3 || ''
-  ];
-
-  // Convert individual description fields to a descriptions array if not present
-  const descriptions = ad.descriptions || [
-    ad.description1 || '',
-    ad.description2 || ''
-  ];
-
-  // Ensure siteLinks have the required link property
-  const siteLinks = ad.siteLinks?.map(site => ({
-    title: site.title || '',
-    description: site.description || '',
-    link: site.link || '#'  // Provide a default link if missing
-  })) || [];
-
+/**
+ * Normalizes a GoogleAd object to ensure it has all required fields
+ */
+export function normalizeGoogleAd(ad: any): GoogleAd {
+  if (!ad) return {} as GoogleAd;
+  
+  // Ensure headlines and descriptions are always arrays
+  const headlines = Array.isArray(ad.headlines) ? ad.headlines : [];
+  const descriptions = Array.isArray(ad.descriptions) ? ad.descriptions : [];
+  
+  // Ensure siteLinks has the required format with 'link' property
+  const siteLinks = Array.isArray(ad.siteLinks) 
+    ? ad.siteLinks.map((link: any) => ({
+        title: link.title || '',
+        link: link.link || '#',
+        description: link.description
+      }))
+    : [];
+  
   return {
-    id: ad.id || crypto.randomUUID(),
-    headline1: ad.headline1 || headlines[0] || '',
-    headline2: ad.headline2 || headlines[1] || '',
-    headline3: ad.headline3 || headlines[2] || '',
-    description1: ad.description1 || descriptions[0] || '',
-    description2: ad.description2 || descriptions[1] || '',
+    id: ad.id,
+    headline1: ad.headline1 || '',
+    headline2: ad.headline2 || '',
+    headline3: ad.headline3 || '',
+    description1: ad.description1 || '',
+    description2: ad.description2 || '',
     path1: ad.path1 || '',
     path2: ad.path2 || '',
-    displayPath: ad.displayPath || '',
+    displayPath: ad.displayPath,
     headlines: headlines,
     descriptions: descriptions,
     siteLinks: siteLinks
   };
 }
 
-export function normalizeMicrosoftAd(ad: Partial<GoogleAd>): GoogleAd {
-  // Microsoft ads use the same structure as Google Ads
-  return normalizeGoogleAd(ad);
-}
-
-export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
-  // Convert hashtags to array if it's a string
-  let hashtags: string[] = [];
-  if (typeof ad.hashtags === 'string') {
-    hashtags = ad.hashtags.split(/[,\s]+/).filter(Boolean);
-  } else if (Array.isArray(ad.hashtags)) {
-    hashtags = ad.hashtags;
+/**
+ * Normalizes a MetaAd object to ensure it has all required fields
+ */
+export function normalizeMetaAd(ad: any): MetaAd {
+  if (!ad) return {} as MetaAd;
+  
+  // Normalize hashtags field - ensure it's always an array or string
+  let hashtags = ad.hashtags;
+  if (hashtags === undefined || hashtags === null) {
+    hashtags = [];
   }
-
+  
   return {
-    id: ad.id || crypto.randomUUID(),
+    id: ad.id,
     headline: ad.headline || '',
     primaryText: ad.primaryText || '',
     description: ad.description || '',
