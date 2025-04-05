@@ -1,15 +1,15 @@
 
-import { useState } from 'react';
-import { MetaAd } from '@/hooks/adGeneration/types';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { MetaAd } from "@/hooks/adGeneration/types";
+import { CampaignData } from "@/contexts/CampaignContext";
 
 interface UseImageGenerationHandlerProps {
-  generateAdImage: (prompt: string, additionalContext?: any) => Promise<string | null>;
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
-  setMetaAds: (ads: MetaAd[]) => void;
-  setLinkedInAds: (ads: MetaAd[]) => void;
-  campaignData: any;
+  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  campaignData: CampaignData;
 }
 
 export const useImageGenerationHandler = ({
@@ -21,55 +21,35 @@ export const useImageGenerationHandler = ({
   campaignData
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-  
-  const handleGenerateImage = async (adIndex: number, platform: 'meta' | 'linkedin'): Promise<void> => {
+
+  const handleGenerateImage = async (ad: MetaAd, index: number) => {
     try {
-      setLoadingImageIndex(adIndex);
+      setLoadingImageIndex(index);
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       
-      const ads = platform === 'meta' ? metaAds : linkedInAds;
-      const ad = ads[adIndex];
+      // Add format context if it exists
+      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
+      const finalPrompt = promptWithContext + formatContext;
       
-      if (!ad) {
-        toast.error("Ad not found");
-        setLoadingImageIndex(null);
-        return;
-      }
-      
-      // Extract the image prompt from the ad
-      const promptBase = ad.imagePrompt || `Image for ${ad.headline}`;
-      const prompt = `${promptBase} for ${campaignData?.companyName || 'a company'} advertisement`;
-      
-      console.log(`Generating image for ${platform} ad #${adIndex} with prompt:`, prompt);
-      
-      // Call generateAdImage with the prompt
-      const imageUrl = await generateAdImage(prompt, {
-        adType: platform,
-        headline: ad.headline,
-        description: ad.description
+      const imageUrl = await generateAdImage(finalPrompt, {
+        ad,
+        campaignData,
+        index
       });
-      
+
       if (imageUrl) {
-        // Update the ad with the new image URL
-        const updatedAds = [...ads];
-        updatedAds[adIndex] = {
-          ...ad,
-          imageUrl: imageUrl
-        };
-        
-        // Update the appropriate ad state
-        if (platform === 'meta') {
+        if (metaAds[index]) {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-        } else {
+        } else if (linkedInAds[index]) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
         }
-        
-        toast.success("Image generated successfully");
-      } else {
-        toast.error("Failed to generate image");
       }
     } catch (error) {
-      console.error(`Error generating image for ${platform} ad:`, error);
-      toast.error("Error generating image");
+      console.error("Error generating image:", error);
     } finally {
       setLoadingImageIndex(null);
     }

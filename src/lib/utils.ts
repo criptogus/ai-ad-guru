@@ -43,23 +43,29 @@ export const normalizeGoogleAd = (ad: Partial<GoogleAd>): GoogleAd => {
     siteLinks: []
   };
   
+  // Create headlines array if it doesn't exist
+  const headlines = ad.headlines || [
+    ad.headline1 || '',
+    ad.headline2 || '',
+    ad.headline3 || ''
+  ];
+  
+  // Create descriptions array if it doesn't exist
+  const descriptions = ad.descriptions || [
+    ad.description1 || '',
+    ad.description2 || ''
+  ];
+  
   const normalizedAd: GoogleAd = { 
-    headline1: ad.headline1 || '',
-    headline2: ad.headline2 || '',
-    headline3: ad.headline3 || '',
-    description1: ad.description1 || '',
-    description2: ad.description2 || '',
+    headline1: ad.headline1 || headlines[0] || '',
+    headline2: ad.headline2 || headlines[1] || '',
+    headline3: ad.headline3 || headlines[2] || '',
+    description1: ad.description1 || descriptions[0] || '',
+    description2: ad.description2 || descriptions[1] || '',
     path1: ad.path1 || '',
     path2: ad.path2 || '',
-    headlines: ad.headlines || [
-      ad.headline1 || '',
-      ad.headline2 || '',
-      ad.headline3 || ''
-    ],
-    descriptions: ad.descriptions || [
-      ad.description1 || '',
-      ad.description2 || ''
-    ],
+    headlines: headlines,
+    descriptions: descriptions,
     siteLinks: ad.siteLinks || [],
     displayPath: ad.displayPath,
     finalUrl: ad.finalUrl,
@@ -100,6 +106,11 @@ export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
  * Normalize MicrosoftAd object (reusing Google Ad normalization as they share structure)
  */
 export function normalizeMicrosoftAd(ad: Partial<MicrosoftAd>): MicrosoftAd {
-  // Ensure Microsoft Ad has the same structure as Google Ad plus any specific properties
-  return normalizeGoogleAd(ad);
+  // Use GoogleAd normalization and explicitly ensure headlines/descriptions
+  const baseAd = normalizeGoogleAd(ad);
+  return {
+    ...baseAd,
+    headlines: baseAd.headlines,
+    descriptions: baseAd.descriptions
+  };
 }

@@ -1,11 +1,12 @@
 
 import React from "react";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdPreview from "../ad-preview/google/GoogleAdPreview";
 import { InstagramPreview } from "../ad-preview/meta";
 import { MicrosoftAdPreview } from "../ad-preview/microsoft";
 import LinkedInAdPreview from "../ad-preview/linkedin/LinkedInAdPreview";
+import { normalizeGoogleAd, normalizeMicrosoftAd } from "@/lib/utils";
 
 interface AdPreviewsSectionProps {
   platform: string;
@@ -92,11 +93,15 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
           <div className="space-y-4">
             <h4 className="text-md font-medium">Microsoft Ads</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {microsoftAds.slice(0, 2).map((ad, index) => (
-                <div key={index} className="border rounded-md p-2">
-                  <MicrosoftAdPreview ad={ad} domain={getDomain(websiteUrl)} />
-                </div>
-              ))}
+              {microsoftAds.slice(0, 2).map((ad, index) => {
+                // Always normalize Microsoft ads
+                const normalizedAd = normalizeMicrosoftAd(ad);
+                return (
+                  <div key={index} className="border rounded-md p-2">
+                    <MicrosoftAdPreview ad={normalizedAd} domain={getDomain(websiteUrl)} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : null;

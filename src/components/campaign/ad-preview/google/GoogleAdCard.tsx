@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GoogleAd } from "@/hooks/adGeneration/types";
@@ -23,7 +22,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   onUpdateAd,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  // Ensure the ad object has headlines and descriptions arrays
+  // Always normalize the ad to ensure headlines and descriptions arrays exist
   const normalizedAd = normalizeGoogleAd(ad);
   const [editedAd, setEditedAd] = useState<GoogleAd>(normalizedAd);
 
@@ -32,31 +31,21 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   };
 
   const handleSave = () => {
-    onUpdateAd(editedAd);
+    // Always normalize the ad before saving
+    onUpdateAd(normalizeGoogleAd(editedAd));
     setIsEditing(false);
   };
 
   const handleCancel = () => {
+    // Reset to the original normalized ad
     setEditedAd(normalizedAd);
     setIsEditing(false);
   };
 
   const handleCopy = () => {
     // Create fallback for copying if headlines/descriptions arrays don't exist
-    let headlinesText;
-    if (Array.isArray(normalizedAd.headlines)) {
-      headlinesText = normalizedAd.headlines.join('\n');
-    } else {
-      headlinesText = `${normalizedAd.headline1}\n${normalizedAd.headline2}\n${normalizedAd.headline3}`;
-    }
-      
-    let descriptionsText;
-    if (Array.isArray(normalizedAd.descriptions)) {
-      descriptionsText = normalizedAd.descriptions.join('\n');
-    } else {
-      descriptionsText = `${normalizedAd.description1}\n${normalizedAd.description2}`;
-    }
-      
+    const headlinesText = normalizedAd.headlines.join('\n');
+    const descriptionsText = normalizedAd.descriptions.join('\n');
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);
   };
@@ -113,11 +102,11 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
         {/* Ad Content */}
         <div className="grid md:grid-cols-2 gap-4 p-4">
           <GoogleAdPreview 
-            ad={isEditing ? editedAd : normalizedAd} 
+            ad={isEditing ? normalizeGoogleAd(editedAd) : normalizedAd} 
             domain={domain} 
           />
           <GoogleAdEditor 
-            ad={isEditing ? editedAd : normalizedAd} 
+            ad={isEditing ? normalizeGoogleAd(editedAd) : normalizedAd} 
             index={index} 
             onUpdateAd={(idx, updatedAd) => setEditedAd(normalizeGoogleAd(updatedAd))}
           />

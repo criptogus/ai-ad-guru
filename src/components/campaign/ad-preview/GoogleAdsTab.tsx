@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MoveRight, Sparkles, Loader2 } from "lucide-react";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdCard from "./google/GoogleAdCard";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
@@ -116,7 +116,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
       {googleAds.length > 0 ? (
         <div className="space-y-6">
           {googleAds.map((ad, index) => {
-            // Normalize the ad to ensure it has headlines and descriptions arrays
+            // Always normalize the ad to ensure it has headlines and descriptions arrays
             const normalizedAd = normalizeGoogleAd(ad);
             return (
               <GoogleAdCard
@@ -124,7 +124,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
                 ad={normalizedAd}
                 index={index}
                 domain={companyName}
-                onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
+                onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, normalizeGoogleAd(updatedAd))}
               />
             );
           })}

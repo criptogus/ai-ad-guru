@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -85,10 +86,10 @@ const CampaignContent: React.FC = () => {
     setMetaAds,
     setLinkedInAds,
     setMicrosoftAds,
-    generateGoogleAds,
-    generateMetaAds,
-    generateLinkedInAds,
-    generateMicrosoftAds
+    generateGoogleAds: (input: any, trigger?: string) => generateGoogleAds(input, trigger),
+    generateMetaAds: (input: any, trigger?: string) => generateMetaAds(input, trigger),
+    generateLinkedInAds: (input: any, trigger?: string) => generateLinkedInAds(input, trigger),
+    generateMicrosoftAds: (input: any, trigger?: string) => generateMicrosoftAds(input, trigger)
   });
 
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
@@ -100,17 +101,19 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  const { 
-    handleGenerateImage,
-    loadingImageIndex 
-  } = useImageGenerationHandler({
-    generateAdImage: handleGenerateImageWrapper,
-    metaAds,
-    linkedInAds,
-    setMetaAds,
-    setLinkedInAds,
-    campaignData
-  });
+  // Update the image generation handler to match the expected signature
+  const customImageHandler = async (ad: MetaAd, index: number): Promise<void> => {
+    const { handleGenerateImage } = useImageGenerationHandler({
+      generateAdImage: handleGenerateImageWrapper,
+      metaAds,
+      linkedInAds,
+      setMetaAds,
+      setLinkedInAds,
+      campaignData
+    });
+    
+    await handleGenerateImage(ad, index);
+  };
 
   const {
     handleUpdateGoogleAd,
@@ -152,7 +155,7 @@ const CampaignContent: React.FC = () => {
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateLinkedInAds,
-    handleGenerateImage,
+    handleGenerateImage: customImageHandler,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,

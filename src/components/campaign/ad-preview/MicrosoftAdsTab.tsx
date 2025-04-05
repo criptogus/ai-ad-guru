@@ -5,9 +5,10 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Plus, Sparkles } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MicrosoftAdCard } from "./microsoft";
+import { normalizeGoogleAd, normalizeMicrosoftAd } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -70,15 +71,19 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
 
       {microsoftAds.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
-          {microsoftAds.map((ad, index) => (
-            <MicrosoftAdCard
-              key={index}
-              ad={ad}
-              domain={domain}
-              index={index}
-              onUpdate={(updatedAd) => onUpdateMicrosoftAd(index, updatedAd)}
-            />
-          ))}
+          {microsoftAds.map((ad, index) => {
+            // Always normalize to ensure consistent structure
+            const normalizedAd = normalizeMicrosoftAd(ad);
+            return (
+              <MicrosoftAdCard
+                key={index}
+                ad={normalizedAd}
+                domain={domain}
+                index={index}
+                onUpdate={(updatedAd) => onUpdateMicrosoftAd(index, normalizeGoogleAd(updatedAd))}
+              />
+            );
+          })}
         </div>
       ) : (
         <Card>

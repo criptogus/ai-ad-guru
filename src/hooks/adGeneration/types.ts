@@ -8,8 +8,8 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
-  headlines: string[];  // Making headlines explicit 
-  descriptions: string[];  // Making descriptions explicit
+  headlines: string[];  // Explicitly required
+  descriptions: string[];  // Explicitly required
   siteLinks?: Array<{title: string; link: string; description?: string}>;
   finalUrl?: string;
   id?: string;
@@ -21,7 +21,7 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  format?: "feed" | "story" | "reel";  // Adding format property
+  format?: "feed" | "story" | "reel";
   hashtags?: string[] | string;
   companyName?: string;
   finalUrl?: string;
@@ -48,8 +48,11 @@ export interface UseAdGenerationReturn {
   isGenerating: boolean;
 }
 
-// MicrosoftAd type definition (extending GoogleAd)
-export interface MicrosoftAd extends GoogleAd {}
+// MicrosoftAd type definition (extending GoogleAd with explicit headlines/descriptions)
+export interface MicrosoftAd extends GoogleAd {
+  headlines: string[];
+  descriptions: string[];
+}
 
 // LinkedIn ad type (matching MetaAd for now)
 export type LinkedInAd = MetaAd;

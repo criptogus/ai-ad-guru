@@ -34,6 +34,7 @@ export const useAdGenerationHandlers = ({
       const ads = await generateGoogleAds(analysisResult, mindTrigger);
       
       if (ads) {
+        // Always normalize ads before setting them
         const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
         setGoogleAds(normalizedAds);
       }
@@ -76,6 +77,7 @@ export const useAdGenerationHandlers = ({
       const ads = await generateMicrosoftAds(analysisResult, mindTrigger);
       
       if (ads) {
+        // Always normalize Microsoft ads
         const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
         setMicrosoftAds(normalizedAds);
       }
