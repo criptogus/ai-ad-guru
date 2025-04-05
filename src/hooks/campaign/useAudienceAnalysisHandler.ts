@@ -1,24 +1,33 @@
 
+import { AudienceAnalysisResult } from "@/hooks/useAudienceAnalysis";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
-interface AudienceAnalysisHandlerProps {
-  analyzeAudience: (analysisData: WebsiteAnalysisResult) => Promise<any>;
+interface UseAudienceAnalysisHandlerProps {
+  analyzeAudience: (input: any) => Promise<AudienceAnalysisResult | null>;
   analysisResult: WebsiteAnalysisResult | null;
-  setAudienceAnalysisResult: (result: any) => void;
-  setCampaignData: (data: any) => void;
+  setAudienceAnalysisResult: React.Dispatch<React.SetStateAction<AudienceAnalysisResult | null>>;
+  setCampaignData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const useAudienceAnalysisHandler = ({
   analyzeAudience,
   analysisResult,
   setAudienceAnalysisResult,
-  setCampaignData,
-}: AudienceAnalysisHandlerProps) => {
+  setCampaignData
+}: UseAudienceAnalysisHandlerProps) => {
   const handleAudienceAnalysis = async () => {
     if (!analysisResult) return null;
     
     try {
-      const result = await analyzeAudience(analysisResult);
+      const result = await analyzeAudience({
+        companyName: analysisResult.companyName,
+        businessDescription: analysisResult.businessDescription,
+        targetAudience: analysisResult.targetAudience,
+        uniqueSellingPoints: analysisResult.uniqueSellingPoints,
+        callToAction: analysisResult.callToAction,
+        websiteUrl: analysisResult.websiteUrl,
+      });
+      
       if (result) {
         setAudienceAnalysisResult(result);
         
@@ -27,15 +36,16 @@ export const useAudienceAnalysisHandler = ({
           ...prev,
           audienceAnalysis: result
         }));
-        
-        return result;
       }
+      
+      return result;
     } catch (error) {
       console.error("Error analyzing audience:", error);
+      return null;
     }
-    
-    return null;
   };
 
-  return { handleAudienceAnalysis };
+  return {
+    handleAudienceAnalysis
+  };
 };

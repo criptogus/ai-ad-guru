@@ -13,7 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 
