@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
-import { useAdGeneration, GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { useAdGeneration } from "@/hooks/adGeneration";
 import { useCampaignCreation } from "@/hooks/campaignActions/useCampaignCreation";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import CampaignLayout from "./CampaignLayout";
@@ -13,7 +13,9 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
+import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -56,6 +58,19 @@ const CampaignContent: React.FC = () => {
     isGenerating
   } = useAdGeneration();
 
+  // Create wrappers for ad generation functions
+  const {
+    wrappedGenerateGoogleAds,
+    wrappedGenerateMetaAds,
+    wrappedGenerateLinkedInAds,
+    wrappedGenerateMicrosoftAds
+  } = useAdGenerationWrappers(
+    generateGoogleAds,
+    generateMetaAds,
+    generateLinkedInAds,
+    generateMicrosoftAds
+  );
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const { createCampaign, isCreating } = useCampaignCreation(
     user,
@@ -76,27 +91,6 @@ const CampaignContent: React.FC = () => {
     setCampaignData,
   });
 
-  // Create properly typed wrapper functions to ensure consistent type handling
-  const typedGenerateGoogleAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
-    const result = await generateGoogleAds(input, trigger);
-    return result ? result.map(ad => normalizeGoogleAd(ad)) : [];
-  };
-
-  const typedGenerateMetaAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
-    const result = await generateMetaAds(input, trigger);
-    return result ? result.map(ad => normalizeMetaAd(ad)) : [];
-  };
-
-  const typedGenerateLinkedInAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
-    const result = await generateLinkedInAds(input, trigger);
-    return result ? result.map(ad => normalizeMetaAd(ad)) : [];
-  };
-
-  const typedGenerateMicrosoftAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
-    const result = await generateMicrosoftAds(input, trigger);
-    return result ? result.map(ad => normalizeGoogleAd(ad)) : [];
-  };
-
   const {
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
@@ -109,17 +103,17 @@ const CampaignContent: React.FC = () => {
     setMetaAds,
     setLinkedInAds,
     setMicrosoftAds,
-    generateGoogleAds: typedGenerateGoogleAds,
-    generateMetaAds: typedGenerateMetaAds,
-    generateLinkedInAds: typedGenerateLinkedInAds,
-    generateMicrosoftAds: typedGenerateMicrosoftAds
+    generateGoogleAds: wrappedGenerateGoogleAds,
+    generateMetaAds: wrappedGenerateMetaAds,
+    generateLinkedInAds: wrappedGenerateLinkedInAds,
+    generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
   // Create a properly typed wrapper for image generation
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
       const result = await generateAdImage(prompt, additionalContext);
-      return typeof result === 'string' ? result : null;
+      return typeof result === 'string' ? result : (typeof result === 'object' && result?.imageUrl ? result.imageUrl : null);
     } catch (error) {
       console.error("Error generating image:", error);
       return null;

@@ -1,55 +1,61 @@
 
 import React from "react";
-import { MetaAd } from "@/hooks/adGeneration";
-import { normalizeMetaAd } from "@/lib/utils";
+import { MetaAd } from "@/hooks/adGeneration/types";
+import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
-  companyName: string;
 }
 
-const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ 
-  ad, 
-  companyName 
-}) => {
-  // Normalize the ad to ensure it has hashtags
-  const normalizedAd = normalizeMetaAd(ad);
-  
-  // Process hashtags - might be string or array
+const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad }) => {
+  // Parse hashtags from the ad
   const renderHashtags = () => {
-    if (!normalizedAd.hashtags) return null;
+    if (!ad.hashtags || (Array.isArray(ad.hashtags) && ad.hashtags.length === 0)) {
+      return null;
+    }
+
+    let hashtagArray: string[] = [];
     
-    // Handle both string and array formats
-    const hashtagArray = Array.isArray(normalizedAd.hashtags) 
-      ? normalizedAd.hashtags 
-      : normalizedAd.hashtags.split(/[\s,]+/);
-    
-    if (hashtagArray.length === 0) return null;
-    
-    return (
-      <div className="mt-1 text-sm text-blue-500">
-        {hashtagArray.map((tag, idx) => {
-          // Ensure the tag has a # prefix
-          const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
-          return (
-            <span key={idx} className="mr-1">{formattedTag}</span>
-          );
-        })}
-      </div>
-    );
+    if (typeof ad.hashtags === 'string') {
+      hashtagArray = ad.hashtags.split(/[,\s]+/).filter(Boolean);
+    } else if (Array.isArray(ad.hashtags)) {
+      hashtagArray = ad.hashtags;
+    }
+
+    return hashtagArray.map((tag, index) => {
+      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
+      return (
+        <span key={index} className="text-blue-500">
+          {formattedTag}{' '}
+        </span>
+      );
+    });
   };
 
   return (
-    <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 text-xs text-muted-foreground">
-      <div className="flex justify-between">
-        <div>
-          {normalizedAd.description && (
-            <span>{normalizedAd.description}</span>
-          )}
+    <div className="p-3">
+      <div className="flex justify-between mb-2">
+        <div className="flex gap-4">
+          <Heart className="w-6 h-6" />
+          <MessageCircle className="w-6 h-6" />
+          <Send className="w-6 h-6" />
         </div>
-        <div>
-          <span>Sponsored</span>
-        </div>
+        <Bookmark className="w-6 h-6" />
+      </div>
+      
+      <div className="text-sm">
+        <p className="font-semibold mb-1">127 likes</p>
+        <p>
+          <span className="font-semibold mr-1">{ad.companyName || "sponsor"}</span>
+          {ad.description}
+        </p>
+        {renderHashtags() && (
+          <p className="mt-1">
+            {renderHashtags()}
+          </p>
+        )}
+        <p className="text-gray-500 text-xs mt-1">View all 24 comments</p>
+        <p className="text-gray-400 text-xs mt-1">2 HOURS AGO</p>
       </div>
     </div>
   );

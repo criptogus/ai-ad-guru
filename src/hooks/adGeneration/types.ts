@@ -26,7 +26,8 @@ export interface MetaAd {
   imagePrompt?: string;
   imageUrl?: string;
   format?: 'feed' | 'story' | 'reel';
-  hashtags?: string[];
+  hashtags?: string[] | string;
+  companyName?: string;
 }
 
 export interface LinkedInAd extends MetaAd {}

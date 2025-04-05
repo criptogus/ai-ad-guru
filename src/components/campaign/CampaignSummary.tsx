@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import AdPreviewsSection from "./summary/AdPreviewsSection";
 
 interface CampaignSummaryProps {
@@ -21,7 +21,7 @@ interface CampaignSummaryProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  microsoftAds: any[];
+  microsoftAds: GoogleAd[];
   linkedInAds?: MetaAd[];
   onApprove: () => Promise<void>;
   onEdit: () => void;

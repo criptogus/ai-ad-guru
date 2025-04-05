@@ -81,6 +81,14 @@ export function normalizeMicrosoftAd(ad: Partial<GoogleAd>): GoogleAd {
 }
 
 export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
+  // Convert hashtags to array if it's a string
+  let hashtags: string[] = [];
+  if (typeof ad.hashtags === 'string') {
+    hashtags = ad.hashtags.split(/[,\s]+/).filter(Boolean);
+  } else if (Array.isArray(ad.hashtags)) {
+    hashtags = ad.hashtags;
+  }
+
   return {
     id: ad.id || crypto.randomUUID(),
     headline: ad.headline || '',
@@ -89,6 +97,7 @@ export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
     imagePrompt: ad.imagePrompt || '',
     imageUrl: ad.imageUrl || '',
     format: ad.format || 'feed',
-    hashtags: ad.hashtags || []
+    hashtags: hashtags,
+    companyName: ad.companyName || ''
   };
 }

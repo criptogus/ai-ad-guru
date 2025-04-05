@@ -1,7 +1,6 @@
 
 import React from "react";
-import { MetaAd } from "@/hooks/adGeneration";
-import { normalizeMetaAd } from "@/lib/utils";
+import { MetaAd } from "@/hooks/adGeneration/types";
 
 interface ContentSectionProps {
   ad: MetaAd;
@@ -9,69 +8,40 @@ interface ContentSectionProps {
 }
 
 const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
-  // Normalize the ad to ensure it has hashtags
-  const normalizedAd = normalizeMetaAd(ad);
-  
-  // Process hashtags - might be string or array
+  // Parse hashtags from the ad
   const renderHashtags = () => {
-    if (!normalizedAd.hashtags) return null;
+    if (!ad.hashtags || (Array.isArray(ad.hashtags) && ad.hashtags.length === 0)) {
+      return null;
+    }
+
+    let hashtagArray: string[] = [];
     
-    // Handle both string and array formats
-    const hashtagArray = Array.isArray(normalizedAd.hashtags) 
-      ? normalizedAd.hashtags 
-      : normalizedAd.hashtags.split(/[\s,]+/);
-    
-    if (hashtagArray.length === 0) return null;
-    
-    return (
-      <div className="mt-1 text-sm text-blue-500">
-        {hashtagArray.map((tag, idx) => {
-          // Ensure the tag has a # prefix
-          const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
-          return (
-            <span key={idx} className="mr-1">{formattedTag}</span>
-          );
-        })}
-      </div>
-    );
+    if (typeof ad.hashtags === 'string') {
+      hashtagArray = ad.hashtags.split(/[,\s]+/).filter(Boolean);
+    } else if (Array.isArray(ad.hashtags)) {
+      hashtagArray = ad.hashtags;
+    }
+
+    return hashtagArray.map((tag, index) => {
+      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
+      return (
+        <span key={index} className="text-blue-500">
+          {formattedTag}{' '}
+        </span>
+      );
+    });
   };
 
   return (
-    <div className="p-3">
-      {/* Action buttons */}
-      <div className="flex justify-between mb-2">
-        <div className="flex gap-3">
-          <button>❤️</button>
-          <button>💬</button>
-          <button>📤</button>
-        </div>
-        <button>🔖</button>
-      </div>
-      
-      {/* Likes count */}
-      <div className="mb-2 text-sm font-medium">1,234 likes</div>
-      
-      {/* Caption */}
-      <div className="mb-2 text-sm">
-        <span className="font-medium">{companyName}</span>{" "}
-        <span>{normalizedAd.primaryText}</span>
-      </div>
-      
-      {/* Hashtags */}
-      {renderHashtags()}
-      
-      {/* View comments */}
-      <div className="mt-2 text-sm text-gray-500">View all 123 comments</div>
-      
-      {/* Add comment section */}
-      <div className="mt-4 flex items-center">
-        <input 
-          type="text" 
-          placeholder="Add a comment..." 
-          className="w-full bg-transparent text-sm outline-none"
-        />
-        <button className="text-blue-500 text-sm font-semibold">Post</button>
-      </div>
+    <div className="px-3 py-2">
+      <p className="text-sm whitespace-pre-line mb-2">
+        {ad.primaryText}
+        {renderHashtags() && (
+          <span className="block mt-1">
+            {renderHashtags()}
+          </span>
+        )}
+      </p>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { getMindTrigger } from "@/hooks/campaignActions/getMindTrigger";
 
 // Import existing tab components
@@ -17,7 +17,7 @@ interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  microsoftAds: any[];
+  microsoftAds: GoogleAd[];
   linkedInAds: MetaAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
@@ -28,7 +28,7 @@ interface AdPreviewStepProps {
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
-  onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   onNext: () => void;
   onBack: () => void;
