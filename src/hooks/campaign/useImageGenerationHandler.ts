@@ -1,5 +1,7 @@
 
-import { MetaAd } from "@/hooks/adGeneration";
+import { useState } from 'react';
+import { MetaAd } from '@/hooks/adGeneration/types';
+import { toast } from 'sonner';
 
 interface UseImageGenerationHandlerProps {
   generateAdImage: (prompt: string, additionalContext?: any) => Promise<string | null>;
@@ -19,47 +21,62 @@ export const useImageGenerationHandler = ({
   campaignData
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-
-  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+  
+  const handleGenerateImage = async (adIndex: number, platform: 'meta' | 'linkedin'): Promise<void> => {
     try {
-      if (!ad.imagePrompt) return;
+      setLoadingImageIndex(adIndex);
       
-      setLoadingImageIndex(index);
+      const ads = platform === 'meta' ? metaAds : linkedInAds;
+      const ad = ads[adIndex];
       
-      const imageUrl = await generateAdImage(ad.imagePrompt, {
-        companyName: campaignData?.companyName,
-        businessDescription: campaignData?.businessDescription,
-        ...campaignData
+      if (!ad) {
+        toast.error("Ad not found");
+        setLoadingImageIndex(null);
+        return;
+      }
+      
+      // Extract the image prompt from the ad
+      const promptBase = ad.imagePrompt || `Image for ${ad.headline}`;
+      const prompt = `${promptBase} for ${campaignData?.companyName || 'a company'} advertisement`;
+      
+      console.log(`Generating image for ${platform} ad #${adIndex} with prompt:`, prompt);
+      
+      // Call generateAdImage with the prompt
+      const imageUrl = await generateAdImage(prompt, {
+        adType: platform,
+        headline: ad.headline,
+        description: ad.description
       });
       
       if (imageUrl) {
-        // Create a copy of the ad with the updated image URL
-        const updatedAd = { ...ad, imageUrl };
+        // Update the ad with the new image URL
+        const updatedAds = [...ads];
+        updatedAds[adIndex] = {
+          ...ad,
+          imageUrl: imageUrl
+        };
         
-        // Figure out which ad array this ad belongs to
-        if (metaAds.some(metaAd => metaAd === ad)) {
-          const updatedAds = [...metaAds];
-          updatedAds[index] = updatedAd;
+        // Update the appropriate ad state
+        if (platform === 'meta') {
           setMetaAds(updatedAds);
-        } else if (linkedInAds.some(linkedInAd => linkedInAd === ad)) {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = updatedAd;
+        } else {
           setLinkedInAds(updatedAds);
         }
+        
+        toast.success("Image generated successfully");
+      } else {
+        toast.error("Failed to generate image");
       }
-      
     } catch (error) {
-      console.error("Error generating image:", error);
+      console.error(`Error generating image for ${platform} ad:`, error);
+      toast.error("Error generating image");
     } finally {
       setLoadingImageIndex(null);
     }
   };
-  
+
   return {
     handleGenerateImage,
     loadingImageIndex
   };
 };
-
-// Add missing import
-import { useState } from "react";

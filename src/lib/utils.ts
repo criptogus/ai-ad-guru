@@ -1,6 +1,7 @@
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { GoogleAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,47 +29,42 @@ export function getDomain(url: string): string {
  * Normalizes a GoogleAd object by ensuring it has both individual fields (headline1, headline2, etc.)
  * and array fields (headlines, descriptions) for compatibility
  */
-export const normalizeGoogleAd = (ad: GoogleAd): GoogleAd => {
-  if (!ad) return ad;
+export const normalizeGoogleAd = (ad: Partial<GoogleAd>): GoogleAd => {
+  if (!ad) return {
+    headline1: '',
+    headline2: '',
+    headline3: '',
+    description1: '',
+    description2: '',
+    path1: '',
+    path2: '',
+    headlines: [],
+    descriptions: [],
+    siteLinks: []
+  };
   
-  const normalizedAd: any = { ...ad };
-  
-  // Initialize arrays if they don't exist
-  if (!normalizedAd.headlines) {
-    normalizedAd.headlines = [
-      normalizedAd.headline1 || '',
-      normalizedAd.headline2 || '',
-      normalizedAd.headline3 || ''
-    ];
-  }
-  
-  if (!normalizedAd.descriptions) {
-    normalizedAd.descriptions = [
-      normalizedAd.description1 || '',
-      normalizedAd.description2 || ''
-    ];
-  }
-  
-  // Ensure individual fields exist too
-  if (!normalizedAd.headline1 && normalizedAd.headlines?.[0]) {
-    normalizedAd.headline1 = normalizedAd.headlines[0];
-  }
-  
-  if (!normalizedAd.headline2 && normalizedAd.headlines?.[1]) {
-    normalizedAd.headline2 = normalizedAd.headlines[1];
-  }
-  
-  if (!normalizedAd.headline3 && normalizedAd.headlines?.[2]) {
-    normalizedAd.headline3 = normalizedAd.headlines[2];
-  }
-  
-  if (!normalizedAd.description1 && normalizedAd.descriptions?.[0]) {
-    normalizedAd.description1 = normalizedAd.descriptions[0];
-  }
-  
-  if (!normalizedAd.description2 && normalizedAd.descriptions?.[1]) {
-    normalizedAd.description2 = normalizedAd.descriptions[1];
-  }
+  const normalizedAd: GoogleAd = { 
+    headline1: ad.headline1 || '',
+    headline2: ad.headline2 || '',
+    headline3: ad.headline3 || '',
+    description1: ad.description1 || '',
+    description2: ad.description2 || '',
+    path1: ad.path1 || '',
+    path2: ad.path2 || '',
+    headlines: ad.headlines || [
+      ad.headline1 || '',
+      ad.headline2 || '',
+      ad.headline3 || ''
+    ],
+    descriptions: ad.descriptions || [
+      ad.description1 || '',
+      ad.description2 || ''
+    ],
+    siteLinks: ad.siteLinks || [],
+    displayPath: ad.displayPath,
+    finalUrl: ad.finalUrl,
+    id: ad.id
+  };
   
   // Ensure siteLinks have link property
   if (normalizedAd.siteLinks && Array.isArray(normalizedAd.siteLinks)) {
@@ -105,9 +101,5 @@ export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
  */
 export function normalizeMicrosoftAd(ad: Partial<MicrosoftAd>): MicrosoftAd {
   // Ensure Microsoft Ad has the same structure as Google Ad plus any specific properties
-  const normalizedGoogleAd = normalizeGoogleAd(ad);
-  return {
-    ...normalizedGoogleAd,
-    // Add any Microsoft-specific properties here if needed
-  };
+  return normalizeGoogleAd(ad);
 }

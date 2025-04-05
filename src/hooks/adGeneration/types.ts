@@ -50,3 +50,6 @@ export interface UseAdGenerationReturn {
 
 // MicrosoftAd type definition (extending GoogleAd)
 export interface MicrosoftAd extends GoogleAd {}
+
+// LinkedIn ad type (matching MetaAd for now)
+export type LinkedInAd = MetaAd;

@@ -1,3 +1,4 @@
+
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
@@ -75,10 +76,7 @@ export const useAdGenerationHandlers = ({
       const ads = await generateMicrosoftAds(analysisResult, mindTrigger);
       
       if (ads) {
-        const normalizedAds = ads.map(ad => {
-          const normalizedAd = normalizeGoogleAd(ad);
-          return normalizedAd;
-        });
+        const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
         setMicrosoftAds(normalizedAds);
       }
     } catch (error) {
