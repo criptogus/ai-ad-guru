@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,8 @@ const MicrosoftAdsTestArea: React.FC = () => {
     descriptions: [
       "This is the first description line that explains your business value proposition to Bing users.",
       "This is the second description line with more details about your services for Microsoft users."
-    ]
+    ],
+    siteLinks: [] // Add empty siteLinks array with proper type
   });
   
   const [domain, setDomain] = useState("yourbusiness.com");
@@ -78,7 +80,8 @@ const MicrosoftAdsTestArea: React.FC = () => {
       descriptions: [
         "This is the first description line that explains your business value proposition to Bing users.",
         "This is the second description line with more details about your services for Microsoft users."
-      ]
+      ],
+      siteLinks: [] // Add empty siteLinks array with proper type
     });
     setDomain("yourbusiness.com");
     toast.info("Test ad reset to default values");

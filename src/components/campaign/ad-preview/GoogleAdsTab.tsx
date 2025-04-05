@@ -126,8 +126,9 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         </div>
       ) : (
         <EmptyAdsState
-          platform="Google Ads"
+          platform="google"
           isGenerating={isGenerating}
+          onGenerate={onGenerateAds}
         />
       )}
     </div>
