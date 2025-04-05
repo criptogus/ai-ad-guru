@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -110,16 +109,12 @@ const CampaignContent: React.FC = () => {
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
     handleUpdateLinkedInAd
-  } = useAdUpdateHandlers(
-    googleAds,
-    metaAds,
-    microsoftAds,
-    linkedInAds,
+  } = useAdUpdateHandlers({
     setGoogleAds,
     setMetaAds,
     setMicrosoftAds,
     setLinkedInAds
-  );
+  });
 
   const { handleBack, handleNext } = useNavigationHandlers(
     setCurrentStep,
