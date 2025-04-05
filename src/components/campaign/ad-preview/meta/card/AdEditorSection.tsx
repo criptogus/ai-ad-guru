@@ -1,156 +1,161 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Image, Sparkles, BookOpen } from "lucide-react";
-import { EditorSectionProps } from "./types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { MetaAd } from "@/hooks/adGeneration";
 import TriggerButtonInline from "../../TriggerButtonInline";
-import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
-import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
-import AdvancedPromptTemplates from "../../ad-prompts/AdvancedPromptTemplates";
+import { EditorSectionProps } from "./types";
+import {
+  FileImage,
+  Type,
+  Hash,
+  AlignLeft,
+  MessageSquare,
+} from "lucide-react";
 
 const AdEditorSection: React.FC<EditorSectionProps> = ({
   ad,
   isEditing,
   onUpdate,
-  onSelectTrigger
+  onSelectTrigger,
 }) => {
-  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
-  const [showPromptTemplates, setShowPromptTemplates] = useState(false);
+  const [activeTab, setActiveTab] = React.useState("content");
 
-  const handleChange = (field: keyof typeof ad, value: string) => {
-    onUpdate({
-      ...ad,
-      [field]: value
-    });
+  const handleChange = (field: keyof MetaAd, value: string) => {
+    if (onUpdate) {
+      onUpdate({
+        ...ad,
+        [field]: value,
+      });
+    }
   };
 
-  const handleTriggerSelect = (trigger: string) => {
+  const handleInsertTrigger = (trigger: string) => {
     if (onSelectTrigger) {
       onSelectTrigger(trigger);
     }
   };
 
-  const handleTemplateSelect = (template: AdTemplate) => {
-    // Update the ad's image prompt with the selected template
-    handleChange("imagePrompt", template.prompt);
-    setShowTemplateGallery(false);
-  };
-
-  const handlePromptTemplateSelect = (prompt: string) => {
-    handleChange("imagePrompt", prompt);
-    setShowPromptTemplates(false);
+  const getCharCount = (text: string) => {
+    return text ? text.length : 0;
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-sm font-medium mb-1">Headline</p>
-        {isEditing ? (
-          <Input 
-            value={ad.headline} 
-            onChange={(e) => handleChange("headline", e.target.value)}
-            placeholder="Enter headline (25 chars max)"
-            maxLength={25}
-          />
-        ) : (
-          <p className="text-sm border p-2 rounded-md bg-muted/20">{ad.headline}</p>
-        )}
-      </div>
+    <div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="content">Content</TabsTrigger>
+          <TabsTrigger value="image">Image</TabsTrigger>
+        </TabsList>
 
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <p className="text-sm font-medium">Primary Text</p>
-          {isEditing && (
-            <TriggerButtonInline onSelectTrigger={handleTriggerSelect} />
-          )}
-        </div>
-        {isEditing ? (
-          <Textarea 
-            value={ad.primaryText} 
-            onChange={(e) => handleChange("primaryText", e.target.value)}
-            placeholder="Enter primary text (125 chars recommended)"
-            rows={5}
-          />
-        ) : (
-          <div className="text-sm border p-2 rounded-md bg-muted/20 whitespace-pre-line min-h-[100px]">
-            {ad.primaryText}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <p className="text-sm font-medium mb-1">Call to Action</p>
-        {isEditing ? (
-          <Input 
-            value={ad.description || ""} 
-            onChange={(e) => handleChange("description", e.target.value)}
-            placeholder="Enter CTA (e.g., 'Learn More', 'Shop Now')"
-            maxLength={20}
-          />
-        ) : (
-          <p className="text-sm border p-2 rounded-md bg-muted/20">{ad.description || "Learn More"}</p>
-        )}
-      </div>
-
-      {isEditing && (
-        <>
+        <TabsContent value="content" className="space-y-4">
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <p className="text-sm font-medium">Image Prompt</p>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">Headline</label>
+              <div className="flex items-center">
+                <span className="text-xs text-muted-foreground mr-2">
+                  {getCharCount(ad.headline)}/40
+                </span>
+                {isEditing && <TriggerButtonInline onInsert={handleInsertTrigger} />}
+              </div>
             </div>
-            <Textarea 
-              value={ad.imagePrompt || ""} 
+            <Input
+              value={ad.headline}
+              onChange={(e) => handleChange("headline", e.target.value)}
+              placeholder="Enter ad headline"
+              disabled={!isEditing}
+              className={!isEditing ? "bg-muted" : ""}
+              maxLength={40}
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">Primary Text</label>
+              <div className="flex items-center">
+                <span className="text-xs text-muted-foreground mr-2">
+                  {getCharCount(ad.primaryText)}/125
+                </span>
+                {isEditing && <TriggerButtonInline onInsert={handleInsertTrigger} />}
+              </div>
+            </div>
+            <Textarea
+              value={ad.primaryText}
+              onChange={(e) => handleChange("primaryText", e.target.value)}
+              placeholder="Enter primary text for your ad"
+              disabled={!isEditing}
+              className={`min-h-[100px] ${!isEditing ? "bg-muted" : ""}`}
+              maxLength={125}
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">Call to Action</label>
+              <span className="text-xs text-muted-foreground">
+                {getCharCount(ad.description)}/20
+              </span>
+            </div>
+            <Input
+              value={ad.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Enter call to action (e.g., Learn More)"
+              disabled={!isEditing}
+              className={!isEditing ? "bg-muted" : ""}
+              maxLength={20}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="image" className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">Image Prompt</label>
+            </div>
+            <Textarea
+              value={ad.imagePrompt || ""}
               onChange={(e) => handleChange("imagePrompt", e.target.value)}
               placeholder="Describe the image you want to generate"
-              rows={3}
+              disabled={!isEditing}
+              className={`min-h-[100px] ${!isEditing ? "bg-muted" : ""}`}
             />
-            <div className="mt-2 flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="w-full"
-                onClick={() => setShowTemplateGallery(true)}
+            <p className="text-xs text-muted-foreground mt-1">
+              Describe the image in detail for better results
+            </p>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">Format</label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant={ad.format === "feed" ? "default" : "outline"}
+                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
+                onClick={() => isEditing && handleChange("format", "feed")}
               >
-                <Image className="h-4 w-4 mr-2" />
-                Image Templates
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="w-full"
-                onClick={() => setShowPromptTemplates(true)}
+                Feed
+              </Badge>
+              <Badge
+                variant={ad.format === "story" ? "default" : "outline"}
+                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
+                onClick={() => isEditing && handleChange("format", "story")}
               >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Ad Prompt Library
-              </Button>
+                Story
+              </Badge>
+              <Badge
+                variant={ad.format === "reel" ? "default" : "outline"}
+                className={`cursor-pointer ${isEditing ? "" : "opacity-50"}`}
+                onClick={() => isEditing && handleChange("format", "reel")}
+              >
+                Reel
+              </Badge>
             </div>
           </div>
-        </>
-      )}
-
-      <TemplateGallery
-        isOpen={showTemplateGallery}
-        onClose={() => setShowTemplateGallery(false)}
-        onSelectTemplate={handleTemplateSelect}
-        platform="instagram"
-      />
-      
-      <Dialog open={showPromptTemplates} onOpenChange={setShowPromptTemplates}>
-        <DialogContent className="max-w-4xl h-[80vh] max-h-[80vh] flex flex-col p-0">
-          <DialogHeader className="px-6 pt-6 pb-2">
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-blue-500" />
-              Ad Prompt Library
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-auto p-6">
-            <AdvancedPromptTemplates onSelectPrompt={handlePromptTemplateSelect} />
-          </div>
-        </DialogContent>
-      </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -8,8 +8,8 @@ export interface GoogleAd {
   path1: string;
   path2: string;
   displayPath?: string;
-  headlines: string[];  // Add this for compatibility
-  descriptions: string[];  // Add this for compatibility
+  headlines?: string[];  // Make headlines property required
+  descriptions?: string[];  // Make descriptions property required
   siteLinks?: Array<{title: string, link: string, description?: string}>;
   finalUrl?: string;
   id?: string;

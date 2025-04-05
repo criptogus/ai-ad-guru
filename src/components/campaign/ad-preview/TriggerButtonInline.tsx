@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { useMentalTriggers } from "@/hooks/useMentalTriggers";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,33 +10,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface TriggerButtonInlineProps {
+export interface TriggerButtonInlineProps {
   onInsert: (trigger: string) => void;
 }
 
 const TriggerButtonInline: React.FC<TriggerButtonInlineProps> = ({ onInsert }) => {
-  // Common mental triggers that work well in ads
-  const triggers = [
-    "Limited Time Offer",
-    "Exclusive Deal",
-    "Save Up To 50%",
-    "Free Shipping",
-    "Buy Now",
-    "Act Fast",
-    "New Arrival",
-    "Best Seller",
-    "Sale Ends Soon",
-    "Join Now"
-  ];
+  const { getTriggers } = useMentalTriggers();
+  const triggers = getTriggers();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6">
-          <Sparkles className="h-3.5 w-3.5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 rounded-full"
+          title="Insert mind trigger"
+        >
+          <Sparkles className="h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="max-h-60 overflow-y-auto">
         {triggers.map((trigger) => (
           <DropdownMenuItem
             key={trigger}

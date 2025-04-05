@@ -61,21 +61,6 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     navigator.clipboard.writeText(content);
   };
 
-  // For simple preview using AdVariationCard
-  if (false) { // We'll keep the detailed implementation for now
-    return (
-      <AdVariationCard
-        platform="google"
-        ad={{...normalizedAd, finalUrl: domain}}
-        onEdit={handleEdit}
-        onCopy={handleCopy}
-        isEditing={isEditing}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
-    );
-  }
-
   return (
     <Card>
       <CardContent className="p-0">
@@ -134,7 +119,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
           <GoogleAdEditor 
             ad={isEditing ? editedAd : normalizedAd} 
             index={index} 
-            onUpdateAd={(_, updatedAd) => setEditedAd(normalizeGoogleAd(updatedAd))}
+            onUpdateAd={(idx, updatedAd) => setEditedAd(normalizeGoogleAd(updatedAd))}
           />
         </div>
       </CardContent>

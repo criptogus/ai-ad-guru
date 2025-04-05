@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -94,9 +93,7 @@ const CampaignContent: React.FC = () => {
 
   const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     try {
-      // Fixed: Return the string URL only, not an object
-      const imageUrl = await generateAdImage(prompt, additionalInfo);
-      return imageUrl;
+      return await generateAdImage(prompt, additionalInfo);
     } catch (error) {
       console.error("Error generating image:", error);
       return null;

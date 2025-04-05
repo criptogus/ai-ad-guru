@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { InstagramPreview } from "./instagram-preview";
-import { Edit, Save, X, Copy, Loader2 } from "lucide-react";
-import InstagramAdEditor from "./InstagramAdEditor";
+import { Edit, Save, X, Copy, Loader2, ImageIcon } from "lucide-react";
 import TriggerButtonInline from "../TriggerButtonInline";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MetaAdCardProps {
   index: number;
@@ -43,7 +45,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
     setEditedAd({ ...editedAd, [field]: value });
   };
 
-  const handleSelectTrigger = (trigger: string) => {
+  const handleInsertTrigger = (trigger: string) => {
     // If we're editing, add the trigger to the primaryText
     if (isEditing) {
       setEditedAd({
@@ -134,7 +136,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
                     </div>
                   ) : (
                     <div className="text-center">
-                      <Image className="h-8 w-8 mx-auto text-gray-400" />
+                      <ImageIcon className="h-8 w-8 mx-auto text-gray-400" />
                       <p className="text-sm text-gray-500 mt-2">No image generated yet</p>
                       <Button 
                         variant="ghost" 
@@ -165,7 +167,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
                 onClick={onGenerateImage} 
                 className="w-full"
               >
-                <Image className="h-4 w-4 mr-2" />
+                <ImageIcon className="h-4 w-4 mr-2" />
                 Regenerate Image
               </Button>
             )}
@@ -191,7 +193,7 @@ const MetaAdCard: React.FC<MetaAdCardProps> = ({
               <div className="flex justify-between items-center mb-1">
                 <p className="text-sm font-medium">Primary Text</p>
                 {isEditing && (
-                  <TriggerButtonInline onSelectTrigger={handleSelectTrigger} />
+                  <TriggerButtonInline onInsert={handleInsertTrigger} />
                 )}
               </div>
               {isEditing ? (

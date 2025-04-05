@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,6 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
     console.log("Selected trigger:", trigger);
     // Implementation of trigger selection
   };
-
-  const normalizedAds = googleAds.map(ad => normalizeGoogleAd(ad));
 
   return (
     <div className="space-y-6">
@@ -114,17 +113,21 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         </div>
       )}
 
-      {normalizedAds.length > 0 ? (
+      {googleAds.length > 0 ? (
         <div className="space-y-6">
-          {normalizedAds.map((ad, index) => (
-            <GoogleAdCard
-              key={`google-ad-${index}`}
-              ad={ad}
-              index={index}
-              domain={companyName}
-              onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
-            />
-          ))}
+          {googleAds.map((ad, index) => {
+            // Normalize the ad to ensure it has headlines and descriptions arrays
+            const normalizedAd = normalizeGoogleAd(ad);
+            return (
+              <GoogleAdCard
+                key={`google-ad-${index}`}
+                ad={normalizedAd}
+                index={index}
+                domain={companyName}
+                onUpdateAd={(updatedAd) => onUpdateGoogleAd(index, updatedAd)}
+              />
+            );
+          })}
         </div>
       ) : (
         <EmptyAdsState
