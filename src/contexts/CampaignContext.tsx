@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
