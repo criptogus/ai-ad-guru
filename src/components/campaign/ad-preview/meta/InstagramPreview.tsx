@@ -9,6 +9,7 @@ import ActionBar from "./instagram-preview/ActionBar";
 import InstagramPreviewFooter from "./instagram-preview/InstagramPreviewFooter";
 import ImageUploadHandler from "./instagram-preview/ImageUploadHandler";
 import { toast } from "sonner";
+import { normalizeMetaAd } from "@/lib/utils";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
@@ -32,6 +33,9 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isLoading = loadingImageIndex === index;
+  
+  // Normalize the ad to ensure it has format and hashtags properties
+  const normalizedAd = normalizeMetaAd(ad);
 
   // Ensure format is one of the allowed values
   const normalizeFormat = (format?: string): "feed" | "story" | "reel" => {
@@ -62,7 +66,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       // Update the ad with the new image URL
       onUpdateAd({
-        ...ad,
+        ...normalizedAd,
         imageUrl: localUrl
       });
 
@@ -82,7 +86,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     
     // Update the ad with the template information
     onUpdateAd({
-      ...ad,
+      ...normalizedAd,
       imagePrompt: template.prompt
     });
     
@@ -96,14 +100,14 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   // Determine which format to use (from props, ad, or default)
   const format = viewMode 
     ? viewMode as "feed" | "story" | "reel" 
-    : normalizeFormat(ad.format || "feed");
+    : normalizeFormat(normalizedAd.format);
 
   return (
     <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">
       <InstagramPreviewHeader companyName={companyName} />
       
       <ImageContent 
-        ad={ad}
+        ad={normalizedAd}
         imageKey={index}
         isLoading={isLoading}
         isUploading={isUploading}
@@ -116,11 +120,11 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <div className="p-3">
         <ActionBar />
         <TextContent 
-          headline={ad.headline}
-          primaryText={ad.primaryText}
+          headline={normalizedAd.headline}
+          primaryText={normalizedAd.primaryText}
           companyName={companyName}
         />
-        <InstagramPreviewFooter ad={ad} companyName={companyName} />
+        <InstagramPreviewFooter ad={normalizedAd} companyName={companyName} />
       </div>
       
       <ImageUploadHandler 

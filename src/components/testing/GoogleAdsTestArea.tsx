@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,13 +26,14 @@ const GoogleAdsTestArea: React.FC = () => {
     descriptions: [
       "This is the first description line that explains what your product or service does and why people should care.",
       "This is the second description line with additional details about features, benefits, or special offers."
-    ]
+    ],
+    siteLinks: []
   });
   
   const [domain, setDomain] = useState("yourbusiness.com");
 
   const handleHeadlineChange = (index: number, value: string) => {
-    const newHeadlines = [...testAd.headlines!];
+    const newHeadlines = [...testAd.headlines];
     newHeadlines[index] = value;
     
     // Also update the individual headline properties
@@ -48,7 +50,7 @@ const GoogleAdsTestArea: React.FC = () => {
   };
 
   const handleDescriptionChange = (index: number, value: string) => {
-    const newDescriptions = [...testAd.descriptions!];
+    const newDescriptions = [...testAd.descriptions];
     newDescriptions[index] = value;
     
     // Also update the individual description properties
@@ -80,7 +82,8 @@ const GoogleAdsTestArea: React.FC = () => {
       descriptions: [
         "This is the first description line that explains what your product or service does and why people should care.",
         "This is the second description line with additional details about features, benefits, or special offers."
-      ]
+      ],
+      siteLinks: []
     });
     setDomain("yourbusiness.com");
     toast.info("Test ad reset to default values");

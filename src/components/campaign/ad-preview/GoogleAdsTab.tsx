@@ -9,6 +9,7 @@ import GoogleAdCard from "./google/GoogleAdCard";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
 import EmptyAdsState from "./EmptyAdsState";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { normalizeGoogleAd } from "@/lib/utils";
 
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
@@ -45,6 +46,9 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
     console.log("Selected trigger:", trigger);
     // Implementation of trigger selection
   };
+
+  // Ensure we normalize the GoogleAd objects to have headlines and descriptions arrays
+  const normalizedAds = googleAds.map(ad => normalizeGoogleAd(ad));
 
   return (
     <div className="space-y-6">
@@ -112,9 +116,9 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         </div>
       )}
 
-      {googleAds.length > 0 ? (
+      {normalizedAds.length > 0 ? (
         <div className="space-y-6">
-          {googleAds.map((ad, index) => (
+          {normalizedAds.map((ad, index) => (
             <GoogleAdCard
               key={`google-ad-${index}`}
               ad={ad}

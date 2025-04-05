@@ -1,8 +1,7 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 interface EmptyAdsStateProps {
   platform: "google" | "meta" | "linkedin" | "microsoft";
@@ -15,67 +14,42 @@ const EmptyAdsState: React.FC<EmptyAdsStateProps> = ({
   isGenerating,
   onGenerate
 }) => {
-  const getPlatformName = () => {
-    switch (platform) {
-      case "google":
-        return "Google";
-      case "meta":
-        return "Instagram";
-      case "linkedin":
-        return "LinkedIn";
-      case "microsoft":
-        return "Microsoft";
-      default:
-        return platform;
-    }
+  const platformDisplayNames = {
+    google: "Google Search Ads",
+    meta: "Instagram Ads",
+    linkedin: "LinkedIn Ads",
+    microsoft: "Microsoft Ads"
   };
 
-  const getCreditsUsage = () => {
-    switch (platform) {
-      case "google":
-      case "meta":
-      case "microsoft":
-      case "linkedin":
-        return "5 credits";
-      default:
-        return "credits";
-    }
-  };
+  const displayName = platformDisplayNames[platform] || platform;
 
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground mb-4 text-center">
-          No {getPlatformName()} ads generated yet. 
-          <br />
-          Click the button below to generate AI-powered ad variations.
-        </p>
-        {onGenerate && (
-          <>
-            <Button 
-              onClick={onGenerate} 
-              disabled={isGenerating}
-              className="flex items-center gap-2 mb-2"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Generate {getPlatformName()} Ads
-                </>
-              )}
-            </Button>
-            <div className="text-xs text-muted-foreground">
-              This will use {getCreditsUsage()}
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-md space-y-4 text-center">
+      <div className="text-muted-foreground mb-2">
+        <p className="text-lg font-medium">No {displayName} Created Yet</p>
+        <p className="text-sm">Generate ads with AI to see them appear here</p>
+      </div>
+      
+      {onGenerate && (
+        <Button 
+          onClick={onGenerate}
+          disabled={isGenerating}
+          className="mt-2"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate {displayName}
+            </>
+          )}
+        </Button>
+      )}
+    </div>
   );
 };
 

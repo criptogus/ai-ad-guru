@@ -7,6 +7,7 @@ import { Copy, Edit, Save, X } from "lucide-react";
 import GoogleAdPreview from "./GoogleAdPreview";
 import GoogleAdEditor from "./GoogleAdEditor";
 import AdVariationCard from "../AdVariationCard";
+import { normalizeGoogleAd } from "@/lib/utils";
 
 interface GoogleAdCardProps {
   ad: GoogleAd;
@@ -22,7 +23,9 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   onUpdateAd,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedAd, setEditedAd] = useState<GoogleAd>(ad);
+  // Ensure the ad object has headlines and descriptions arrays
+  const normalizedAd = normalizeGoogleAd(ad);
+  const [editedAd, setEditedAd] = useState<GoogleAd>(normalizedAd);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -34,24 +37,24 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   };
 
   const handleCancel = () => {
-    setEditedAd(ad);
+    setEditedAd(normalizedAd);
     setIsEditing(false);
   };
 
   const handleCopy = () => {
     // Create fallback for copying if headlines/descriptions arrays don't exist
     let headlinesText;
-    if (Array.isArray(ad.headlines)) {
-      headlinesText = ad.headlines.join('\n');
+    if (Array.isArray(normalizedAd.headlines)) {
+      headlinesText = normalizedAd.headlines.join('\n');
     } else {
-      headlinesText = `${ad.headline1}\n${ad.headline2}\n${ad.headline3}`;
+      headlinesText = `${normalizedAd.headline1}\n${normalizedAd.headline2}\n${normalizedAd.headline3}`;
     }
       
     let descriptionsText;
-    if (Array.isArray(ad.descriptions)) {
-      descriptionsText = ad.descriptions.join('\n');
+    if (Array.isArray(normalizedAd.descriptions)) {
+      descriptionsText = normalizedAd.descriptions.join('\n');
     } else {
-      descriptionsText = `${ad.description1}\n${ad.description2}`;
+      descriptionsText = `${normalizedAd.description1}\n${normalizedAd.description2}`;
     }
       
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
@@ -63,7 +66,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     return (
       <AdVariationCard
         platform="google"
-        ad={{...ad, finalUrl: domain}}
+        ad={{...normalizedAd, finalUrl: domain}}
         onEdit={handleEdit}
         onCopy={handleCopy}
         isEditing={isEditing}
@@ -125,11 +128,11 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
         {/* Ad Content */}
         <div className="grid md:grid-cols-2 gap-4 p-4">
           <GoogleAdPreview 
-            ad={isEditing ? editedAd : ad} 
+            ad={isEditing ? editedAd : normalizedAd} 
             domain={domain} 
           />
           <GoogleAdEditor 
-            ad={isEditing ? editedAd : ad} 
+            ad={isEditing ? editedAd : normalizedAd} 
             index={index} 
             onUpdateAd={(_, updatedAd) => setEditedAd(updatedAd)}
           />

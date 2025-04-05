@@ -8,7 +8,7 @@ import MicrosoftAdEditor from "./MicrosoftAdEditor";
 import MicrosoftAdPreview from "./MicrosoftAdPreview";
 import EmptyAdsState from "../EmptyAdsState";
 import TriggerGallery from "@/components/mental-triggers/TriggerGallery";
-import { getDomain } from "@/lib/utils";
+import { getDomain, normalizeGoogleAd } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
   ads: GoogleAd[];
@@ -32,6 +32,9 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showTriggerGallery, setShowTriggerGallery] = useState(false);
   const domain = getDomain(analysisResult?.websiteUrl || "example.com");
+  
+  // Normalize all ads to ensure they have headlines and descriptions arrays
+  const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
 
   const handleEdit = (index: number) => {
     setEditingIndex(index);
@@ -47,21 +50,12 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   };
 
   const handleHeadlineChange = (adIndex: number, headlineIndex: number, value: string) => {
-    const ad = ads[adIndex];
+    const ad = normalizedAds[adIndex];
     
     // Create a new ad object with updated headlines array
     const updatedAd = { ...ad };
     
-    // Make sure headlines array exists
-    if (!updatedAd.headlines) {
-      updatedAd.headlines = [
-        updatedAd.headline1 || '',
-        updatedAd.headline2 || '',
-        updatedAd.headline3 || ''
-      ];
-    }
-    
-    // Update the specific headline
+    // Update the specific headline in the headlines array
     const headlines = [...updatedAd.headlines];
     headlines[headlineIndex] = value;
     updatedAd.headlines = headlines;
@@ -75,20 +69,12 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   };
 
   const handleDescriptionChange = (adIndex: number, descIndex: number, value: string) => {
-    const ad = ads[adIndex];
+    const ad = normalizedAds[adIndex];
     
     // Create a new ad object with updated descriptions array
     const updatedAd = { ...ad };
     
-    // Make sure descriptions array exists
-    if (!updatedAd.descriptions) {
-      updatedAd.descriptions = [
-        updatedAd.description1 || '',
-        updatedAd.description2 || ''
-      ];
-    }
-    
-    // Update the specific description
+    // Update the specific description in the descriptions array
     const descriptions = [...updatedAd.descriptions];
     descriptions[descIndex] = value;
     updatedAd.descriptions = descriptions;
@@ -107,7 +93,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
     }
   };
 
-  if (ads.length === 0) {
+  if (normalizedAds.length === 0) {
     return (
       <EmptyAdsState 
         platform="microsoft" 
@@ -139,7 +125,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
       )}
 
       {/* Microsoft Ads */}
-      {ads.map((ad, index) => (
+      {normalizedAds.map((ad, index) => (
         <Card key={index}>
           <CardContent className="p-0">
             <div className="flex justify-between items-center bg-muted p-3 border-b">
@@ -157,7 +143,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => handleSave(index, ads[index])}
+                      onClick={() => handleSave(index, normalizedAds[index])}
                     >
                       Save
                     </Button>

@@ -13,6 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
+import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 
 const CampaignContent: React.FC = () => {
   const {

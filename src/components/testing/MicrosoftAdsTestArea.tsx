@@ -33,7 +33,7 @@ const MicrosoftAdsTestArea: React.FC = () => {
   const [domain, setDomain] = useState("yourbusiness.com");
 
   const handleHeadlineChange = (index: number, value: string) => {
-    const newHeadlines = [...testAd.headlines!];
+    const newHeadlines = [...testAd.headlines];
     newHeadlines[index] = value;
     
     const updatedAd = { 
@@ -49,7 +49,7 @@ const MicrosoftAdsTestArea: React.FC = () => {
   };
 
   const handleDescriptionChange = (index: number, value: string) => {
-    const newDescriptions = [...testAd.descriptions!];
+    const newDescriptions = [...testAd.descriptions];
     newDescriptions[index] = value;
     
     const updatedAd = { 
