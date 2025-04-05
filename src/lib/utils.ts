@@ -7,6 +7,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Extract domain from URL
+export function getDomain(url?: string): string {
+  if (!url) return 'example.com';
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname.replace('www.', '');
+  } catch (error) {
+    // If URL is invalid, return the original string or a default
+    return url.includes('.') ? url : 'example.com';
+  }
+}
+
 // Normalize GoogleAd to ensure it has headlines and descriptions arrays
 export function normalizeGoogleAd(ad: GoogleAd): GoogleAd {
   if (!ad) return ad;

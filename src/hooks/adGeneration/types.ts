@@ -44,6 +44,6 @@ export interface UseAdGenerationReturn {
   generateMetaAds: (input: AdGenerationInput, mindTrigger?: string) => Promise<MetaAd[] | null>;
   generateLinkedInAds: (input: AdGenerationInput, mindTrigger?: string) => Promise<MetaAd[] | null>;
   generateMicrosoftAds: (input: AdGenerationInput, mindTrigger?: string) => Promise<GoogleAd[] | null>;
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
+  generateAdImage: (prompt: string, additionalContext?: any) => Promise<string | null>;
   isGenerating: boolean;
 }

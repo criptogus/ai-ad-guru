@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -92,13 +91,9 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds
   });
 
-  const handleGenerateImageWrapper = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
+  const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
-      // Fix the input type to ensure we're working with the right format
-      if (additionalInfo && additionalInfo.ad) {
-        return await generateAdImage(prompt, additionalInfo.ad);
-      }
-      return await generateAdImage(prompt);
+      return await generateAdImage(prompt, additionalContext);
     } catch (error) {
       console.error("Error generating image:", error);
       return null;

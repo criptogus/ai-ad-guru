@@ -1,22 +1,18 @@
-
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { SelectTrigger, SelectValue, SelectContent, SelectItem, Select } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Loader2 } from "lucide-react";
+import { MicrosoftAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd } from "@/hooks/adGeneration/types";
-import MicrosoftAdDetails from "./MicrosoftAdDetails";
 import MicrosoftAdsList from "./MicrosoftAdsList";
 import EmptyAdsState from "../EmptyAdsState";
 import { getDomain } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
-  microsoftAds: GoogleAd[];
+  microsoftAds: MicrosoftAd[];
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   onGenerateAds: () => Promise<void>;
-  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: MicrosoftAd) => void;
   mindTrigger?: string;
 }
 
@@ -26,70 +22,59 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
   isGenerating,
   onGenerateAds,
   onUpdateMicrosoftAd,
-  mindTrigger
+  mindTrigger,
 }) => {
-  const [selectedAd, setSelectedAd] = useState<GoogleAd | null>(null);
-  const [selectedAdIndex, setSelectedAdIndex] = useState<number>(-1);
-
-  const handleSelectAd = (ad: GoogleAd) => {
-    setSelectedAd(ad);
-    // Find the index of the selected ad
-    const index = microsoftAds.findIndex(a => 
-      a.headline1 === ad.headline1 && 
-      a.description1 === ad.description1
-    );
-    setSelectedAdIndex(index);
-  };
-
-  const handleUpdateAd = (updatedAd: GoogleAd) => {
-    if (selectedAdIndex >= 0) {
-      onUpdateMicrosoftAd(selectedAdIndex, updatedAd);
-    }
-  };
+  // Extract domain from website URL for display in ads
+  const domain = getDomain(analysisResult?.websiteUrl);
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Tabs defaultValue="list" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list">Variations</TabsTrigger>
-            <TabsTrigger value="details" disabled={!selectedAd}>
-              Details
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="list" className="p-4">
-            {microsoftAds.length === 0 ? (
-              <EmptyAdsState 
-                platform="microsoft"
-                isGenerating={isGenerating}
-                onGenerate={onGenerateAds}
-              />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 className="text-lg font-semibold mb-1">Microsoft Search Ads</h3>
+          <p className="text-sm text-muted-foreground">
+            Create text ads for Microsoft Search Network
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <Button
+            onClick={onGenerateAds}
+            disabled={isGenerating}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
             ) : (
-              <MicrosoftAdsList
-                microsoftAds={microsoftAds}
-                analysisResult={analysisResult}
-                onSelectAd={handleSelectAd}
-              />
+              <>
+                <Sparkles className="h-4 w-4" />
+                Generate Ads
+              </>
             )}
-          </TabsContent>
-          
-          <TabsContent value="details" className="p-4">
-            {selectedAd ? (
-              <MicrosoftAdDetails
-                ad={selectedAd}
-                onUpdate={handleUpdateAd}
-                isEditing={true}
-              />
-            ) : (
-              <div className="text-muted-foreground">
-                Select an ad variation to view details.
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          </Button>
+        </div>
+      </div>
+
+      {microsoftAds.length > 0 ? (
+        <MicrosoftAdsList
+          microsoftAds={microsoftAds}
+          analysisResult={analysisResult}
+          isGenerating={isGenerating}
+          onGenerateAds={onGenerateAds}
+          onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+        />
+      ) : (
+        <EmptyAdsState
+          platform="microsoft"
+          isGenerating={isGenerating}
+          onGenerate={onGenerateAds}
+        />
+      )}
+    </div>
   );
 };
 
