@@ -118,9 +118,11 @@ const CampaignContent: React.FC = () => {
     }
   };
 
+  // Fix: Pass a complete MetaAd object instead of just a string
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
       setLoadingImageIndex(index);
+      // Create prompt with context
       const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
       
       // Add format context if it exists
