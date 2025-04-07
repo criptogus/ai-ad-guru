@@ -13,7 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 
@@ -124,7 +124,7 @@ const CampaignContent: React.FC = () => {
       // Create prompt with context
       const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
       
-      // Add format context if it exists
+      // Add format context if it exists, using optional chaining
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
