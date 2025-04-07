@@ -121,6 +121,7 @@ const CampaignContent: React.FC = () => {
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
       setLoadingImageIndex(index);
+      
       // Create prompt with context
       const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
       
