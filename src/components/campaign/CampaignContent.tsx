@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
@@ -9,12 +10,10 @@ import CampaignLayout from "./CampaignLayout";
 import { useWebsiteAnalysisHandler } from "@/hooks/campaign/useWebsiteAnalysisHandler";
 import { useAudienceAnalysisHandler } from "@/hooks/campaign/useAudienceAnalysisHandler";
 import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandlers";
-import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
-import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
+import { useImageGeneration } from "@/hooks/useImageGeneration";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -34,8 +33,6 @@ const CampaignContent: React.FC = () => {
     setMicrosoftAds,
     setAudienceAnalysisResult
   } = useCampaign();
-
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
   const {
     analyzeWebsite,
@@ -107,57 +104,15 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
-    try {
-      const result = await generateAdImage(prompt, additionalContext);
-      return typeof result === 'string' ? result : (typeof result === 'object' && result?.imageUrl ? result.imageUrl : null);
-    } catch (error) {
-      console.error("Error generating image:", error);
-      return null;
-    }
-  };
-
-  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
-    try {
-      setLoadingImageIndex(index);
-      
-      // Create prompt with context
-      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
-      
-      // Add format context if it exists, using optional chaining
-      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
-      const finalPrompt = promptWithContext + formatContext;
-      
-      const imageUrl = await handleGenerateImageWrapper(finalPrompt, {
-        ad,
-        campaignData,
-        index
-      });
-
-      if (imageUrl) {
-        // Create a new updated ad object with the image URL
-        const updatedAd: MetaAd = { 
-          ...ad, 
-          imageUrl 
-        };
-        
-        // Update the appropriate ads array based on which ad type it is
-        if (metaAds[index]) {
-          const updatedAds = [...metaAds];
-          updatedAds[index] = updatedAd;
-          setMetaAds(updatedAds);
-        } else if (linkedInAds[index]) {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = updatedAd;
-          setLinkedInAds(updatedAds);
-        }
-      }
-    } catch (error) {
-      console.error("Error in handleGenerateImage:", error);
-    } finally {
-      setLoadingImageIndex(null);
-    }
-  };
+  // Use our new custom hook for image generation
+  const { loadingImageIndex, handleGenerateImage } = useImageGeneration(
+    generateAdImage,
+    metaAds,
+    linkedInAds,
+    setMetaAds,
+    setLinkedInAds,
+    campaignData
+  );
 
   const {
     handleUpdateGoogleAd,
