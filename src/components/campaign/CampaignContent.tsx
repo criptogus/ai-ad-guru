@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -13,6 +14,8 @@ import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
+import { MetaAd } from "@/hooks/adGeneration/types";
+import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -120,14 +123,15 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  const { loadingImageIndex, handleGenerateImage } = useImageGeneration(
-    generateImageAdapter,
+  // Using the handler hook instead of direct implementation
+  const { loadingImageIndex, handleGenerateImage } = useImageGenerationHandler({
+    generateAdImage: generateImageAdapter,
     metaAds,
     linkedInAds,
     setMetaAds,
     setLinkedInAds,
     campaignData
-  );
+  });
 
   const {
     handleUpdateGoogleAd,
