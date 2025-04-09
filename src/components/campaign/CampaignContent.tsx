@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -104,12 +103,25 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  const imageGenerationFunc = (prompt: string, additionalContext?: any) => {
-    return generateAdImage(prompt, additionalContext);
+  const generateImageAdapter = async (prompt: string, additionalContext?: any): Promise<string | null> => {
+    try {
+      const result = await generateAdImage(prompt, additionalContext);
+      
+      if (result && typeof result === 'object' && 'imageUrl' in result) {
+        return result.imageUrl as string;
+      } 
+      else if (typeof result === 'string') {
+        return result;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error in generateImageAdapter:", error);
+      return null;
+    }
   };
 
   const { loadingImageIndex, handleGenerateImage } = useImageGeneration(
-    imageGenerationFunc,
+    generateImageAdapter,
     metaAds,
     linkedInAds,
     setMetaAds,

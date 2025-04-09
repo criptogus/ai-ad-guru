@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { MetaAd } from '@/hooks/adGeneration/types';
 import { CampaignData } from '@/contexts/CampaignContext';
 
-// Updated to match the actual structure of the generateAdImage function
+// Updated type definition to match the actual structure of the generateAdImage function
 type GenerateImageFn = (prompt: string, additionalContext?: any) => Promise<string | null>;
 
 export const useImageGeneration = (
@@ -16,16 +16,6 @@ export const useImageGeneration = (
 ) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
-  const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
-    try {
-      const result = await generateAdImage(prompt, additionalContext);
-      return typeof result === 'string' ? result : null;
-    } catch (error) {
-      console.error("Error generating image:", error);
-      return null;
-    }
-  };
-
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
       setLoadingImageIndex(index);
@@ -37,7 +27,8 @@ export const useImageGeneration = (
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
-      const imageUrl = await handleGenerateImageWrapper(finalPrompt, {
+      // Call the generateAdImage function with the prompt string
+      const imageUrl = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
         index
