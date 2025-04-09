@@ -104,42 +104,41 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Create an adapter function to convert the generateAdImage output to the expected format
-  const generateImageAdapter = async (prompt: string, additionalContext?: any): Promise<string | null> => {
-    try {
-      const result = await generateAdImage(prompt, additionalContext);
-      
-      if (result && typeof result === 'object' && 'imageUrl' in result) {
-        return result.imageUrl as string;
-      } 
-      else if (typeof result === 'string') {
-        return result;
-      }
-      return null;
-    } catch (error) {
-      console.error("Error in generateImageAdapter:", error);
-      return null;
-    }
-  };
-
   // Implement image generation directly in this component
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
   const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     try {
       setLoadingImageIndex(index);
-      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       
-      // Add format context if it exists
+      // Create the prompt with context
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
-      const imageUrl = await generateImageAdapter(finalPrompt, {
-        ad,
-        campaignData,
-        index
-      });
-
+      // Call the image generation function
+      let imageResult;
+      try {
+        imageResult = await generateAdImage(finalPrompt, {
+          ad,
+          campaignData,
+          index
+        });
+      } catch (error) {
+        console.error("Error calling generateAdImage:", error);
+        return;
+      }
+      
+      // Extract the image URL from the result
+      let imageUrl: string | null = null;
+      
+      if (typeof imageResult === 'string') {
+        imageUrl = imageResult;
+      } else if (imageResult && typeof imageResult === 'object' && 'imageUrl' in imageResult) {
+        imageUrl = imageResult.imageUrl as string;
+      }
+      
+      // Update the appropriate ads array if we got an image URL
       if (imageUrl) {
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
@@ -152,7 +151,7 @@ const CampaignContent: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error("Error generating image:", error);
+      console.error("Error in handleGenerateImage:", error);
     } finally {
       setLoadingImageIndex(null);
     }
