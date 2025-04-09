@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
@@ -13,9 +13,7 @@ import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandler
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
-import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -106,6 +104,7 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
+  // Create an adapter function to convert the generateAdImage output to the expected format
   const generateImageAdapter = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
       const result = await generateAdImage(prompt, additionalContext);
@@ -123,15 +122,41 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Using the handler hook instead of direct implementation
-  const { loadingImageIndex, handleGenerateImage } = useImageGenerationHandler({
-    generateAdImage: generateImageAdapter,
-    metaAds,
-    linkedInAds,
-    setMetaAds,
-    setLinkedInAds,
-    campaignData
-  });
+  // Implement image generation directly in this component
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
+    try {
+      setLoadingImageIndex(index);
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
+      
+      // Add format context if it exists
+      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
+      const finalPrompt = promptWithContext + formatContext;
+      
+      const imageUrl = await generateImageAdapter(finalPrompt, {
+        ad,
+        campaignData,
+        index
+      });
+
+      if (imageUrl) {
+        if (metaAds[index]) {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          setMetaAds(updatedAds);
+        } else if (linkedInAds[index]) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          setLinkedInAds(updatedAds);
+        }
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+    } finally {
+      setLoadingImageIndex(null);
+    }
+  };
 
   const {
     handleUpdateGoogleAd,
