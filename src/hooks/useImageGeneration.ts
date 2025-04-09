@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { MetaAd } from '@/hooks/adGeneration/types';
 import { CampaignData } from '@/contexts/CampaignContext';
 
-// Define o tipo correto para a função de geração de imagem
+// Updated to match the actual structure of the generateAdImage function
 type GenerateImageFn = (prompt: string, additionalContext?: any) => Promise<string | null>;
 
 export const useImageGeneration = (

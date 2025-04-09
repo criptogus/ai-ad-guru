@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -104,9 +103,12 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Agora usamos o hook useImageGeneration corretamente
+  const imageGenerationFunc = (prompt: string, additionalContext?: any) => {
+    return generateAdImage(prompt, additionalContext);
+  };
+
   const { loadingImageIndex, handleGenerateImage } = useImageGeneration(
-    generateAdImage, // Função que gera a imagem - espera (prompt: string, additionalContext?: any)
+    imageGenerationFunc,
     metaAds,
     linkedInAds,
     setMetaAds,
