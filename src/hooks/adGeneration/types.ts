@@ -25,7 +25,7 @@ export interface MetaAd {
   description: string;
   imagePrompt?: string;
   imageUrl?: string;
-  format?: 'feed' | 'story' | 'reel';
+  format?: 'feed' | 'story' | 'reel';  // Define as opções de formato permitidas
   hashtags?: string[] | string;
   companyName?: string;
 }

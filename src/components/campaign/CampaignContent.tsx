@@ -104,9 +104,9 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Use our new custom hook for image generation
+  // Agora usamos o hook useImageGeneration corretamente
   const { loadingImageIndex, handleGenerateImage } = useImageGeneration(
-    generateAdImage,
+    generateAdImage, // Função que gera a imagem - espera (prompt: string, additionalContext?: any)
     metaAds,
     linkedInAds,
     setMetaAds,

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { MetaAd } from '@/hooks/adGeneration/types';
 import { CampaignData } from '@/contexts/CampaignContext';
 
+// Define o tipo correto para a função de geração de imagem
 type GenerateImageFn = (prompt: string, additionalContext?: any) => Promise<string | null>;
 
 export const useImageGeneration = (
@@ -18,7 +19,7 @@ export const useImageGeneration = (
   const handleGenerateImageWrapper = async (prompt: string, additionalContext?: any): Promise<string | null> => {
     try {
       const result = await generateAdImage(prompt, additionalContext);
-      return typeof result === 'string' ? result : (typeof result === 'object' && result?.imageUrl ? result.imageUrl : null);
+      return typeof result === 'string' ? result : null;
     } catch (error) {
       console.error("Error generating image:", error);
       return null;
