@@ -8,6 +8,7 @@ const CreateCampaignPage: React.FC = () => {
   // Scroll to top on component mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    console.log("CreateCampaignPage mounted"); // Add logging to debug
   }, []);
   
   return (

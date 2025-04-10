@@ -19,6 +19,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   
+  console.log("AppLayout rendering with activePage:", activePage); // Add logging
+  
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {
     return (
@@ -36,9 +38,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </TooltipProvider>
       )}
 
-      {/* Main Content - Fixed spacing issue between sidebar and content */}
-      <main className="flex-1 overflow-hidden flex flex-col p-6 md:pl-8">
-        <div className="w-full h-full overflow-y-auto">
+      {/* Main Content */}
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="w-full h-full overflow-y-auto p-6">
           {children}
         </div>
       </main>

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -32,6 +31,7 @@ import CookiePolicyPage from './pages/CookiePolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
 import SupportPage from './pages/SupportPage';
+import NotFound from './pages/NotFound';
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -50,6 +50,7 @@ function App() {
 
   useEffect(() => {
     // Add any necessary side effects here
+    console.log("Current route:", pathname); // Add logging to debug routing
   }, [pathname]);
 
   return (
@@ -154,6 +155,9 @@ function App() {
                 <Navigate to="/settings/team" replace />
               </ProtectedRoute>
             } />
+            
+            {/* Add fallback 404 route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
       </ThemeProvider>

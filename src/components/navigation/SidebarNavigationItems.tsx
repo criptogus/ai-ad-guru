@@ -23,6 +23,8 @@ export interface SidebarNavigationItemsProps {
 const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collapsed, activePage }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  
+  console.log("Navigation rendering with activePage:", activePage, "currentPath:", currentPath); // Add logging
 
   const items = [
     {
@@ -35,7 +37,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
       name: 'Campaigns',
       icon: Megaphone,
       path: '/campaigns',
-      active: currentPath.includes('/campaigns') || activePage === 'campaigns',
+      active: currentPath.includes('/campaigns') || activePage === 'campaigns' || currentPath === '/create-campaign' || activePage === 'create-campaign',
     },
     {
       name: 'Analytics',
