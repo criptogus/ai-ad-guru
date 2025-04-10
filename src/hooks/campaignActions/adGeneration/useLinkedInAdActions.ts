@@ -1,60 +1,43 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { LinkedInAd } from "@/contexts/CampaignContext";
+import { MetaAd } from "@/hooks/adGeneration/types";
 
-export const useLinkedInAdActions = (
-  analysisResult: WebsiteAnalysisResult | null,
-  linkedInAds: LinkedInAd[],
-  generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<LinkedInAd[] | null>,
-  setCampaignData: React.Dispatch<React.SetStateAction<any>>
-) => {
-  const { toast } = useToast();
+interface UseLinkedInAdActionsProps {
+  analysisResult: WebsiteAnalysisResult | null;
+  linkedInAds: MetaAd[];
+  generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<MetaAd[] | null>;
+  setCampaignData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+export const useLinkedInAdActions = ({
+  analysisResult,
+  linkedInAds,
+  generateLinkedInAds,
+  setCampaignData
+}: UseLinkedInAdActionsProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   
-  const handleGenerateLinkedInAds = async () => {
+  const handleGenerateLinkedInAds = async (mindTrigger?: string) => {
     if (!analysisResult) {
-      toast({
-        title: "Analysis Required",
-        description: "Please analyze a website before generating ads",
-        variant: "destructive",
-      });
+      console.error("Cannot generate LinkedIn Ads without website analysis data");
       return;
     }
     
     setIsGenerating(true);
     
     try {
-      toast({
-        title: "Generating Ads",
-        description: "Creating LinkedIn ads based on your website analysis"
-      });
+      const newAds = await generateLinkedInAds(analysisResult, mindTrigger);
       
-      // Get the campaign data from context
-      const result = await generateLinkedInAds(analysisResult);
-      
-      if (result && result.length > 0) {
-        // Update the campaign data with the generated ads
+      if (newAds && newAds.length > 0) {
+        // Update campaign data with the new ads
         setCampaignData((prev: any) => ({
           ...prev,
-          linkedInAds: result
+          linkedInAds: newAds
         }));
-        
-        toast({
-          title: "Ads Generated",
-          description: `Successfully created ${result.length} LinkedIn ads`
-        });
-      } else {
-        throw new Error("No ads were generated");
       }
     } catch (error) {
       console.error("Error generating LinkedIn ads:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate LinkedIn ads",
-        variant: "destructive",
-      });
     } finally {
       setIsGenerating(false);
     }

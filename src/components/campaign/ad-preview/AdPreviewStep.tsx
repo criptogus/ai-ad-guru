@@ -63,11 +63,12 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   // Create a form with properly initialized fields
   const methods = useForm({
     defaultValues: {
-      googleAds: googleAds,
-      metaAds: metaAds,
-      linkedInAds: linkedInAds,
-      microsoftAds: microsoftAds,
-      platform: selectedPlatform,
+      // Initialize arrays properly to avoid undefined array errors
+      googleAds: googleAds || [],
+      metaAds: metaAds || [],
+      linkedInAds: linkedInAds || [],
+      microsoftAds: microsoftAds || [],
+      platform: selectedPlatform || "",
       
       // Add explicit fields used by child components to avoid undefined errors
       headline: "",
@@ -100,23 +101,24 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   // Set the first selected platform as the default tab
   useEffect(() => {
     if (selectedPlatforms.length > 0 && !selectedPlatform) {
-      setSelectedPlatform(selectedPlatforms[0]);
-      methods.setValue("platform", selectedPlatforms[0]);
+      const firstPlatform = selectedPlatforms[0];
+      setSelectedPlatform(firstPlatform);
+      methods.setValue("platform", firstPlatform);
     }
-  }, [selectedPlatforms]);
+  }, [selectedPlatforms, selectedPlatform, methods]);
   
   // Update form values when ads change
   useEffect(() => {
-    methods.setValue("googleAds", googleAds);
-    methods.setValue("metaAds", metaAds);
-    methods.setValue("linkedInAds", linkedInAds);
-    methods.setValue("microsoftAds", microsoftAds);
-  }, [googleAds, metaAds, linkedInAds, microsoftAds]);
+    if (googleAds?.length >= 0) methods.setValue("googleAds", googleAds);
+    if (metaAds?.length >= 0) methods.setValue("metaAds", metaAds);
+    if (linkedInAds?.length >= 0) methods.setValue("linkedInAds", linkedInAds);
+    if (microsoftAds?.length >= 0) methods.setValue("microsoftAds", microsoftAds);
+  }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
 
   // Update form when selected platform changes
   useEffect(() => {
     methods.setValue("platform", selectedPlatform);
-  }, [selectedPlatform]);
+  }, [selectedPlatform, methods]);
   
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });

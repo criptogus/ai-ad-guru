@@ -31,14 +31,14 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   mindTrigger,
   onMindTriggerChange
 }) => {
-  // Get form context safely with optional chaining
+  // Get form context
   const formMethods = useFormContext();
   
   // Initialize linkedInAds field if form context exists
   useEffect(() => {
     if (formMethods && Array.isArray(linkedInAds)) {
       // Ensure the linkedInAds field exists in the form
-      formMethods.setValue("linkedInAds", linkedInAds || []);
+      formMethods.setValue("linkedInAds", linkedInAds);
     }
   }, [linkedInAds, formMethods]);
 
