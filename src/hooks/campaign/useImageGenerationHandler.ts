@@ -25,7 +25,9 @@ export const useImageGenerationHandler = ({
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     try {
       setLoadingImageIndex(index);
-      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
+      // Extract prompt text from the ad
+      const promptText = ad.imagePrompt || ad.description || "";
+      const promptWithContext = `${promptText}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
       
       // Add format context if it exists
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';

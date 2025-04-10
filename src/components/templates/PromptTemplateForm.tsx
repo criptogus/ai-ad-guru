@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { PromptTemplate } from "@/hooks/template/usePromptTemplates";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGPT4oImageGeneration } from "@/hooks/adGeneration/useGPT4oImageGeneration";
 
 interface PromptTemplateFormProps {
   template: PromptTemplate | null;
@@ -62,7 +62,7 @@ const PromptTemplateForm: React.FC<PromptTemplateFormProps> = ({
     
     try {
       // Call the generateAdImage function from the useGPT4oImageGeneration hook
-      const imageUrl = await imageGeneration.generateAdImage(template.template, {
+      const imageUrl = await imageGeneration.generateAdImage(template.prompt_text, {
         mainText,
         subText,
         companyName,
@@ -97,10 +97,10 @@ const PromptTemplateForm: React.FC<PromptTemplateFormProps> = ({
     <Card>
       <CardContent className="space-y-4">
         <h2 className="text-lg font-semibold">
-          {template ? template.name : 'No Template Selected'}
+          {template ? template.name || "Template" : 'No Template Selected'}
         </h2>
         <p className="text-muted-foreground">
-          {template ? template.description : 'Select a template to start generating images.'}
+          {template ? template.description || "No description available" : 'Select a template to start generating images.'}
         </p>
         
         {template && (

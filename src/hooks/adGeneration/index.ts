@@ -15,15 +15,15 @@ export const useAdGeneration = () => {
     return imageGenHook.generateAdImage(prompt, additionalInfo);
   };
 
-  // Add mock implementations for LinkedIn and Microsoft ads
-  const generateLinkedInAds = async (campaignData: any, mindTrigger?: string) => {
+  // Add implementations for LinkedIn and Microsoft ads
+  const generateLinkedInAds = async (campaignData: any) => {
     console.log("LinkedIn ad generation requested", campaignData);
-    return metaAdsHook.generateMetaAds?.(campaignData, mindTrigger) || null;
+    return metaAdsHook.generateMetaAds?.(campaignData) || null;
   };
   
-  const generateMicrosoftAds = async (campaignData: any, mindTrigger?: string) => {
+  const generateMicrosoftAds = async (campaignData: any) => {
     console.log("Microsoft ad generation requested", campaignData);
-    return googleAdsHook.generateGoogleAds?.(campaignData, mindTrigger) || null;
+    return googleAdsHook.generateGoogleAds?.(campaignData) || null;
   };
   
   return {

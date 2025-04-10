@@ -1,151 +1,135 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
-import { GoogleAd } from '@/hooks/adGeneration';
-import { errorLogger } from '@/services/libs/error-handling';
+import { useState } from "react";
+import { GoogleAd } from "@/hooks/adGeneration";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import { useToast } from "@/hooks/use-toast";
 
-export const useGoogleAdActions = (
-  analysisResult: WebsiteAnalysisResult | null,
-  googleAds: GoogleAd[],
-  generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
-  setCampaignData: React.Dispatch<React.SetStateAction<any>>
-) => {
+interface UseGoogleAdActionsProps {
+  analysisResult: WebsiteAnalysisResult | null;
+  googleAds: GoogleAd[];
+  generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>;
+  setCampaignData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+export const useGoogleAdActions = ({
+  analysisResult,
+  googleAds,
+  generateGoogleAds,
+  setCampaignData
+}: UseGoogleAdActionsProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) {
-      toast.error("Website analysis required before generating ads");
+      toast({
+        title: "No Analysis Result",
+        description: "Please analyze a website first to generate ads.",
+        variant: "destructive"
+      });
       return;
     }
 
+    setIsGenerating(true);
+
     try {
-      setIsGenerating(true);
-      
-      // Get the Google mind trigger from campaignData if available
-      const mindTrigger = (window as any).campaignContext?.campaignData?.mindTriggers?.google || '';
-      
-      console.log("Generating Google ads with trigger:", mindTrigger);
-      const generatedAds = await generateGoogleAds(analysisResult, mindTrigger);
-      
-      if (generatedAds) {
-        // Create a consistent data structure with both individual fields and arrays
-        const enrichedAds = generatedAds.map(ad => {
-          return {
-            ...ad,
-            headline1: ad.headline1 || '',
-            headline2: ad.headline2 || '',
-            headline3: ad.headline3 || '',
-            description1: ad.description1 || '',
-            description2: ad.description2 || ''
-          };
+      // Generate ads using the analysis result
+      const ads = await generateGoogleAds(analysisResult);
+
+      if (ads && ads.length > 0) {
+        // Show success message
+        toast({
+          title: "Google Ads Generated",
+          description: `Successfully generated ${ads.length} Google Ads.`,
         });
-        
-        toast.success(`Generated ${enrichedAds.length} Google ad variations`);
-        
-        // Update campaign data with the new ads
-        setCampaignData(prev => ({
-          ...prev,
-          googleAds: enrichedAds
+
+        // Update campaign data with the Google ads
+        setCampaignData(prevData => ({
+          ...prevData,
+          googleAds: ads
         }));
       } else {
-        // Generate fallback ads
-        const fallbackAds = generateFallbackGoogleAds();
-        setCampaignData(prev => ({
-          ...prev,
-          googleAds: fallbackAds
-        }));
-        
-        toast.warning("Using fallback Google ads", {
-          description: "Generated fallback ads due to API connection issues"
+        // Show error message
+        toast({
+          title: "Generation Failed",
+          description: "Failed to generate Google Ads. Please try again.",
+          variant: "destructive"
         });
       }
     } catch (error) {
-      errorLogger.logError(error, "handleGenerateGoogleAds");
-      console.error("Error generating Google ads:", error);
-      
-      // Generate fallback ads
-      const fallbackAds = generateFallbackGoogleAds();
-      setCampaignData(prev => ({
-        ...prev,
-        googleAds: fallbackAds
-      }));
-      
-      toast.error("An error occurred while generating Google ads", {
-        description: "Using fallback ad variations instead"
+      console.error("Error generating Google Ads:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while generating ads. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Fallback ad generation for when the API fails
-  const generateFallbackGoogleAds = (): GoogleAd[] => {
-    const companyName = analysisResult?.companyName || "Company";
-    const businessDesc = analysisResult?.businessDescription || "Quality service provider";
-    
-    // Create 5 fallback ads
-    return [
-      {
-        headline1: `${companyName} - Official Site`,
-        headline2: "Quality Solutions",
-        headline3: "Expert Service",
-        description1: `${businessDesc.substring(0, 80)}`,
-        description2: "Contact Us Today for a Free Quote!",
-        path1: "services",
-        path2: "solutions",
-        headlines: [`${companyName} - Official Site`, "Quality Solutions", "Expert Service"],
-        descriptions: [`${businessDesc.substring(0, 80)}`, "Contact Us Today for a Free Quote!"]
-      },
-      {
-        headline1: `Top Rated ${companyName}`,
-        headline2: "Professional Services",
-        headline3: "Save 15% Today",
-        description1: `${businessDesc.substring(0, 80)}`,
-        description2: "Trusted by Thousands of Satisfied Customers.",
-        path1: "offers",
-        path2: "discount",
-        headlines: [`Top Rated ${companyName}`, "Professional Services", "Save 15% Today"],
-        descriptions: [`${businessDesc.substring(0, 80)}`, "Trusted by Thousands of Satisfied Customers."]
-      },
-      {
-        headline1: `${companyName} - #1 Choice`,
-        headline2: "Fast & Reliable Service",
-        headline3: "30-Day Guarantee",
-        description1: `${businessDesc.substring(0, 80)}`,
-        description2: "Free Consultation & Quick Response Time.",
-        path1: "guarantee",
-        path2: "service",
-        headlines: [`${companyName} - #1 Choice`, "Fast & Reliable Service", "30-Day Guarantee"],
-        descriptions: [`${businessDesc.substring(0, 80)}`, "Free Consultation & Quick Response Time."]
-      },
-      {
-        headline1: `${companyName} Solutions`,
-        headline2: "Premium Quality",
-        headline3: "Available 24/7",
-        description1: `${businessDesc.substring(0, 80)}`,
-        description2: "Customized Solutions for Your Specific Needs.",
-        path1: "premium",
-        path2: "solutions",
-        headlines: [`${companyName} Solutions`, "Premium Quality", "Available 24/7"],
-        descriptions: [`${businessDesc.substring(0, 80)}`, "Customized Solutions for Your Specific Needs."]
-      },
-      {
-        headline1: `Discover ${companyName}`,
-        headline2: "Award-Winning Service",
-        headline3: "Expert Team",
-        description1: `${businessDesc.substring(0, 80)}`,
-        description2: "Call Now for Exclusive Offers & Free Consultation.",
-        path1: "experts",
-        path2: "consultation",
-        headlines: [`Discover ${companyName}`, "Award-Winning Service", "Expert Team"],
-        descriptions: [`${businessDesc.substring(0, 80)}`, "Call Now for Exclusive Offers & Free Consultation."]
-      }
-    ];
-  };
+  // Mocked Google ad examples for testing or fallback
+  const mockGoogleAds: GoogleAd[] = [
+    {
+      headline1: "Professional Web Solutions",
+      headline2: "Tailored for Your Business",
+      headline3: "Get Started Today",
+      description1: "Expert web development services to boost your online presence.",
+      description2: "Custom solutions for all your web needs.",
+      path1: "services",
+      path2: "web-dev",
+      headlines: ["Professional Web Solutions", "Tailored for Your Business", "Get Started Today"],
+      descriptions: ["Expert web development services to boost your online presence.", "Custom solutions for all your web needs."]
+    },
+    {
+      headline1: "Custom Website Design",
+      headline2: "Professional & Affordable",
+      headline3: "Free Consultation",
+      description1: "Stunning websites that capture your brand essence.",
+      description2: "Responsive designs that work on all devices.",
+      path1: "design",
+      path2: "websites",
+      headlines: ["Custom Website Design", "Professional & Affordable", "Free Consultation"],
+      descriptions: ["Stunning websites that capture your brand essence.", "Responsive designs that work on all devices."]
+    },
+    {
+      headline1: "E-commerce Solutions",
+      headline2: "Boost Your Online Sales",
+      headline3: "Start Selling Today",
+      description1: "Powerful online stores with secure payment processing.",
+      description2: "Optimize your customer journey for better conversions.",
+      path1: "ecommerce",
+      path2: "solutions",
+      headlines: ["E-commerce Solutions", "Boost Your Online Sales", "Start Selling Today"],
+      descriptions: ["Powerful online stores with secure payment processing.", "Optimize your customer journey for better conversions."]
+    },
+    {
+      headline1: "Mobile-First Web Design",
+      headline2: "Responsive & Fast Loading",
+      headline3: "Improve SEO Now",
+      description1: "Websites optimized for all screen sizes and devices.",
+      description2: "Fast-loading pages that keep visitors engaged.",
+      path1: "mobile",
+      path2: "design",
+      headlines: ["Mobile-First Web Design", "Responsive & Fast Loading", "Improve SEO Now"],
+      descriptions: ["Websites optimized for all screen sizes and devices.", "Fast-loading pages that keep visitors engaged."]
+    },
+    {
+      headline1: "Web Performance Experts",
+      headline2: "Speed Up Your Website",
+      headline3: "Better User Experience",
+      description1: "Optimize loading times and improve core web vitals.",
+      description2: "Better performance leads to better conversion rates.",
+      path1: "performance",
+      path2: "optimization",
+      headlines: ["Web Performance Experts", "Speed Up Your Website", "Better User Experience"],
+      descriptions: ["Optimize loading times and improve core web vitals.", "Better performance leads to better conversion rates."]
+    }
+  ];
 
   return {
     handleGenerateGoogleAds,
-    isGenerating
+    isGenerating,
+    mockGoogleAds
   };
 };
