@@ -6,6 +6,7 @@ import { Loader2, RefreshCw, Plus } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./LinkedInAdCard";
 import { MetaAd } from "@/hooks/adGeneration";
+import { useFormContext } from "react-hook-form";
 
 interface LinkedInAdsListProps {
   ads: MetaAd[]; // Ensure this is typed properly
@@ -36,6 +37,20 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
 }) => {
   // Ensure ads is always an array
   const safeAds = Array.isArray(ads) ? ads : [];
+  
+  // Get form context - it's ok if it doesn't exist, but we'll use it if it does
+  const formMethods = useFormContext();
+  
+  // If form context exists, ensure the linkedInAds field is properly initialized
+  React.useEffect(() => {
+    if (formMethods && safeAds.length > 0) {
+      try {
+        formMethods.setValue('linkedInAds', safeAds, { shouldValidate: false });
+      } catch (error) {
+        console.error("Error setting linkedInAds value in form:", error);
+      }
+    }
+  }, [safeAds, formMethods]);
   
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (onGenerateImage) {

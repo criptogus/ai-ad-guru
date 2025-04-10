@@ -60,44 +60,39 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const selectedPlatforms = campaignData?.platforms || [];
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   
-  // Create a form with properly initialized fields
+  // Initialize form with default values for all potential fields
   const methods = useForm({
     defaultValues: {
-      // Initialize arrays properly to avoid undefined array errors
+      // Ensure all array fields are properly initialized
       googleAds: googleAds || [],
       metaAds: metaAds || [],
       linkedInAds: linkedInAds || [],
       microsoftAds: microsoftAds || [],
-      platform: selectedPlatform || "",
       
-      // Add explicit fields used by child components to avoid undefined errors
+      // Initialize platform field
+      platform: "",
+      
+      // Initialize common ad fields used by child components
       headline: "",
       primaryText: "",
       description: "",
       imagePrompt: "",
-      callToAction: "",
+      callToAction: "", 
       displayUrl: "",
       finalUrl: "",
       
-      // Company info fields
+      // Initialize company info fields
       companyName: analysisResult?.companyName || "",
       businessDescription: analysisResult?.businessDescription || "",
+      
+      // Initialize additional fields
       industry: "",
       adTheme: "",
-      imageFormat: "square",
-      
-      // Generic ad fields that might be used by child components
-      ad: {
-        headline: "",
-        primaryText: "",
-        description: "",
-        imagePrompt: "",
-        imageUrl: ""
-      }
+      imageFormat: "square"
     }
   });
 
-  // Set the first selected platform as the default tab
+  // Set the selected platform when it changes
   useEffect(() => {
     if (selectedPlatforms.length > 0 && !selectedPlatform) {
       const firstPlatform = selectedPlatforms[0];
@@ -108,17 +103,21 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   
   // Update form values when ads change
   useEffect(() => {
-    if (Array.isArray(googleAds)) methods.setValue("googleAds", googleAds);
-    if (Array.isArray(metaAds)) methods.setValue("metaAds", metaAds);
-    if (Array.isArray(linkedInAds)) methods.setValue("linkedInAds", linkedInAds);
-    if (Array.isArray(microsoftAds)) methods.setValue("microsoftAds", microsoftAds);
+    if (googleAds && googleAds.length > 0) {
+      methods.setValue("googleAds", googleAds);
+    }
+    if (metaAds && metaAds.length > 0) {
+      methods.setValue("metaAds", metaAds);
+    }
+    if (linkedInAds && linkedInAds.length > 0) {
+      methods.setValue("linkedInAds", linkedInAds);
+    }
+    if (microsoftAds && microsoftAds.length > 0) {
+      methods.setValue("microsoftAds", microsoftAds);
+    }
   }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
 
-  // Update form when selected platform changes
-  useEffect(() => {
-    methods.setValue("platform", selectedPlatform);
-  }, [selectedPlatform, methods]);
-  
+  // Scroll to top when platform changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedPlatform]);
@@ -136,13 +135,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const hasAdsForPlatform = (platform: string) => {
     switch (platform) {
       case 'google':
-        return googleAds.length > 0;
+        return googleAds && googleAds.length > 0;
       case 'meta':
-        return metaAds.length > 0;
+        return metaAds && metaAds.length > 0;
       case 'linkedin':
-        return linkedInAds.length > 0;
+        return linkedInAds && linkedInAds.length > 0;
       case 'microsoft':
-        return microsoftAds.length > 0;
+        return microsoftAds && microsoftAds.length > 0;
       default:
         return false;
     }
@@ -159,6 +158,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         <CardContent>
           <Tabs value={selectedPlatform} onValueChange={(value) => {
             setSelectedPlatform(value);
+            methods.setValue("platform", value);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }} className="w-full">
             <TabsList className="w-full mb-4">
