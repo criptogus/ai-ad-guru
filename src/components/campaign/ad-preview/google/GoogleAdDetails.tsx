@@ -1,268 +1,168 @@
-import React, { useState, useEffect } from "react";
-import { GoogleAd } from "@/hooks/adGeneration/types";
-import { FormField, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import CharacterCountIndicator from "../CharacterCountIndicator";
-import TriggerButtonInline from "../TriggerButtonInline";
-import { useMindTriggers } from "@/hooks/useMindTriggers";
-import { normalizeGoogleAd } from "@/lib/utils";
+
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { GoogleAd } from '@/hooks/adGeneration';
+import { useFormContext } from 'react-hook-form';
 
 interface GoogleAdDetailsProps {
   ad: GoogleAd;
-  onUpdate: (updatedAd: GoogleAd) => void;
   isEditing: boolean;
+  onUpdateAd?: (updatedAd: GoogleAd) => void;
+  onHeadlineChange?: (index: number, value: string) => void;
+  onDescriptionChange?: (index: number, value: string) => void;
+  onPathChange?: (value: string) => void;
 }
 
 const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
   ad,
-  onUpdate,
   isEditing,
+  onUpdateAd,
+  onHeadlineChange,
+  onDescriptionChange,
+  onPathChange
 }) => {
-  const normalizedAd = normalizeGoogleAd(ad);
-  const [localAd, setLocalAd] = useState<GoogleAd>(normalizedAd);
-  const { insertTrigger } = useMindTriggers();
-
-  useEffect(() => {
-    setLocalAd(normalizeGoogleAd(ad));
-  }, [ad]);
-
-  const handleChange = (field: string, value: string, index?: number) => {
-    setLocalAd(prev => {
-      const updatedAd = normalizeGoogleAd({ ...prev });
-      
-      if (field.startsWith('headline') && index !== undefined) {
-        const headlineNum = parseInt(field.replace('headline', ''));
-        (updatedAd as any)[field] = value;
-        
-        updatedAd.headlines[index] = value;
-      } else if (field.startsWith('description') && index !== undefined) {
-        const descNum = parseInt(field.replace('description', ''));
-        (updatedAd as any)[field] = value;
-        
-        updatedAd.descriptions[index] = value;
-      } else if (field === 'path1') {
-        updatedAd.path1 = value;
-        updatedAd.displayPath = `${value}/${prev.displayPath?.split('/')[1] || ''}`;
-      } else if (field === 'path2') {
-        updatedAd.path2 = value;
-        updatedAd.displayPath = `${prev.displayPath?.split('/')[0] || ''}/${value}`;
-      } else {
-        (updatedAd as any)[field] = value;
-      }
-      
-      return updatedAd;
-    });
-  };
-
-  const getPathParts = () => {
-    const path = localAd.displayPath || '';
-    const parts = path.split('/');
-    return {
-      path1: parts[0] || '',
-      path2: parts[1] || ''
-    };
-  };
-
-  const { path1, path2 } = getPathParts();
-
-  useEffect(() => {
-    onUpdate(localAd);
-  }, [localAd, onUpdate]);
-
-  const handleInsertTrigger = (field: string, trigger: string, index?: number) => {
-    if (field.startsWith('headline') && index !== undefined) {
-      const value = localAd.headlines[index] || '';
-      
-      insertTrigger(
-        trigger, 
-        field, 
-        value, 
-        (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
-      );
-    } else if (field.startsWith('description') && index !== undefined) {
-      const value = localAd.descriptions[index] || '';
-      
-      insertTrigger(
-        trigger, 
-        field, 
-        value, 
-        (fieldName, updatedValue) => handleChange(fieldName, updatedValue, index)
-      );
+  // Get form context safely - it might be undefined if we're not in a form
+  const formContext = useFormContext();
+  
+  // Create handler functions that will call the appropriate update function
+  const handleHeadlineChange = (index: number, value: string) => {
+    if (onHeadlineChange) {
+      onHeadlineChange(index, value);
+    } else if (onUpdateAd) {
+      const updatedHeadlines = [...(ad.headlines || [])];
+      updatedHeadlines[index] = value;
+      onUpdateAd({
+        ...ad,
+        headlines: updatedHeadlines
+      });
     }
   };
 
-  const getHeadlineValue = (index: number): string => {
-    return localAd.headlines[index] || '';
+  const handleDescriptionChange = (index: number, value: string) => {
+    if (onDescriptionChange) {
+      onDescriptionChange(index, value);
+    } else if (onUpdateAd) {
+      const updatedDescriptions = [...(ad.descriptions || [])];
+      updatedDescriptions[index] = value;
+      onUpdateAd({
+        ...ad,
+        descriptions: updatedDescriptions
+      });
+    }
   };
-  
-  const getDescriptionValue = (index: number): string => {
-    return localAd.descriptions[index] || '';
+
+  const handlePathChange = (value: string) => {
+    if (onPathChange) {
+      onPathChange(value);
+    } else if (onUpdateAd) {
+      onUpdateAd({
+        ...ad,
+        path: value
+      });
+    }
   };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Headline 1</label>
-          {isEditing && (
-            <div className="flex items-center">
-              <CharacterCountIndicator text={getHeadlineValue(0)} limit={30} />
-              <TriggerButtonInline onSelectTrigger={(trigger) => handleInsertTrigger('headline1', trigger, 0)} />
+      <div>
+        <h4 className="text-md font-medium mb-2">Headlines</h4>
+        <div className="space-y-2">
+          {isEditing ? (
+            <>
+              {(ad.headlines || []).map((headline, index) => (
+                <div key={index}>
+                  <Label htmlFor={`headline-${index}`} className="text-xs font-normal text-gray-500 mb-1">
+                    Headline {index + 1} ({headline?.length || 0}/30 characters)
+                  </Label>
+                  <Input
+                    id={`headline-${index}`}
+                    value={headline || ""}
+                    onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                    maxLength={30}
+                    className="mt-1"
+                  />
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="grid gap-2">
+              {(ad.headlines || []).map((headline, index) => (
+                <div key={index} className="border p-2 rounded-md text-sm">
+                  {headline || `Headline ${index + 1} (empty)`}
+                </div>
+              ))}
             </div>
           )}
         </div>
-        <FormField
-          control={{} as any}
-          name="headline1"
-          render={({ field }) => (
-            <FormControl>
-              <Input
-                value={getHeadlineValue(0)}
-                onChange={(e) => handleChange("headline1", e.target.value, 0)}
-                placeholder="Enter headline"
-                readOnly={!isEditing}
-                maxLength={30}
-                className={!isEditing ? "bg-muted" : ""}
-              />
-            </FormControl>
-          )}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Headline 2</label>
-          {isEditing && (
-            <div className="flex items-center">
-              <CharacterCountIndicator text={getHeadlineValue(1)} limit={30} />
-              <TriggerButtonInline onSelectTrigger={(trigger) => handleInsertTrigger('headline2', trigger, 1)} />
-            </div>
-          )}
-        </div>
-        <FormField
-          control={{} as any}
-          name="headline2"
-          render={({ field }) => (
-            <FormControl>
-              <Input
-                value={getHeadlineValue(1)}
-                onChange={(e) => handleChange("headline2", e.target.value, 1)}
-                placeholder="Enter headline"
-                readOnly={!isEditing}
-                maxLength={30}
-                className={!isEditing ? "bg-muted" : ""}
-              />
-            </FormControl>
-          )}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Headline 3</label>
-          {isEditing && (
-            <div className="flex items-center">
-              <CharacterCountIndicator text={getHeadlineValue(2)} limit={30} />
-              <TriggerButtonInline onSelectTrigger={(trigger) => handleInsertTrigger('headline3', trigger, 2)} />
-            </div>
-          )}
-        </div>
-        <FormField
-          control={{} as any}
-          name="headline3"
-          render={({ field }) => (
-            <FormControl>
-              <Input
-                value={getHeadlineValue(2)}
-                onChange={(e) => handleChange("headline3", e.target.value, 2)}
-                placeholder="Enter headline"
-                readOnly={!isEditing}
-                maxLength={30}
-                className={!isEditing ? "bg-muted" : ""}
-              />
-            </FormControl>
-          )}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Description 1</label>
-          {isEditing && (
-            <div className="flex items-center">
-              <CharacterCountIndicator text={getDescriptionValue(0)} limit={90} />
-              <TriggerButtonInline onSelectTrigger={(trigger) => handleInsertTrigger('description1', trigger, 0)} />
-            </div>
-          )}
-        </div>
-        <FormField
-          control={{} as any}
-          name="description1"
-          render={({ field }) => (
-            <FormControl>
-              <Textarea
-                value={getDescriptionValue(0)}
-                onChange={(e) => handleChange("description1", e.target.value, 0)}
-                placeholder="Enter description"
-                readOnly={!isEditing}
-                maxLength={90}
-                className={`resize-none h-20 ${!isEditing ? "bg-muted" : ""}`}
-              />
-            </FormControl>
-          )}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Description 2</label>
-          {isEditing && (
-            <div className="flex items-center">
-              <CharacterCountIndicator text={getDescriptionValue(1)} limit={90} />
-              <TriggerButtonInline onSelectTrigger={(trigger) => handleInsertTrigger('description2', trigger, 1)} />
-            </div>
-          )}
-        </div>
-        <FormField
-          control={{} as any}
-          name="description2"
-          render={({ field }) => (
-            <FormControl>
-              <Textarea
-                value={getDescriptionValue(1)}
-                onChange={(e) => handleChange("description2", e.target.value, 1)}
-                placeholder="Enter description"
-                readOnly={!isEditing}
-                maxLength={90}
-                className={`resize-none h-20 ${!isEditing ? "bg-muted" : ""}`}
-              />
-            </FormControl>
-          )}
-        />
       </div>
       
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Path</label>
-        <div className="flex items-center">
-          <span className="text-muted-foreground mr-1">example.com/</span>
-          <Input
-            value={path1}
-            onChange={(e) => handleChange("path1", e.target.value)}
-            placeholder="path1"
-            readOnly={!isEditing}
-            className={`w-24 ${!isEditing ? "bg-muted" : ""}`}
-          />
-          <span className="text-muted-foreground mx-1">/</span>
-          <Input
-            value={path2}
-            onChange={(e) => handleChange("path2", e.target.value)}
-            placeholder="path2"
-            readOnly={!isEditing}
-            className={`w-24 ${!isEditing ? "bg-muted" : ""}`}
-          />
+      <div>
+        <h4 className="text-md font-medium mb-2">Descriptions</h4>
+        <div className="space-y-2">
+          {isEditing ? (
+            <>
+              {(ad.descriptions || []).map((description, index) => (
+                <div key={index}>
+                  <Label htmlFor={`description-${index}`} className="text-xs font-normal text-gray-500 mb-1">
+                    Description {index + 1} ({description?.length || 0}/90 characters)
+                  </Label>
+                  <Textarea
+                    id={`description-${index}`}
+                    value={description || ""}
+                    onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                    maxLength={90}
+                    className="mt-1"
+                    rows={2}
+                  />
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="grid gap-2">
+              {(ad.descriptions || []).map((description, index) => (
+                <div key={index} className="border p-2 rounded-md text-sm">
+                  {description || `Description ${index + 1} (empty)`}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+      
+      <div>
+        <h4 className="text-md font-medium mb-2">URL Path</h4>
+        {isEditing ? (
+          <div>
+            <Label htmlFor="path" className="text-xs font-normal text-gray-500 mb-1">
+              Path ({ad.path?.length || 0}/15 characters)
+            </Label>
+            <Input
+              id="path"
+              value={ad.path || ""}
+              onChange={(e) => handlePathChange(e.target.value)}
+              maxLength={15}
+              className="mt-1"
+            />
+          </div>
+        ) : (
+          <div className="border p-2 rounded-md text-sm">
+            {ad.path || "No URL path provided"}
+          </div>
+        )}
+      </div>
+      
+      {isEditing && (
+        <div className="text-xs text-gray-500 mt-4">
+          <p>Google Ad Character Limits:</p>
+          <ul className="list-disc list-inside">
+            <li>Headlines: 30 characters each</li>
+            <li>Descriptions: 90 characters each</li>
+            <li>URL Path: 15 characters</li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

@@ -60,19 +60,27 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const selectedPlatforms = campaignData?.platforms || [];
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   
-  // Initialize form with default values for all potential fields
+  // Ensure arrays are initialized properly for form registration
+  const safeGoogleAds = Array.isArray(googleAds) ? googleAds : [];
+  const safeMetaAds = Array.isArray(metaAds) ? metaAds : [];
+  const safeLinkedInAds = Array.isArray(linkedInAds) ? linkedInAds : [];
+  const safeMicrosoftAds = Array.isArray(microsoftAds) ? microsoftAds : [];
+  
+  // Initialize form with comprehensive default values for ALL possible fields
   const methods = useForm({
     defaultValues: {
-      // Ensure all array fields are properly initialized
-      googleAds: googleAds || [],
-      metaAds: metaAds || [],
-      linkedInAds: linkedInAds || [],
-      microsoftAds: microsoftAds || [],
-      
-      // Initialize platform field
+      // Platform & campaign fields
       platform: "",
+      campaignName: campaignData?.campaignName || "",
+      targetUrl: campaignData?.targetUrl || "",
       
-      // Initialize common ad fields used by child components
+      // Ad arrays - properly initialized
+      googleAds: safeGoogleAds,
+      metaAds: safeMetaAds,
+      linkedInAds: safeLinkedInAds,
+      microsoftAds: safeMicrosoftAds,
+      
+      // Common ad fields
       headline: "",
       primaryText: "",
       description: "",
@@ -81,18 +89,24 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       displayUrl: "",
       finalUrl: "",
       
-      // Initialize company info fields
+      // Company & audience info
       companyName: analysisResult?.companyName || "",
       businessDescription: analysisResult?.businessDescription || "",
+      targetAudience: analysisResult?.targetAudience || "",
       
-      // Initialize additional fields
+      // Additional fields
       industry: "",
       adTheme: "",
-      imageFormat: "square"
+      imageFormat: "square",
+      
+      // Ensure these ad-specific fields are available to all components
+      headlines: ["", "", ""],
+      descriptions: ["", ""],
+      path: ""
     }
   });
 
-  // Set the selected platform when it changes
+  // Set the selected platform when it changes or on initial load
   useEffect(() => {
     if (selectedPlatforms.length > 0 && !selectedPlatform) {
       const firstPlatform = selectedPlatforms[0];
@@ -103,17 +117,17 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   
   // Update form values when ads change
   useEffect(() => {
-    if (googleAds && googleAds.length > 0) {
-      methods.setValue("googleAds", googleAds);
+    if (safeGoogleAds.length > 0) {
+      methods.setValue("googleAds", safeGoogleAds);
     }
-    if (metaAds && metaAds.length > 0) {
-      methods.setValue("metaAds", metaAds);
+    if (safeMetaAds.length > 0) {
+      methods.setValue("metaAds", safeMetaAds);
     }
-    if (linkedInAds && linkedInAds.length > 0) {
-      methods.setValue("linkedInAds", linkedInAds);
+    if (safeLinkedInAds.length > 0) {
+      methods.setValue("linkedInAds", safeLinkedInAds);
     }
-    if (microsoftAds && microsoftAds.length > 0) {
-      methods.setValue("microsoftAds", microsoftAds);
+    if (safeMicrosoftAds.length > 0) {
+      methods.setValue("microsoftAds", safeMicrosoftAds);
     }
   }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
 
@@ -135,13 +149,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const hasAdsForPlatform = (platform: string) => {
     switch (platform) {
       case 'google':
-        return googleAds && googleAds.length > 0;
+        return safeGoogleAds.length > 0;
       case 'meta':
-        return metaAds && metaAds.length > 0;
+        return safeMetaAds.length > 0;
       case 'linkedin':
-        return linkedInAds && linkedInAds.length > 0;
+        return safeLinkedInAds.length > 0;
       case 'microsoft':
-        return microsoftAds && microsoftAds.length > 0;
+        return safeMicrosoftAds.length > 0;
       default:
         return false;
     }
@@ -180,7 +194,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               {selectedPlatforms.includes("google") && (
                 <TabsContent value="google">
                   <GoogleAdsTab
-                    googleAds={googleAds}
+                    googleAds={safeGoogleAds}
                     analysisResult={analysisResult}
                     isGenerating={isGenerating}
                     onGenerateAds={onGenerateGoogleAds}
@@ -193,7 +207,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               {selectedPlatforms.includes("meta") && (
                 <TabsContent value="meta">
                   <MetaAdsTab
-                    metaAds={metaAds}
+                    metaAds={safeMetaAds}
                     analysisResult={analysisResult}
                     isGenerating={isGenerating}
                     loadingImageIndex={loadingImageIndex}
@@ -208,7 +222,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               {selectedPlatforms.includes("linkedin") && (
                 <TabsContent value="linkedin">
                   <LinkedInAdsTab
-                    linkedInAds={linkedInAds}
+                    linkedInAds={safeLinkedInAds}
                     analysisResult={analysisResult}
                     isGenerating={isGenerating}
                     loadingImageIndex={loadingImageIndex}
@@ -223,7 +237,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               {selectedPlatforms.includes("microsoft") && (
                 <TabsContent value="microsoft">
                   <MicrosoftAdsTab
-                    microsoftAds={microsoftAds}
+                    microsoftAds={safeMicrosoftAds}
                     analysisResult={analysisResult}
                     isGenerating={isGenerating}
                     onGenerateAds={onGenerateMicrosoftAds}

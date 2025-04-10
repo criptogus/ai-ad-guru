@@ -1,141 +1,105 @@
-import React, { useState } from "react";
-import { GoogleAd } from "@/hooks/adGeneration/types";
-import { Button } from "@/components/ui/button";
-import { Edit, Check, X, Copy } from "lucide-react";
-import GoogleAdDetails from "./GoogleAdDetails";
-import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
-import { normalizeGoogleAd } from "@/lib/utils";
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { GoogleAd } from '@/hooks/adGeneration';
+import GoogleAdDetails from './GoogleAdDetails';
+import GoogleAdPreview from './GoogleAdPreview';
 
 interface GoogleAdEditorProps {
   ad: GoogleAd;
-  index: number;
-  onUpdateAd: (index: number, updatedAd: GoogleAd) => void;
+  domain: string;
+  onSave: (updatedAd: GoogleAd) => void;
+  onCancel: () => void;
 }
 
 const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   ad,
-  index,
-  onUpdateAd,
+  domain,
+  onSave,
+  onCancel
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const normalizedAd = normalizeGoogleAd(ad);
-  const [editedAd, setEditedAd] = useState<GoogleAd>(normalizedAd);
-
-  const handleStartEditing = () => {
-    setEditedAd(normalizeGoogleAd(ad));
-    setIsEditing(true);
+  const [editedAd, setEditedAd] = useState<GoogleAd>({...ad});
+  
+  const handleHeadlineChange = (index: number, value: string) => {
+    const updatedHeadlines = [...(editedAd.headlines || [])];
+    updatedHeadlines[index] = value;
+    setEditedAd({
+      ...editedAd,
+      headlines: updatedHeadlines
+    });
   };
-
-  const handleSaveChanges = () => {
-    onUpdateAd(index, normalizeGoogleAd(editedAd));
-    setIsEditing(false);
+  
+  const handleDescriptionChange = (index: number, value: string) => {
+    const updatedDescriptions = [...(editedAd.descriptions || [])];
+    updatedDescriptions[index] = value;
+    setEditedAd({
+      ...editedAd,
+      descriptions: updatedDescriptions
+    });
   };
-
-  const handleCancelEditing = () => {
-    setEditedAd(normalizeGoogleAd(ad));
-    setIsEditing(false);
+  
+  const handlePathChange = (value: string) => {
+    setEditedAd({
+      ...editedAd,
+      path: value
+    });
   };
-
-  const handleCopyContent = () => {
-    const headlinesText = normalizedAd.headlines.join('\n');
-    const descriptionsText = normalizedAd.descriptions.join('\n');
-    const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
-    navigator.clipboard.writeText(content);
+  
+  const handleUrlChange = (value: string) => {
+    setEditedAd({
+      ...editedAd,
+      finalUrl: value
+    });
   };
-
-  const handleUpdateAd = (updatedAd: GoogleAd) => {
-    setEditedAd(normalizeGoogleAd(updatedAd));
-  };
-
-  const handleInsertTrigger = (triggerText: string) => {
-    const updatedAd = normalizeGoogleAd(editedAd);
-    
-    if (updatedAd.headlines[0].length + triggerText.length <= 30) {
-      updatedAd.headlines[0] = triggerText;
-      updatedAd.headline1 = triggerText;
-    } else if (updatedAd.headlines[1].length + triggerText.length <= 30) {
-      updatedAd.headlines[1] = triggerText;
-      updatedAd.headline2 = triggerText;
-    } else if (updatedAd.headlines[2].length + triggerText.length <= 30) {
-      updatedAd.headlines[2] = triggerText;
-      updatedAd.headline3 = triggerText;
-    } else {
-      if (updatedAd.descriptions[0].length + triggerText.length <= 90) {
-        updatedAd.descriptions[0] = triggerText;
-        updatedAd.description1 = triggerText;
-        setEditedAd(updatedAd);
-        return;
-      }
-    }
-    
-    setEditedAd(updatedAd);
+  
+  const handleSaveClick = () => {
+    onSave(editedAd);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-md font-medium">Ad Content</h3>
-        
-        <div className="flex space-x-2">
-          {isEditing ? (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelEditing}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleSaveChanges}
-              >
-                <Check className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyContent}
-              >
-                <Copy className="h-4 w-4 mr-1" />
-                Copy
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleStartEditing}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            </>
-          )}
-        </div>
+    <div className="space-y-6">
+      <div>
+        <Label htmlFor="finalUrl">Final URL</Label>
+        <Input
+          id="finalUrl"
+          value={editedAd.finalUrl || ""}
+          onChange={(e) => handleUrlChange(e.target.value)}
+          placeholder="https://example.com/landing-page"
+          className="mt-1"
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          The full URL where people will go when they click your ad
+        </p>
       </div>
-
-      {isEditing && (
-        <div className="mb-2">
-          <TriggerButton
-            onSelectTrigger={handleInsertTrigger}
-            buttonText="Add Mind Trigger"
-            tooltip="Insert psychological triggers to improve ad performance"
-            variant="outline"
-            size="sm"
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 className="text-md font-medium mb-4">Ad Preview</h3>
+          <GoogleAdPreview ad={editedAd} domain={domain} />
+        </div>
+        
+        <div>
+          <h3 className="text-md font-medium mb-4">Ad Details</h3>
+          <GoogleAdDetails
+            ad={editedAd}
+            isEditing={true}
+            onHeadlineChange={handleHeadlineChange}
+            onDescriptionChange={handleDescriptionChange}
+            onPathChange={handlePathChange}
           />
         </div>
-      )}
-
-      <GoogleAdDetails
-        ad={isEditing ? editedAd : ad}
-        onUpdate={handleUpdateAd}
-        isEditing={isEditing}
-      />
+      </div>
+      
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={handleSaveClick}>
+          Save Changes
+        </Button>
+      </div>
     </div>
   );
 };

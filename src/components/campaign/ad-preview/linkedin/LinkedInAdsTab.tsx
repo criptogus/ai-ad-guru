@@ -31,22 +31,30 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   mindTrigger,
   onMindTriggerChange
 }) => {
-  // Get form context - ensure we safely use it if it exists
+  // Ensure we're dealing with a valid array
+  const safeLinkedInAds = Array.isArray(linkedInAds) ? linkedInAds : [];
+  
+  // Get form context if available - don't assume it exists
   const formMethods = useFormContext();
+  const hasFormContext = !!formMethods;
   
   // Initialize linkedInAds field if form context exists
   useEffect(() => {
-    if (formMethods && Array.isArray(linkedInAds)) {
-      // Set default value for linkedInAds array in the form
-      formMethods.setValue("linkedInAds", linkedInAds, { shouldValidate: false });
+    if (hasFormContext && safeLinkedInAds.length > 0) {
+      try {
+        // Set default value for linkedInAds array in the form
+        formMethods.setValue("linkedInAds", safeLinkedInAds, { shouldValidate: false });
+      } catch (error) {
+        console.error("Error setting linkedInAds in form:", error);
+      }
     }
-  }, [linkedInAds, formMethods]);
+  }, [safeLinkedInAds, hasFormContext, formMethods]);
 
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
     onUpdateLinkedInAd(index, updatedAd);
     
     // Update the form value if we have form context
-    if (formMethods) {
+    if (hasFormContext) {
       try {
         const currentAds = formMethods.getValues("linkedInAds") || [];
         const updatedAds = [...currentAds];
@@ -54,6 +62,44 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
         formMethods.setValue("linkedInAds", updatedAds, { shouldValidate: false });
       } catch (error) {
         console.error("Error updating form value:", error);
+      }
+    }
+  };
+
+  // Handle duplicating an ad
+  const handleDuplicateAd = (index: number) => {
+    if (safeLinkedInAds && safeLinkedInAds.length > 0) {
+      const adToDuplicate = safeLinkedInAds[index];
+      const newAd = { ...adToDuplicate };
+      const newAds = [...safeLinkedInAds, newAd];
+      
+      // Update parent component
+      onUpdateLinkedInAd(safeLinkedInAds.length, newAd);
+      
+      // Update form if available
+      if (hasFormContext) {
+        try {
+          formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
+        } catch (error) {
+          console.error("Error updating linkedInAds in form:", error);
+        }
+      }
+    }
+  };
+
+  // Handle deleting an ad
+  const handleDeleteAd = (index: number) => {
+    if (safeLinkedInAds && safeLinkedInAds.length > 0) {
+      const newAds = [...safeLinkedInAds];
+      newAds.splice(index, 1);
+      
+      // Update form if available
+      if (hasFormContext) {
+        try {
+          formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
+        } catch (error) {
+          console.error("Error updating linkedInAds in form:", error);
+        }
       }
     }
   };
@@ -72,7 +118,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
         </Alert>
       )}
 
-      {linkedInAds.length === 0 ? (
+      {safeLinkedInAds.length === 0 ? (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
             Generate LinkedIn ads based on your website content and mind triggers. Our AI will create professional ad content optimized for business audiences.
@@ -99,44 +145,15 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
         </div>
       ) : (
         <LinkedInAdsList
-          ads={linkedInAds}
+          ads={safeLinkedInAds}
           analysisResult={analysisResult}
           loadingImageIndex={loadingImageIndex}
           isGenerating={isGenerating}
           onGenerateAds={onGenerateAds}
           onGenerateImage={onGenerateImage}
           onUpdateAd={handleUpdateAd}
-          onDuplicate={(index) => {
-            if (linkedInAds && linkedInAds.length > 0) {
-              const adToDuplicate = linkedInAds[index];
-              const newAd = { ...adToDuplicate };
-              const newAds = [...linkedInAds, newAd];
-              
-              // Update form if available
-              if (formMethods) {
-                try {
-                  formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
-                } catch (error) {
-                  console.error("Error updating linkedInAds in form:", error);
-                }
-              }
-            }
-          }}
-          onDelete={(index) => {
-            if (linkedInAds && linkedInAds.length > 0) {
-              const newAds = [...linkedInAds];
-              newAds.splice(index, 1);
-              
-              // Update form if available
-              if (formMethods) {
-                try {
-                  formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
-                } catch (error) {
-                  console.error("Error updating linkedInAds in form:", error);
-                }
-              }
-            }
-          }}
+          onDuplicate={handleDuplicateAd}
+          onDelete={handleDeleteAd}
           mindTrigger={mindTrigger}
           onMindTriggerChange={onMindTriggerChange}
         />
