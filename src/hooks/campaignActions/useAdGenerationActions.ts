@@ -23,12 +23,12 @@ export const useAdGenerationActions = (
   const { 
     handleGenerateGoogleAds,
     isGenerating: isGeneratingGoogleAds
-  } = useGoogleAdActions(
+  } = useGoogleAdActions({
     analysisResult,
     googleAds,
     generateGoogleAds,
     setCampaignData
-  );
+  });
 
   // Initialize Microsoft ad actions
   const {

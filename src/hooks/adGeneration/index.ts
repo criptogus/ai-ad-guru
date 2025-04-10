@@ -16,12 +16,12 @@ export const useAdGeneration = () => {
   };
 
   // Add implementations for LinkedIn and Microsoft ads
-  const generateLinkedInAds = async (campaignData: any) => {
+  const generateLinkedInAds = async (campaignData: any, mindTrigger?: string) => {
     console.log("LinkedIn ad generation requested", campaignData);
     return metaAdsHook.generateMetaAds?.(campaignData) || null;
   };
   
-  const generateMicrosoftAds = async (campaignData: any) => {
+  const generateMicrosoftAds = async (campaignData: any, mindTrigger?: string) => {
     console.log("Microsoft ad generation requested", campaignData);
     return googleAdsHook.generateGoogleAds?.(campaignData) || null;
   };

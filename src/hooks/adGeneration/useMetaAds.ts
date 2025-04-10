@@ -7,18 +7,24 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useMetaAds = () => {
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
     try {
+      setIsGenerating(true);
+      setError(null);
       console.log("useMetaAds - Generating Meta ads with data:", campaignData);
       
       // Call the API to generate Meta ads
       const generatedAds = await apiGenerateMetaAds(campaignData);
       
       if (!generatedAds || generatedAds.length === 0) {
+        const errorMsg = "Unable to generate Instagram ads";
+        setError(errorMsg);
         toast({
-          title: "Unable to generate Instagram ads",
+          title: errorMsg,
           description: "There was a problem generating ad suggestions. Please try again.",
           variant: "destructive",
         });
@@ -36,6 +42,8 @@ export const useMetaAds = () => {
       
       return generatedAds;
     } catch (error) {
+      const errorMsg = "Error generating Meta ads";
+      setError(errorMsg);
       console.error("Error in useMetaAds.generateMetaAds:", error);
       toast({
         title: "Generation failed",
@@ -43,11 +51,15 @@ export const useMetaAds = () => {
         variant: "destructive",
       });
       return null;
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   return {
     generateMetaAds,
     metaAds,
+    isGenerating,
+    error
   };
 };
