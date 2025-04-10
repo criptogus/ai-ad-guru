@@ -4,7 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration/types";
 import { CampaignData } from "@/contexts/CampaignContext";
 
 interface UseImageGenerationHandlerProps {
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | any>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
@@ -31,12 +31,23 @@ export const useImageGenerationHandler = ({
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
-      const imageUrl = await generateAdImage(finalPrompt, {
+      // Call the image generation function
+      const imageResult = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
         index
       });
+      
+      // Extract the image URL from the result, handling different return types
+      let imageUrl: string | null = null;
+      
+      if (typeof imageResult === 'string') {
+        imageUrl = imageResult;
+      } else if (imageResult && typeof imageResult === 'object' && 'imageUrl' in imageResult) {
+        imageUrl = imageResult.imageUrl as string;
+      }
 
+      // Update the ad array if we got a valid URL
       if (imageUrl) {
         if (metaAds[index]) {
           const updatedAds = [...metaAds];

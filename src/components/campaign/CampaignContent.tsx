@@ -14,6 +14,7 @@ import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 import { MetaAd } from "@/hooks/adGeneration/types";
+import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -104,58 +105,15 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Implement image generation directly in this component
-  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
-
-  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
-    try {
-      setLoadingImageIndex(index);
-      
-      // Create the prompt with context
-      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData.name}, Industry: ${campaignData.description}`;
-      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
-      const finalPrompt = promptWithContext + formatContext;
-      
-      // Call the image generation function
-      let imageResult;
-      try {
-        imageResult = await generateAdImage(finalPrompt, {
-          ad,
-          campaignData,
-          index
-        });
-      } catch (error) {
-        console.error("Error calling generateAdImage:", error);
-        return;
-      }
-      
-      // Extract the image URL from the result
-      let imageUrl: string | null = null;
-      
-      if (typeof imageResult === 'string') {
-        imageUrl = imageResult;
-      } else if (imageResult && typeof imageResult === 'object' && 'imageUrl' in imageResult) {
-        imageUrl = imageResult.imageUrl as string;
-      }
-      
-      // Update the appropriate ads array if we got an image URL
-      if (imageUrl) {
-        if (metaAds[index]) {
-          const updatedAds = [...metaAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setMetaAds(updatedAds);
-        } else if (linkedInAds[index]) {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setLinkedInAds(updatedAds);
-        }
-      }
-    } catch (error) {
-      console.error("Error in handleGenerateImage:", error);
-    } finally {
-      setLoadingImageIndex(null);
-    }
-  };
+  // Use the imageGenerationHandler hook to handle image generation
+  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
+    generateAdImage,
+    metaAds,
+    linkedInAds,
+    setMetaAds,
+    setLinkedInAds,
+    campaignData
+  });
 
   const {
     handleUpdateGoogleAd,
