@@ -13,7 +13,7 @@ export class CacheHandler {
       // Normalize URL for consistent caching
       const normalizedUrl = this.normalizeUrl(url);
       
-      // Query the cache table
+      // Query the cache table with expiration check
       const { data, error } = await this.supabaseClient
         .from('website_analysis_cache')
         .select('analysis_data, created_at, language')
@@ -27,6 +27,17 @@ export class CacheHandler {
       
       if (data) {
         console.log("Cache hit:", normalizedUrl);
+        
+        // Check if cache is expired (30 days)
+        const cacheDate = new Date(data.created_at);
+        const expirationDate = new Date(cacheDate);
+        expirationDate.setDate(expirationDate.getDate() + 30); // 30-day cache
+        
+        if (expirationDate < new Date()) {
+          console.log("Cache expired, created at:", data.created_at);
+          return { data: null, fromCache: false };
+        }
+        
         const cachedData = data.analysis_data;
         
         // Add language to cached result if it exists

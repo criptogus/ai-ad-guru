@@ -20,6 +20,7 @@ export interface WebsiteAnalysisResult {
 export interface AnalysisCache {
   fromCache: boolean;
   cachedAt?: string;
+  expiresAt?: string;
 }
 
 export const useWebsiteAnalysis = () => {
@@ -87,9 +88,15 @@ export const useWebsiteAnalysis = () => {
       
       // Set cache info if available
       if (data.fromCache) {
+        // Calculate expiration date (30 days from cached date)
+        const cachedAt = new Date(data.cachedAt);
+        const expiresAt = new Date(cachedAt);
+        expiresAt.setDate(expiresAt.getDate() + 30);
+
         setCacheInfo({
           fromCache: true,
-          cachedAt: data.cachedAt
+          cachedAt: data.cachedAt,
+          expiresAt: expiresAt.toISOString()
         });
         
         toast({

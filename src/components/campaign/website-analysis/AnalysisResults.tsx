@@ -52,6 +52,20 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
     if (!dateString) return "";
     return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
   };
+  
+  // Calculate days remaining in cache if fromCache is true
+  const getDaysRemaining = () => {
+    if (!cacheInfo?.fromCache || !cacheInfo.expiresAt) return null;
+    
+    const today = new Date();
+    const expiresAt = new Date(cacheInfo.expiresAt);
+    const diffTime = expiresAt.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 0;
+  };
+  
+  const daysRemaining = getDaysRemaining();
 
   return (
     <div className="space-y-6">
@@ -62,7 +76,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
           {cacheInfo?.fromCache && cacheInfo.cachedAt && (
             <Badge variant="outline" className="flex items-center gap-1 bg-amber-100/10">
               <Calendar className="h-3 w-3" />
-              <span className="text-xs">Cached {formatCacheDate(cacheInfo.cachedAt)}</span>
+              <span className="text-xs">
+                Cached {formatCacheDate(cacheInfo.cachedAt)}
+                {daysRemaining !== null && ` · ${daysRemaining} days remaining`}
+              </span>
             </Badge>
           )}
         </div>
