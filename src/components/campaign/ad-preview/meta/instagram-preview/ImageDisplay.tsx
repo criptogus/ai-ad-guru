@@ -20,8 +20,15 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 }) => {
   const handleGenerateImage = async () => {
     if (onGenerateImage) {
+      console.log("Triggering image generation with prompt:", imagePrompt);
       await onGenerateImage();
     }
+  };
+
+  // Error handling for broken images
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error("Failed to load image:", imageUrl);
+    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Image+Load+Failed";
   };
 
   return (
@@ -32,6 +39,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             src={imageUrl}
             alt={alt}
             className="w-full h-full object-cover"
+            onError={handleImageError}
           />
           {onGenerateImage && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">

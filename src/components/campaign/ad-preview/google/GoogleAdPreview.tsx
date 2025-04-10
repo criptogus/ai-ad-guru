@@ -9,6 +9,9 @@ interface GoogleAdPreviewProps {
 }
 
 const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example.com" }) => {
+  // Format display URL
+  const displayUrl = ad.displayPath || `${domain}/${ad.path1 || ''}${ad.path2 ? '/' + ad.path2 : ''}`;
+  
   // Parse sitelinks if they exist
   const hasSitelinks = ad.siteLinks && ad.siteLinks.length > 0;
   
@@ -32,6 +35,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example
               >
                 {siteLinks[i].title}
               </a>
+              {siteLinks[i].description && (
+                <p className="text-xs text-[#4d5156] truncate">{siteLinks[i].description}</p>
+              )}
             </div>
           )}
           {siteLinks[i + 1] && (
@@ -43,6 +49,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example
               >
                 {siteLinks[i + 1].title}
               </a>
+              {siteLinks[i + 1].description && (
+                <p className="text-xs text-[#4d5156] truncate">{siteLinks[i + 1].description}</p>
+              )}
             </div>
           )}
         </div>
@@ -58,24 +67,35 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example
   };
 
   return (
-    <div className="max-w-xl font-sans text-left">
+    <div className="max-w-xl font-sans text-left p-3 border rounded-md">
       {/* Ad Badge & URL */}
       <div className="flex items-center mb-1">
         <span className="text-xs mr-2 px-1 rounded bg-[#ebebeb] text-[#5f6368]">Ad</span>
         <span className="text-[#202124] text-xs">
-          {ad.displayPath || `www.${domain}/${ad.path1 || ''}${ad.path2 ? '/' + ad.path2 : ''}`}
+          <span className="text-[#1e8e3e]">{displayUrl}</span>
         </span>
       </div>
       
       {/* Headline */}
       <h3 className="text-[#1a0dab] text-xl leading-tight mb-1 font-normal">
-        {ad.headline1} {ad.headline2 && <span>| {ad.headline2}</span>} {ad.headline3 && <span>| {ad.headline3}</span>}
+        {ad.headline1 || ad.headlines?.[0] || "Headline 1"} 
+        {(ad.headline2 || ad.headlines?.[1]) && <span> | {ad.headline2 || ad.headlines?.[1]}</span>} 
+        {(ad.headline3 || ad.headlines?.[2]) && <span> | {ad.headline3 || ad.headlines?.[2]}</span>}
       </h3>
       
       {/* Description */}
       <p className="text-sm text-[#4d5156] leading-snug mb-1">
-        {ad.description1} {ad.description2 && <span>{ad.description2}</span>}
+        {ad.description1 || ad.descriptions?.[0] || "Description 1"} 
+        {ad.description2 || ad.descriptions?.[1] || ""}
       </p>
+      
+      {/* Final URL indicator */}
+      {ad.finalUrl && (
+        <div className="text-xs text-[#4d5156] mb-1 flex items-center">
+          <ExternalLink className="h-3 w-3 mr-1" />
+          {ad.finalUrl}
+        </div>
+      )}
       
       {/* Sitelinks if they exist */}
       {renderSitelinks()}
