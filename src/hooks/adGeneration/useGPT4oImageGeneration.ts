@@ -1,165 +1,103 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { secureApi } from '@/services/api/secureApi';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getCreditCost } from '@/services/credits/creditCosts';
-import { consumeCredits } from '@/services/credits/creditUsage';
-import { PromptTemplate } from '@/hooks/template/usePromptTemplates';
+import { useAuth } from '@/contexts/AuthContext';
+import { storeAIResult } from '@/services/ai/aiResultsStorage';
 
-interface ImageGenerationConfig {
-  templateId?: string;
-  promptTemplate?: string;
-  mainText?: string;
-  subText?: string;
-  companyName?: string;
-  industry?: string;
-  brandTone?: string;
-  campaignId?: string;
-}
-
-export interface UseGPT4oImageGenerationReturn {
-  generateImage: (config: ImageGenerationConfig) => Promise<string | null>;
-  isGenerating: boolean;
-  lastError: string | null;
-  lastGeneratedImageUrl: string | null;
-  clearError: () => void;
-}
-
-export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
+export const useGPT4oImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [lastError, setLastError] = useState<string | null>(null);
-  const [lastGeneratedImageUrl, setLastGeneratedImageUrl] = useState<string | null>(null);
-  
-  const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const imageCost = getCreditCost('imageGeneration');
-  
-  const generateImage = async (config: ImageGenerationConfig): Promise<string | null> => {
-    if (!user) {
-      const errorMessage = "You must be logged in to generate images";
-      setLastError(errorMessage);
-      toast({
-        title: "Authentication Required",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return null;
-    }
-    
-    const { 
-      templateId, 
-      promptTemplate, 
-      mainText, 
-      subText, 
-      companyName,
-      industry,
-      brandTone,
-      campaignId 
-    } = config;
-    
-    if (!templateId && !promptTemplate) {
-      const errorMessage = "Either a template ID or prompt template is required";
-      setLastError(errorMessage);
-      toast({
-        title: "Missing Template",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return null;
-    }
-    
+  const { user } = useAuth();
+
+  const generateAdImage = async (
+    prompt: string, 
+    additionalInfo?: any
+  ): Promise<string | any> => {
     setIsGenerating(true);
-    setLastError(null);
+    setError(null);
     
     try {
-      // Preview credit usage
-      toast({
-        title: "Credit Usage Preview",
-        description: `This will use ${imageCost} credits to generate this ad image with GPT-4o`,
-        duration: 3000,
-      });
+      console.log("Generating image with prompt:", prompt.substring(0, 100) + "...");
+      console.log("With additional info:", additionalInfo ? JSON.stringify(additionalInfo).substring(0, 100) + "..." : "none");
       
-      // Consume credits - assuming we need 5 credits for image generation
-      const creditSuccess = await consumeCredits(
-        user.id,
-        imageCost,
-        'imageGeneration', 
-        `GPT-4o Ad Image Generation`
-      );
+      // Determine platform from additionalInfo or use default
+      const platform = additionalInfo?.platform || 'meta';
+      // Determine format from additionalInfo or use default
+      const format = additionalInfo?.imageFormat || additionalInfo?.format || 'feed';
       
-      if (!creditSuccess) {
-        throw new Error("Insufficient credits to generate this image");
-      }
-      
-      // Call the GPT-4o Edge Function
-      const response = await secureApi.invokeFunction(
-        'generate-image-gpt4o',
-        {
-          templateId,
-          promptTemplate,
-          mainText,
-          subText,
-          companyName,
-          industry,
-          brandTone,
-          campaignId,
-          userId: user.id
+      // Call the generate-image-gpt4o edge function
+      const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
+        body: { 
+          imagePrompt: prompt,
+          platform: platform,
+          format: format,
+          adContext: additionalInfo // Pass all additional info as context
         }
-      );
+      });
       
-      const typedResponse = response as any; // Type assertion for response
-      
-      if (!typedResponse.success) {
-        throw new Error(typedResponse.error || "Failed to generate image");
+      if (error) {
+        console.error("Error calling generate-image-gpt4o edge function:", error);
+        setError(error.message || "Failed to call image generation service");
+        throw error;
       }
       
-      setLastGeneratedImageUrl(typedResponse.imageUrl);
+      if (!data || !data.success || !data.imageUrl) {
+        console.error("No image URL returned from function:", data);
+        const errorMessage = "Failed to generate image";
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
       
-      toast({
-        title: "Image Generated Successfully",
-        description: `${imageCost} credits were used for this ad image`,
-        variant: "default",
-      });
+      const imageUrl = data.imageUrl;
+      console.log("Successfully generated image:", imageUrl.substring(0, 50) + "...");
       
-      return typedResponse.imageUrl;
-      
-    } catch (error) {
-      console.error("Error generating image with GPT-4o:", error);
-      
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Unknown error occurred while generating image";
-      
-      setLastError(errorMessage);
-      
-      toast({
-        title: "Image Generation Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      // Try to refund credits on failure
+      // Store the AI result if user is logged in
       if (user?.id) {
-        await consumeCredits(
-          user.id,
-          -imageCost,
-          'imageGeneration', 
-          'Refund for failed GPT-4o image generation'
-        );
+        await storeAIResult(user.id, {
+          input: prompt,
+          response: {
+            imageUrl: imageUrl,
+            platform,
+            format
+          },
+          type: 'image_generation',
+          metadata: additionalInfo
+        });
       }
       
-      return null;
+      return imageUrl;
+    } catch (error) {
+      console.error("Error in generateAdImage:", error);
+      
+      // Set error message for UI display
+      setError(error instanceof Error ? error.message : "Unknown error occurred");
+      
+      // Return a fallback placeholder image
+      return getFallbackImage(prompt);
     } finally {
       setIsGenerating(false);
     }
   };
   
+  const getFallbackImage = (prompt: string): string => {
+    // Return a placeholder image based on the platform
+    const placeholders = [
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0',
+      'https://images.unsplash.com/photo-1551434678-e076c223a692',
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f'
+    ];
+    
+    // Use a deterministic index based on the prompt
+    const index = Math.abs(prompt.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % placeholders.length;
+    
+    return placeholders[index];
+  };
+
   return {
-    generateImage,
+    generateAdImage,
     isGenerating,
-    lastError,
-    lastGeneratedImageUrl,
-    clearError: () => setLastError(null)
+    error
   };
 };
