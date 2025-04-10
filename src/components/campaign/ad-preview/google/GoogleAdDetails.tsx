@@ -136,11 +136,12 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         {isEditing ? (
           <div>
             <Label htmlFor="path" className="text-xs font-normal text-gray-500 mb-1">
-              Path ({ad.path1?.length || 0}/15 characters) {/* Changed from path to path1 */}
+              {/* Path length indicator with path1 instead of path */}
+              Path ({ad.path1?.length || 0}/15 characters)
             </Label>
             <Input
               id="path"
-              value={ad.path1 || ""} {/* Changed from path to path1 */}
+              value={ad.path1 || ""} 
               onChange={(e) => handlePathChange(e.target.value)}
               maxLength={15}
               className="mt-1"
@@ -148,7 +149,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           </div>
         ) : (
           <div className="border p-2 rounded-md text-sm">
-            {ad.path1 || "No URL path provided"} {/* Changed from path to path1 */}
+            {ad.path1 || "No URL path provided"}
           </div>
         )}
       </div>
