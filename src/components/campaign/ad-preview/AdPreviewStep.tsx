@@ -60,13 +60,13 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const selectedPlatforms = campaignData?.platforms || [];
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   
-  // Create a more comprehensive form with properly initialized fields
+  // Create a form with properly initialized fields
   const methods = useForm({
     defaultValues: {
-      googleAds: googleAds || [],
-      metaAds: metaAds || [],
-      linkedInAds: linkedInAds || [],
-      microsoftAds: microsoftAds || [],
+      googleAds: googleAds,
+      metaAds: metaAds,
+      linkedInAds: linkedInAds,
+      microsoftAds: microsoftAds,
       platform: selectedPlatform,
       
       // Add explicit fields used by child components to avoid undefined errors
@@ -80,7 +80,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       
       // Company info fields
       companyName: analysisResult?.companyName || "",
-      companyDescription: analysisResult?.companyDescription || "",
+      // Using businessDescription as it appears in WebsiteAnalysisResult interface
+      businessDescription: analysisResult?.businessDescription || "",
       industry: "",
       adTheme: "",
       imageFormat: "square",
