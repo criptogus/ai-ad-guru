@@ -31,8 +31,8 @@ export const useImageGenerationHandler = ({
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
-      // Call the image generation function
-      const imageResult = await generateAdImage(finalPrompt, {
+      // Pass the ad and campaignData as additionalInfo
+      const result = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
         index
@@ -41,10 +41,10 @@ export const useImageGenerationHandler = ({
       // Extract the image URL from the result, handling different return types
       let imageUrl: string | null = null;
       
-      if (typeof imageResult === 'string') {
-        imageUrl = imageResult;
-      } else if (imageResult && typeof imageResult === 'object' && 'imageUrl' in imageResult) {
-        imageUrl = imageResult.imageUrl as string;
+      if (typeof result === 'string') {
+        imageUrl = result;
+      } else if (result && typeof result === 'object') {
+        imageUrl = result.imageUrl || null;
       }
 
       // Update the ad array if we got a valid URL
