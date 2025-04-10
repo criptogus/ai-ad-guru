@@ -16,7 +16,7 @@ export const useAdGenerationActions = (
   generateGoogleAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
   generateLinkedInAds: (campaignData: any, mindTrigger?: string) => Promise<any[] | null>,
   generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<any[] | null>,
-  generateAdImage: (prompt: string) => Promise<string | null>,
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>,
   setCampaignData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   // Initialize Google ad actions
@@ -48,23 +48,12 @@ export const useAdGenerationActions = (
   } = useMetaAdActions(
     analysisResult, 
     [], // Initialize with empty array
-    async (campaignData: any, mindTrigger?: string) => {
-      // For compatibility, convert LinkedIn ads to Meta format
-      try {
-        const result = await generateLinkedInAds(campaignData, mindTrigger);
-        return result as unknown as MetaAd[];
-      } catch (error) {
-        console.error("Error in Meta ad generation:", error);
-        return null;
-      }
-    },
+    generateLinkedInAds, // Pass the generateLinkedInAds function
     setCampaignData
   );
 
-  const handleGenerateLinkedInAds = async () => {
-    // Placeholder function for LinkedIn ad generation
-    console.warn("LinkedIn ad generation not fully implemented");
-  };
+  // Update handleGenerateLinkedInAds to use handleGenerateMetaAds
+  const handleGenerateLinkedInAds = handleGenerateMetaAds;
 
   // Initialize image generation actions
   const { 
@@ -82,7 +71,7 @@ export const useAdGenerationActions = (
 
   return {
     handleGenerateGoogleAds,
-    handleGenerateLinkedInAds: handleGenerateMetaAds, // Use Meta for LinkedIn for now
+    handleGenerateLinkedInAds,
     handleGenerateMetaAds, // Add explicit Meta ads handler
     handleGenerateMicrosoftAds,
     handleGenerateImage,

@@ -97,10 +97,10 @@ const PromptTemplateForm: React.FC<PromptTemplateFormProps> = ({
     <Card>
       <CardContent className="space-y-4">
         <h2 className="text-lg font-semibold">
-          {template ? template.name || "Template" : 'No Template Selected'}
+          {template ? template.title || "Template" : 'No Template Selected'}
         </h2>
         <p className="text-muted-foreground">
-          {template ? template.description || "No description available" : 'Select a template to start generating images.'}
+          {template ? template.prompt_text || "No description available" : 'Select a template to start generating images.'}
         </p>
         
         {template && (
