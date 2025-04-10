@@ -5,15 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, RefreshCw, Plus } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import LinkedInAdCard from "./LinkedInAdCard";
+import { MetaAd } from "@/hooks/adGeneration";
 
 interface LinkedInAdsListProps {
-  ads: any[] | null; // Change to accept null
+  ads: MetaAd[]; // Ensure this is typed properly
   analysisResult: WebsiteAnalysisResult;
   isGenerating: boolean;
   loadingImageIndex: number | null;
   onGenerateAds: () => Promise<void>;
-  onGenerateImage: (ad: any, index: number) => Promise<void>;
-  onUpdateAd: (index: number, updatedAd: any) => void;
+  onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
+  onUpdateAd: (index: number, updatedAd: MetaAd) => void;
   onDuplicate?: (index: number) => void;
   onDelete?: (index: number) => void;
   mindTrigger?: string;
@@ -36,7 +37,7 @@ const LinkedInAdsList: React.FC<LinkedInAdsListProps> = ({
   // Ensure ads is always an array
   const safeAds = Array.isArray(ads) ? ads : [];
   
-  const handleGenerateImage = async (ad: any, index: number) => {
+  const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (onGenerateImage) {
       await onGenerateImage(ad, index);
     }

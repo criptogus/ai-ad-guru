@@ -31,14 +31,14 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   mindTrigger,
   onMindTriggerChange
 }) => {
-  // Get form context
+  // Get form context - ensure we safely use it if it exists
   const formMethods = useFormContext();
   
   // Initialize linkedInAds field if form context exists
   useEffect(() => {
     if (formMethods && Array.isArray(linkedInAds)) {
-      // Ensure the linkedInAds field exists in the form
-      formMethods.setValue("linkedInAds", linkedInAds);
+      // Set default value for linkedInAds array in the form
+      formMethods.setValue("linkedInAds", linkedInAds, { shouldValidate: false });
     }
   }, [linkedInAds, formMethods]);
 
@@ -51,7 +51,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
         const currentAds = formMethods.getValues("linkedInAds") || [];
         const updatedAds = [...currentAds];
         updatedAds[index] = updatedAd;
-        formMethods.setValue("linkedInAds", updatedAds);
+        formMethods.setValue("linkedInAds", updatedAds, { shouldValidate: false });
       } catch (error) {
         console.error("Error updating form value:", error);
       }
@@ -115,7 +115,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
               // Update form if available
               if (formMethods) {
                 try {
-                  formMethods.setValue("linkedInAds", newAds);
+                  formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
                 } catch (error) {
                   console.error("Error updating linkedInAds in form:", error);
                 }
@@ -130,7 +130,7 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
               // Update form if available
               if (formMethods) {
                 try {
-                  formMethods.setValue("linkedInAds", newAds);
+                  formMethods.setValue("linkedInAds", newAds, { shouldValidate: false });
                 } catch (error) {
                   console.error("Error updating linkedInAds in form:", error);
                 }

@@ -17,8 +17,8 @@ interface AdPreviewStepProps {
   analysisResult: WebsiteAnalysisResult | null;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
-  linkedInAds: any[];
-  microsoftAds: any[];
+  linkedInAds: MetaAd[];
+  microsoftAds: GoogleAd[];
   isGenerating: boolean;
   loadingImageIndex: number | null;
   onGenerateGoogleAds: () => Promise<void>;
@@ -28,8 +28,8 @@ interface AdPreviewStepProps {
   onGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   onUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
-  onUpdateMicrosoftAd: (index: number, updatedAd: any) => void;
-  onUpdateLinkedInAd: (index: number, updatedAd: any) => void;
+  onUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
+  onUpdateLinkedInAd: (index: number, updatedAd: MetaAd) => void;
   onNext: () => void;
   onBack: () => void;
   mindTriggers?: Record<string, string>;
@@ -39,8 +39,8 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   analysisResult,
   googleAds,
   metaAds,
-  microsoftAds,
   linkedInAds,
+  microsoftAds,
   isGenerating,
   loadingImageIndex,
   onGenerateGoogleAds,
@@ -81,7 +81,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       
       // Company info fields
       companyName: analysisResult?.companyName || "",
-      // Using businessDescription as it appears in WebsiteAnalysisResult interface
       businessDescription: analysisResult?.businessDescription || "",
       industry: "",
       adTheme: "",
@@ -109,10 +108,10 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   
   // Update form values when ads change
   useEffect(() => {
-    if (googleAds?.length >= 0) methods.setValue("googleAds", googleAds);
-    if (metaAds?.length >= 0) methods.setValue("metaAds", metaAds);
-    if (linkedInAds?.length >= 0) methods.setValue("linkedInAds", linkedInAds);
-    if (microsoftAds?.length >= 0) methods.setValue("microsoftAds", microsoftAds);
+    if (Array.isArray(googleAds)) methods.setValue("googleAds", googleAds);
+    if (Array.isArray(metaAds)) methods.setValue("metaAds", metaAds);
+    if (Array.isArray(linkedInAds)) methods.setValue("linkedInAds", linkedInAds);
+    if (Array.isArray(microsoftAds)) methods.setValue("microsoftAds", microsoftAds);
   }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
 
   // Update form when selected platform changes
@@ -177,61 +176,63 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               )}
             </TabsList>
 
-            {selectedPlatforms.includes("google") && (
-              <TabsContent value="google">
-                <GoogleAdsTab
-                  googleAds={googleAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  onGenerateAds={onGenerateGoogleAds}
-                  onUpdateGoogleAd={onUpdateGoogleAd}
-                  mindTrigger={mindTriggers['google']}
-                />
-              </TabsContent>
-            )}
+            <div className="p-6">
+              {selectedPlatforms.includes("google") && (
+                <TabsContent value="google">
+                  <GoogleAdsTab
+                    googleAds={googleAds}
+                    analysisResult={analysisResult}
+                    isGenerating={isGenerating}
+                    onGenerateAds={onGenerateGoogleAds}
+                    onUpdateGoogleAd={onUpdateGoogleAd}
+                    mindTrigger={mindTriggers['google']}
+                  />
+                </TabsContent>
+              )}
 
-            {selectedPlatforms.includes("meta") && (
-              <TabsContent value="meta">
-                <MetaAdsTab
-                  metaAds={metaAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  loadingImageIndex={loadingImageIndex}
-                  onGenerateAds={onGenerateMetaAds}
-                  onGenerateImage={onGenerateImage}
-                  onUpdateMetaAd={onUpdateMetaAd}
-                  mindTrigger={mindTriggers['meta']}
-                />
-              </TabsContent>
-            )}
+              {selectedPlatforms.includes("meta") && (
+                <TabsContent value="meta">
+                  <MetaAdsTab
+                    metaAds={metaAds}
+                    analysisResult={analysisResult}
+                    isGenerating={isGenerating}
+                    loadingImageIndex={loadingImageIndex}
+                    onGenerateAds={onGenerateMetaAds}
+                    onGenerateImage={onGenerateImage}
+                    onUpdateMetaAd={onUpdateMetaAd}
+                    mindTrigger={mindTriggers['meta']}
+                  />
+                </TabsContent>
+              )}
 
-            {selectedPlatforms.includes("linkedin") && (
-              <TabsContent value="linkedin">
-                <LinkedInAdsTab
-                  linkedInAds={linkedInAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  loadingImageIndex={loadingImageIndex}
-                  onGenerateAds={onGenerateLinkedInAds}
-                  onGenerateImage={onGenerateImage}
-                  onUpdateLinkedInAd={onUpdateLinkedInAd}
-                  mindTrigger={mindTriggers['linkedin']}
-                />
-              </TabsContent>
-            )}
+              {selectedPlatforms.includes("linkedin") && (
+                <TabsContent value="linkedin">
+                  <LinkedInAdsTab
+                    linkedInAds={linkedInAds}
+                    analysisResult={analysisResult}
+                    isGenerating={isGenerating}
+                    loadingImageIndex={loadingImageIndex}
+                    onGenerateAds={onGenerateLinkedInAds}
+                    onGenerateImage={onGenerateImage}
+                    onUpdateLinkedInAd={onUpdateLinkedInAd}
+                    mindTrigger={mindTriggers['linkedin']}
+                  />
+                </TabsContent>
+              )}
 
-            {selectedPlatforms.includes("microsoft") && (
-              <TabsContent value="microsoft">
-                <MicrosoftAdsTab
-                  microsoftAds={microsoftAds}
-                  analysisResult={analysisResult}
-                  isGenerating={isGenerating}
-                  onGenerateAds={onGenerateMicrosoftAds}
-                  onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-                  mindTrigger={mindTriggers['microsoft']}
-                />
-              </TabsContent>
-            )}
+              {selectedPlatforms.includes("microsoft") && (
+                <TabsContent value="microsoft">
+                  <MicrosoftAdsTab
+                    microsoftAds={microsoftAds}
+                    analysisResult={analysisResult}
+                    isGenerating={isGenerating}
+                    onGenerateAds={onGenerateMicrosoftAds}
+                    onUpdateMicrosoftAd={onUpdateMicrosoftAd}
+                    mindTrigger={mindTriggers['microsoft']}
+                  />
+                </TabsContent>
+              )}
+            </div>
           </Tabs>
 
           <div className="mt-6 pt-4 border-t flex justify-between items-center">
