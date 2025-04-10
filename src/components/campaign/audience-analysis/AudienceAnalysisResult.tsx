@@ -6,11 +6,17 @@ import EditableAnalysisText from "./EditableAnalysisText";
 interface AudienceAnalysisResultProps {
   analysisResult: AudienceResult;
   onTextChange?: (text: string) => void;
+  platform?: string;
+  websiteData?: any;
+  isAnalyzing?: boolean;
 }
 
 const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
   analysisResult,
-  onTextChange
+  onTextChange,
+  platform,
+  websiteData,
+  isAnalyzing
 }) => {
   // Extract the analysis text from the result
   const analysisText = analysisResult.analysisText || "";

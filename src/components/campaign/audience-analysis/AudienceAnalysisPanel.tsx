@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, RefreshCw, BarChart3, Calendar } from "lucide-react";
-import AudienceAnalysisResult from "./AudienceAnalysisResult";
+import AudienceAnalysisResultComponent from "./AudienceAnalysisResult";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
@@ -147,11 +147,9 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
       )}
       
       {analysisResult && (
-        <AudienceAnalysisResult 
+        <AudienceAnalysisResultComponent
           analysisResult={analysisResult}
-          platform={platform}
-          websiteData={websiteData}
-          isAnalyzing={isAnalyzing}
+          onTextChange={undefined}
         />
       )}
     </div>

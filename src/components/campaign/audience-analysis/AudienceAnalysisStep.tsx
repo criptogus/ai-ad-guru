@@ -67,14 +67,16 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
         </CardHeader>
         
         <CardContent className="pt-4">
-          <AudienceAnalysisPanel
-            websiteData={analysisResult!}
-            isAnalyzing={isAnalyzing}
-            analysisResult={audienceResult}
-            onAnalyze={handleAnalyze}
-            selectedPlatform={selectedPlatform}
-            cacheInfo={cacheInfo}
-          />
+          {analysisResult && (
+            <AudienceAnalysisPanel
+              websiteData={analysisResult}
+              isAnalyzing={isAnalyzing}
+              analysisResult={audienceResult}
+              onAnalyze={handleAnalyze}
+              selectedPlatform={selectedPlatform}
+              cacheInfo={cacheInfo}
+            />
+          )}
           
           <div className="mt-6 pt-4 border-t flex justify-between items-center">
             <Button variant="outline" onClick={onBack} className="flex items-center">
