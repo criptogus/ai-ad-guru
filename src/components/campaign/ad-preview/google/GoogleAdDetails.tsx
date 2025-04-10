@@ -59,7 +59,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
     } else if (onUpdateAd) {
       onUpdateAd({
         ...ad,
-        path: value
+        path1: value // Changed from path to path1
       });
     }
   };
@@ -136,11 +136,11 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         {isEditing ? (
           <div>
             <Label htmlFor="path" className="text-xs font-normal text-gray-500 mb-1">
-              Path ({ad.path?.length || 0}/15 characters)
+              Path ({ad.path1?.length || 0}/15 characters) {/* Changed from path to path1 */}
             </Label>
             <Input
               id="path"
-              value={ad.path || ""}
+              value={ad.path1 || ""} {/* Changed from path to path1 */}
               onChange={(e) => handlePathChange(e.target.value)}
               maxLength={15}
               className="mt-1"
@@ -148,7 +148,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
           </div>
         ) : (
           <div className="border p-2 rounded-md text-sm">
-            {ad.path || "No URL path provided"}
+            {ad.path1 || "No URL path provided"} {/* Changed from path to path1 */}
           </div>
         )}
       </div>

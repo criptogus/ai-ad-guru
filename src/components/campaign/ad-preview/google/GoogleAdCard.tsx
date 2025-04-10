@@ -1,11 +1,12 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { GoogleAd } from "@/hooks/adGeneration/types";
+import { GoogleAd } from "@/hooks/adGeneration";
 import { Button } from "@/components/ui/button";
 import { Copy, Edit, Save, X } from "lucide-react";
 import GoogleAdPreview from "./GoogleAdPreview";
+import GoogleAdDetails from "./GoogleAdDetails";
 import GoogleAdEditor from "./GoogleAdEditor";
-import AdVariationCard from "../AdVariationCard";
 import { normalizeGoogleAd } from "@/lib/utils";
 
 interface GoogleAdCardProps {
@@ -48,6 +49,10 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     const descriptionsText = normalizedAd.descriptions.join('\n');
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);
+  };
+
+  const handleUpdateAd = (updatedAd: GoogleAd) => {
+    setEditedAd(normalizeGoogleAd(updatedAd));
   };
 
   return (
@@ -105,11 +110,20 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
             ad={isEditing ? normalizeGoogleAd(editedAd) : normalizedAd} 
             domain={domain} 
           />
-          <GoogleAdEditor 
-            ad={isEditing ? normalizeGoogleAd(editedAd) : normalizedAd} 
-            index={index} 
-            onUpdateAd={(idx, updatedAd) => setEditedAd(normalizeGoogleAd(updatedAd))}
-          />
+          {isEditing ? (
+            <GoogleAdEditor
+              ad={normalizeGoogleAd(editedAd)}
+              domain={domain}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          ) : (
+            <GoogleAdDetails 
+              ad={normalizedAd}
+              isEditing={false}
+              onUpdateAd={handleUpdateAd}
+            />
+          )}
         </div>
       </CardContent>
     </Card>

@@ -11,6 +11,7 @@ export interface GoogleAd {
   displayPath?: string;
   headlines: string[];
   descriptions: string[];
+  finalUrl?: string; // Added finalUrl property
   siteLinks?: {
     title: string;
     link: string;

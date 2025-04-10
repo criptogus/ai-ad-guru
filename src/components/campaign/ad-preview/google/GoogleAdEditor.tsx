@@ -43,14 +43,14 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   const handlePathChange = (value: string) => {
     setEditedAd({
       ...editedAd,
-      path: value
+      path1: value // Changed from path to path1
     });
   };
   
   const handleUrlChange = (value: string) => {
     setEditedAd({
       ...editedAd,
-      finalUrl: value
+      finalUrl: value // This field needs to be added to GoogleAd type
     });
   };
   
@@ -64,7 +64,7 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
         <Label htmlFor="finalUrl">Final URL</Label>
         <Input
           id="finalUrl"
-          value={editedAd.finalUrl || ""}
+          value={editedAd.finalUrl || ""} // This field needs to be added to GoogleAd type
           onChange={(e) => handleUrlChange(e.target.value)}
           placeholder="https://example.com/landing-page"
           className="mt-1"

@@ -179,7 +179,7 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
               {platform === 'google' && (
                 <GoogleAdDetails 
                   ad={isEditing ? editedAd : ad} 
-                  onUpdate={handleUpdate} 
+                  onUpdateAd={handleUpdate} 
                   isEditing={isEditing} 
                 />
               )}
