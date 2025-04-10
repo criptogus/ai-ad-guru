@@ -107,7 +107,7 @@ const CampaignContent: React.FC = () => {
 
   // Use the imageGenerationHandler hook to handle image generation
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
-    generateAdImage,  // This is the function from useAdGeneration hook
+    generateAdImage, // This function should have the correct signature in useAdGeneration hook
     metaAds,
     linkedInAds,
     setMetaAds,
