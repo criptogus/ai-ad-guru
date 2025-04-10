@@ -93,7 +93,9 @@ export const useGoogleAdActions = (
         description1: `${businessDesc.substring(0, 80)}`,
         description2: "Contact Us Today for a Free Quote!",
         path1: "services",
-        path2: "solutions"
+        path2: "solutions",
+        headlines: [`${companyName} - Official Site`, "Quality Solutions", "Expert Service"],
+        descriptions: [`${businessDesc.substring(0, 80)}`, "Contact Us Today for a Free Quote!"]
       },
       {
         headline1: `Top Rated ${companyName}`,
@@ -102,7 +104,9 @@ export const useGoogleAdActions = (
         description1: `${businessDesc.substring(0, 80)}`,
         description2: "Trusted by Thousands of Satisfied Customers.",
         path1: "offers",
-        path2: "discount"
+        path2: "discount",
+        headlines: [`Top Rated ${companyName}`, "Professional Services", "Save 15% Today"],
+        descriptions: [`${businessDesc.substring(0, 80)}`, "Trusted by Thousands of Satisfied Customers."]
       },
       {
         headline1: `${companyName} - #1 Choice`,
@@ -111,7 +115,9 @@ export const useGoogleAdActions = (
         description1: `${businessDesc.substring(0, 80)}`,
         description2: "Free Consultation & Quick Response Time.",
         path1: "guarantee",
-        path2: "service"
+        path2: "service",
+        headlines: [`${companyName} - #1 Choice`, "Fast & Reliable Service", "30-Day Guarantee"],
+        descriptions: [`${businessDesc.substring(0, 80)}`, "Free Consultation & Quick Response Time."]
       },
       {
         headline1: `${companyName} Solutions`,
@@ -120,7 +126,9 @@ export const useGoogleAdActions = (
         description1: `${businessDesc.substring(0, 80)}`,
         description2: "Customized Solutions for Your Specific Needs.",
         path1: "premium",
-        path2: "solutions"
+        path2: "solutions",
+        headlines: [`${companyName} Solutions`, "Premium Quality", "Available 24/7"],
+        descriptions: [`${businessDesc.substring(0, 80)}`, "Customized Solutions for Your Specific Needs."]
       },
       {
         headline1: `Discover ${companyName}`,
@@ -129,7 +137,9 @@ export const useGoogleAdActions = (
         description1: `${businessDesc.substring(0, 80)}`,
         description2: "Call Now for Exclusive Offers & Free Consultation.",
         path1: "experts",
-        path2: "consultation"
+        path2: "consultation",
+        headlines: [`Discover ${companyName}`, "Award-Winning Service", "Expert Team"],
+        descriptions: [`${businessDesc.substring(0, 80)}`, "Call Now for Exclusive Offers & Free Consultation."]
       }
     ];
   };

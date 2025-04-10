@@ -1,242 +1,150 @@
+import React, { useState } from "react";
+import { PromptTemplate } from "@/hooks/template/usePromptTemplates";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGPT4oImageGeneration } from "@/hooks/adGeneration/useGPT4oImageGeneration";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Image as ImageIcon, RotateCw } from 'lucide-react';
-import { PromptTemplate } from '@/hooks/template/usePromptTemplates';
-import { UseGPT4oImageGenerationReturn } from '@/hooks/adGeneration/useGPT4oImageGeneration';
-
-interface TemplateFormProps {
+interface PromptTemplateFormProps {
   template: PromptTemplate | null;
-  imageGeneration: UseGPT4oImageGenerationReturn;
+  imageGeneration: any;
   onSelectNewTemplate: () => void;
-  onImageGenerated?: (imageUrl: string) => void;
-  companyName?: string;
-  industry?: string;
-  brandTone?: string;
-  campaignId?: string;
+  companyName: string;
+  industry: string;
+  brandTone: string;
 }
 
-const PromptTemplateForm: React.FC<TemplateFormProps> = ({
+const PromptTemplateForm: React.FC<PromptTemplateFormProps> = ({
   template,
   imageGeneration,
   onSelectNewTemplate,
-  onImageGenerated,
-  companyName = '',
-  industry = '',
-  brandTone = 'professional',
-  campaignId
+  companyName,
+  industry,
+  brandTone
 }) => {
-  const [mainText, setMainText] = useState<string>('');
-  const [subText, setSubText] = useState<string>('');
-  const [customPrompt, setCustomPrompt] = useState<string>('');
-  const [useCustomPrompt, setUseCustomPrompt] = useState<boolean>(false);
-  
-  const { generateImage, isGenerating, lastGeneratedImageUrl, lastError } = imageGeneration;
-  
-  // Extract default values from template when it changes
-  useEffect(() => {
-    if (template) {
-      // Extract default values from template placeholders
-      const mainTextMatch = template.prompt_text.match(/\${mainText:([^}]*)}/);
-      const subTextMatch = template.prompt_text.match(/\${subText:([^}]*)}/);
-      
-      setMainText(mainTextMatch ? mainTextMatch[1] : '');
-      setSubText(subTextMatch ? subTextMatch[1] : '');
-      setCustomPrompt(template.prompt_text);
-      setUseCustomPrompt(false);
-    }
-  }, [template]);
+  const [mainText, setMainText] = useState('');
+  const [subText, setSubText] = useState('');
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
   
   const handleGenerateImage = async () => {
-    if (useCustomPrompt) {
-      const imageUrl = await generateImage({
-        promptTemplate: customPrompt,
-        companyName,
-        industry,
-        brandTone,
-        campaignId
+    if (!template) {
+      toast({
+        title: "No Template Selected",
+        description: "Please select a template to generate an image.",
+        variant: "destructive",
       });
-      
-      if (imageUrl && onImageGenerated) {
-        onImageGenerated(imageUrl);
-      }
-    } else if (template) {
-      const imageUrl = await generateImage({
-        templateId: template.id,
+      return;
+    }
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to generate images.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!companyName || !industry || !brandTone) {
+      toast({
+        title: "Missing Brand Details",
+        description: "Please provide your company name, industry, and brand tone.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Call the generateAdImage function from the useGPT4oImageGeneration hook
+      const imageUrl = await imageGeneration.generateAdImage(template.template, {
         mainText,
         subText,
         companyName,
         industry,
-        brandTone,
-        campaignId
+        brandTone
       });
       
-      if (imageUrl && onImageGenerated) {
-        onImageGenerated(imageUrl);
+      if (imageUrl) {
+        setGeneratedImageUrl(imageUrl);
+        toast({
+          title: "Image Generated Successfully",
+          description: "Your ad image has been generated.",
+        });
+      } else {
+        toast({
+          title: "Image Generation Failed",
+          description: "Failed to generate the ad image.",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Image Generation Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
   };
   
-  if (!template && !useCustomPrompt) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>No Template Selected</CardTitle>
-          <CardDescription>
-            Please select a template from the gallery or create a custom prompt.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button onClick={onSelectNewTemplate}>
-            Select Template
-          </Button>
-          <Button 
-            variant="outline" 
-            className="ml-2"
-            onClick={() => setUseCustomPrompt(true)}
-          >
-            Create Custom Prompt
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-  
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>
-          {useCustomPrompt ? 'Custom Prompt' : template?.title}
-        </CardTitle>
-        <CardDescription>
-          {useCustomPrompt 
-            ? 'Create your own custom prompt for image generation'
-            : `Category: ${template?.category}`
-          }
-        </CardDescription>
-      </CardHeader>
+    <Card>
       <CardContent className="space-y-4">
-        {useCustomPrompt ? (
-          <div className="space-y-2">
-            <Label htmlFor="customPrompt">Custom Prompt</Label>
-            <Textarea
-              id="customPrompt"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              rows={6}
-              placeholder="Write your custom prompt here..."
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground">
-              Pro tip: Use clear, descriptive language for the best results.
-            </p>
-          </div>
-        ) : (
+        <h2 className="text-lg font-semibold">
+          {template ? template.name : 'No Template Selected'}
+        </h2>
+        <p className="text-muted-foreground">
+          {template ? template.description : 'Select a template to start generating images.'}
+        </p>
+        
+        {template && (
           <>
             <div className="space-y-2">
               <Label htmlFor="mainText">Main Text</Label>
-              <Input
-                id="mainText"
+              <Input 
+                id="mainText" 
+                placeholder="Enter main text" 
                 value={mainText}
                 onChange={(e) => setMainText(e.target.value)}
-                placeholder="Main headline for the image"
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="subText">Sub Text</Label>
-              <Input
-                id="subText"
+              <Textarea 
+                id="subText" 
+                placeholder="Enter sub text" 
                 value={subText}
                 onChange={(e) => setSubText(e.target.value)}
-                placeholder="Secondary text or call to action"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="templateText">Template Text</Label>
-              <Textarea
-                id="templateText"
-                value={template?.prompt_text}
-                rows={3}
-                readOnly
-                className="resize-none bg-muted"
-              />
-            </div>
+            
+            <Button onClick={handleGenerateImage}>
+              Generate Image
+            </Button>
           </>
         )}
         
-        {lastGeneratedImageUrl && (
+        {generatedImageUrl && (
           <div className="mt-4">
-            <Label>Generated Image</Label>
-            <div className="mt-2 border rounded-md overflow-hidden">
-              <img 
-                src={lastGeneratedImageUrl} 
-                alt="Generated ad" 
-                className="w-full h-auto object-contain"
-              />
-            </div>
+            <img 
+              src={generatedImageUrl} 
+              alt="Generated Ad" 
+              className="rounded-md" 
+            />
           </div>
         )}
         
-        {lastError && (
-          <div className="text-sm text-destructive mt-2">
-            Error: {lastError}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            if (useCustomPrompt) {
-              setUseCustomPrompt(false);
-              onSelectNewTemplate();
-            } else {
-              onSelectNewTemplate();
-            }
-          }}
-        >
-          {useCustomPrompt ? 'Cancel' : 'Change Template'}
+        <Button variant="outline" onClick={onSelectNewTemplate}>
+          Select New Template
         </Button>
-        <div className="space-x-2">
-          {!useCustomPrompt && (
-            <Button 
-              variant="outline" 
-              onClick={() => setUseCustomPrompt(true)}
-            >
-              Edit Full Prompt
-            </Button>
-          )}
-          <Button 
-            onClick={handleGenerateImage} 
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                {lastGeneratedImageUrl ? (
-                  <>
-                    <RotateCw className="mr-2 h-4 w-4" />
-                    Regenerate
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Generate Image
-                  </>
-                )}
-              </>
-            )}
-          </Button>
-        </div>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };

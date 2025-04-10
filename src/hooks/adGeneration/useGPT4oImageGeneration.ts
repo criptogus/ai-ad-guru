@@ -1,11 +1,16 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { storeAIResult } from '@/services/ai/aiResultsStorage';
 
-export const useGPT4oImageGeneration = () => {
+export interface UseGPT4oImageGenerationReturn {
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | any>;
+  isGenerating: boolean;
+  error: string | null;
+}
+
+export const useGPT4oImageGeneration = (): UseGPT4oImageGenerationReturn => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
