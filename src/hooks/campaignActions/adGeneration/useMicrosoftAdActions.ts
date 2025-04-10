@@ -1,52 +1,47 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
-import { GoogleAd } from '@/hooks/adGeneration';
+import { useState } from "react";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
-export const useMicrosoftAdActions = (
-  analysisResult: WebsiteAnalysisResult | null,
-  microsoftAds: GoogleAd[],
-  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<GoogleAd[] | null>,
-  setCampaignData: React.Dispatch<React.SetStateAction<any>>
-) => {
+interface UseMicrosoftAdActionsProps {
+  analysisResult: WebsiteAnalysisResult | null;
+  microsoftAds: any[];
+  generateMicrosoftAds: (campaignData: any, mindTrigger?: string) => Promise<any[] | null>;
+  setCampaignData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+export const useMicrosoftAdActions = ({
+  analysisResult,
+  microsoftAds,
+  generateMicrosoftAds,
+  setCampaignData
+}: UseMicrosoftAdActionsProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleGenerateMicrosoftAds = async () => {
+  
+  const handleGenerateMicrosoftAds = async (mindTrigger?: string) => {
     if (!analysisResult) {
-      toast.error("Website analysis required before generating ads");
+      console.error("Cannot generate Microsoft Ads without website analysis data");
       return;
     }
-
+    
+    setIsGenerating(true);
+    
     try {
-      setIsGenerating(true);
+      const newAds = await generateMicrosoftAds(analysisResult, mindTrigger);
       
-      // Get the Microsoft mind trigger from campaignData if available
-      // Note: We should get this from props or context instead of trying to access it on analysisResult
-      const mindTrigger = '';
-      
-      console.log("Generating Microsoft ads with trigger:", mindTrigger);
-      const generatedAds = await generateMicrosoftAds(analysisResult, mindTrigger);
-      
-      if (generatedAds) {
-        toast.success(`Generated ${generatedAds.length} Microsoft ad variations`);
-        
+      if (newAds && newAds.length > 0) {
         // Update campaign data with the new ads
-        setCampaignData(prev => ({
+        setCampaignData((prev: any) => ({
           ...prev,
-          microsoftAds: generatedAds
+          microsoftAds: newAds
         }));
-      } else {
-        toast.error("Failed to generate Microsoft ads");
       }
     } catch (error) {
       console.error("Error generating Microsoft ads:", error);
-      toast.error("An error occurred while generating Microsoft ads");
     } finally {
       setIsGenerating(false);
     }
   };
-
+  
   return {
     handleGenerateMicrosoftAds,
     isGenerating

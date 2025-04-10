@@ -34,23 +34,23 @@ export const useAdGenerationActions = (
   const {
     handleGenerateMicrosoftAds,
     isGenerating: isGeneratingMicrosoftAds
-  } = useMicrosoftAdActions(
+  } = useMicrosoftAdActions({
     analysisResult,
     microsoftAds,
     generateMicrosoftAds,
     setCampaignData
-  );
+  });
 
   // Initialize Meta ad actions
   const {
     handleGenerateMetaAds,
     isGenerating: isGeneratingMetaAds
-  } = useMetaAdActions(
+  } = useMetaAdActions({
     analysisResult, 
-    [], // Initialize with empty array
-    generateLinkedInAds, // Pass the generateLinkedInAds function
+    linkedInAds,
+    generateLinkedInAds,
     setCampaignData
-  );
+  });
 
   // Update handleGenerateLinkedInAds to use handleGenerateMetaAds
   const handleGenerateLinkedInAds = handleGenerateMetaAds;
@@ -61,10 +61,10 @@ export const useAdGenerationActions = (
     loadingImageIndex,
     error: imageGenerationError,
     clearError: clearImageGenerationError
-  } = useImageGenerationActions(
+  } = useImageGenerationActions({
     generateAdImage,
     setCampaignData
-  );
+  });
 
   // Track overall generation state
   const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || isGeneratingMicrosoftAds;

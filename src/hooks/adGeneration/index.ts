@@ -11,7 +11,7 @@ export const useAdGeneration = () => {
   const imageGenHook = useGPT4oImageGeneration();
   
   // Create an adapter for the generateAdImage function to ensure it has the right signature
-  const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | any> => {
+  const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     return imageGenHook.generateAdImage(prompt, additionalInfo);
   };
 
@@ -32,8 +32,14 @@ export const useAdGeneration = () => {
     generateAdImage,
     generateLinkedInAds,
     generateMicrosoftAds,
+    // Ensure all properties exist by using the actual properties from the hooks
     isGenerating: googleAdsHook.isGenerating || metaAdsHook.isGenerating || imageGenHook.isGenerating,
-    error: googleAdsHook.error || metaAdsHook.error || imageGenHook.error
+    error: googleAdsHook.error || metaAdsHook.error || imageGenHook.error,
+    // Explicitly add all necessary properties to prevent TypeScript errors
+    googleAds: googleAdsHook.googleAds || [],
+    metaAds: metaAdsHook.metaAds || [],
+    generateGoogleAds: googleAdsHook.generateGoogleAds,
+    generateMetaAds: metaAdsHook.generateMetaAds
   };
 };
 

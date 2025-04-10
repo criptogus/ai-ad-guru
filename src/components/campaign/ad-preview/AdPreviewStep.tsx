@@ -60,7 +60,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   const selectedPlatforms = campaignData?.platforms || [];
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   
-  // Initialize the form with proper default values for all ad types
+  // Create a more comprehensive form with properly initialized fields
   const methods = useForm({
     defaultValues: {
       googleAds: googleAds || [],
@@ -68,14 +68,31 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       linkedInAds: linkedInAds || [],
       microsoftAds: microsoftAds || [],
       platform: selectedPlatform,
-      // Add additional fields that might be used in nested components
-      ad: null,
-      companyInfo: analysisResult || undefined,
-      companyName: analysisResult?.companyName || "",
-      primaryText: "",
+      
+      // Add explicit fields used by child components to avoid undefined errors
       headline: "",
+      primaryText: "",
       description: "",
-      imagePrompt: ""
+      imagePrompt: "",
+      callToAction: "",
+      displayUrl: "",
+      finalUrl: "",
+      
+      // Company info fields
+      companyName: analysisResult?.companyName || "",
+      companyDescription: analysisResult?.companyDescription || "",
+      industry: "",
+      adTheme: "",
+      imageFormat: "square",
+      
+      // Generic ad fields that might be used by child components
+      ad: {
+        headline: "",
+        primaryText: "",
+        description: "",
+        imagePrompt: "",
+        imageUrl: ""
+      }
     }
   });
 
@@ -83,6 +100,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   useEffect(() => {
     if (selectedPlatforms.length > 0 && !selectedPlatform) {
       setSelectedPlatform(selectedPlatforms[0]);
+      methods.setValue("platform", selectedPlatforms[0]);
     }
   }, [selectedPlatforms]);
   
@@ -92,21 +110,19 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     methods.setValue("metaAds", metaAds);
     methods.setValue("linkedInAds", linkedInAds);
     methods.setValue("microsoftAds", microsoftAds);
-  }, [googleAds, metaAds, linkedInAds, microsoftAds, methods]);
+  }, [googleAds, metaAds, linkedInAds, microsoftAds]);
 
   // Update form when selected platform changes
   useEffect(() => {
     methods.setValue("platform", selectedPlatform);
-  }, [selectedPlatform, methods]);
+  }, [selectedPlatform]);
   
-  // Scroll to top when tab changes or step loads
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedPlatform]);
   
   const handleNextClick = () => {
     onNext();
-    // Scroll to top when proceeding to next step
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -130,7 +146,6 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
     }
   };
   
-  // Check if any selected platform has ads
   const hasAnyAds = selectedPlatforms.some(platform => hasAdsForPlatform(platform));
 
   return (

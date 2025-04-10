@@ -31,24 +31,30 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
   mindTrigger,
   onMindTriggerChange
 }) => {
-  // Get form context safely
+  // Get form context safely with optional chaining
   const formMethods = useFormContext();
   
-  // If we have form context, ensure the linkedInAds field exists
-  if (formMethods && !formMethods.getValues("linkedInAds")) {
-    // Initialize linkedInAds field if it doesn't exist
-    formMethods.setValue("linkedInAds", linkedInAds || []);
-  }
+  // Initialize linkedInAds field if form context exists
+  useEffect(() => {
+    if (formMethods && Array.isArray(linkedInAds)) {
+      // Ensure the linkedInAds field exists in the form
+      formMethods.setValue("linkedInAds", linkedInAds || []);
+    }
+  }, [linkedInAds, formMethods]);
 
   const handleUpdateAd = (index: number, updatedAd: MetaAd) => {
     onUpdateLinkedInAd(index, updatedAd);
     
     // Update the form value if we have form context
     if (formMethods) {
-      const currentAds = formMethods.getValues("linkedInAds") || [];
-      const updatedAds = [...currentAds];
-      updatedAds[index] = updatedAd;
-      formMethods.setValue("linkedInAds", updatedAds);
+      try {
+        const currentAds = formMethods.getValues("linkedInAds") || [];
+        const updatedAds = [...currentAds];
+        updatedAds[index] = updatedAd;
+        formMethods.setValue("linkedInAds", updatedAds);
+      } catch (error) {
+        console.error("Error updating form value:", error);
+      }
     }
   };
 
@@ -108,7 +114,11 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
               
               // Update form if available
               if (formMethods) {
-                formMethods.setValue("linkedInAds", newAds);
+                try {
+                  formMethods.setValue("linkedInAds", newAds);
+                } catch (error) {
+                  console.error("Error updating linkedInAds in form:", error);
+                }
               }
             }
           }}
@@ -119,7 +129,11 @@ const LinkedInAdsTab: React.FC<LinkedInAdsTabProps> = ({
               
               // Update form if available
               if (formMethods) {
-                formMethods.setValue("linkedInAds", newAds);
+                try {
+                  formMethods.setValue("linkedInAds", newAds);
+                } catch (error) {
+                  console.error("Error updating linkedInAds in form:", error);
+                }
               }
             }
           }}
