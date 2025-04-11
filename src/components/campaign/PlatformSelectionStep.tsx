@@ -65,9 +65,13 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   };
 
   const handleNextClick = () => {
-    // Call onNext with the platforms data but don't rely on its return value for navigation
+    // First update the data
     onNext({ platforms: selectedPlatforms });
-    // Navigation is now handled by the onNext function itself
+    
+    // Then explicitly call onNext again with no arguments to force navigation
+    setTimeout(() => {
+      onNext();
+    }, 100);
   };
 
   const showWarning = selectedPlatforms.length === 0;

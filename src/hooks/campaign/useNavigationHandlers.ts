@@ -25,7 +25,7 @@ export const useNavigationHandlers = (
       setCampaignData((prev: any) => ({ ...prev, ...data }));
       console.log("Updated campaign data with:", data);
       
-      // Only advance if autoAdvance is true
+      // Only advance if autoAdvance is true or if explicitly called with no data
       if (autoAdvance) {
         console.log(`Auto-advancing from step ${currentStep} to ${currentStep + 1}`);
         setCurrentStep(currentStep + 1);
@@ -33,7 +33,7 @@ export const useNavigationHandlers = (
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       
-      return;
+      return false;
     }
     
     // No data provided, explicit navigation request
@@ -41,6 +41,8 @@ export const useNavigationHandlers = (
     setCurrentStep(currentStep + 1);
     // Scroll to top when advancing
     window.scrollTo({ top: 0, behavior: "smooth" });
+    
+    return true;
   };
 
   return {

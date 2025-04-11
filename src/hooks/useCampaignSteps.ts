@@ -26,11 +26,13 @@ export const useCampaignSteps = (
   };
 
   const handleNext = (data?: any) => {
-    // Update data if provided but NEVER navigate automatically from data updates
+    // Update data if provided
     if (data) {
-      // This explicitly prevents navigation when updating data
+      // But DO NOT automatically navigate from this update
       return false;
     }
+    
+    // This is an explicit navigation request (without data)
     
     // Validate current step
     if (currentStep === 1 && !analysisResult) {
@@ -123,8 +125,9 @@ export const useCampaignSteps = (
       return true; // Signal to create campaign
     }
 
-    // Only advance to the next step when explicitly called with no data
+    // All validations passed, proceed to next step
     setCurrentStep(currentStep + 1);
+    
     // Scroll to top when advancing to next step
     window.scrollTo({ top: 0, behavior: "smooth" });
     return false;
