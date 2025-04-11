@@ -59,7 +59,7 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
     } else if (onUpdateAd) {
       onUpdateAd({
         ...ad,
-        path1: value // Changed from path to path1
+        path1: value
       });
     }
   };
@@ -136,7 +136,6 @@ const GoogleAdDetails: React.FC<GoogleAdDetailsProps> = ({
         {isEditing ? (
           <div>
             <Label htmlFor="path" className="text-xs font-normal text-gray-500 mb-1">
-              {/* Path length indicator with path1 instead of path */}
               Path ({ad.path1?.length || 0}/15 characters)
             </Label>
             <Input
