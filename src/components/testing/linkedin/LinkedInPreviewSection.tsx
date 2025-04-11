@@ -29,7 +29,6 @@ const LinkedInPreviewSection: React.FC<LinkedInPreviewSectionProps> = ({
             isGeneratingImage={isGenerating}
             onGenerateImage={onGenerateImage}
             previewType="feed"
-            deviceView="desktop"
           />
         </div>
         <div className="mt-4 text-xs text-gray-500">

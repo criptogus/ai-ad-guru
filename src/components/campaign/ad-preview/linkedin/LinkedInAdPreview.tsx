@@ -87,7 +87,7 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
       
       <div className="ad-cta-container px-4 py-3 border-b border-gray-200">
         <Button 
-          variant="primary" 
+          variant="default" 
           className="w-full rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white"
         >
           {ad.description || "Learn More"}

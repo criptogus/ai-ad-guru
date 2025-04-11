@@ -190,7 +190,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       
       <div className="ad-cta-container px-4 pb-4">
         <Button 
-          variant="primary" 
+          variant="default" 
           className="w-full rounded-md bg-[#0095f6] text-white hover:bg-[#0081d6]"
         >
           {ad.description || "Shop Now"}
