@@ -2,8 +2,9 @@
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import LinkedInImageDisplay from "./LinkedInImageDisplay";
-import { useFormContext } from "react-hook-form";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Heart, MessageCircle, Share2, Send } from "lucide-react";
 
 interface LinkedInAdPreviewProps {
   ad: MetaAd;
@@ -11,9 +12,9 @@ interface LinkedInAdPreviewProps {
   isGeneratingImage?: boolean;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
-  previewType?: "feed" | "spotlight" | "sidebar" | "message";
-  deviceView?: "mobile" | "desktop";
-  imageFormat?: "square" | "landscape";
+  previewType?: "feed" | "message" | "sidebar" | "spotlight";
+  imageFormat?: "landscape" | "square";
+  className?: string;
 }
 
 const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
@@ -23,77 +24,92 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({
   onGenerateImage,
   onUpdateAd,
   previewType = "feed",
-  deviceView = "desktop",
-  imageFormat = "square"
+  imageFormat = "landscape",
+  className
 }) => {
-  const formContext = useFormContext();
+  const companyName = analysisResult?.companyName || "Your Company";
   
-  // Determine which image format class to use
-  const getImageFormat = () => {
-    return imageFormat === "landscape" ? "aspect-video" : "aspect-square";
-  };
-
-  // Adjust layout based on preview type
-  const getPreviewLayout = () => {
-    switch (previewType) {
-      case "sidebar":
-        return "max-w-[300px] mx-auto";
-      case "message":
-        return "max-w-sm mx-auto";
-      case "spotlight":
-        return "max-w-md mx-auto";
-      case "feed":
-      default:
-        return deviceView === "mobile" ? "max-w-sm mx-auto" : "w-full";
-    }
-  };
-
   return (
-    <div className={`linkedin-preview bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden ${getPreviewLayout()}`}>
-      <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center gap-2">
-        <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 font-semibold">
-          {analysisResult?.companyName?.substring(0, 1) || "C"}
+    <div className={cn("linkedin-ad max-w-[552px] bg-white rounded-lg border border-gray-200 shadow-sm font-sans", className)}>
+      <div className="ad-header p-3 flex justify-between items-center border-b border-gray-200">
+        <div className="profile-info flex items-center">
+          <div className="profile-image w-12 h-12 rounded-full bg-[#0a66c2] mr-3"></div>
+          <div>
+            <div className="company-name text-sm font-semibold text-gray-900">{companyName}</div>
+            <div className="post-meta text-xs text-gray-500">
+              Promoted · <span className="follow-button text-[#0a66c2] font-semibold cursor-pointer">Follow</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <div className="font-medium text-sm">{analysisResult?.companyName || "Company Name"}</div>
-          <div className="text-gray-500 dark:text-gray-400 text-xs">Sponsored · LinkedIn</div>
+        <div className="action-menu text-xl text-gray-500 cursor-pointer">···</div>
+      </div>
+      
+      <div className="ad-content p-4">
+        <div className="ad-text text-sm text-gray-900 mb-3 leading-snug">
+          {ad.primaryText || "Transform your daily routine with our innovative solution. Designed for maximum efficiency and built to last."}
+        </div>
+        
+        <div className="ad-media -mx-4 mb-2">
+          {ad.imageUrl ? (
+            <img 
+              src={ad.imageUrl} 
+              alt="LinkedIn ad"
+              className={cn(
+                "w-full", 
+                imageFormat === "landscape" ? "aspect-[1200/627]" : "aspect-square"
+              )}
+            />
+          ) : (
+            <div 
+              className={cn(
+                "bg-gray-100 flex items-center justify-center",
+                imageFormat === "landscape" ? "aspect-[1200/627]" : "aspect-square"
+              )}
+            >
+              {isGeneratingImage ? (
+                <div className="text-sm text-gray-500">Generating image...</div>
+              ) : (
+                <div className="text-sm text-gray-500">No image available</div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        <div className="ad-social-proof flex justify-between py-2 text-xs text-gray-500 border-b border-gray-200">
+          <div className="reactions flex items-center">
+            <span className="reaction-icon mr-1">👍</span>
+            <span className="reaction-icon mr-1">❤️</span>
+            <span className="reaction-count">42</span>
+          </div>
+          <div className="comments-count">8 comments</div>
         </div>
       </div>
       
-      <div className="p-3">
-        <p className="text-sm mb-3">{ad.primaryText || "Ad primary text will appear here."}</p>
+      <div className="ad-cta-container px-4 py-3 border-b border-gray-200">
+        <Button 
+          variant="primary" 
+          className="w-full rounded-full bg-[#0a66c2] hover:bg-[#004182] text-white"
+        >
+          {ad.description || "Learn More"}
+        </Button>
       </div>
       
-      <LinkedInImageDisplay
-        ad={ad}
-        isGeneratingImage={isGeneratingImage}
-        onGenerateImage={onGenerateImage}
-        format={imageFormat}
-      />
-      
-      <div className="p-3 border-t border-gray-200 dark:border-gray-800">
-        <h3 className="font-medium text-sm mb-1">{ad.headline || "Ad headline will appear here"}</h3>
-        <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
-          {ad.description || "Call to action"} · {analysisResult?.companyName || "Company Name"}
+      <div className="ad-engagement flex justify-between px-3 py-1">
+        <div className="engagement-action flex items-center p-2 text-gray-500 text-sm font-medium cursor-pointer">
+          <Heart className="mr-1.5 h-5 w-5" />
+          <span>Like</span>
         </div>
-      </div>
-      
-      <div className="p-3 pt-0 flex justify-around border-t border-gray-100 dark:border-gray-800">
-        <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-          <span className="i-lucide-thumbs-up h-4 w-4"></span>
-          Like
+        <div className="engagement-action flex items-center p-2 text-gray-500 text-sm font-medium cursor-pointer">
+          <MessageCircle className="mr-1.5 h-5 w-5" />
+          <span>Comment</span>
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-          <span className="i-lucide-message-circle h-4 w-4"></span>
-          Comment
+        <div className="engagement-action flex items-center p-2 text-gray-500 text-sm font-medium cursor-pointer">
+          <Share2 className="mr-1.5 h-5 w-5" />
+          <span>Share</span>
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-          <span className="i-lucide-repeat h-4 w-4"></span>
-          Share
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-          <span className="i-lucide-send h-4 w-4"></span>
-          Send
+        <div className="engagement-action flex items-center p-2 text-gray-500 text-sm font-medium cursor-pointer">
+          <Send className="mr-1.5 h-5 w-5" />
+          <span>Send</span>
         </div>
       </div>
     </div>

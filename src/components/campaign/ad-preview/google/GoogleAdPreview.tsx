@@ -2,13 +2,19 @@
 import React from "react";
 import { GoogleAd } from "@/hooks/adGeneration";
 import { ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface GoogleAdPreviewProps {
   ad: GoogleAd;
   domain?: string;
+  className?: string;
 }
 
-const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example.com" }) => {
+const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ 
+  ad, 
+  domain = "example.com",
+  className
+}) => {
   // Format display URL
   const displayUrl = ad.displayPath || `${domain}/${ad.path1 || ''}${ad.path2 ? '/' + ad.path2 : ''}`;
   
@@ -67,12 +73,13 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({ ad, domain = "example
   };
 
   return (
-    <div className="max-w-xl font-sans text-left p-3 border rounded-md">
+    <div className={cn("max-w-xl font-sans text-left p-3 bg-white border rounded-md shadow-sm", className)}>
       {/* Ad Badge & URL */}
       <div className="flex items-center mb-1">
         <span className="text-xs mr-2 px-1 rounded bg-[#ebebeb] text-[#5f6368]">Ad</span>
         <span className="text-[#202124] text-xs">
           <span className="text-[#1e8e3e]">{displayUrl}</span>
+          <span className="text-[#5f6368] ml-1">· Ad</span>
         </span>
       </div>
       

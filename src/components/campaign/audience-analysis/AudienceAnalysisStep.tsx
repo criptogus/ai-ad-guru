@@ -12,7 +12,7 @@ import { FormProvider, useForm } from "react-hook-form";
 interface AudienceAnalysisStepProps {
   analysisResult: WebsiteAnalysisResult | null;
   onBack: () => void;
-  onNext: () => void;
+  onNext: (data?: any) => void;
 }
 
 const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
@@ -55,7 +55,20 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
 
   const handleNextClick = () => {
     console.log("AudienceAnalysisStep: Next button clicked");
-    onNext();
+    
+    // Pass the audience analysis data to the next step
+    if (audienceResult) {
+      const audienceData = {
+        audienceAnalysis: audienceResult,
+        audienceCacheInfo: cacheInfo
+      };
+      
+      // Call onNext with the data 
+      onNext(audienceData);
+    } else {
+      // If no analysis result yet, just proceed to next step
+      onNext();
+    }
   };
 
   return (
