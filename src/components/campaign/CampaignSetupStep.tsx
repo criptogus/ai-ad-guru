@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
@@ -121,7 +120,6 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
   const handleAIFill = async () => {
     if (!analysisResult) return;
     
-    // Determine active platform from campaign data, default to "google"
     const platform = campaignData.platforms && campaignData.platforms.length > 0 
       ? campaignData.platforms[0] 
       : "google";
@@ -129,7 +127,6 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
     const setupData = await generateCampaignSetup(analysisResult, platform);
     
     if (setupData) {
-      // Convert startDate and endDate strings to Date objects
       const formattedData = {
         ...setupData,
         startDate: setupData.startDate ? new Date(setupData.startDate) : null,
@@ -138,13 +135,29 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
       
       handleUpdateCampaignData(formattedData);
       
-      // Mark all fields as touched to trigger validation
       const newTouchedFields: Record<string, boolean> = {};
       Object.values(requiredFields).flat().forEach(field => {
         newTouchedFields[field] = true;
       });
       setTouchedFields(prev => ({ ...prev, ...newTouchedFields }));
     }
+  };
+
+  const handleFormSubmit = () => {
+    console.log("CampaignSetupStep: Form submitted, validation status:", isFormValid);
+    
+    if (!isFormValid) {
+      const newTouchedFields: Record<string, boolean> = {};
+      Object.values(requiredFields).flat().forEach(field => {
+        newTouchedFields[field] = true;
+      });
+      setTouchedFields(prev => ({ ...prev, ...newTouchedFields }));
+      
+      return;
+    }
+    
+    console.log("CampaignSetupStep: Moving to next step");
+    onNext();
   };
 
   const isFormValid = isValid.basic && isValid.audience && isValid.schedule;
@@ -232,7 +245,7 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
             Back
           </Button>
           <Button 
-            onClick={onNext} 
+            onClick={handleFormSubmit}
             disabled={!isFormValid}
           >
             Next Step

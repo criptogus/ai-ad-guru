@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
@@ -15,6 +14,7 @@ import { useNavigationHandlers } from "@/hooks/campaign/useNavigationHandlers";
 import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
+import { toast } from "sonner";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -34,6 +34,11 @@ const CampaignContent: React.FC = () => {
     setMicrosoftAds,
     setAudienceAnalysisResult
   } = useCampaign();
+
+  useEffect(() => {
+    console.log("CampaignContent: Current step is", currentStep);
+    console.log("CampaignContent: Campaign data", campaignData);
+  }, [currentStep, campaignData]);
 
   const {
     analyzeWebsite,
@@ -105,9 +110,8 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Use the imageGenerationHandler hook to handle image generation
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
-    generateAdImage, // This function should have the correct signature in useAdGeneration hook
+    generateAdImage,
     metaAds,
     linkedInAds,
     setMetaAds,
@@ -134,8 +138,18 @@ const CampaignContent: React.FC = () => {
   );
 
   const handleNextWrapper = (data?: any) => {
+    console.log("CampaignContent: handleNextWrapper called with data", data);
+    
     setAutoAdvance(false);
-    return handleNext(data);
+    
+    if (data) {
+      setCampaignData(prev => ({ ...prev, ...data }));
+    }
+    
+    if (!data) {
+      toast.success(`Moving to step ${currentStep + 1}`);
+      handleNext();
+    }
   };
 
   const { getStepContent } = useCampaignStepRenderer({

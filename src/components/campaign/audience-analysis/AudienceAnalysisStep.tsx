@@ -53,6 +53,11 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
     }
   }, [analysisResult, audienceResult, isAnalyzing]);
 
+  const handleNextClick = () => {
+    console.log("AudienceAnalysisStep: Next button clicked");
+    onNext();
+  };
+
   return (
     <FormProvider {...methods}>
       <Card className="shadow-md border border-border">
@@ -88,7 +93,7 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
               Step 4 of 7
             </span>
             
-            <Button onClick={onNext} className="flex items-center" disabled={!audienceResult}>
+            <Button onClick={handleNextClick} className="flex items-center" disabled={!audienceResult}>
               Next Step
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>

@@ -68,6 +68,9 @@ const useCampaignStepRenderer = ({
   cacheInfo,
 }: UseCampaignStepRendererProps) => {
   const getStepContent = () => {
+    // Add logging to debug the current step
+    console.log("Rendering step:", currentStep, "Campaign data:", campaignData);
+    
     switch (currentStep) {
       case 1:
         return (
@@ -114,7 +117,7 @@ const useCampaignStepRenderer = ({
           <CampaignSetupStep
             analysisResult={analysisResult}
             campaignData={campaignData}
-            onUpdateCampaignData={(setupData) => handleNextWrapper(setupData)}
+            onUpdateCampaignData={(setupData) => setCampaignData(prev => ({ ...prev, ...setupData }))}
             onBack={handleBack}
             onNext={() => handleNextWrapper()}
           />
