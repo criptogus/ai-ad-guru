@@ -23,6 +23,22 @@ export const useImageGenerationHandler = ({
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
+  // Helper to validate image URL
+  const isValidImageUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Helper to get a reliable fallback image URL
+  const getFallbackImageUrl = (reason: string): string => {
+    // Use Via Placeholder as it's generally more reliable
+    return `https://via.placeholder.com/600x600/f8f9fa/dc3545?text=${encodeURIComponent(reason)}`;
+  };
+
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     try {
       setLoadingImageIndex(index);
@@ -73,19 +89,8 @@ export const useImageGenerationHandler = ({
       console.log("URL final da imagem:", imageUrl);
 
       // Check if the image URL is valid
-      if (imageUrl) {
-        // Verify the URL is valid
-        try {
-          new URL(imageUrl);
-        } catch (e) {
-          console.error("URL de imagem inválida:", imageUrl);
-          imageUrl = `https://placehold.co/600x600/eeeeee/999999?text=Erro+URL+Inválida`;
-          toast.error("URL de imagem inválida", {
-            description: "A URL da imagem gerada é inválida"
-          });
-        }
-
-        // Update the appropriate ad array if we got a valid URL
+      if (imageUrl && isValidImageUrl(imageUrl)) {
+        // Image URL is valid, update the ad
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
@@ -104,8 +109,11 @@ export const useImageGenerationHandler = ({
           });
         }
       } else {
-        // Use a fallback image if no valid URL is returned
-        const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Imagem+Não+Gerada`;
+        // Log the issue for debugging
+        console.error("URL de imagem inválida ou ausente:", imageUrl);
+        
+        // Use a fallback image
+        const fallbackUrl = getFallbackImageUrl("Imagem+Não+Gerada");
         
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
@@ -125,7 +133,7 @@ export const useImageGenerationHandler = ({
       console.error("Erro ao gerar imagem:", error);
       
       // Use a fallback image in case of error
-      const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Erro+na+Geração`;
+      const fallbackUrl = getFallbackImageUrl("Erro+na+Geração");
       
       if (metaAds[index]) {
         const updatedAds = [...metaAds];

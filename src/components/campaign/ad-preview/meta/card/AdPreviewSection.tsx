@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Image, RotateCw, Edit, Eye } from "lucide-react";
 import { PreviewSectionProps } from "./types";
 import MetaImagePromptGallery from "../MetaImagePromptGallery";
-import { InstagramPreview } from "@/components/campaign/ad-preview/meta";
+import { InstagramPreview } from "@/components/campaign/ad-preview/meta/instagram-preview";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AdPreviewSection: React.FC<PreviewSectionProps> = ({
@@ -72,8 +72,10 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
           companyName={companyName}
           index={index}
           loadingImageIndex={loadingImageIndex}
+          isLoading={isLoading}
           onGenerateImage={onGenerateImage}
           onUpdateAd={onUpdateAd}
+          viewMode={currentViewMode}
         />
       </div>
 
@@ -122,7 +124,7 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
             className="w-full"
           >
             <RotateCw className="h-4 w-4 mr-2" />
-            Regenerate Image
+            Regenerar Imagem
           </Button>
         )}
       </div>

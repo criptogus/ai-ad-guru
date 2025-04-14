@@ -34,10 +34,24 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
 
-  // Improved error handling with a better fallback image
+  // Enhanced error handling with multiple fallback options
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error("Erro ao carregar imagem:", ad.imageUrl);
-    e.currentTarget.src = "https://placehold.co/400x400/eeeeee/999999?text=Imagem+Indisponível";
+    
+    try {
+      // Try a more reliable placeholder service with better compatibility
+      e.currentTarget.src = "https://via.placeholder.com/600x600/f0f0f0/ff0000?text=Imagem+Indisponível";
+      
+      // Mark the image as failed for potential re-fetch logic
+      e.currentTarget.setAttribute('data-load-failed', 'true');
+    } catch (err) {
+      console.error("Erro no fallback da imagem:", err);
+      // Ultimate fallback - simple color
+      e.currentTarget.style.backgroundColor = "#f0f0f0";
+      e.currentTarget.style.display = "flex";
+      e.currentTarget.style.alignItems = "center";
+      e.currentTarget.style.justifyContent = "center";
+    }
   };
 
   const imageContainerClasses = cn(
@@ -69,6 +83,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
             className="w-full h-full object-cover"
             key={`ad-image-${imageKey}-${ad.imageUrl}`}
             onError={handleImageError}
+            loading="eager"
           />
           
           {onGenerateImage && (

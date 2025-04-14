@@ -27,10 +27,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     }
   };
 
-  // Improved error handling for broken images
+  // Enhanced error handling for broken images with robust fallback
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error("Falha ao carregar imagem:", imageUrl);
-    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Falha+ao+Carregar";
+    // Use a more reliable placeholder service with a clear error message
+    e.currentTarget.src = "https://via.placeholder.com/600x600/f0f0f0/ff0000?text=Imagem+Indisponível";
+    
+    // Add a data attribute to track that this image failed to load
+    e.currentTarget.setAttribute('data-load-failed', 'true');
   };
 
   // Apply different aspect ratios based on format
@@ -47,6 +51,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             alt={alt}
             className="w-full h-full object-cover"
             onError={handleImageError}
+            loading="eager"
           />
           {onGenerateImage && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">

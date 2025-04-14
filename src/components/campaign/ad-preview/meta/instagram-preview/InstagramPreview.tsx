@@ -72,8 +72,10 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         imageUrl: localUrl
       });
 
+      toast.success("Imagem carregada com sucesso");
     } catch (error) {
       console.error("Error uploading image:", error);
+      toast.error("Falha ao carregar imagem");
     } finally {
       setIsUploading(false);
       // Reset the file input
@@ -94,7 +96,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     
     // Generate new image based on the template
     if (onGenerateImage) {
-      toast.info(`Generating image using "${template.name}" template`);
+      toast.info(`Gerando imagem com template "${template.name}"`);
       onGenerateImage();
     }
   };
@@ -132,7 +134,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <ImageUploadHandler 
         onChange={handleFileChange}
       />
-      {fileInputRef && <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />}
+      {fileInputRef && <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept="image/*" />}
     </div>
   );
 };
