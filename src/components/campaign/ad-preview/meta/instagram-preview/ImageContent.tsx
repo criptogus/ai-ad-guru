@@ -34,9 +34,10 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
 
+  // Improved error handling with a better fallback image
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error("Erro ao carregar imagem:", ad.imageUrl);
-    e.currentTarget.src = "https://placehold.co/400x400/eeeeee/999999?text=Erro+na+Imagem";
+    e.currentTarget.src = "https://placehold.co/400x400/eeeeee/999999?text=Imagem+Indisponível";
   };
 
   const imageContainerClasses = cn(

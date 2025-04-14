@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration/types";
+import { MetaAd } from "@/hooks/adGeneration";
 import { CampaignData } from "@/contexts/CampaignContext";
 import { toast } from "sonner";
 
@@ -27,7 +27,7 @@ export const useImageGenerationHandler = ({
     try {
       setLoadingImageIndex(index);
       
-      // Extrair texto do prompt da imagem
+      // Extract prompt text
       const promptText = ad.imagePrompt || ad.description || "";
       if (!promptText.trim()) {
         toast.error("Prompt de imagem ausente", {
@@ -36,20 +36,20 @@ export const useImageGenerationHandler = ({
         return;
       }
       
-      // Construir um prompt abrangente com contexto
+      // Build a comprehensive prompt with context
       const promptWithContext = `Create an Instagram ad for ${campaignData.name || 'a brand'}. ${promptText}`;
       
-      // Adicionar contexto de formato se existir
+      // Add format context if it exists
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       
-      // Incluir detalhes da marca e preferências de estilo
+      // Include brand details and style preferences
       const brandContext = `. Brand colors and style: ${campaignData.brandTone || 'professional'}`;
       
       const finalPrompt = promptWithContext + formatContext + brandContext;
       
       console.log("Gerando imagem com prompt:", finalPrompt);
       
-      // Passar o ad e campaignData como additionalInfo
+      // Pass the ad and campaignData as additionalInfo
       const result = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
@@ -61,7 +61,7 @@ export const useImageGenerationHandler = ({
       
       console.log("Resultado da geração de imagem:", result);
       
-      // Extrair a URL da imagem do resultado, lidando com diferentes tipos de retorno
+      // Extract the image URL from the result, handling different return types
       let imageUrl: string | null = null;
       
       if (typeof result === 'string') {
@@ -72,9 +72,9 @@ export const useImageGenerationHandler = ({
 
       console.log("URL final da imagem:", imageUrl);
 
-      // Verificar se a URL da imagem é válida
+      // Check if the image URL is valid
       if (imageUrl) {
-        // Verificar se a URL é válida
+        // Verify the URL is valid
         try {
           new URL(imageUrl);
         } catch (e) {
@@ -85,7 +85,7 @@ export const useImageGenerationHandler = ({
           });
         }
 
-        // Atualizar o array de anúncios apropriado se obtivemos uma URL válida
+        // Update the appropriate ad array if we got a valid URL
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
@@ -104,7 +104,7 @@ export const useImageGenerationHandler = ({
           });
         }
       } else {
-        // Usar uma imagem de fallback se nenhuma URL válida for retornada
+        // Use a fallback image if no valid URL is returned
         const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Imagem+Não+Gerada`;
         
         if (metaAds[index]) {
@@ -124,7 +124,7 @@ export const useImageGenerationHandler = ({
     } catch (error) {
       console.error("Erro ao gerar imagem:", error);
       
-      // Usar uma imagem de fallback em caso de erro
+      // Use a fallback image in case of error
       const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Erro+na+Geração`;
       
       if (metaAds[index]) {

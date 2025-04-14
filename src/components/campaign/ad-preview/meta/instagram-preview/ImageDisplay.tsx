@@ -27,13 +27,13 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     }
   };
 
-  // Tratamento para imagens quebradas
+  // Improved error handling for broken images
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error("Falha ao carregar imagem:", imageUrl);
-    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Erro+ao+Carregar+Imagem";
+    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Falha+ao+Carregar";
   };
 
-  // Aplicar diferentes proporções baseadas no formato
+  // Apply different aspect ratios based on format
   const aspectRatioClass = format === "feed" 
     ? "aspect-square" 
     : "aspect-[9/16]";
