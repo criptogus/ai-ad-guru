@@ -22,18 +22,18 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 }) => {
   const handleGenerateImage = async () => {
     if (onGenerateImage) {
-      console.log("Triggering image generation with prompt:", imagePrompt);
+      console.log("Iniciando geração de imagem com prompt:", imagePrompt);
       await onGenerateImage();
     }
   };
 
-  // Error handling for broken images
+  // Tratamento para imagens quebradas
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Failed to load image:", imageUrl);
-    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Image+Load+Failed";
+    console.error("Falha ao carregar imagem:", imageUrl);
+    e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Erro+ao+Carregar+Imagem";
   };
 
-  // Apply different aspect ratios based on format
+  // Aplicar diferentes proporções baseadas no formato
   const aspectRatioClass = format === "feed" 
     ? "aspect-square" 
     : "aspect-[9/16]";
@@ -60,12 +60,12 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
+                    Gerando...
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Regenerate
+                    Regenerar
                   </>
                 )}
               </Button>
@@ -78,14 +78,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             <>
               <Loader2 className="w-8 h-8 animate-spin mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center">
-                Generating image...
+                Gerando imagem...
               </p>
             </>
           ) : (
             <>
               <Image className="w-12 h-12 mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center mb-4">
-                {imagePrompt ? "Click to generate image" : "No image available"}
+                {imagePrompt ? "Clique para gerar imagem" : "Nenhuma imagem disponível"}
               </p>
               {imagePrompt && onGenerateImage && (
                 <Button
@@ -93,7 +93,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                   size="sm"
                   onClick={handleGenerateImage}
                 >
-                  Generate Image
+                  Gerar Imagem
                 </Button>
               )}
             </>

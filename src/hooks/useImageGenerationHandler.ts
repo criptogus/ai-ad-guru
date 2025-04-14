@@ -27,29 +27,29 @@ export const useImageGenerationHandler = ({
     try {
       setLoadingImageIndex(index);
       
-      // Extract prompt text from the ad
+      // Extrair texto do prompt da imagem
       const promptText = ad.imagePrompt || ad.description || "";
       if (!promptText.trim()) {
-        toast.error("Missing image prompt", {
-          description: "Please provide an image prompt or description to generate an image"
+        toast.error("Prompt de imagem ausente", {
+          description: "Por favor, forneça um prompt de imagem ou descrição para gerar a imagem"
         });
         return;
       }
       
-      // Build a comprehensive prompt with context
+      // Construir um prompt abrangente com contexto
       const promptWithContext = `Create an Instagram ad for ${campaignData.name || 'a brand'}. ${promptText}`;
       
-      // Add format context if it exists
+      // Adicionar contexto de formato se existir
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       
-      // Include brand details and styling preferences
+      // Incluir detalhes da marca e preferências de estilo
       const brandContext = `. Brand colors and style: ${campaignData.brandTone || 'professional'}`;
       
       const finalPrompt = promptWithContext + formatContext + brandContext;
       
-      console.log("Generating image with prompt:", finalPrompt);
+      console.log("Gerando imagem com prompt:", finalPrompt);
       
-      // Pass the ad and campaignData as additionalInfo
+      // Passar o ad e campaignData como additionalInfo
       const result = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
@@ -59,9 +59,9 @@ export const useImageGenerationHandler = ({
         adType: "social_media"
       });
       
-      console.log("Image generation result:", result);
+      console.log("Resultado da geração de imagem:", result);
       
-      // Extract the image URL from the result, handling different return types
+      // Extrair a URL da imagem do resultado, lidando com diferentes tipos de retorno
       let imageUrl: string | null = null;
       
       if (typeof result === 'string') {
@@ -70,36 +70,75 @@ export const useImageGenerationHandler = ({
         imageUrl = result.imageUrl || null;
       }
 
-      console.log("Final image URL:", imageUrl);
+      console.log("URL final da imagem:", imageUrl);
 
-      // Update the ad array if we got a valid URL
+      // Verificar se a URL da imagem é válida
       if (imageUrl) {
+        // Verificar se a URL é válida
+        try {
+          new URL(imageUrl);
+        } catch (e) {
+          console.error("URL de imagem inválida:", imageUrl);
+          imageUrl = `https://placehold.co/600x600/eeeeee/999999?text=Erro+URL+Inválida`;
+          toast.error("URL de imagem inválida", {
+            description: "A URL da imagem gerada é inválida"
+          });
+        }
+
+        // Atualizar o array de anúncios apropriado se obtivemos uma URL válida
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
           
-          toast.success("Instagram image generated successfully", {
-            description: "Your ad image has been updated"
+          toast.success("Imagem do Instagram gerada com sucesso", {
+            description: "A imagem do seu anúncio foi atualizada"
           });
         } else if (linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
           
-          toast.success("LinkedIn image generated successfully", {
-            description: "Your ad image has been updated"
+          toast.success("Imagem do LinkedIn gerada com sucesso", {
+            description: "A imagem do seu anúncio foi atualizada"
           });
         }
       } else {
-        toast.error("Failed to generate image", {
-          description: "The image generation service did not return a valid URL"
+        // Usar uma imagem de fallback se nenhuma URL válida for retornada
+        const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Imagem+Não+Gerada`;
+        
+        if (metaAds[index]) {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl: fallbackUrl };
+          setMetaAds(updatedAds);
+        } else if (linkedInAds[index]) {
+          const updatedAds = [...linkedInAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl: fallbackUrl };
+          setLinkedInAds(updatedAds);
+        }
+        
+        toast.error("Falha ao gerar imagem", {
+          description: "O serviço de geração de imagem não retornou uma URL válida"
         });
       }
     } catch (error) {
-      console.error("Error generating image:", error);
-      toast.error("Error generating image", {
-        description: error instanceof Error ? error.message : "An unknown error occurred"
+      console.error("Erro ao gerar imagem:", error);
+      
+      // Usar uma imagem de fallback em caso de erro
+      const fallbackUrl = `https://placehold.co/600x600/eeeeee/999999?text=Erro+na+Geração`;
+      
+      if (metaAds[index]) {
+        const updatedAds = [...metaAds];
+        updatedAds[index] = { ...updatedAds[index], imageUrl: fallbackUrl };
+        setMetaAds(updatedAds);
+      } else if (linkedInAds[index]) {
+        const updatedAds = [...linkedInAds];
+        updatedAds[index] = { ...updatedAds[index], imageUrl: fallbackUrl };
+        setLinkedInAds(updatedAds);
+      }
+      
+      toast.error("Erro ao gerar imagem", {
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido"
       });
     } finally {
       setLoadingImageIndex(null);
