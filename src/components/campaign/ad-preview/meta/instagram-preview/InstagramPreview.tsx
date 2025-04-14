@@ -1,95 +1,136 @@
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { cn } from "@/lib/utils";
-import { HeartIcon, MessageCircle, Share2Icon, Bookmark } from "lucide-react";
-import ImageDisplay from "./ImageDisplay";
+import { AdTemplate } from "../template-gallery/TemplateGallery";
+import InstagramPreviewHeader from "./InstagramPreviewHeader";
+import ImageContent from "./ImageContent";
+import TextContent from "./TextContent";
+import ActionBar from "./ActionBar";
+import InstagramPreviewFooter from "./InstagramPreviewFooter";
+import ImageUploadHandler from "./ImageUploadHandler";
+import { toast } from "sonner";
+import { normalizeMetaAd } from "@/lib/utils";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
   index?: number;
-  isLoading?: boolean;
+  loadingImageIndex?: number | null;
   onGenerateImage?: () => Promise<void>;
-  format?: "feed" | "story" | "reel";
-  className?: string;
+  onUpdateAd?: (updatedAd: MetaAd) => void;
+  viewMode?: "feed" | "story" | "reel";
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName,
   index = 0,
-  isLoading = false,
+  loadingImageIndex = null,
   onGenerateImage,
-  format = "feed",
-  className
+  onUpdateAd,
+  viewMode = "feed"
 }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isLoading = loadingImageIndex === index;
+  
+  // Normalize the ad to ensure it has format and hashtags properties
+  const normalizedAd = normalizeMetaAd(ad);
+
+  // Ensure format is one of the allowed values
+  const normalizeFormat = (format?: string): "feed" | "story" | "reel" => {
+    if (format === "story" || format === "reel") {
+      return format;
+    }
+    // Default to "feed" for any other value
+    return "feed";
+  };
+
+  // Trigger file input dialog
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle file upload
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !onUpdateAd) return;
+
+    try {
+      setIsUploading(true);
+      
+      // Create a local URL for preview
+      const localUrl = URL.createObjectURL(file);
+      
+      // Update the ad with the new image URL
+      onUpdateAd({
+        ...normalizedAd,
+        imageUrl: localUrl
+      });
+
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
+  const handleTemplateSelect = (template: AdTemplate) => {
+    if (!onUpdateAd) return;
+    
+    // Update the ad with the template information
+    onUpdateAd({
+      ...normalizedAd,
+      imagePrompt: template.prompt
+    });
+    
+    // Generate new image based on the template
+    if (onGenerateImage) {
+      toast.info(`Generating image using "${template.name}" template`);
+      onGenerateImage();
+    }
+  };
+
+  // Determine which format to use (from props, ad, or default)
+  const format = viewMode 
+    ? viewMode 
+    : normalizeFormat(normalizedAd.format);
+
   return (
-    <div className={cn("bg-white border rounded-lg overflow-hidden", className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <span className="text-gray-500 text-sm font-medium">
-              {companyName.charAt(0)}
-            </span>
-          </div>
-          <div>
-            <div className="text-sm font-semibold">{companyName}</div>
-            <div className="text-xs text-muted-foreground">Sponsored</div>
-          </div>
-        </div>
-        <button className="text-lg">•••</button>
-      </div>
-
-      {/* Image */}
-      <div className={cn(
-        "relative",
-        format === "feed" ? "aspect-square" : "aspect-[9/16]"
-      )}>
-        <ImageDisplay 
-          imageUrl={ad.imageUrl}
-          alt={ad.headline || "Instagram ad"}
-          isLoading={isLoading}
-          onGenerateImage={onGenerateImage}
-          imagePrompt={ad.imagePrompt}
-          format={format}
+    <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">
+      <InstagramPreviewHeader companyName={companyName} />
+      
+      <ImageContent 
+        ad={normalizedAd}
+        imageKey={index}
+        isLoading={isLoading}
+        isUploading={isUploading}
+        onGenerateImage={onGenerateImage}
+        triggerFileUpload={triggerFileUpload}
+        format={format}
+        onTemplateSelect={handleTemplateSelect}
+      />
+      
+      <div className="p-3">
+        <ActionBar />
+        <TextContent 
+          headline={normalizedAd.headline}
+          primaryText={normalizedAd.primaryText}
+          companyName={companyName}
         />
+        <InstagramPreviewFooter ad={normalizedAd} companyName={companyName} />
       </div>
-
-      {/* Content */}
-      <div className="p-3 border-t">
-        {/* Action buttons */}
-        <div className="flex justify-between mb-2">
-          <div className="flex space-x-4">
-            <button className="text-foreground hover:text-muted-foreground transition-colors">
-              <HeartIcon className="h-6 w-6" />
-            </button>
-            <button className="text-foreground hover:text-muted-foreground transition-colors">
-              <MessageCircle className="h-6 w-6" />
-            </button>
-            <button className="text-foreground hover:text-muted-foreground transition-colors">
-              <Share2Icon className="h-6 w-6" />
-            </button>
-          </div>
-          <button className="text-foreground hover:text-muted-foreground transition-colors">
-            <Bookmark className="h-6 w-6" />
-          </button>
-        </div>
-
-        {/* Caption */}
-        <div className="text-sm">
-          <span className="font-semibold mr-1">{companyName}</span>
-          <span>{ad.primaryText}</span>
-        </div>
-
-        {/* CTA Button */}
-        {ad.description && (
-          <button className="w-full mt-3 bg-blue-500 text-white py-2 px-4 rounded text-sm font-semibold hover:bg-blue-600 transition-colors">
-            {ad.description}
-          </button>
-        )}
-      </div>
+      
+      <ImageUploadHandler 
+        onChange={handleFileChange}
+      />
+      {fileInputRef && <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />}
     </div>
   );
 };

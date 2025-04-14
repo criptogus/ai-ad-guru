@@ -126,8 +126,7 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
               index={index}
               isLoading={isLoading}
               onGenerateImage={onGenerateImage}
-              format={format}
-              className="shadow-sm"
+              viewMode={format}
             />
           </div>
 
@@ -137,6 +136,10 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
               ad={isEditing ? editedAd : ad}
               isEditing={isEditing}
               onUpdateAd={handleUpdateAd}
+              onEdit={onEdit}
+              onSave={onSave}
+              onCancel={onCancel}
+              onCopy={handleCopy}
             />
           </div>
         </div>

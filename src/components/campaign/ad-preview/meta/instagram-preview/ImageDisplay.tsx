@@ -9,6 +9,7 @@ interface ImageDisplayProps {
   isLoading?: boolean;
   onGenerateImage?: () => Promise<void>;
   imagePrompt?: string;
+  format?: "feed" | "story" | "reel";
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
@@ -16,7 +17,8 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   alt = "Instagram ad image",
   isLoading = false,
   onGenerateImage,
-  imagePrompt
+  imagePrompt,
+  format = "feed"
 }) => {
   const handleGenerateImage = async () => {
     if (onGenerateImage) {
@@ -31,8 +33,13 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     e.currentTarget.src = "https://placehold.co/600x600/eeeeee/999999?text=Image+Load+Failed";
   };
 
+  // Apply different aspect ratios based on format
+  const aspectRatioClass = format === "feed" 
+    ? "aspect-square" 
+    : "aspect-[9/16]";
+
   return (
-    <div className="relative w-full aspect-square bg-muted/30">
+    <div className={`relative w-full ${aspectRatioClass} bg-muted/30`}>
       {imageUrl ? (
         <div className="relative w-full h-full">
           <img

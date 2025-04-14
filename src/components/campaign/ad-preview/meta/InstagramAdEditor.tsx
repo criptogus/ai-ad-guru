@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { Button } from "@/components/ui/button";
 import { FormField, FormControl } from "@/components/ui/form";
@@ -13,20 +13,20 @@ interface InstagramAdEditorProps {
   ad: MetaAd;
   onUpdateAd: (updatedAd: MetaAd) => void;
   isEditing: boolean;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-  onCopy: () => void;
+  onEdit?: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
+  onCopy?: () => void;
 }
 
 const InstagramAdEditor: React.FC<InstagramAdEditorProps> = ({
   ad,
   onUpdateAd,
   isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-  onCopy,
+  onEdit = () => {},
+  onSave = () => {},
+  onCancel = () => {},
+  onCopy = () => {},
 }) => {
   const handleTextChange = (field: keyof MetaAd, value: string) => {
     onUpdateAd({
