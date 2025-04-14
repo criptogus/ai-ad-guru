@@ -61,93 +61,97 @@ const GoogleAdEditor: React.FC<GoogleAdEditorProps> = ({
   return (
     <div className="space-y-6">
       {/* Preview Section at the top */}
-      <div className="bg-muted/30 rounded-lg p-4">
-        <h3 className="text-md font-medium mb-4">Ad Preview</h3>
+      <div className="bg-muted/30 rounded-lg p-4 border">
+        <h3 className="text-sm font-medium mb-4 text-muted-foreground">Ad Preview</h3>
         <div className="flex justify-center">
           <GoogleAdPreview ad={editedAd} domain={domain} />
         </div>
       </div>
       
-      {/* Final URL field */}
-      <div>
-        <Label htmlFor="finalUrl">Final URL</Label>
-        <Input
-          id="finalUrl"
-          value={editedAd.finalUrl || ""}
-          onChange={(e) => handleUrlChange(e.target.value)}
-          placeholder="https://example.com/landing-page"
-          className="mt-1"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          The full URL where people will go when they click your ad
-        </p>
-      </div>
-      
       {/* Editor Section below */}
-      <div className="border rounded-lg p-4">
-        <h3 className="text-md font-medium mb-4">Ad Details</h3>
+      <div className="border rounded-lg p-5">
+        <h3 className="text-sm font-medium mb-4 text-muted-foreground">Edit Ad Content</h3>
+        
+        {/* Final URL field */}
+        <div className="mb-6">
+          <Label htmlFor="finalUrl" className="text-sm font-medium">Final URL</Label>
+          <Input
+            id="finalUrl"
+            value={editedAd.finalUrl || ""}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            placeholder="https://example.com/landing-page"
+            className="mt-1.5"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            The full URL where people will go when they click your ad
+          </p>
+        </div>
         
         {/* Headlines Section */}
         <div className="space-y-4 mb-6">
           <h4 className="text-sm font-medium">Headlines</h4>
-          {(editedAd.headlines || []).map((headline, index) => (
-            <div key={`headline-${index}`}>
-              <Label htmlFor={`headline-${index}`} className="text-xs font-normal text-gray-500 mb-1">
-                Headline {index + 1} ({headline?.length || 0}/30 characters)
-              </Label>
-              <Input
-                id={`headline-${index}`}
-                value={headline || ""}
-                onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                maxLength={30}
-                className="mt-1"
-              />
-            </div>
-          ))}
+          <div className="grid gap-4 md:grid-cols-3">
+            {(editedAd.headlines || []).map((headline, index) => (
+              <div key={`headline-${index}`} className="space-y-1.5">
+                <Label htmlFor={`headline-${index}`} className="text-xs text-muted-foreground">
+                  Headline {index + 1} ({headline?.length || 0}/30)
+                </Label>
+                <Input
+                  id={`headline-${index}`}
+                  value={headline || ""}
+                  onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                  maxLength={30}
+                  className="h-9"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Write clear, compelling headlines. Avoid excessive separators (|).
+          </p>
         </div>
         
         {/* Descriptions Section */}
         <div className="space-y-4 mb-6">
           <h4 className="text-sm font-medium">Descriptions</h4>
-          {(editedAd.descriptions || []).map((description, index) => (
-            <div key={`description-${index}`}>
-              <Label htmlFor={`description-${index}`} className="text-xs font-normal text-gray-500 mb-1">
-                Description {index + 1} ({description?.length || 0}/90 characters)
-              </Label>
-              <Textarea
-                id={`description-${index}`}
-                value={description || ""}
-                onChange={(e) => handleDescriptionChange(index, e.target.value)}
-                maxLength={90}
-                className="mt-1"
-                rows={2}
-              />
-            </div>
-          ))}
+          <div className="grid gap-4 md:grid-cols-2">
+            {(editedAd.descriptions || []).map((description, index) => (
+              <div key={`description-${index}`} className="space-y-1.5">
+                <Label htmlFor={`description-${index}`} className="text-xs text-muted-foreground">
+                  Description {index + 1} ({description?.length || 0}/90)
+                </Label>
+                <Textarea
+                  id={`description-${index}`}
+                  value={description || ""}
+                  onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                  maxLength={90}
+                  className="min-h-[80px]"
+                  rows={3}
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Use clear, concise descriptions with a strong call to action.
+          </p>
         </div>
         
         {/* Path Section */}
-        <div className="space-y-2">
+        <div className="space-y-2 mb-4">
           <h4 className="text-sm font-medium">URL Path</h4>
-          <Label htmlFor="path" className="text-xs font-normal text-gray-500 mb-1">
-            Path ({editedAd.path1?.length || 0}/15 characters)
+          <Label htmlFor="path" className="text-xs text-muted-foreground">
+            Path ({editedAd.path1?.length || 0}/15)
           </Label>
           <Input
             id="path"
             value={editedAd.path1 || ""} 
             onChange={(e) => handlePathChange(e.target.value)}
             maxLength={15}
-            className="mt-1"
+            className="max-w-xs"
           />
-        </div>
-        
-        <div className="text-xs text-gray-500 mt-4">
-          <p>Google Ad Character Limits:</p>
-          <ul className="list-disc list-inside">
-            <li>Headlines: 30 characters each</li>
-            <li>Descriptions: 90 characters each</li>
-            <li>URL Path: 15 characters</li>
-          </ul>
+          <p className="text-xs text-muted-foreground mt-1">
+            A keyword-rich path to display in your ad URL (example: services/premium)
+          </p>
         </div>
       </div>
       

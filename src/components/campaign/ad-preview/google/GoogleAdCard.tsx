@@ -8,6 +8,7 @@ import GoogleAdPreview from "./GoogleAdPreview";
 import GoogleAdDetails from "./GoogleAdDetails";
 import GoogleAdEditor from "./GoogleAdEditor";
 import { normalizeGoogleAd } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface GoogleAdCardProps {
   ad: GoogleAd;
@@ -35,6 +36,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     // Always normalize the ad before saving
     onUpdateAd(normalizeGoogleAd(editedAd));
     setIsEditing(false);
+    toast.success("Ad updated successfully");
   };
 
   const handleCancel = () => {
@@ -49,6 +51,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
     const descriptionsText = normalizedAd.descriptions.join('\n');
     const content = `Headlines:\n${headlinesText}\n\nDescriptions:\n${descriptionsText}`;
     navigator.clipboard.writeText(content);
+    toast.success("Ad content copied to clipboard");
   };
 
   const handleUpdateAd = (updatedAd: GoogleAd) => {
@@ -56,7 +59,7 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardContent className="p-0">
         {/* Card Header */}
         <div className="flex justify-between items-center bg-muted p-3 border-b">
@@ -105,26 +108,36 @@ const GoogleAdCard: React.FC<GoogleAdCardProps> = ({
         </div>
 
         {/* Ad Content */}
-        <div className="grid md:grid-cols-2 gap-4 p-4">
-          <GoogleAdPreview 
-            ad={isEditing ? normalizeGoogleAd(editedAd) : normalizedAd} 
-            domain={domain} 
-          />
-          {isEditing ? (
+        {isEditing ? (
+          <div className="p-4">
             <GoogleAdEditor
               ad={normalizeGoogleAd(editedAd)}
               domain={domain}
               onSave={handleSave}
               onCancel={handleCancel}
             />
-          ) : (
-            <GoogleAdDetails 
-              ad={normalizedAd}
-              isEditing={false}
-              onUpdateAd={handleUpdateAd}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex flex-col p-4 gap-6">
+            {/* Preview first */}
+            <div className="bg-muted/30 p-4 rounded-lg border">
+              <h4 className="text-sm font-medium mb-3 text-muted-foreground">Ad Preview</h4>
+              <div className="flex justify-center">
+                <GoogleAdPreview ad={normalizedAd} domain={domain} />
+              </div>
+            </div>
+            
+            {/* Details below */}
+            <div className="border rounded-lg p-4">
+              <h4 className="text-sm font-medium mb-3 text-muted-foreground">Ad Content</h4>
+              <GoogleAdDetails 
+                ad={normalizedAd}
+                isEditing={false}
+                onUpdateAd={handleUpdateAd}
+              />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

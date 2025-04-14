@@ -66,39 +66,39 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
     }
     
     return (
-      <div className="mt-1 space-y-1">
+      <div className="mt-2 space-y-2">
         {rows}
       </div>
     );
   };
 
   return (
-    <div className={cn("max-w-xl font-sans text-left p-3 bg-white border rounded-md shadow-sm", className)}>
+    <div className={cn("max-w-xl font-sans text-left p-4 bg-white border rounded-lg shadow-sm", className)}>
       {/* Ad Badge & URL */}
-      <div className="flex items-center mb-1">
-        <span className="text-xs mr-2 px-1 rounded bg-[#ebebeb] text-[#5f6368]">Ad</span>
+      <div className="flex items-center mb-2">
+        <span className="text-xs mr-2 px-1.5 py-0.5 rounded bg-[#ebebeb] text-[#5f6368] font-medium">Ad</span>
         <span className="text-[#202124] text-xs">
-          <span className="text-[#1e8e3e]">{displayUrl}</span>
+          <span className="text-[#1e8e3e] font-medium">{displayUrl}</span>
           <span className="text-[#5f6368] ml-1">· Ad</span>
         </span>
       </div>
       
       {/* Headline */}
-      <h3 className="text-[#1a0dab] text-xl leading-tight mb-1 font-normal">
+      <h3 className="text-[#1a0dab] text-xl leading-tight mb-2 font-medium hover:underline cursor-pointer">
         {ad.headline1 || ad.headlines?.[0] || "Headline 1"} 
         {(ad.headline2 || ad.headlines?.[1]) && <span> | {ad.headline2 || ad.headlines?.[1]}</span>} 
         {(ad.headline3 || ad.headlines?.[2]) && <span> | {ad.headline3 || ad.headlines?.[2]}</span>}
       </h3>
       
       {/* Description */}
-      <p className="text-sm text-[#4d5156] leading-snug mb-1">
+      <p className="text-sm text-[#4d5156] leading-snug mb-2">
         {ad.description1 || ad.descriptions?.[0] || "Description 1"} 
         {ad.description2 || ad.descriptions?.[1] || ""}
       </p>
       
       {/* Final URL indicator */}
       {ad.finalUrl && (
-        <div className="text-xs text-[#4d5156] mb-1 flex items-center">
+        <div className="text-xs text-[#4d5156] mb-2 flex items-center">
           <ExternalLink className="h-3 w-3 mr-1" />
           {ad.finalUrl}
         </div>
