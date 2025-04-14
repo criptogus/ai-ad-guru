@@ -126,6 +126,7 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
               index={index}
               isLoading={isLoading}
               onGenerateImage={onGenerateImage}
+              onUpdateAd={handleUpdateAd}
               viewMode={format}
             />
           </div>

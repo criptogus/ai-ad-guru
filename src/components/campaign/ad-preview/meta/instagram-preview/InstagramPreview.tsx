@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { AdTemplate } from "../template-gallery/TemplateGallery";
+import { AdTemplate } from "../../template-gallery/TemplateGallery";
 import InstagramPreviewHeader from "./InstagramPreviewHeader";
 import ImageContent from "./ImageContent";
 import TextContent from "./TextContent";
@@ -16,6 +16,7 @@ interface InstagramPreviewProps {
   companyName: string;
   index?: number;
   loadingImageIndex?: number | null;
+  isLoading?: boolean;
   onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
   viewMode?: "feed" | "story" | "reel";
@@ -26,13 +27,14 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   companyName,
   index = 0,
   loadingImageIndex = null,
+  isLoading = false,
   onGenerateImage,
   onUpdateAd,
   viewMode = "feed"
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isLoading = loadingImageIndex === index;
+  const isImageLoading = isLoading || loadingImageIndex === index;
   
   // Normalize the ad to ensure it has format and hashtags properties
   const normalizedAd = normalizeMetaAd(ad);
@@ -109,7 +111,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <ImageContent 
         ad={normalizedAd}
         imageKey={index}
-        isLoading={isLoading}
+        isLoading={isImageLoading}
         isUploading={isUploading}
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}
