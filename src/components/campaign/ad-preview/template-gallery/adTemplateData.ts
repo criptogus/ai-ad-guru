@@ -1,143 +1,124 @@
 
-import { AdTemplate } from "./TemplateGallery";
+import { AdTemplate } from './TemplateGallery';
 
-// Categories for ad templates
-export const adTemplateCategories = [
-  { id: "lifestyle", name: "Lifestyle" },
-  { id: "product", name: "Product Showcase" },
-  { id: "testimonial", name: "Testimonials" },
-  { id: "promotional", name: "Promotional" },
-  { id: "storytelling", name: "Storytelling" },
-  { id: "tutorial", name: "Tutorial/How-to" },
-  { id: "creative", name: "Creative" }
-];
-
-// Sample ad templates for different platforms
 const adTemplates: AdTemplate[] = [
-  // Instagram Ad Templates - Lifestyle
+  // Instagram/Meta Ad Templates
   {
-    id: "instagram-lifestyle-1",
-    name: "Modern Lifestyle Scene",
-    description: "Clean, aspirational lifestyle image showing product in everyday use",
-    prompt: "Create a modern, aspirational Instagram lifestyle photo showing a person using a product naturally in a well-lit, minimalist home environment. Use soft natural lighting, neutral tones, and a shallow depth of field for a professional look.",
+    id: "meta-lifestyle-1",
+    name: "Lifestyle Product Usage",
+    description: "Show your product being used in a natural, lifestyle setting",
+    prompt: "Create a lifestyle image of people naturally using ${mainText:your product} in a bright, airy environment with soft lighting. Show genuine enjoyment and authentic interaction.",
     category: "lifestyle",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
+    format: "feed",
+    tags: ["lifestyle", "product", "natural"],
+    platform: "instagram"
   },
   {
-    id: "instagram-lifestyle-2",
-    name: "Urban Fashion Moment",
-    description: "Street style fashion photography with urban background",
-    prompt: "Generate a trendy urban street style image for Instagram showing a fashionable person in an urban setting. Include architectural elements, natural golden-hour lighting, and subtle bokeh effects. Style should be candid yet polished.",
+    id: "meta-before-after",
+    name: "Before & After Results",
+    description: "Demonstrate the transformation or benefits of your product",
+    prompt: "Create a split image showing a before and after transformation with ${mainText:your product's results}. Make the contrast clear but realistic, showing authentic results.",
+    category: "product-focus",
+    format: "feed",
+    tags: ["results", "comparison", "transformation"],
+    platform: "instagram"
+  },
+  {
+    id: "meta-problem-solution",
+    name: "Problem & Solution",
+    description: "Show a common problem and how your product solves it",
+    prompt: "Show a person struggling with ${mainText:a common problem} with a frustrated expression, then demonstrate how your product provides an elegant solution with a satisfied result.",
+    category: "product-focus",
+    format: "feed",
+    tags: ["problem", "solution", "benefit"],
+    platform: "instagram"
+  },
+  {
+    id: "meta-minimalist",
+    name: "Minimalist Product Showcase",
+    description: "Clean, minimal product display on simple background",
+    prompt: "Create a minimalist product showcase for ${mainText:your product} on a clean, simple background with subtle shadows. Focus on the product's design with ample negative space.",
+    category: "minimal",
+    format: "feed",
+    tags: ["minimal", "clean", "product"],
+    platform: "instagram"
+  },
+  {
+    id: "meta-story-vertical",
+    name: "Instagram Story Template",
+    description: "Vertical format optimized for Instagram Stories",
+    prompt: "Create a vertical Instagram Story image featuring ${mainText:your product or message}. Design with ample space at top and bottom for text overlays. Use vibrant colors and eye-catching visuals.",
+    category: "social",
+    format: "story",
+    tags: ["story", "vertical", "vibrant"],
+    platform: "instagram"
+  },
+  {
+    id: "meta-carousel-1",
+    name: "Product Feature Carousel",
+    description: "Showcase different features in a carousel-friendly format",
+    prompt: "Create a square image highlighting ${mainText:a specific feature} of your product against a clean background. Design with consistent style suitable for a carousel post.",
+    category: "product-focus",
+    format: "feed",
+    tags: ["carousel", "features", "product"],
+    platform: "instagram"
+  },
+  {
+    id: "meta-ugc-style",
+    name: "UGC-Style Testimonial",
+    description: "Authentic user-generated content style",
+    prompt: "Create an authentic-looking image showing a real person using ${mainText:your product} in a casual, non-professional setting. Should look like genuine user-generated content with natural lighting.",
     category: "lifestyle",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
+    format: "feed",
+    tags: ["UGC", "authentic", "testimonial"],
+    platform: "instagram"
   },
-  
-  // Instagram Ad Templates - Product
+  // Google Ad Templates
   {
-    id: "instagram-product-1",
-    name: "Minimalist Product Feature",
-    description: "Clean product photography on simple background",
-    prompt: "Create a minimalist product photo for Instagram with a single product as the hero against a simple, clean background. Use soft shadows, crisp details, and perfect lighting to highlight product features. Style: professional, modern e-commerce.",
-    category: "product",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
-  },
-  {
-    id: "instagram-product-2",
-    name: "Flat Lay Arrangement",
-    description: "Overhead arrangement of products and complementary items",
-    prompt: "Generate an Instagram-worthy flat lay product arrangement viewed from above. Include the main product surrounded by complementary items and props that tell a story. Use natural lighting and a neutral surface as the background.",
-    category: "product",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
-  },
-  
-  // Instagram Ad Templates - Testimonial
-  {
-    id: "instagram-testimonial-1",
-    name: "Customer Quote Card",
-    description: "Elegant quote card with customer testimonial",
-    prompt: "Create an elegant Instagram testimonial image with a short customer quote overlay on a lifestyle background. Use semi-transparent overlay for text readability, high-quality photography, and clean typography. Style: trustworthy and professional.",
-    category: "testimonial",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
-  },
-  
-  // Instagram Ad Templates - Promotional
-  {
-    id: "instagram-promo-1",
-    name: "Limited Time Offer",
-    description: "Bold promotional graphic with offer details",
-    prompt: "Design an eye-catching Instagram promotional image that announces a limited-time offer. Include bold typography with the discount/offer prominently displayed, use brand colors, and add subtle animated elements that create urgency. Style: bold, attention-grabbing.",
-    category: "promotional",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
+    id: "google-service-1",
+    name: "Service Offering",
+    description: "Professional representation of your service",
+    prompt: "Create a professional image representing ${mainText:your service} with clean, corporate styling and subtle branding elements.",
+    category: "professional",
+    tags: ["service", "professional", "corporate"],
+    platform: "google"
   },
   {
-    id: "instagram-promo-2",
-    name: "New Product Launch",
-    description: "Exciting product launch announcement",
-    prompt: "Create an Instagram announcement image for a new product launch. Show the product with 'NEW' or 'JUST LAUNCHED' text overlay, use exciting visual elements like sparkles or spotlights, and ensure the product is the hero. Style: exciting, premium.",
-    category: "promotional",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
+    id: "google-product-1",
+    name: "Product Showcase",
+    description: "Clean product display for Google Ads",
+    prompt: "Create a clean, professional image of ${mainText:your product} on a simple background with excellent lighting and product details clearly visible.",
+    category: "product-focus",
+    tags: ["product", "clean", "showcase"],
+    platform: "google"
   },
-  
-  // Instagram Ad Templates - Storytelling
   {
-    id: "instagram-story-1",
-    name: "Brand Origin Story",
-    description: "Visual storytelling about brand beginnings",
-    prompt: "Generate an Instagram image that tells a brand origin story. Show vintage/historical elements mixed with modern outcomes, use a narrative-driven composition, and add subtle text overlays if needed. Style: authentic, emotional, journey-focused.",
-    category: "storytelling",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
+    id: "google-local-1",
+    name: "Local Business",
+    description: "Highlight your local business location",
+    prompt: "Create an image representing a local ${mainText:type of business} with a welcoming storefront, clear signage, and approachable atmosphere.",
+    category: "local",
+    tags: ["local", "business", "storefront"],
+    platform: "google"
   },
-  
-  // Instagram Ad Templates - Tutorial
-  {
-    id: "instagram-tutorial-1",
-    name: "Simple Steps Process",
-    description: "Clear step-by-step instructions with visuals",
-    prompt: "Design an Instagram tutorial image with 3 simple steps showing how to use a product. Use numbers or step indicators, show before/after or progress visuals, and keep text minimal but instructional. Style: clear, helpful, easy to understand.",
-    category: "tutorial", 
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
-  },
-  
-  // Instagram Ad Templates - Creative
-  {
-    id: "instagram-creative-1",
-    name: "Surreal Product Concept",
-    description: "Artistic and surreal product visualization",
-    prompt: "Create a surreal, artistic Instagram image featuring a product in an impossible or dreamlike scenario. Use bold colors, unusual scale, and creative composition to make the image stop the scroll. Style: artistic, memorable, conversation-starting.",
-    category: "creative",
-    platform: "instagram",
-    dimensions: { width: 1080, height: 1080 }
-  },
-  
   // LinkedIn Ad Templates
   {
     id: "linkedin-professional-1",
-    name: "Professional Headshot",
-    description: "Polished professional portrait for thought leadership",
-    prompt: "Create a professional LinkedIn headshot of a business person against a neutral office background. Use professional lighting, business-appropriate attire, and a confident but approachable expression. Style: corporate, trustworthy, LinkedIn-native.",
-    category: "lifestyle",
-    platform: "linkedin",
-    dimensions: { width: 1200, height: 627 }
+    name: "Professional B2B",
+    description: "Corporate and professional image for B2B marketing",
+    prompt: "Create a professional corporate image representing ${mainText:your B2B service or product} with business professionals in a modern office environment.",
+    category: "professional",
+    tags: ["B2B", "corporate", "professional"],
+    platform: "linkedin"
   },
-  
-  // Google Ad Templates (though these are text-based, we'll add them for completeness)
   {
-    id: "google-service-1",
-    name: "Service Highlight",
-    description: "Text template highlighting key business services",
-    prompt: "Write a Google Search Ad that highlights a business service with clear benefits and a strong call to action. Include specific metrics if possible and ensure proper keyword placement.",
-    category: "promotional",
-    platform: "google",
-    dimensions: { width: 300, height: 250 }
+    id: "linkedin-data-1",
+    name: "Data Visualization",
+    description: "Compelling data visualization for LinkedIn",
+    prompt: "Create a professional data visualization image showing growth, success or improvement related to ${mainText:your industry or service}. Use clean, corporate styling with graphs, charts or visual metrics.",
+    category: "professional",
+    tags: ["data", "visualization", "metrics"],
+    platform: "linkedin"
   }
 ];
 
@@ -146,5 +127,4 @@ export const getTemplatesByPlatform = (platform: string): AdTemplate[] => {
   return adTemplates.filter(template => template.platform === platform);
 };
 
-// Export all templates
 export default adTemplates;

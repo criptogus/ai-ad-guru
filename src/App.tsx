@@ -1,164 +1,59 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from '@/hooks/use-theme';
 
-import AppLayout from './components/AppLayout';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Import pages
+import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
 import SettingsPage from './pages/SettingsPage';
-import AuthPage from './pages/AuthPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import BillingPage from './pages/BillingPage';
-import PricingPage from './pages/PricingPage';
-import WebsiteAnalysisPage from './pages/WebsiteAnalysisPage';
-import CampaignPage from './pages/CampaignPage';
-import CampaignsPage from './pages/CampaignsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import CreditsInfoPage from './pages/CreditsInfoPage';
-import TestAdsPage from './pages/TestAdsPage';
-import TemplateExamplePage from './pages/TemplateExamplePage';
-import MFAPage from './pages/MFAPage';
-import ConnectionsPage from './pages/ConnectionsPage';
-import OAuthCallbackHandler from './components/config/OAuthCallbackHandler';
-import AuthCallback from './components/auth/AuthCallback';
-import LandingPage from './pages/LandingPage';
-import ZeroAgencyPrivacyPolicyPage from './pages/ZeroAgencyPrivacyPolicyPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import CookiePolicyPage from './pages/CookiePolicyPage';
-import TermsOfServicePage from './pages/TermsOfServicePage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
-import SupportPage from './pages/SupportPage';
-import NotFound from './pages/NotFound';
+import CampaignListPage from './pages/CampaignListPage';
+import CampaignDetailPage from './pages/CampaignDetailPage';
+import AdAccountsPage from './pages/AdAccountsPage';
+import BillingPage from './pages/BillingPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import NotFoundPage from './pages/NotFoundPage';
+import PromptTemplatePage from './pages/PromptTemplatePage';
+import MetaAdGeneratorPage from './pages/MetaAdGeneratorPage';
 
-// Create a React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Import contexts and providers
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from './components/ui/toaster';
+import { CreditsProvider } from './contexts/CreditsContext';
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
-  const location = useLocation();
-  const pathname = location.pathname;
-
-  useEffect(() => {
-    // Add any necessary side effects here
-    console.log("Current route:", pathname); // Add logging to debug routing
-  }, [pathname]);
-
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="theme">
+      <ThemeProvider>
         <AuthProvider>
-          <Helmet>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta name="description" content="Your description here" />
-          </Helmet>
-          <Toaster />
-          <Routes>
-            {/* Public routes that don't require authentication */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/zero-agency-privacy-policy" element={<ZeroAgencyPrivacyPolicyPage />} />
-            <Route path="/cookie-policy" element={<CookiePolicyPage />} />
-            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-            
-            {/* Authentication routes */}
-            <Route path="/auth/*" element={<AuthPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/mfa-verification" element={<MFAPage />} />
-            
-            {/* Protected routes requiring authentication */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/campaigns" element={
-              <ProtectedRoute>
-                <CampaignsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/create-campaign" element={
-              <ProtectedRoute>
-                <CreateCampaignPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/analytics" element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/credits-info" element={
-              <ProtectedRoute>
-                <CreditsInfoPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings/*" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/billing" element={
-              <ProtectedRoute>
-                <BillingPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/website-analysis" element={
-              <ProtectedRoute>
-                <WebsiteAnalysisPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/campaign/:campaignId" element={
-              <ProtectedRoute>
-                <CampaignPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/testing" element={
-              <ProtectedRoute>
-                <TestAdsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/template-example" element={
-              <ProtectedRoute>
-                <TemplateExamplePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/connections" element={
-              <ProtectedRoute>
-                <ConnectionsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/support" element={
-              <ProtectedRoute>
-                <SupportPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/callback" element={
-              <ProtectedRoute>
-                <OAuthCallbackHandler />
-              </ProtectedRoute>
-            } />
-            
-            {/* Redirect /roles to /settings/team */}
-            <Route path="/roles" element={
-              <ProtectedRoute>
-                <Navigate to="/settings/team" replace />
-              </ProtectedRoute>
-            } />
-            
-            {/* Add fallback 404 route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <CreditsProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/create-campaign" element={<CreateCampaignPage />} />
+                <Route path="/campaigns" element={<CampaignListPage />} />
+                <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+                <Route path="/ad-accounts" element={<AdAccountsPage />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/tools/templates" element={<PromptTemplatePage />} />
+                <Route path="/tools/meta-ad-generator" element={<MetaAdGeneratorPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Router>
+            <Toaster />
+          </CreditsProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
