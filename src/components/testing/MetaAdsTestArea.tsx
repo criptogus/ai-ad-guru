@@ -36,10 +36,10 @@ const MetaAdsTestArea: React.FC = () => {
     websiteUrl: "https://example.com"
   });
   
-  // Meta-specific image generation parameters
+  // Meta-specific image generation parameters with proper typing
   const [industry, setIndustry] = useState("Technology");
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
-  const [imageFormat, setImageFormat] = useState("square"); // square (1:1) or portrait (4:5)
+  const [imageFormat, setImageFormat] = useState<"square" | "portrait" | "landscape">("square"); // Explicitly typed as allowed values
   
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
@@ -80,7 +80,7 @@ const MetaAdsTestArea: React.FC = () => {
         uniqueSellingPoints: companyInfo.uniqueSellingPoints,
         industry: industry,
         adTheme: adTheme,
-        imageFormat: imageFormat,
+        imageFormat: imageFormat, // This is now properly typed as "square" | "portrait" | "landscape"
         platform: "instagram",
         userId: user?.id
       };

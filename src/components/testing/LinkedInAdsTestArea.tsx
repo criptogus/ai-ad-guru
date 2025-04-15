@@ -19,7 +19,7 @@ const LinkedInAdsTestArea: React.FC = () => {
   // LinkedIn-specific image generation parameters
   const [industry, setIndustry] = useState("Technology");
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
-  const [imageFormat, setImageFormat] = useState("square"); // square (1080x1080) or landscape (1200x627)
+  const [imageFormat, setImageFormat] = useState<"square" | "portrait" | "landscape">("square"); // Explicitly typed as allowed values
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   // Initialize form with explicit default values for all fields
@@ -107,7 +107,7 @@ const LinkedInAdsTestArea: React.FC = () => {
         uniqueSellingPoints: companyInfo.uniqueSellingPoints,
         industry: industry,
         adTheme: adTheme,
-        imageFormat: imageFormat,
+        imageFormat: imageFormat, // This is now properly typed as "square" | "portrait" | "landscape"
         platform: "linkedin",
         userId: user?.id,
         templateId: selectedTemplateId

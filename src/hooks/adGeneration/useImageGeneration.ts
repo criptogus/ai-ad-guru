@@ -9,7 +9,7 @@ export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { decrementCredits } = useCredits();
+  const { deductCredits } = useCredits(); // Use deductCredits instead of decrementCredits
   const { user } = useAuth();
   
   const generateAdImage = async (
@@ -81,8 +81,8 @@ export const useImageGeneration = () => {
       }
       
       // Credit usage handling (if applicable)
-      if (decrementCredits) {
-        decrementCredits(5); // Cost to generate an image
+      if (deductCredits) {
+        deductCredits(5); // Cost to generate an image
       }
       
       console.log('Image generated successfully:', data.imageUrl);
