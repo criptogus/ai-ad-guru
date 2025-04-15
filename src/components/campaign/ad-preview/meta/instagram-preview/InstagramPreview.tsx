@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { AdTemplate } from "../../template-gallery/TemplateGallery";
 import InstagramPreviewHeader from "./InstagramPreviewHeader";
@@ -33,11 +33,22 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   viewMode = "feed"
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isImageLoading = isLoading || loadingImageIndex === index;
   
   // Normalize the ad to ensure it has format and hashtags properties
   const normalizedAd = normalizeMetaAd(ad);
+  
+  // Track if we've made an initial image generation attempt
+  useEffect(() => {
+    if (!hasAttemptedLoad && !normalizedAd.imageUrl && onGenerateImage && normalizedAd.imagePrompt) {
+      console.log("Auto-generating image for ad with prompt:", normalizedAd.imagePrompt);
+      onGenerateImage().then(() => {
+        setHasAttemptedLoad(true);
+      });
+    }
+  }, [hasAttemptedLoad, normalizedAd.imageUrl, normalizedAd.imagePrompt, onGenerateImage]);
 
   // Ensure format is one of the allowed values
   const normalizeFormat = (format?: string): "feed" | "story" | "reel" => {
@@ -101,6 +112,20 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     }
   };
 
+  // Generate image from prompt if one isn't already available
+  const handleGenerateImage = async () => {
+    if (onGenerateImage) {
+      try {
+        console.log("Generating image with prompt:", normalizedAd.imagePrompt);
+        await onGenerateImage();
+        setHasAttemptedLoad(true);
+      } catch (error) {
+        console.error("Error generating image:", error);
+        toast.error("Falha ao gerar imagem");
+      }
+    }
+  };
+
   // Determine which format to use (from props, ad, or default)
   const format = viewMode 
     ? viewMode 
@@ -115,7 +140,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         imageKey={index}
         isLoading={isImageLoading}
         isUploading={isUploading}
-        onGenerateImage={onGenerateImage}
+        onGenerateImage={handleGenerateImage}
         triggerFileUpload={triggerFileUpload}
         format={format}
         onTemplateSelect={handleTemplateSelect}

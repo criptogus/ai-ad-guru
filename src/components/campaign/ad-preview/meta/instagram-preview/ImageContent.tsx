@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Loader2, ImageIcon } from "lucide-react";
 import { MetaAd } from "@/hooks/adGeneration";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import ImagePlaceholder from "./ImagePlaceholder";
 
 interface ImageContentProps {
   ad: MetaAd;
@@ -28,116 +29,145 @@ const ImageContent: React.FC<ImageContentProps> = ({
   onTemplateSelect,
   className
 }) => {
+  const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [imgSrc, setImgSrc] = useState<string | null>(ad.imageUrl || null);
+
+  // Reset error state and retry count when ad.imageUrl changes
+  useEffect(() => {
+    setImageError(false);
+    setRetryCount(0);
+    
+    // Add cache-busting parameter to prevent stale cache issues
+    if (ad.imageUrl) {
+      const cacheBuster = `?t=${new Date().getTime()}`;
+      const newUrl = ad.imageUrl.includes('?') 
+        ? `${ad.imageUrl}&cb=${cacheBuster}` 
+        : `${ad.imageUrl}${cacheBuster}`;
+      setImgSrc(newUrl);
+    } else {
+      setImgSrc(null);
+    }
+  }, [ad.imageUrl]);
+
   const handleGenerateClick = async () => {
     if (onGenerateImage) {
+      setImageError(false);
       await onGenerateImage();
     }
   };
 
   // Enhanced error handling with better fallback mechanism
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Image failed to load:", ad.imageUrl);
+    console.error("Image failed to load:", imgSrc);
     
-    // Use a data URI fallback instead of an external placeholder service
-    // This ensures it will work even if external services are blocked
-    const fallbackColor = "#f0f0f0";
-    const textColor = "#666666";
-    const fallbackSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
-        <rect width="100" height="100" fill="${fallbackColor}"/>
-        <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
-      </svg>
-    `;
-    const encodedSvg = encodeURIComponent(fallbackSvg);
-    e.currentTarget.src = `data:image/svg+xml,${encodedSvg}`;
-    
-    // Mark the image as failed for potential re-fetch logic
-    e.currentTarget.setAttribute('data-load-failed', 'true');
+    // Try to reload the image a couple of times with a new cache-buster
+    if (retryCount < 2 && ad.imageUrl) {
+      const nextRetry = retryCount + 1;
+      setRetryCount(nextRetry);
+      
+      // Add a delay before retrying to give servers time to recover
+      setTimeout(() => {
+        const newUrl = `${ad.imageUrl}?retry=${nextRetry}&t=${new Date().getTime()}`;
+        console.log(`Retrying image load (attempt ${nextRetry}):`, newUrl);
+        setImgSrc(newUrl);
+      }, 1000 * nextRetry); // Increase delay with each retry
+    } else {
+      // After retry attempts, show error state
+      setImageError(true);
+      
+      // Use an inline SVG fallback instead of an external placeholder
+      const fallbackColor = "#f0f0f0";
+      const textColor = "#666666";
+      const fallbackSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="${fallbackColor}"/>
+          <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+        </svg>
+      `;
+      const encodedSvg = encodeURIComponent(fallbackSvg);
+      e.currentTarget.src = `data:image/svg+xml,${encodedSvg}`;
+      
+      // Mark the image as failed for additional logic
+      e.currentTarget.setAttribute('data-load-failed', 'true');
+      
+      console.log("All retry attempts failed for image:", ad.imageUrl);
+    }
   };
 
   const imageContainerClasses = cn(
-    "relative overflow-hidden flex items-center justify-center bg-gray-100",
+    "relative overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800",
     format === "feed" && "aspect-square",
     format === "story" && "aspect-[9/16]", 
     format === "reel" && "aspect-[9/16]",
     className
   );
 
-  const renderImageContent = () => {
-    if (isLoading || isUploading) {
-      return (
+  // Show loading state
+  if (isLoading || isUploading) {
+    return (
+      <div className={imageContainerClasses}>
         <div className="flex flex-col items-center justify-center h-full w-full">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           <p className="text-sm text-gray-500 mt-2">
             {isLoading ? "Generating image..." : "Uploading image..."}
           </p>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    if (ad.imageUrl) {
-      return (
-        <div className="relative w-full h-full">
-          <img
-            src={ad.imageUrl}
-            alt="Instagram content"
-            className="w-full h-full object-cover"
-            key={`ad-image-${imageKey}-${ad.imageUrl}`}
-            onError={handleImageError}
-            loading="eager"
-          />
-          
-          {onGenerateImage && (
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateClick}
-                className="bg-black/70 text-white border-white/20"
-              >
-                Regenerate image
-              </Button>
-            </div>
-          )}
-        </div>
-      );
-    }
-
+  // Show the image if available
+  if (imgSrc) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-        <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
-        <p className="text-sm text-gray-500 mb-2">
-          {ad.imagePrompt ? "Click to generate image" : "No image available"}
-        </p>
-        {(onGenerateImage || triggerFileUpload) && (
-          <div className="space-x-2">
-            {onGenerateImage && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleGenerateClick}
-              >
-                Generate image
-              </Button>
-            )}
-            {triggerFileUpload && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={triggerFileUpload}
-              >
-                Upload
-              </Button>
-            )}
+      <div className={imageContainerClasses}>
+        <img
+          src={imgSrc}
+          alt="Instagram content"
+          className="w-full h-full object-cover"
+          key={`ad-image-${imageKey}-${imgSrc}`}
+          onError={handleImageError}
+          loading="eager"
+        />
+        
+        {imageError && onGenerateImage && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleGenerateClick}
+              className="bg-white text-gray-800"
+            >
+              Regenerate image
+            </Button>
+          </div>
+        )}
+        
+        {!imageError && onGenerateImage && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateClick}
+              className="bg-black/70 text-white border-white/20"
+            >
+              Regenerate image
+            </Button>
           </div>
         )}
       </div>
     );
-  };
+  }
 
+  // Show placeholder if no image is available
   return (
     <div className={imageContainerClasses}>
-      {renderImageContent()}
+      <ImagePlaceholder 
+        onGenerateImage={onGenerateImage}
+        triggerFileUpload={triggerFileUpload}
+        format={format}
+        imageError={imageError}
+      />
     </div>
   );
 };

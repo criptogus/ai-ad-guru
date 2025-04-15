@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import fallbackImageService from '@/services/image/fallbackImageService';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { deductCredits } = useCredits(); // Use deductCredits instead of decrementCredits
+  const { deductCredits } = useCredits();
   const { user } = useAuth();
   
   const generateAdImage = async (
@@ -26,7 +27,8 @@ export const useImageGeneration = () => {
   ): Promise<string | null> => {
     if (!prompt) {
       setError('Prompt is required');
-      return null;
+      return fallbackImageService.getPlatformPlaceholder('instagram', 'Missing Prompt', 
+        additionalInfo?.imageFormat || 'square');
     }
     
     setIsGenerating(true);
@@ -64,7 +66,12 @@ export const useImageGeneration = () => {
           variant: 'destructive',
         });
         
-        return null;
+        // Return a fallback image
+        return fallbackImageService.getPlatformPlaceholder(
+          (additionalInfo?.platform as any) || 'instagram', 
+          'Generation Failed', 
+          additionalInfo?.imageFormat || 'square'
+        );
       }
       
       if (!data?.imageUrl) {
@@ -77,7 +84,12 @@ export const useImageGeneration = () => {
           variant: 'destructive',
         });
         
-        return null;
+        // Return a fallback image
+        return fallbackImageService.getPlatformPlaceholder(
+          (additionalInfo?.platform as any) || 'instagram', 
+          'No Image Returned', 
+          additionalInfo?.imageFormat || 'square'
+        );
       }
       
       // Credit usage handling (if applicable)
@@ -98,7 +110,12 @@ export const useImageGeneration = () => {
         variant: 'destructive',
       });
       
-      return null;
+      // Return a fallback image
+      return fallbackImageService.getPlatformPlaceholder(
+        (additionalInfo?.platform as any) || 'instagram', 
+        'Error Occurred', 
+        additionalInfo?.imageFormat || 'square'
+      );
     } finally {
       setIsGenerating(false);
     }
