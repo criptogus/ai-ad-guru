@@ -20,6 +20,13 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({
   // Parse sitelinks if they exist
   const hasSitelinks = ad.siteLinks && ad.siteLinks.length > 0;
   
+  // Format description text to ensure proper spacing after periods
+  const formatDescription = (text: string) => {
+    if (!text) return "";
+    // Replace periods that aren't followed by a space with period + space
+    return text.replace(/\.(?!\s|$)/g, '. ');
+  };
+  
   // Function to render sitelinks in a horizontal layout
   const renderSitelinks = () => {
     if (!hasSitelinks) return null;
@@ -91,8 +98,8 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({
       
       {/* Description */}
       <div className="ad-description text-sm text-[#444] leading-snug">
-        {ad.description1 || ad.descriptions?.[0] || "Description 1"} 
-        {ad.description2 || ad.descriptions?.[1] || ""}
+        {formatDescription(ad.description1 || ad.descriptions?.[0] || "Description 1")} 
+        {ad.description2 || ad.descriptions?.[1] ? formatDescription(ad.description2 || ad.descriptions?.[1] || "") : ""}
       </div>
       
       {/* Ad Extensions */}

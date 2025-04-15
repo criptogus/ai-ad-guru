@@ -21,6 +21,13 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
   // Parse sitelinks if they exist
   const hasSitelinks = ad.siteLinks && ad.siteLinks.length > 0;
   
+  // Format description text to ensure proper spacing after periods
+  const formatDescription = (text: string) => {
+    if (!text) return "";
+    // Replace periods that aren't followed by a space with period + space
+    return text.replace(/\.(?!\s|$)/g, '. ');
+  };
+  
   // Function to render sitelinks in a grid
   const renderSitelinks = () => {
     if (!hasSitelinks) return null;
@@ -92,8 +99,8 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
       
       {/* Description */}
       <p className="text-sm text-[#4d5156] leading-snug mb-2">
-        {ad.description1 || ad.descriptions?.[0] || "Description 1"} 
-        {ad.description2 || ad.descriptions?.[1] || ""}
+        {formatDescription(ad.description1 || ad.descriptions?.[0] || "Description 1")} 
+        {ad.description2 || ad.descriptions?.[1] ? formatDescription(ad.description2 || ad.descriptions?.[1] || "") : ""}
       </p>
       
       {/* Final URL indicator */}

@@ -2,99 +2,108 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCredits } from '@/contexts/CreditsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { storeAIResult } from '@/services/ai/aiResultsStorage';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { decrementCredits } = useCredits();
   const { user } = useAuth();
-
+  
   const generateAdImage = async (
     prompt: string, 
-    additionalInfo?: any
+    additionalInfo?: {
+      companyName?: string;
+      adType?: string;
+      industry?: string;
+      adContext?: any;
+      imageFormat?: 'square' | 'portrait' | 'landscape';
+      platform?: string;
+      userId?: string;
+    }
   ): Promise<string | null> => {
+    if (!prompt) {
+      setError('Prompt is required');
+      return null;
+    }
+    
     setIsGenerating(true);
     setError(null);
     
     try {
-      console.log("Generating image with prompt:", prompt.substring(0, 100) + "...");
-      console.log("With additional info:", additionalInfo ? JSON.stringify(additionalInfo).substring(0, 100) + "..." : "none");
+      console.log(`Generating image with prompt: ${prompt}`);
+      console.log('Additional context:', additionalInfo);
       
-      // Determine platform from additionalInfo or use default
-      const platform = additionalInfo?.platform || 'meta';
-      // Determine format from additionalInfo or use default
-      const format = additionalInfo?.imageFormat || additionalInfo?.format || 'feed';
+      // Determine which function to call based on the platform or other criteria
+      const functionName = additionalInfo?.platform === 'meta' || additionalInfo?.platform === 'instagram' 
+        ? 'generate-meta-ad-image' 
+        : 'generate-image';
       
-      // Call the generate-image-gpt4o edge function
-      const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
+      const { data, error: functionError } = await supabase.functions.invoke(functionName, {
         body: { 
-          imagePrompt: prompt,
-          platform: platform,
-          format: format,
-          adContext: additionalInfo // Pass all additional info as context
+          prompt,
+          format: additionalInfo?.imageFormat || 'square',
+          industry: additionalInfo?.industry || null,
+          adType: additionalInfo?.adType || 'general',
+          platform: additionalInfo?.platform || 'instagram',
+          userId: additionalInfo?.userId || user?.id,
+          companyName: additionalInfo?.companyName || 'Your Company',
+          adContext: additionalInfo?.adContext || null
         }
       });
       
-      if (error) {
-        console.error("Error calling generate-image-gpt4o edge function:", error);
-        setError(error.message || "Failed to call image generation service");
-        throw error;
-      }
-      
-      if (!data || !data.success || !data.imageUrl) {
-        console.error("No image URL returned from function:", data);
-        const errorMessage = "Failed to generate image";
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      }
-      
-      const imageUrl = data.imageUrl;
-      console.log("Successfully generated image:", imageUrl.substring(0, 50) + "...");
-      
-      // Store the AI result if user is logged in
-      if (user?.id) {
-        await storeAIResult(user.id, {
-          input: prompt,
-          response: {
-            imageUrl: imageUrl,
-            platform,
-            format
-          },
-          type: 'image_generation',
-          metadata: additionalInfo
+      if (functionError) {
+        console.error('Error generating image:', functionError);
+        setError(functionError.message || 'Failed to generate image');
+        
+        toast({
+          title: 'Image Generation Failed',
+          description: functionError.message || 'There was an error generating your image',
+          variant: 'destructive',
         });
+        
+        return null;
       }
       
-      return imageUrl;
-    } catch (error) {
-      console.error("Error in generateAdImage:", error);
+      if (!data?.imageUrl) {
+        console.error('No image URL returned:', data);
+        setError('No image was generated');
+        
+        toast({
+          title: 'Image Generation Failed',
+          description: 'The image generation service did not return a valid image',
+          variant: 'destructive',
+        });
+        
+        return null;
+      }
       
-      // Set error message for UI display
-      setError(error instanceof Error ? error.message : "Unknown error occurred");
+      // Credit usage handling (if applicable)
+      if (decrementCredits) {
+        decrementCredits(5); // Cost to generate an image
+      }
       
-      // Return a fallback placeholder image
-      return getFallbackImage(prompt);
+      console.log('Image generated successfully:', data.imageUrl);
+      return data.imageUrl;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error('Error in image generation:', err);
+      setError(errorMessage);
+      
+      toast({
+        title: 'Image Generation Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      
+      return null;
     } finally {
       setIsGenerating(false);
     }
   };
   
-  const getFallbackImage = (prompt: string): string => {
-    // Return a placeholder image based on the platform
-    const placeholders = [
-      'https://images.unsplash.com/photo-1557804506-669a67965ba0',
-      'https://images.unsplash.com/photo-1551434678-e076c223a692',
-      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f'
-    ];
-    
-    // Use a deterministic index based on the prompt
-    const index = Math.abs(prompt.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % placeholders.length;
-    
-    return placeholders[index];
-  };
-
   return {
     generateAdImage,
     isGenerating,
