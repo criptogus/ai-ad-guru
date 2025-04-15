@@ -49,6 +49,16 @@ const MetaAdsTestArea: React.FC = () => {
     setTestAd({ ...testAd, [field]: value });
   };
 
+  // Create a type-safe wrapper function for imageFormat changes
+  const handleImageFormatChange = (value: string) => {
+    // Check if the value is one of the allowed formats
+    if (value === "square" || value === "portrait" || value === "landscape") {
+      setImageFormat(value);
+    } else {
+      console.error("Invalid image format:", value);
+    }
+  };
+
   const handleReset = () => {
     setTestAd(defaultMetaAd);
     // Reset with all required properties matching WebsiteAnalysisResult type
@@ -143,7 +153,7 @@ const MetaAdsTestArea: React.FC = () => {
               onAdChange={handleAdChange}
               onIndustryChange={setIndustry}
               onAdThemeChange={setAdTheme}
-              onImageFormatChange={setImageFormat}
+              onImageFormatChange={handleImageFormatChange}
               onGenerateImage={handleGenerateImage}
               onReset={handleReset}
             />

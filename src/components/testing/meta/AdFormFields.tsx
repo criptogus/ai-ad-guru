@@ -12,7 +12,7 @@ interface AdFormFieldsProps {
   companyInfo: WebsiteAnalysisResult;
   industry: string;
   adTheme: string;
-  imageFormat: string;
+  imageFormat: "square" | "portrait" | "landscape"; // Using union type instead of string
   onCompanyNameChange: (value: string) => void;
   onAdChange: (field: keyof MetaAd, value: string) => void;
   onIndustryChange: (value: string) => void;
@@ -122,6 +122,7 @@ const AdFormFields: React.FC<AdFormFieldsProps> = ({
           <SelectContent>
             <SelectItem value="square">Square (1:1)</SelectItem>
             <SelectItem value="landscape">Landscape (16:9)</SelectItem>
+            <SelectItem value="portrait">Portrait (4:5)</SelectItem>
           </SelectContent>
         </Select>
       </div>

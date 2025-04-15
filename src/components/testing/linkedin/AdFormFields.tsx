@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +11,7 @@ interface AdFormFieldsProps {
   companyInfo: WebsiteAnalysisResult;
   industry: string;
   adTheme: string;
-  imageFormat: string;
+  imageFormat: "square" | "portrait" | "landscape";
   onCompanyNameChange: (value: string) => void;
   onAdChange: (field: keyof MetaAd, value: string) => void;
   onIndustryChange: (value: string) => void;
@@ -46,7 +45,9 @@ const AdFormFields: React.FC<AdFormFieldsProps> = ({
   ];
 
   const imageFormats = [
-    "square", "landscape"
+    { value: "square", label: "Square (1:1)" },
+    { value: "landscape", label: "Landscape (1.91:1)" },
+    { value: "portrait", label: "Portrait (4:5)" }
   ];
 
   return (
@@ -200,7 +201,9 @@ const AdFormFields: React.FC<AdFormFieldsProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {imageFormats.map((format) => (
-                    <SelectItem key={format} value={format}>{format === "square" ? "Square (1:1)" : "Landscape (1.91:1)"}</SelectItem>
+                    <SelectItem key={format.value} value={format.value}>
+                      {format.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
