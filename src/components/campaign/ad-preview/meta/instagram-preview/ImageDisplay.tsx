@@ -22,18 +22,28 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 }) => {
   const handleGenerateImage = async () => {
     if (onGenerateImage) {
-      console.log("Iniciando geração de imagem com prompt:", imagePrompt);
+      console.log("Starting image generation with prompt:", imagePrompt);
       await onGenerateImage();
     }
   };
 
-  // Enhanced error handling for broken images with robust fallback
+  // Improved error handling with inline SVG fallback
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Falha ao carregar imagem:", imageUrl);
-    // Use a more reliable placeholder service with a clear error message
-    e.currentTarget.src = "https://via.placeholder.com/600x600/f0f0f0/ff0000?text=Imagem+Indisponível";
+    console.error("Image failed to load:", imageUrl);
     
-    // Add a data attribute to track that this image failed to load
+    // Create an inline SVG as fallback instead of using external placeholder service
+    const fallbackColor = "#f0f0f0";
+    const textColor = "#666666";
+    const fallbackSvg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="${fallbackColor}"/>
+        <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+      </svg>
+    `;
+    const encodedSvg = encodeURIComponent(fallbackSvg);
+    e.currentTarget.src = `data:image/svg+xml,${encodedSvg}`;
+    
+    // Mark the image as failed for potential logic
     e.currentTarget.setAttribute('data-load-failed', 'true');
   };
 
@@ -65,12 +75,12 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Gerando...
+                    Generating...
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Regenerar
+                    Regenerate
                   </>
                 )}
               </Button>
@@ -83,14 +93,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             <>
               <Loader2 className="w-8 h-8 animate-spin mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center">
-                Gerando imagem...
+                Generating image...
               </p>
             </>
           ) : (
             <>
               <Image className="w-12 h-12 mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center mb-4">
-                {imagePrompt ? "Clique para gerar imagem" : "Nenhuma imagem disponível"}
+                {imagePrompt ? "Click to generate image" : "No image available"}
               </p>
               {imagePrompt && onGenerateImage && (
                 <Button
@@ -98,7 +108,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                   size="sm"
                   onClick={handleGenerateImage}
                 >
-                  Gerar Imagem
+                  Generate Image
                 </Button>
               )}
             </>

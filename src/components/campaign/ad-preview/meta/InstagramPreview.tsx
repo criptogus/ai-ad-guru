@@ -22,6 +22,7 @@ export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     setImageLoading(false);
   };
 
+  // Improved error handling with inline SVG fallback
   const handleImageError = () => {
     setImageLoading(false);
     setImageError(true);
@@ -41,6 +42,14 @@ export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       return part;
     });
   };
+
+  // SVG placeholder for error state
+  const errorPlaceholder = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#f5f5f5"/>
+      <text x="50" y="50" font-family="Arial" font-size="8" fill="#9ca3af" text-anchor="middle">Image unavailable</text>
+    </svg>
+  `;
 
   return (
     <div className={cn("w-full max-w-md border rounded-md overflow-hidden bg-white", className)}>
@@ -63,8 +72,9 @@ export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         
         {imageError ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 p-4 text-center">
+            <div dangerouslySetInnerHTML={{ __html: errorPlaceholder }} className="w-16 h-16 mb-2" />
             <span className="text-sm">Image could not be loaded</span>
-            <span className="text-xs mt-1 max-w-xs">Prompt: {ad.imagePrompt || "No prompt provided"}</span>
+            <span className="text-xs mt-1 max-w-xs">{ad.imagePrompt ? `Prompt: ${ad.imagePrompt.substring(0, 50)}...` : "No prompt provided"}</span>
           </div>
         ) : (
           ad.imageUrl ? (

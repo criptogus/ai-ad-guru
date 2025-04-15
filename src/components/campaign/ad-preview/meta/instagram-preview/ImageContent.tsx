@@ -34,24 +34,25 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
 
-  // Enhanced error handling with multiple fallback options
+  // Enhanced error handling with better fallback mechanism
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Erro ao carregar imagem:", ad.imageUrl);
+    console.error("Image failed to load:", ad.imageUrl);
     
-    try {
-      // Try a more reliable placeholder service with better compatibility
-      e.currentTarget.src = "https://via.placeholder.com/600x600/f0f0f0/ff0000?text=Imagem+Indisponível";
-      
-      // Mark the image as failed for potential re-fetch logic
-      e.currentTarget.setAttribute('data-load-failed', 'true');
-    } catch (err) {
-      console.error("Erro no fallback da imagem:", err);
-      // Ultimate fallback - simple color
-      e.currentTarget.style.backgroundColor = "#f0f0f0";
-      e.currentTarget.style.display = "flex";
-      e.currentTarget.style.alignItems = "center";
-      e.currentTarget.style.justifyContent = "center";
-    }
+    // Use a data URI fallback instead of an external placeholder service
+    // This ensures it will work even if external services are blocked
+    const fallbackColor = "#f0f0f0";
+    const textColor = "#666666";
+    const fallbackSvg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="${fallbackColor}"/>
+        <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+      </svg>
+    `;
+    const encodedSvg = encodeURIComponent(fallbackSvg);
+    e.currentTarget.src = `data:image/svg+xml,${encodedSvg}`;
+    
+    // Mark the image as failed for potential re-fetch logic
+    e.currentTarget.setAttribute('data-load-failed', 'true');
   };
 
   const imageContainerClasses = cn(
@@ -68,7 +69,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
         <div className="flex flex-col items-center justify-center h-full w-full">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           <p className="text-sm text-gray-500 mt-2">
-            {isLoading ? "Gerando imagem..." : "Fazendo upload da imagem..."}
+            {isLoading ? "Generating image..." : "Uploading image..."}
           </p>
         </div>
       );
@@ -94,7 +95,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
                 onClick={handleGenerateClick}
                 className="bg-black/70 text-white border-white/20"
               >
-                Regenerar imagem
+                Regenerate image
               </Button>
             </div>
           )}
@@ -106,7 +107,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
       <div className="flex flex-col items-center justify-center h-full p-6 text-center">
         <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
         <p className="text-sm text-gray-500 mb-2">
-          {ad.imagePrompt ? "Clique para gerar a imagem" : "Nenhuma imagem disponível"}
+          {ad.imagePrompt ? "Click to generate image" : "No image available"}
         </p>
         {(onGenerateImage || triggerFileUpload) && (
           <div className="space-x-2">
@@ -116,7 +117,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
                 size="sm"
                 onClick={handleGenerateClick}
               >
-                Gerar imagem
+                Generate image
               </Button>
             )}
             {triggerFileUpload && (
