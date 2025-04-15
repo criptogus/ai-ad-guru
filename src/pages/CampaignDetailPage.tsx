@@ -94,20 +94,20 @@ const CampaignDetailPage: React.FC = () => {
                 'Refresh your summer wardrobe with our latest styles and trends.',
                 'Limited time offer. Quality guaranteed. Fast delivery available.'
               ],
+              path1: 'summer',
+              path2: 'sale',
               siteLinks: []
             }
           ],
           analysis_result: {
             websiteUrl: 'https://example.com',
             companyName: 'Fashion Store',
-            description: 'A modern fashion retailer offering stylish, affordable clothing for all occasions.',
+            businessDescription: 'A modern fashion retailer offering stylish, affordable clothing for all occasions.',
             keywords: ['fashion', 'clothing', 'summer', 'style', 'affordable'],
             targetAudience: 'Fashion-conscious adults aged 25-45',
-            keyFeatures: ['High quality products', 'Affordable prices', 'Free shipping'],
             uniqueSellingPoints: ['Sustainable manufacturing', 'Wide size range', 'Ethical sourcing'],
-            competitors: ['H&M', 'Zara', 'ASOS'],
-            callToAction: 'Shop Now',
-            socialProof: '100,000+ happy customers'
+            callToAction: ['Shop Now', 'View Collection'],
+            brandTone: 'Modern, energetic, trendy'
           }
         };
         
@@ -159,6 +159,18 @@ const CampaignDetailPage: React.FC = () => {
       </AppLayout>
     );
   }
+
+  // Create a fallback analysis result that meets the WebsiteAnalysisResult interface requirements
+  const fallbackAnalysis: WebsiteAnalysisResult = {
+    companyName: campaign.analysis_result?.companyName || 'Your Company',
+    websiteUrl: campaign.website_url,
+    businessDescription: campaign.analysis_result?.businessDescription || '',
+    targetAudience: campaign.analysis_result?.targetAudience || '',
+    brandTone: campaign.analysis_result?.brandTone || '',
+    keywords: campaign.analysis_result?.keywords || [],
+    callToAction: campaign.analysis_result?.callToAction || [],
+    uniqueSellingPoints: campaign.analysis_result?.uniqueSellingPoints || []
+  };
 
   return (
     <AppLayout activePage="campaigns">
@@ -274,10 +286,7 @@ const CampaignDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <AdPreviewSwitcher 
-                  analysisResult={campaign.analysis_result || {
-                    companyName: 'Your Company',
-                    websiteUrl: campaign.website_url
-                  }}
+                  analysisResult={fallbackAnalysis}
                   googleAd={campaign.google_ads?.[0]}
                   metaAd={campaign.meta_ads?.[0]}
                   initialTab={campaign.platforms[0] || 'meta'}
