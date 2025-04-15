@@ -1,56 +1,51 @@
 
 import React from 'react';
 import { useCredits } from '@/contexts/CreditsContext';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CreditCard } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface CreditDisplayProps {
   className?: string;
-  showIcon?: boolean;
-  compact?: boolean;
+  showBuyButton?: boolean;
 }
 
 export const CreditDisplay: React.FC<CreditDisplayProps> = ({ 
-  className, 
-  showIcon = true, 
-  compact = false 
+  className,
+  showBuyButton = true
 }) => {
-  const { credits, isLoading } = useCredits();
-  
-  if (isLoading) {
+  const { credits, loading, error } = useCredits();
+
+  if (loading) {
     return (
-      <div className={cn("flex items-center text-sm font-medium", className)}>
-        <Loader2 className="h-4 w-4 animate-spin mr-1" />
-        <span>Loading...</span>
+      <div className={cn("flex items-center gap-1 text-sm", className)}>
+        <Loader2 className="h-3 w-3 animate-spin" />
+        <span>Loading credits...</span>
       </div>
     );
   }
-  
-  if (!credits) {
-    return null;
-  }
-  
-  if (compact) {
+
+  if (error) {
     return (
-      <div className={cn("text-sm font-medium bg-primary/10 text-primary py-1 px-3 rounded-full", className)}>
-        {credits.available} credits
+      <div className={cn("text-sm text-destructive", className)}>
+        Error loading credits
       </div>
     );
   }
-  
+
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {showIcon && (
-        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-xs text-primary font-bold">₢</span>
-        </div>
-      )}
-      <div className="flex flex-col">
-        <span className="text-sm font-medium">{credits.available} credits available</span>
-        {!compact && (
-          <span className="text-xs text-muted-foreground">{credits.used} used of {credits.total} total</span>
-        )}
+      <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
+        <CreditCard className="h-3 w-3" />
+        <span className="text-sm font-medium">{credits} Credits</span>
       </div>
+      
+      {showBuyButton && (
+        <Button size="sm" variant="outline" asChild>
+          <Link to="/billing">Buy Credits</Link>
+        </Button>
+      )}
     </div>
   );
 };

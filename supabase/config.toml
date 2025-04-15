@@ -1,29 +1,37 @@
 
-project_id = "YOUR_PROJECT_ID"
+project_id = "svnockyhgohttzgbgydo"
 
 [api]
 enabled = true
-port = 9999
+port = 54321
 schemas = ["public", "storage", "graphql_public"]
 
 [db]
-port = 5432
-shadow_port = 5433
-major_version = 15
+port = 54322
 
 [studio]
 enabled = true
-port = 8000
-api_url = "http://localhost:9999"
+port = 54323
+api_url = "http://localhost"
 
-[functions.create-oauth-states]
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+port = 54325
+
+[realtime]
+enabled = true
+
+[scripts]
+enabled = true
+
+[functions]
+[functions.generate-meta-ad-image]
 verify_jwt = true
 
-[functions.ad-account-auth]
-verify_jwt = true
-
-[functions.ad-account-test]
-verify_jwt = true
-
-[functions.google-ads-accounts]
-verify_jwt = true

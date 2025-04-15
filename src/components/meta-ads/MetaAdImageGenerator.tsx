@@ -1,438 +1,303 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  getFormatOptions, 
-  getStyleOptions, 
-  getIndustryOptions,
-  adFormats,
-  estimateGenerationCost
-} from '@/services/media/metaAdImageGenerator';
-import { useMetaAdImageGeneration } from '@/hooks/adGeneration/useMetaAdImageGeneration';
-import { Loader2, Download, Copy, ImagePlus } from 'lucide-react';
+import { Loader2, ImageIcon, Download, Copy, Sparkles } from 'lucide-react';
+import { generateMetaAdImage } from '@/services/meta/metaImageGenerator';
 import { toast } from 'sonner';
+import { useCredits } from '@/contexts/CreditsContext';
 
-interface MetaAdImageGeneratorProps {
-  initialBrandName?: string;
-  initialIndustry?: string;
-  initialTargetAudience?: string;
-  initialBrandColors?: string;
-}
+const adThemes = [
+  { value: 'professional', label: 'Professional & Corporate' },
+  { value: 'vibrant', label: 'Vibrant & Colorful' },
+  { value: 'minimal', label: 'Minimal & Clean' },
+  { value: 'luxury', label: 'Luxury & Elegant' },
+  { value: 'playful', label: 'Playful & Fun' },
+  { value: 'tech', label: 'Technology & Innovation' },
+  { value: 'natural', label: 'Natural & Organic' },
+  { value: 'vintage', label: 'Vintage & Retro' }
+];
 
-const MetaAdImageGenerator: React.FC<MetaAdImageGeneratorProps> = ({
-  initialBrandName = '',
-  initialIndustry = '',
-  initialTargetAudience = '',
-  initialBrandColors = ''
-}) => {
-  // Format and style options
-  const formatOptions = getFormatOptions();
-  const styleOptions = getStyleOptions();
-  const industryOptions = getIndustryOptions();
-  
-  // Form state
-  const [format, setFormat] = useState<string>('square');
-  const [style, setStyle] = useState<string>('professional');
-  const [industry, setIndustry] = useState<string>(initialIndustry);
-  const [brandName, setBrandName] = useState<string>(initialBrandName);
-  const [brandColors, setBrandColors] = useState<string>(initialBrandColors);
-  const [targetAudience, setTargetAudience] = useState<string>(initialTargetAudience);
-  const [prompt, setPrompt] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<string>('generator');
-  
-  // Meta Ad image generation hook
-  const { generateImage, isGenerating, lastGenerated, error } = useMetaAdImageGeneration();
-  
-  // Cost estimation
-  const costEstimate = estimateGenerationCost(prompt);
-  
-  // Get the current format dimensions
-  const getCurrentFormatDimensions = () => {
-    const formatData = adFormats[format as keyof typeof adFormats];
-    if (formatData) {
-      return `${formatData.width} × ${formatData.height}px`;
-    }
-    return '1080 × 1080px';
-  };
-  
-  // Handle prompt suggestions
-  const handleSuggestion = (suggestionText: string) => {
-    setPrompt(suggestionText);
-  };
-  
-  // Handle image generation
+const adFormats = [
+  { value: 'square', label: 'Square (1:1) - Feed posts', dimensions: '1080×1080px' },
+  { value: 'landscape', label: 'Landscape (1.91:1) - Feed posts', dimensions: '1200×628px' },
+  { value: 'portrait', label: 'Portrait (4:5) - Feed posts', dimensions: '1080×1350px' },
+  { value: 'story', label: 'Story (9:16) - Stories & Reels', dimensions: '1080×1920px' }
+];
+
+const promptTemplates = [
+  'Product displayed elegantly on a clean background with brand colors.',
+  'Person using product in a lifestyle setting with natural lighting.',
+  'Before and after comparison showing product benefits.',
+  'Product features displayed with modern, minimalist infographic elements.',
+  'Product in an aspirational setting related to its purpose.',
+];
+
+const MetaAdImageGenerator: React.FC = () => {
+  const [prompt, setPrompt] = useState('');
+  const [format, setFormat] = useState<'square' | 'landscape' | 'portrait' | 'story'>('square');
+  const [theme, setTheme] = useState('professional');
+  const [brandName, setBrandName] = useState('');
+  const [brandColors, setBrandColors] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { deductCredits } = useCredits();
+
   const handleGenerateImage = async () => {
     if (!prompt.trim()) {
-      toast.error("Please enter an image description");
+      toast.error('Please enter a prompt for your image');
       return;
     }
-    
-    // Generate the image
-    await generateImage({
-      basePrompt: prompt,
-      format: format as any,
-      style,
-      industry,
-      brandName,
-      brandColors,
-      targetAudience
-    });
-    
-    // Switch to the preview tab after generation
-    if (lastGenerated) {
-      setActiveTab('preview');
+
+    try {
+      setIsGenerating(true);
+      setErrorMessage(null);
+
+      // Create an enhanced prompt with brand information and theme
+      let enhancedPrompt = prompt;
+      if (brandName) enhancedPrompt += `. Brand: ${brandName}.`;
+      if (brandColors) enhancedPrompt += ` Using brand colors: ${brandColors}.`;
+      enhancedPrompt += ` Style: ${theme}.`;
+
+      // Charge credits before generating
+      const creditCost = 5;
+      const creditSuccess = await deductCredits(creditCost);
+      
+      if (!creditSuccess) {
+        toast.error('Not enough credits', {
+          description: 'Please purchase more credits to generate images.'
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      // Generate the image
+      const result = await generateMetaAdImage({
+        prompt: enhancedPrompt,
+        format,
+        style: theme
+      });
+
+      if (!result.success || !result.imageUrl) {
+        throw new Error(result.error || 'Failed to generate image');
+      }
+
+      setGeneratedImage(result.imageUrl);
+      toast.success('Image generated successfully', {
+        description: '5 credits have been used for this generation.'
+      });
+    } catch (error) {
+      console.error('Error generating image:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred');
+      
+      toast.error('Failed to generate image', {
+        description: error instanceof Error ? error.message : 'Please try again with a different prompt'
+      });
+      
+      // Refund credits on failure
+      await deductCredits(-5);
+    } finally {
+      setIsGenerating(false);
     }
   };
-  
-  // Handle image download
+
+  const handleTemplateClick = (template: string) => {
+    setPrompt(template);
+  };
+
   const handleDownload = () => {
-    if (!lastGenerated?.url) return;
+    if (!generatedImage) return;
     
-    // Create a temporary link
     const a = document.createElement('a');
-    a.href = lastGenerated.url;
+    a.href = generatedImage;
     a.download = `meta-ad-${new Date().getTime()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     
-    toast.success("Image downloaded successfully");
+    toast.success('Image downloaded successfully');
   };
-  
-  // Handle prompt copy
-  const handleCopyPrompt = () => {
-    if (!lastGenerated?.prompt) return;
+
+  const handleCopyUrl = () => {
+    if (!generatedImage) return;
     
-    navigator.clipboard.writeText(lastGenerated.prompt)
-      .then(() => {
-        toast.success("Enhanced prompt copied to clipboard");
-      })
-      .catch(err => {
-        console.error('Could not copy text:', err);
-        toast.error("Failed to copy prompt");
-      });
+    navigator.clipboard.writeText(generatedImage);
+    toast.success('Image URL copied to clipboard');
   };
-  
+
+  const getFormatDimensions = () => {
+    const formatObj = adFormats.find(f => f.value === format);
+    return formatObj ? formatObj.dimensions : '1080×1080px';
+  };
+
   return (
-    <div className="container">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="generator">Image Generator</TabsTrigger>
-          <TabsTrigger value="preview" disabled={!lastGenerated}>Preview</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="generator">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Options panel */}
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Ad Image Options</CardTitle>
-                <CardDescription>Configure your Meta ad image settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ad-format">Ad Format</Label>
-                  <Select value={format} onValueChange={setFormat}>
-                    <SelectTrigger id="ad-format">
-                      <SelectValue placeholder="Select format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {formatOptions.map(option => (
-                        <SelectItem key={option.id} value={option.id}>
-                          {option.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {getCurrentFormatDimensions()}
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="ad-style">Visual Style</Label>
-                  <Select value={style} onValueChange={setStyle}>
-                    <SelectTrigger id="ad-style">
-                      <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {styleOptions.map(option => (
-                        <SelectItem key={option.id} value={option.id}>
-                          {option.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry (Optional)</Label>
-                  <Select value={industry} onValueChange={setIndustry}>
-                    <SelectTrigger id="industry">
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No specific industry</SelectItem>
-                      {industryOptions.map(option => (
-                        <SelectItem key={option.id} value={option.id}>
-                          {option.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="brand-name">Brand Name (Optional)</Label>
-                  <Input 
-                    id="brand-name" 
-                    value={brandName} 
-                    onChange={(e) => setBrandName(e.target.value)}
-                    placeholder="Your brand name" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="brand-colors">Brand Colors (Optional)</Label>
-                  <Input 
-                    id="brand-colors" 
-                    value={brandColors} 
-                    onChange={(e) => setBrandColors(e.target.value)}
-                    placeholder="e.g., blue and white, #FF5733" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="target-audience">Target Audience (Optional)</Label>
-                  <Input 
-                    id="target-audience" 
-                    value={targetAudience} 
-                    onChange={(e) => setTargetAudience(e.target.value)}
-                    placeholder="e.g., young professionals, parents" 
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Image description and preview */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Image Description</CardTitle>
-                <CardDescription>
-                  Describe the image you want to generate for your ad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="image-prompt">Image Description</Label>
-                  <Textarea 
-                    id="image-prompt" 
-                    value={prompt} 
-                    onChange={(e) => setPrompt(e.target.value)}
-                    rows={5} 
-                    placeholder="Describe the image you want to generate..." 
-                    className="resize-none"
-                  />
-                  
-                  <div className="bg-muted/30 p-3 rounded-md mt-2">
-                    <p className="text-sm font-medium mb-2">Suggestions:</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleSuggestion("Product being used by a satisfied customer in a natural environment with soft lighting.")}
-                        className="text-xs"
-                      >
-                        Product in use
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleSuggestion("Comparison of before and after results showing clear benefits.")}
-                        className="text-xs"
-                      >
-                        Before/After
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleSuggestion("Person demonstrating a problem that the product solves with frustrated expression.")}
-                        className="text-xs"
-                      >
-                        Problem/Solution
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="pt-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm text-muted-foreground">
-                      Est. cost: {costEstimate.credits} credits
-                    </div>
-                    <Button 
-                      onClick={handleGenerateImage} 
-                      disabled={isGenerating || !prompt.trim()}
-                      className="min-w-[150px]"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <ImagePlus className="mr-2 h-4 w-4" />
-                          Generate Image
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {error && (
-                    <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-                      {error}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+    <div className="grid md:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="prompt">Image Description</Label>
+          <Textarea
+            id="prompt"
+            placeholder="Describe what you want to see in your ad image..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="min-h-[120px]"
+          />
+          
+          <div className="mt-2">
+            <p className="text-sm font-medium mb-2">Prompt Templates</p>
+            <div className="flex flex-wrap gap-2">
+              {promptTemplates.map((template, i) => (
+                <button
+                  key={i}
+                  className="text-xs bg-muted px-3 py-1 rounded-full hover:bg-muted/80"
+                  onClick={() => handleTemplateClick(template)}
+                >
+                  {template.substring(0, 30)}...
+                </button>
+              ))}
+            </div>
           </div>
-        </TabsContent>
+        </div>
         
-        <TabsContent value="preview">
-          {lastGenerated ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Generated Ad Image</CardTitle>
-                <CardDescription>
-                  Here's your generated Meta/Instagram ad image
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="flex flex-col space-y-4">
-                    <div className="border rounded-md overflow-hidden bg-muted/20 flex items-center justify-center" style={{
-                      aspectRatio: format === 'story' ? '9/16' : format === 'portrait' ? '4/5' : format === 'landscape' ? '1.91/1' : '1/1',
-                    }}>
-                      <img 
-                        src={lastGenerated.url} 
-                        alt="Generated Ad"
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={handleDownload} className="flex-1">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
-                      <Button onClick={handleCopyPrompt} variant="outline" className="flex-1">
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy Prompt
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Preview: Instagram Post</Label>
-                      <div className="border rounded-md p-4 bg-white dark:bg-gray-900">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                          <div>
-                            <div className="text-sm font-medium">{brandName || 'yourbrand'}</div>
-                            <div className="text-xs text-muted-foreground">Sponsored</div>
-                          </div>
-                        </div>
-                        <div 
-                          className="w-full rounded-md overflow-hidden mb-3"
-                          style={{
-                            aspectRatio: format === 'portrait' ? '4/5' : '1/1',
-                            backgroundImage: `url(${lastGenerated.url})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        ></div>
-                        <div className="flex justify-between mb-2">
-                          <div className="flex space-x-4">
-                            <span>♥</span>
-                            <span>💬</span>
-                            <span>▸</span>
-                          </div>
-                          <span>⊕</span>
-                        </div>
-                        <div className="text-sm font-medium mb-1">123 likes</div>
-                        <div className="text-sm">
-                          <span className="font-medium mr-1">{brandName || 'yourbrand'}</span>
-                          Your ad copy will appear here. Keep it engaging and concise.
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Original Prompt</Label>
-                      <div className="text-sm p-3 border rounded-md bg-muted/20 max-h-[150px] overflow-y-auto">
-                        {lastGenerated.originalPrompt}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Enhanced Prompt Used</Label>
-                      <div className="text-sm p-3 border rounded-md bg-muted/20 max-h-[150px] overflow-y-auto">
-                        {lastGenerated.prompt}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between pt-4">
-                  <Button variant="outline" onClick={() => setActiveTab('generator')}>
-                    Back to Generator
-                  </Button>
-                  <Button 
-                    onClick={handleGenerateImage} 
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <ImagePlus className="mr-2 h-4 w-4" />
-                        Generate New Image
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="format">Format</Label>
+            <Select value={format} onValueChange={(value: any) => setFormat(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select format" />
+              </SelectTrigger>
+              <SelectContent>
+                {adFormats.map((formatOption) => (
+                  <SelectItem key={formatOption.value} value={formatOption.value}>
+                    {formatOption.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">Dimensions: {getFormatDimensions()}</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="theme">Visual Theme</Label>
+            <Select value={theme} onValueChange={setTheme}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select theme" />
+              </SelectTrigger>
+              <SelectContent>
+                {adThemes.map((themeOption) => (
+                  <SelectItem key={themeOption.value} value={themeOption.value}>
+                    {themeOption.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="brandName">Brand Name (Optional)</Label>
+            <Input
+              id="brandName"
+              placeholder="Your brand name"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="brandColors">Brand Colors (Optional)</Label>
+            <Input
+              id="brandColors"
+              placeholder="e.g., blue and white, #FF5733"
+              value={brandColors}
+              onChange={(e) => setBrandColors(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <Button 
+          onClick={handleGenerateImage} 
+          disabled={isGenerating || !prompt.trim()} 
+          className="w-full"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
           ) : (
-            <Card>
-              <CardContent className="py-10">
-                <div className="text-center">
-                  <p>No image has been generated yet. Go to the Generator tab to create an image.</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setActiveTab('generator')} 
-                    className="mt-4"
-                  >
-                    Go to Generator
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate Image (5 Credits)
+            </>
           )}
-        </TabsContent>
-      </Tabs>
+        </Button>
+      </div>
+      
+      <div>
+        <p className="text-sm font-medium mb-2">Preview</p>
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <div 
+              className={`aspect-${format === 'square' ? 'square' : format === 'portrait' ? '[4/5]' : format === 'landscape' ? '[1.91/1]' : '[9/16]'} bg-muted flex items-center justify-center relative overflow-hidden`}
+            >
+              {isGenerating ? (
+                <div className="flex flex-col items-center justify-center text-center p-4">
+                  <Loader2 className="h-10 w-10 animate-spin text-muted-foreground mb-4" />
+                  <p className="text-sm font-medium">Generating your image...</p>
+                  <p className="text-xs text-muted-foreground mt-1">This might take up to 30 seconds</p>
+                </div>
+              ) : generatedImage ? (
+                <img 
+                  src={generatedImage} 
+                  alt="Generated ad" 
+                  className="w-full h-full object-cover"
+                  onError={() => {
+                    setErrorMessage('Failed to load image. Please try again.');
+                    setGeneratedImage(null);
+                  }}
+                />
+              ) : errorMessage ? (
+                <div className="flex flex-col items-center justify-center text-center p-4 text-destructive">
+                  <p className="text-sm font-medium">Error generating image</p>
+                  <p className="text-xs mt-1">{errorMessage}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-4">
+                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-4" />
+                  <p className="text-sm font-medium">Your image will appear here</p>
+                  <p className="text-xs text-muted-foreground mt-1">Fill in the details and click "Generate"</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {generatedImage && (
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" className="flex-1" onClick={handleDownload}>
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={handleCopyUrl}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy URL
+            </Button>
+          </div>
+        )}
+        
+        <p className="text-xs text-muted-foreground mt-4 text-center">
+          Images are generated using OpenAI DALL-E 3 technology and stored securely in Supabase.
+          <br />
+          Each image generation costs 5 credits.
+        </p>
+      </div>
     </div>
   );
 };

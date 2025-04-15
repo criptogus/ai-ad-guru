@@ -1,116 +1,165 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "./AuthContext";
-
-export interface CreditInfo {
-  total: number;
-  used: number;
-  available: number;
-  lastUpdated: string;
-}
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface CreditsContextType {
-  credits: CreditInfo | null;
-  isLoading: boolean;
+  credits: number;
+  loading: boolean;
   error: string | null;
-  refetchCredits: () => Promise<void>;
-  deductCredits: (amount: number, operation: string) => Promise<boolean>;
+  deductCredits: (amount: number) => Promise<boolean>;
+  refreshCredits: () => Promise<void>;
 }
 
-const defaultCredits: CreditInfo = {
-  total: 100,
-  used: 0,
-  available: 100,
-  lastUpdated: new Date().toISOString()
-};
+const CreditsContext = createContext<CreditsContextType>({
+  credits: 0,
+  loading: false,
+  error: null,
+  deductCredits: async () => false,
+  refreshCredits: async () => {},
+});
 
-const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
+export const useCredits = () => useContext(CreditsContext);
 
-export const CreditsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const [credits, setCredits] = useState<CreditInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+interface CreditsProviderProps {
+  children: React.ReactNode;
+}
+
+export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) => {
+  const [credits, setCredits] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const fetchCredits = async () => {
+  // Fetch the user's credits when the component mounts or the user changes
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!user) {
+        setCredits(0);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // This is a mock implementation since we don't have the actual database structure
+        // In a real app, you would fetch the user's credits from your database
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('credits')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching credits:', error);
+          setError('Failed to load credits');
+          // Set mock credits for now
+          setCredits(100);
+        } else if (data) {
+          setCredits(data.credits);
+        } else {
+          // Set default credits if no data is found
+          setCredits(100);
+        }
+      } catch (err) {
+        console.error('Unexpected error fetching credits:', err);
+        setError('An unexpected error occurred');
+        // Set mock credits for now
+        setCredits(100);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCredits();
+  }, [user]);
+
+  // Function to deduct credits from the user's account
+  const deductCredits = async (amount: number): Promise<boolean> => {
     if (!user) {
-      setCredits(null);
+      toast.error('Please login to use credits');
+      return false;
+    }
+
+    // Check if the user has enough credits
+    if (credits < amount && amount > 0) {
+      toast.error('Not enough credits', {
+        description: 'Please purchase more credits to continue'
+      });
+      return false;
+    }
+
+    try {
+      setError(null);
+
+      // In a real app, you would update the user's credits in your database
+      // and handle any concurrency issues
+      const { error } = await supabase
+        .from('profiles')
+        .update({ credits: credits - amount })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating credits:', error);
+        setError('Failed to update credits');
+        return false;
+      }
+
+      // Update the local state
+      setCredits(prev => prev - amount);
+      return true;
+    } catch (err) {
+      console.error('Unexpected error updating credits:', err);
+      setError('An unexpected error occurred');
+      return false;
+    }
+  };
+
+  // Function to refresh the user's credits
+  const refreshCredits = async (): Promise<void> => {
+    if (!user) {
+      setCredits(0);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
-      // For now, just using mock data
-      // In a real implementation, this would fetch from an API
-      const mockCredits: CreditInfo = {
-        ...defaultCredits,
-        lastUpdated: new Date().toISOString()
-      };
-      
-      setCredits(mockCredits);
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('credits')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error refreshing credits:', error);
+        setError('Failed to refresh credits');
+      } else if (data) {
+        setCredits(data.credits);
+      }
     } catch (err) {
-      console.error("Error fetching credits:", err);
-      setError("Failed to load credits information");
+      console.error('Unexpected error refreshing credits:', err);
+      setError('An unexpected error occurred');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
-  const deductCredits = async (amount: number, operation: string): Promise<boolean> => {
-    if (!user || !credits) return false;
-    
-    if (credits.available < amount) {
-      setError("Insufficient credits for this operation");
-      return false;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // In a real implementation, this would call an API
-      // For now, just updating the local state
-      setCredits({
-        ...credits,
-        used: credits.used + amount,
-        available: credits.available - amount,
-        lastUpdated: new Date().toISOString()
-      });
-      
-      return true;
-    } catch (err) {
-      console.error(`Error deducting ${amount} credits for ${operation}:`, err);
-      setError("Failed to update credits");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCredits();
-  }, [user]);
 
   return (
     <CreditsContext.Provider
       value={{
         credits,
-        isLoading,
+        loading,
         error,
-        refetchCredits: fetchCredits,
-        deductCredits
+        deductCredits,
+        refreshCredits,
       }}
     >
       {children}
     </CreditsContext.Provider>
   );
-};
-
-export const useCredits = () => {
-  const context = useContext(CreditsContext);
-  if (context === undefined) {
-    throw new Error("useCredits must be used within a CreditsProvider");
-  }
-  return context;
 };
