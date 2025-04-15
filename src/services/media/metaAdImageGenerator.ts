@@ -1,5 +1,11 @@
-
 import { errorLogger } from '@/services/libs/error-handling';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  'https://svnockyhgohttzgbgydo.supabase.co', 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bm9ja3loZ29odHR6Z2JneWRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMDEwMTEsImV4cCI6MjA1Nzg3NzAxMX0.wJ4kM_H0HR-X1u5LQecSzgEq0UuebZaeYUaI_uS2ah4'
+);
 
 export interface MetaAdImageParams {
   basePrompt: string;
@@ -218,8 +224,6 @@ export const getIndustryOptions = () => {
  * Estimates token usage and cost for an image generation request
  */
 export const estimateGenerationCost = (prompt: string) => {
-  // Very rough estimation
-  // DALL-E 3 HD costs approximately $0.080 per image
   return {
     cost: 0.08,
     currency: 'USD',
