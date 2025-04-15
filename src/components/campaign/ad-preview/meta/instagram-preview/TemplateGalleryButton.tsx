@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageIcon } from "lucide-react";
 import TemplateGallery, { AdTemplate } from "../../template-gallery/TemplateGallery";
+import adTemplates, { getTemplatesByPlatform } from "../../template-gallery/adTemplateData";
 
 interface TemplateGalleryButtonProps {
   onSelectTemplate: (template: AdTemplate) => void;
@@ -34,6 +35,9 @@ const TemplateGalleryButton: React.FC<TemplateGalleryButtonProps> = ({
     setIsGalleryOpen(false);
   };
 
+  // Get platform-specific templates
+  const platformTemplates = getTemplatesByPlatform(platform);
+
   return (
     <>
       <Button
@@ -47,6 +51,8 @@ const TemplateGalleryButton: React.FC<TemplateGalleryButtonProps> = ({
       </Button>
 
       <TemplateGallery
+        templates={platformTemplates}
+        onSelect={handleSelectTemplate}
         isOpen={isGalleryOpen}
         onClose={handleCloseGallery}
         onSelectTemplate={handleSelectTemplate}

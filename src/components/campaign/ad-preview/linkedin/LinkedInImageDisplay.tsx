@@ -5,6 +5,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import { RefreshCw, ImageIcon } from "lucide-react";
 import LinkedInImagePlaceholder from "./LinkedInImagePlaceholder";
 import TemplateGallery, { AdTemplate } from "../template-gallery/TemplateGallery";
+import adTemplates, { getTemplatesByPlatform } from "../template-gallery/adTemplateData";
 import { toast } from "sonner";
 
 interface LinkedInImageDisplayProps {
@@ -58,6 +59,9 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
       }, 1000 * nextRetry); // Increase delay with each retry
     }
   };
+
+  // Get LinkedIn-specific templates
+  const linkedInTemplates = getTemplatesByPlatform("linkedin");
 
   return (
     <div className="relative">
@@ -120,6 +124,8 @@ const LinkedInImageDisplay: React.FC<LinkedInImageDisplayProps> = ({
       </div>
       
       <TemplateGallery
+        templates={linkedInTemplates}
+        onSelect={handleTemplateSelect}
         isOpen={showTemplateGallery}
         onClose={() => setShowTemplateGallery(false)}
         onSelectTemplate={handleTemplateSelect}
