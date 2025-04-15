@@ -17,7 +17,7 @@ interface LinkedInAdFormProps {
   companyInfo: WebsiteAnalysisResult;
   industry: string;
   adTheme: string;
-  imageFormat: string;
+  imageFormat: "square" | "portrait" | "landscape";
   isGenerating: boolean;
   onCompanyNameChange: (value: string) => void;
   onAdChange: (field: keyof MetaAd, value: string) => void;

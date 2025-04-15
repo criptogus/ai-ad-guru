@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
@@ -14,7 +15,7 @@ interface NewMetaAdFormProps {
   companyInfo: WebsiteAnalysisResult;
   industry: string;
   adTheme: string;
-  imageFormat: string;
+  imageFormat: "square" | "portrait" | "landscape";
   isGenerating: boolean;
   onCompanyNameChange: (value: string) => void;
   onAdChange: (field: keyof MetaAd, value: string) => void;
