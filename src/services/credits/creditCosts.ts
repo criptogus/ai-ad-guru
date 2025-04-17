@@ -1,38 +1,44 @@
+import { CreditAction } from './types';
 
 /**
  * Credit costs for various actions
  */
-export const CREDIT_COSTS = {
-  'textAd': 1,
-  'imageAd': 3,
-  'googleAds': 5,
-  'metaAds': 5,
-  'linkedInAds': 5,
-  'microsoftAds': 5,
-  'siteAnalysis': 5,
-  'audienceAnalysis': 5,
-  'imageGeneration': 3,
-  'smartBanner': 3,
-  'adOptimization.daily': 2,
+const CREDIT_COSTS: Record<CreditAction, number> = {
+  // Text ad generation
+  textAd: 1,
+  googleAds: 5,
+  microsoftAds: 5,
+  
+  // Image ad generation
+  imageAd: 3,
+  metaAds: 5,
+  linkedInAds: 8,
+  
+  // Other services
+  siteAnalysis: 2,
+  audienceAnalysis: 3,
+  imageGeneration: 5,
+  smartBanner: 3,
+  
+  // Optimization costs
+  'adOptimization.daily': 10,
   'adOptimization.weekly': 5,
-  'adOptimization.monthly': 10,
-  'campaignOptimizationDaily': 2,
-  'campaignOptimizationWeekly': 5,
-  'campaignOptimizationMonthly': 10
+  'adOptimization.monthly': 2,
+  campaignOptimizationDaily: 15,
+  campaignOptimizationWeekly: 8,
+  campaignOptimizationMonthly: 3
 };
 
 /**
- * Get credit cost for a specific action
+ * Get credit cost for an action
  */
-export const getCreditCost = (action: string): number => {
+export const getCreditCost = (action: CreditAction): number => {
   return CREDIT_COSTS[action] || 0;
 };
 
 /**
- * Calculate total credit cost for multiple actions
+ * Get all credit costs
  */
-export const calculateTotalCreditCost = (actions: { action: string, quantity: number }[]): number => {
-  return actions.reduce((total, current) => {
-    return total + (getCreditCost(current.action) * current.quantity);
-  }, 0);
+export const getAllCreditCosts = (): Record<CreditAction, number> => {
+  return { ...CREDIT_COSTS };
 };

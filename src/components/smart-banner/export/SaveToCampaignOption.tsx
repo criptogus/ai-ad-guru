@@ -33,6 +33,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
       const creditSuccess = await consumeCredits(
         user.id,
         "smartBanner" as CreditAction,
+        creditCost,
         `Smart Banner - ${platform} ${format}`
       );
       

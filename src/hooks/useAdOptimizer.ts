@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { consumeCredits } from '@/services/credits/creditUsage';
+import { getCreditCost } from '@/services/credits/creditCosts';
 import { CreditAction } from '@/services/credits/types';
 
 export interface OptimizationResult {
@@ -54,8 +55,16 @@ export const useAdOptimizer = () => {
     setResults([]);
 
     try {
+      // Get the credit cost for this action
+      const creditCost = getCreditCost(creditAction);
+      
       // Check if user has enough credits
-      const hasCredits = await consumeCredits(user.id, creditAction, `Google Ads Optimization - ${frequency}`);
+      const hasCredits = await consumeCredits(
+        user.id, 
+        creditAction, 
+        creditCost,
+        `Google Ads Optimization - ${frequency}`
+      );
       
       if (!hasCredits) {
         toast.error('Insufficient credits', {
@@ -109,8 +118,16 @@ export const useAdOptimizer = () => {
     setResults([]);
 
     try {
+      // Get the credit cost for this action
+      const creditCost = getCreditCost(creditAction);
+      
       // Check if user has enough credits
-      const hasCredits = await consumeCredits(user.id, creditAction, `Meta Ads Optimization - ${frequency}`);
+      const hasCredits = await consumeCredits(
+        user.id, 
+        creditAction, 
+        creditCost,
+        `Meta Ads Optimization - ${frequency}`
+      );
       
       if (!hasCredits) {
         toast.error('Insufficient credits', {
