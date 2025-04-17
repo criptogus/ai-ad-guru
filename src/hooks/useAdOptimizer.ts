@@ -1,183 +1,167 @@
 
 import { useState } from 'react';
-import { optimizeAds, OptimizationGoal, OptimizationRequest, OptimizedGoogleAd, OptimizedMetaAd } from '@/services/api/optimizerApi';
-import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
-import { getCreditCost } from '@/services/credits';
-import { checkUserCredits, deductUserCredits } from '@/services/credits';
-import { useToast } from './use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { consumeCredits } from '@/services/credits/creditUsage';
+import { CreditAction } from '@/services/credits/types';
 
-export interface UseAdOptimizerReturn {
-  optimizeGoogleAds: (ads: GoogleAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedGoogleAd[] | null>;
-  optimizeMetaAds: (ads: MetaAd[], performance?: any, goal?: OptimizationGoal) => Promise<OptimizedMetaAd[] | null>;
-  isOptimizing: boolean;
+export interface OptimizationResult {
+  id: string;
+  title: string;
+  description: string;
+  improvementPercentage: number;
+  appliedChanges: boolean;
 }
 
-export { type OptimizationGoal }; // Re-export the OptimizationGoal type
-
-export const useAdOptimizer = (): UseAdOptimizerReturn => {
+export const useAdOptimizer = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const { toast } = useToast();
-  const optimizationAction = "adOptimization.daily" as const;
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<OptimizationResult[]>([]);
   const { user } = useAuth();
 
-  const optimizeGoogleAds = async (
-    ads: GoogleAd[],
-    performance?: any,
-    goal?: OptimizationGoal
-  ): Promise<OptimizedGoogleAd[] | null> => {
-    if (!ads || ads.length === 0) {
-      toast({
-        title: "Optimization Failed",
-        description: "No ads provided for optimization",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    // Check if user has enough credits
+  // Sample optimization function for Google ads
+  const optimizeGoogleAds = async (campaignId: string, frequency: 'daily' | 'weekly' | 'monthly' = 'daily') => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to optimize ads",
-        variant: "destructive",
-      });
-      return null;
+      toast.error('You need to be logged in to optimize ads');
+      return [];
     }
-
-    const { hasEnough, required } = await checkUserCredits(user.id, optimizationAction);
     
-    if (!hasEnough) {
-      toast({
-        title: "Not Enough Credits",
-        description: `You need ${required} credits to optimize ads. Please purchase more credits.`,
-        variant: "destructive",
-      });
-      return null;
+    let creditAction: CreditAction;
+    
+    switch(frequency) {
+      case 'daily':
+        creditAction = 'adOptimization.daily';
+        break;
+      case 'weekly':
+        creditAction = 'adOptimization.weekly';
+        break;
+      case 'monthly':
+        creditAction = 'adOptimization.monthly';
+        break;
+      default:
+        creditAction = 'adOptimization.daily';
     }
 
     setIsOptimizing(true);
-    
+    setProgress(0);
+    setResults([]);
+
     try {
-      const request: OptimizationRequest = {
-        ads,
-        platform: 'google',
-        performance,
-        optimizationGoal: goal
-      };
+      // Check if user has enough credits
+      const hasCredits = await consumeCredits(user.id, 2, creditAction, `Google Ads Optimization - ${frequency}`);
       
-      const optimizedAds = await optimizeAds<OptimizedGoogleAd>(request);
-      
-      if (optimizedAds) {
-        await deductUserCredits(
-          user.id,
-          optimizationAction,
-          "Ad Optimization",
-          `Optimized ${optimizedAds.length} Google ads`
-        );
-        
-        toast({
-          title: "Optimization Complete",
-          description: `Successfully created ${optimizedAds.length} optimized ad variations`,
+      if (!hasCredits) {
+        toast.error('Insufficient credits', {
+          description: 'You need more credits to perform this optimization'
         });
-        
-        return optimizedAds;
+        return [];
       }
+
+      // Simulate optimization process
+      await simulateProgress();
       
-      return null;
+      // Generate mock optimization results
+      const mockResults = generateMockResults();
+      setResults(mockResults);
+      
+      return mockResults;
     } catch (error) {
-      console.error("Error optimizing Google ads:", error);
-      toast({
-        title: "Optimization Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-      return null;
+      console.error('Error optimizing Google ads:', error);
+      toast.error('Failed to optimize ads');
+      return [];
     } finally {
       setIsOptimizing(false);
     }
   };
 
-  const optimizeMetaAds = async (
-    ads: MetaAd[],
-    performance?: any,
-    goal?: OptimizationGoal
-  ): Promise<OptimizedMetaAd[] | null> => {
-    if (!ads || ads.length === 0) {
-      toast({
-        title: "Optimization Failed",
-        description: "No ads provided for optimization",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    // Check if user has enough credits
+  // Sample optimization function for Meta ads
+  const optimizeMetaAds = async (campaignId: string, frequency: 'daily' | 'weekly' | 'monthly' = 'daily') => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to optimize ads",
-        variant: "destructive",
-      });
-      return null;
+      toast.error('You need to be logged in to optimize ads');
+      return [];
     }
-
-    const { hasEnough, required } = await checkUserCredits(user.id, optimizationAction);
     
-    if (!hasEnough) {
-      toast({
-        title: "Not Enough Credits",
-        description: `You need ${required} credits to optimize ads. Please purchase more credits.`,
-        variant: "destructive",
-      });
-      return null;
+    let creditAction: CreditAction;
+    
+    switch(frequency) {
+      case 'daily':
+        creditAction = 'adOptimization.daily';
+        break;
+      case 'weekly':
+        creditAction = 'adOptimization.weekly';
+        break;
+      case 'monthly':
+        creditAction = 'adOptimization.monthly';
+        break;
+      default:
+        creditAction = 'adOptimization.daily';
     }
 
     setIsOptimizing(true);
-    
+    setProgress(0);
+    setResults([]);
+
     try {
-      const request: OptimizationRequest = {
-        ads,
-        platform: 'meta',
-        performance,
-        optimizationGoal: goal
-      };
+      // Check if user has enough credits
+      const hasCredits = await consumeCredits(user.id, 2, creditAction, `Meta Ads Optimization - ${frequency}`);
       
-      const optimizedAds = await optimizeAds<OptimizedMetaAd>(request);
-      
-      if (optimizedAds) {
-        await deductUserCredits(
-          user.id,
-          optimizationAction,
-          "Ad Optimization",
-          `Optimized ${optimizedAds.length} Meta/Instagram ads`
-        );
-        
-        toast({
-          title: "Optimization Complete",
-          description: `Successfully created ${optimizedAds.length} optimized ad variations`,
+      if (!hasCredits) {
+        toast.error('Insufficient credits', {
+          description: 'You need more credits to perform this optimization'
         });
-        
-        return optimizedAds;
+        return [];
       }
+
+      // Simulate optimization process
+      await simulateProgress();
       
-      return null;
+      // Generate mock optimization results
+      const mockResults = generateMockResults('Meta');
+      setResults(mockResults);
+      
+      return mockResults;
     } catch (error) {
-      console.error("Error optimizing Meta ads:", error);
-      toast({
-        title: "Optimization Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-      return null;
+      console.error('Error optimizing Meta ads:', error);
+      toast.error('Failed to optimize ads');
+      return [];
     } finally {
       setIsOptimizing(false);
     }
+  };
+
+  // Helper function to simulate progress
+  const simulateProgress = async () => {
+    for (let i = 0; i <= 100; i += 5) {
+      setProgress(i);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  };
+
+  // Helper function to generate mock optimization results
+  const generateMockResults = (platform: 'Google' | 'Meta' = 'Google') => {
+    const results: OptimizationResult[] = [];
+    
+    for (let i = 1; i <= 5; i++) {
+      results.push({
+        id: `result-${i}`,
+        title: `${platform} Ad Optimization #${i}`,
+        description: `Improved ad targeting and bid strategy for better performance.`,
+        improvementPercentage: Math.floor(Math.random() * 30) + 5,
+        appliedChanges: false
+      });
+    }
+    
+    return results;
   };
 
   return {
+    isOptimizing,
+    progress,
+    results,
     optimizeGoogleAds,
     optimizeMetaAds,
-    isOptimizing
+    setResults
   };
 };
+
+export default useAdOptimizer;

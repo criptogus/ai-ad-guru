@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { consumeCredits } from "@/services/credits/creditUsage";
 import { getCreditCost } from "@/services/credits/creditCosts";
+import { CreditAction } from "@/services/credits/types";
 
 interface SaveToCampaignOptionProps {
   backgroundImage: string | null;
@@ -32,7 +33,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
       const creditSuccess = await consumeCredits(
         user.id,
         creditCost,
-        "smartBanner" as "smartBanner",
+        "smartBanner" as CreditAction,
         `Smart Banner - ${platform} ${format}`
       );
       

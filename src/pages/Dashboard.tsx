@@ -17,9 +17,18 @@ const Dashboard: React.FC = () => {
     // ... mock campaign data would go here
   ];
   
+  // Convert CustomUser to the format expected by DashboardHeader
+  const dashboardUser = user ? {
+    name: user.name || 'User',
+    credits: user.credits || 0,
+    hasPaid: user.hasPaid || false,
+    id: user.id,
+    email: user.email
+  } : null;
+  
   return (
     <div className="container px-4 py-6 mx-auto max-w-7xl">
-      <DashboardHeader />
+      <DashboardHeader user={dashboardUser} />
       
       <div className="grid grid-cols-1 gap-6 mb-8">
         <SmartNotifications />
@@ -27,7 +36,7 @@ const Dashboard: React.FC = () => {
       
       {/* Credits Status Card */}
       <div className="mb-8">
-        <CreditsStatus user={user} />
+        <CreditsStatus user={dashboardUser} />
       </div>
       
       <div className="grid grid-cols-1 gap-6 mb-8">
