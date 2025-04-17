@@ -18,7 +18,7 @@ export { type OptimizationGoal }; // Re-export the OptimizationGoal type
 export const useAdOptimizer = (): UseAdOptimizerReturn => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const { toast } = useToast();
-  const optimizationCost = getCreditCost("adOptimization.daily");
+  const optimizationAction = "adOptimization.daily" as const;
   const { user } = useAuth();
 
   const optimizeGoogleAds = async (
@@ -45,12 +45,12 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(user.id, optimizationCost);
+    const { hasEnough, required } = await checkUserCredits(user.id, optimizationAction);
     
-    if (!hasCredits) {
+    if (!hasEnough) {
       toast({
         title: "Not Enough Credits",
-        description: `You need ${optimizationCost} credits to optimize ads. Please purchase more credits.`,
+        description: `You need ${required} credits to optimize ads. Please purchase more credits.`,
         variant: "destructive",
       });
       return null;
@@ -71,8 +71,8 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         await deductUserCredits(
           user.id,
-          optimizationCost,
-          "adOptimization.daily",
+          optimizationAction,
+          "Ad Optimization",
           `Optimized ${optimizedAds.length} Google ads`
         );
         
@@ -122,12 +122,12 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       return null;
     }
 
-    const hasCredits = await checkUserCredits(user.id, optimizationCost);
+    const { hasEnough, required } = await checkUserCredits(user.id, optimizationAction);
     
-    if (!hasCredits) {
+    if (!hasEnough) {
       toast({
         title: "Not Enough Credits",
-        description: `You need ${optimizationCost} credits to optimize ads. Please purchase more credits.`,
+        description: `You need ${required} credits to optimize ads. Please purchase more credits.`,
         variant: "destructive",
       });
       return null;
@@ -148,8 +148,8 @@ export const useAdOptimizer = (): UseAdOptimizerReturn => {
       if (optimizedAds) {
         await deductUserCredits(
           user.id,
-          optimizationCost,
-          "adOptimization.daily",
+          optimizationAction,
+          "Ad Optimization",
           `Optimized ${optimizedAds.length} Meta/Instagram ads`
         );
         

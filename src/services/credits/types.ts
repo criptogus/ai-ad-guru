@@ -12,6 +12,10 @@ export type CreditAction =
   | 'siteAnalysis'
   | 'audienceAnalysis'
   | 'imageGeneration'
+  | 'smartBanner'
+  | 'adOptimization.daily'
+  | 'adOptimization.weekly'
+  | 'adOptimization.monthly'
   | 'campaignOptimizationDaily'
   | 'campaignOptimizationWeekly'
   | 'campaignOptimizationMonthly';
@@ -25,3 +29,20 @@ export interface CreditCheckResult {
   current: number;
   deficit: number;
 }
+
+/**
+ * Credit transaction type for ledger entries
+ */
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  change: number;
+  reason: string;
+  refId?: string;
+  createdAt: string;
+}
+
+/**
+ * Credit transaction type enumeration
+ */
+export type CreditTransactionType = 'purchase' | 'usage' | 'refund' | 'welcome';

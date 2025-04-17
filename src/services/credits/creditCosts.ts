@@ -12,6 +12,10 @@ export const CREDIT_COSTS = {
   'siteAnalysis': 5,
   'audienceAnalysis': 5,
   'imageGeneration': 3,
+  'smartBanner': 3,
+  'adOptimization.daily': 2,
+  'adOptimization.weekly': 5,
+  'adOptimization.monthly': 10,
   'campaignOptimizationDaily': 2,
   'campaignOptimizationWeekly': 5,
   'campaignOptimizationMonthly': 10
