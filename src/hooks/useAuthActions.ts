@@ -7,17 +7,16 @@ import { loginWithGoogle } from '@/services/auth/loginService';
 import { checkUserSubscription, verifySubscriptionWithStripe } from '@/services/auth/subscriptionService';
 import { User } from '@supabase/supabase-js';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { navigate } from './adConnections/utils/navigationUtils';
 
 export const useAuthActions = (
   user?: User | null,
   setUser?: (user: User | null) => void
 ) => {
-  const navigate = useNavigate();
   const { handleLogin, isSubmitting: isLoginSubmitting } = useLoginActions();
-  const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser, navigate);
-  const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser, navigate);
+  const { logout, isLoading: isLogoutLoading } = useLogoutAction(setUser);
+  const { register, isLoading: isRegisterLoading } = useRegisterAction(setUser);
   const { 
     updateUserPaymentStatus, 
     simulateSuccessfulPayment,

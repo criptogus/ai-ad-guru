@@ -1,11 +1,12 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
 import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.tsx'
+import './index.css'
 import { AuthProvider } from './contexts/AuthContext';
 
 // Debug utility for development - Check Supabase edge function connectivity
@@ -35,9 +36,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>
       <LanguageProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
       </LanguageProvider>
     </HelmetProvider>
   </React.StrictMode>,

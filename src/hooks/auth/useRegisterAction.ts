@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CustomUser } from '@/types/auth';
+import { navigate } from '../adConnections/utils/navigationUtils';
 
-export const useRegisterAction = (setUser: (user: CustomUser | null) => void, navigate?: (path: string) => void) => {
+export const useRegisterAction = (setUser: (user: CustomUser | null) => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -39,9 +40,7 @@ export const useRegisterAction = (setUser: (user: CustomUser | null) => void, na
           avatar: data.user.user_metadata.avatar_url || '',
         };
         setUser(customUser);
-        if (navigate) {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
         return data;
       }
     } catch (error: any) {

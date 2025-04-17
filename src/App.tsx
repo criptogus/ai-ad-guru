@@ -1,10 +1,6 @@
 
-import React from 'react';
-import {
-  createBrowserRouter,
-  RouterProvider,
-  useNavigate,
-} from "react-router-dom";
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Authentication from "./pages/Authentication";
 import Dashboard from "./pages/Dashboard";
@@ -17,106 +13,32 @@ import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/AppLayout";
 import BillingHistoryPage from "@/pages/BillingHistoryPage";
-import { useEffect } from "react";
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return isAuthenticated ? <AppLayout>{children}</AppLayout> : null;
-};
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Authentication />,
-  },
-  {
-    path: "/auth",
-    element: <Authentication />,
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/campaigns",
-    element: (
-      <ProtectedRoute>
-        <CampaignsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/create-campaign",
-    element: (
-      <ProtectedRoute>
-        <CreateCampaignPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/settings",
-    element: (
-      <ProtectedRoute>
-        <SettingsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/config",
-    element: (
-      <ProtectedRoute>
-        <ConfigPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/credits",
-    element: (
-      <ProtectedRoute>
-        <CreditsInfoPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/billing",
-    element: (
-      <ProtectedRoute>
-        <BillingPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/billing/history",
-    element: (
-      <ProtectedRoute>
-        <BillingHistoryPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "*",
-    element: <NotFound />,
-  },
-]);
+import ProtectedRoute from './components/ProtectedRoute';
+import { setNavigate } from './hooks/adConnections/utils/navigationUtils';
 
 function App() {
-  return <RouterProvider router={router} />;
+  const navigate = useNavigate();
+  
+  // Initialize the navigation utility
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate]);
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/auth" replace />} />
+      <Route path="/auth" element={<Authentication />} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+      <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
+      <Route path="/credits" element={<ProtectedRoute><CreditsInfoPage /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+      <Route path="/billing/history" element={<ProtectedRoute><BillingHistoryPage /></ProtectedRoute>} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
 
 export default App;

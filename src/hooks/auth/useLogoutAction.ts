@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { navigate } from '../adConnections/utils/navigationUtils';
 
 export const useLogoutAction = (
-  setUser: (user: any | null) => void, 
-  navigate?: (path: string) => void
+  setUser: (user: any | null) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast: uiToast } = useToast();
@@ -20,10 +20,8 @@ export const useLogoutAction = (
       // Use sonner toast for a better UX
       toast.success("Logged out successfully");
       
-      // Only navigate if navigate function is provided
-      if (navigate) {
-        navigate('/auth/login');
-      }
+      // Navigate to login page
+      navigate('/auth/login');
     } catch (error: any) {
       toast.error("Logout failed", {
         description: error.message || "There was a problem logging out"
