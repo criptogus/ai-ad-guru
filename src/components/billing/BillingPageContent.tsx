@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -35,21 +34,17 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const [showCreditHistory, setShowCreditHistory] = useState(false);
   const [hasPendingPurchase, setHasPendingPurchase] = useState(false);
   
-  // Handle the credits verification
   const { processing } = useCreditsVerification();
 
-  // Check if we're coming from campaign creation with required credits
   const state = location.state as { from?: string; requiredCredits?: number } | null;
   const fromCampaign = state?.from === 'campaign';
   const requiredCredits = state?.requiredCredits || 0;
   
-  // Check for pending purchases on component mount
   useEffect(() => {
     try {
       const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
       setHasPendingPurchase(!!storedPurchaseIntent);
       
-      // Check if there's a return path after successful subscription
       const checkSubscription = async () => {
         if (user) {
           try {
@@ -73,7 +68,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
     }
   }, [user, checkSubscriptionStatus, navigate]);
   
-  // Force a refresh of the component to trigger useCreditsVerification
   const handleVerifyPurchase = () => {
     window.location.reload();
   };
@@ -87,34 +81,21 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Billing</h1>
-            <p className="text-muted-foreground">Manage your subscription</p>
+            <p className="text-muted-foreground">Manage your credits and subscription</p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <History size={16} />
-                <span>Credit History</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl bg-white dark:bg-gray-800">
-              <DialogHeader>
-                <DialogTitle>Credit Usage History</DialogTitle>
-                <DialogDescription>
-                  View your credit usage history and purchases
-                </DialogDescription>
-              </DialogHeader>
-              {user && <CreditUsageHistory userId={user.id} />}
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => navigate("/billing/history")}
+          >
+            <History size={16} />
+            <span>Billing History</span>
+          </Button>
           
-          {/* Developer mode toggle button */}
           <Button 
             variant="outline" 
             size="sm"
@@ -127,12 +108,10 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         </div>
       </div>
       
-      {/* Developer tools section */}
       {showDevTools && (
         <DevToolsSection updateUserPaymentStatus={updateUserPaymentStatus} />
       )}
       
-      {/* Show info if there's a pending purchase */}
       {hasPendingPurchase && !processing && (
         <Card className="p-4 mb-6 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-center justify-between">
@@ -152,7 +131,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         </Card>
       )}
       
-      {/* Show warning if coming from campaign with insufficient credits */}
       {fromCampaign && requiredCredits > 0 && (
         <Card className="p-4 mb-6 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
           <p className="text-amber-800 dark:text-amber-200">
@@ -162,7 +140,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         </Card>
       )}
       
-      {/* Show info if credits are being processed */}
       {processing && (
         <Card className="p-4 mb-6 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
           <p className="text-blue-800 dark:text-blue-200">
@@ -172,12 +149,10 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       )}
       
       <div className="space-y-8">
-        {/* Credits Purchase Card */}
         {user && (
           <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
         )}
-
-        {/* Subscription Card */}
+        
         <BillingSubscriptionCard 
           user={user} 
           updateUserPaymentStatus={updateUserPaymentStatus} 

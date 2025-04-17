@@ -1,51 +1,27 @@
 
 /**
- * Credit action types supported by the platform
+ * Credit action types
  */
-export type CreditAction =
-  // Ad creation
-  | 'googleAds'
-  | 'metaAds'
-  | 'linkedinAds'
-  | 'microsoftAds'
-  
-  // Image generation
+export type CreditAction = 
+  | 'textAd' 
+  | 'imageAd' 
+  | 'googleAds' 
+  | 'metaAds' 
+  | 'linkedInAds' 
+  | 'microsoftAds' 
+  | 'siteAnalysis'
+  | 'audienceAnalysis'
   | 'imageGeneration'
-  | 'smartBanner'
-  
-  // AI optimization
-  | 'adOptimization.daily'
-  | 'adOptimization.weekly'
-  | 'adOptimization.monthly'
-  
-  // Other actions
-  | 'campaignAnalysis'
-  | 'websiteAnalysis'
-  | 'exportReport'
-  
-  // Purchases
-  | 'creditPurchase';
+  | 'campaignOptimizationDaily'
+  | 'campaignOptimizationWeekly'
+  | 'campaignOptimizationMonthly';
 
 /**
- * Credit transaction types
+ * Credit checks result type
  */
-export type CreditTransactionType = 'debit' | 'credit';
-
-/**
- * Credit transaction interface
- */
-export interface CreditTransaction {
-  id: string;
-  userId: string;
-  action: CreditAction;
-  amount: number;
-  description: string;
-  type: CreditTransactionType;
-  timestamp: string;
-  metadata?: Record<string, any>;
+export interface CreditCheckResult {
+  hasEnough: boolean;
+  required: number;
+  current: number;
+  deficit: number;
 }
-
-/**
- * Export credit costs for use in other modules
- */
-export { CREDIT_COSTS } from './creditCosts';

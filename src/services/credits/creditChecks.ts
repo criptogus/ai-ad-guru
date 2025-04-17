@@ -1,82 +1,96 @@
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { getCreditCost } from "./creditCosts";
-import { CreditAction } from "./types";
 
-// Function to check if user has enough credits
-export const checkUserCredits = async (userId: string, amount: number): Promise<boolean> => {
+import { supabase } from '@/integrations/supabase/client';
+import { getCreditCost } from './creditCosts';
+import { CreditAction, CreditCheckResult } from './types';
+
+/**
+ * Check if a user has enough credits for an action
+ */
+export const checkUserCredits = async (
+  userId: string, 
+  action: CreditAction,
+  quantity: number = 1
+): Promise<CreditCheckResult> => {
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("credits")
-      .eq("id", userId)
+    // Get the credit cost for the action
+    const requiredCredits = getCreditCost(action) * quantity;
+    
+    // Get user's current credit balance
+    const { data: balance, error } = await supabase
+      .from('credit_balance')
+      .select('balance')
+      .eq('user_id', userId)
       .single();
-
+    
     if (error) {
-      console.error("Error fetching user credits:", error);
-      return false;
+      console.error('Error checking user credits:', error);
+      throw error;
     }
-
-    if (!data) {
-      console.warn("User not found");
-      return false;
-    }
-
-    const userCredits = data.credits;
-    return userCredits >= amount;
+    
+    const currentCredits = balance?.balance || 0;
+    const hasEnough = currentCredits >= requiredCredits;
+    
+    return {
+      hasEnough,
+      required: requiredCredits,
+      current: currentCredits,
+      deficit: hasEnough ? 0 : requiredCredits - currentCredits
+    };
   } catch (error) {
-    console.error("Error checking user credits:", error);
-    return false;
+    console.error('Error in checkUserCredits:', error);
+    // Return a default failed result
+    return {
+      hasEnough: false,
+      required: getCreditCost(action) * quantity,
+      current: 0,
+      deficit: getCreditCost(action) * quantity
+    };
   }
 };
 
-// Function to deduct credits from user
+/**
+ * Deduct credits from user's account
+ */
 export const deductUserCredits = async (
   userId: string,
-  amount: number,
   action: CreditAction,
-  description?: string
+  reason: string,
+  refId?: string,
+  quantity: number = 1
 ): Promise<boolean> => {
   try {
-    // Ensure amount is not negative
-    if (amount < 0) {
-      console.warn("Attempted to deduct a negative amount of credits.");
+    // Get the credit cost for the action
+    const creditCost = getCreditCost(action) * quantity;
+    
+    if (creditCost <= 0) {
+      return true; // No credits needed for this action
+    }
+    
+    // Check if user has enough credits
+    const { hasEnough } = await checkUserCredits(userId, action, quantity);
+    
+    if (!hasEnough) {
       return false;
     }
-
-    // Get the actual cost from the creditCosts configuration
-    const creditCost = getCreditCost(action);
-
-    // Verify that the amount to deduct matches the expected cost
-    if (amount !== creditCost) {
-      console.warn(`Deduct amount (${amount}) does not match expected cost (${creditCost}) for action ${action}`);
-    }
-
-    // Optimistic update: Deduct credits first and revert if there's an error
-    const { error: updateError } = await supabase.rpc('deduct_credits', {
-      user_id: userId,
-      credit_deduction: amount,
-      action_type: action,
-      description_text: description || `Deducted ${amount} credits for ${action}`
-    });
-
-    if (updateError) {
-      console.error("Error deducting credits:", updateError);
-      toast("Credit Deduction Failed", {
-        description: "There was an error deducting credits. Please try again.",
+    
+    // Deduct credits from user account
+    const { error } = await supabase
+      .from('credit_ledger')
+      .insert({
+        user_id: userId,
+        change: -creditCost,
+        reason: action,
+        ref_id: refId || reason
       });
+    
+    if (error) {
+      console.error('Error deducting user credits:', error);
       return false;
     }
-
-    toast("Credits Deducted", {
-      description: `Successfully deducted ${amount} credits for ${action}`,
-    });
+    
     return true;
   } catch (error) {
-    console.error("Error during credit deduction:", error);
-    toast("Credit Deduction Error", {
-      description: "An error occurred while deducting credits. Please try again.",
-    });
+    console.error('Error in deductUserCredits:', error);
     return false;
   }
 };

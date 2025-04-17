@@ -4,43 +4,102 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
-import { consumeCredits } from "@/services/credits/creditUsage";
+import { checkUserCredits, deductUserCredits } from "@/services/credits/creditChecks";
 import { getCreditCost } from "@/services/credits/creditCosts";
+import { toast } from "sonner";
 
 export const useCampaignCreation = (
   user: any,
   campaignData: any,
   googleAds: GoogleAd[],
-  metaAds: MetaAd[] // Changed parameter type from LinkedInAd[] to MetaAd[]
+  metaAds: MetaAd[] 
 ) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreditCheckPending, setIsCreditCheckPending] = useState(false);
+
+  const calculateRequiredCredits = () => {
+    let totalCredits = 0;
+    
+    // Base credit cost for campaign type
+    const platformCredits = campaignData.platforms?.includes('google') 
+      ? getCreditCost('googleAds') 
+      : 0;
+    
+    totalCredits += platformCredits;
+    
+    // Add credits for Meta ads if any
+    if (metaAds.length > 0) {
+      totalCredits += getCreditCost('metaAds');
+      
+      // Add image generation credits for ads with images
+      const adsWithImages = metaAds.filter(ad => ad.imageUrl || ad.imagePrompt);
+      if (adsWithImages.length > 0) {
+        totalCredits += adsWithImages.length * getCreditCost('imageGeneration');
+      }
+    }
+    
+    return totalCredits;
+  };
 
   const createCampaign = async () => {
     if (!user || !campaignData) return;
     
     setIsCreating(true);
+    setIsCreditCheckPending(true);
 
     try {
-      const requiredCredits = getCreditCost('googleAds'); // Changed from 'campaign_creation' to 'googleAds'
-      const hasImages = metaAds.some(ad => ad.imageUrl);
-      const imageCredits = hasImages ? getCreditCost('imageGeneration') : 0; // Changed from 'image_generation' to 'imageGeneration'
-      const totalCredits = requiredCredits + imageCredits;
+      // Calculate required credits
+      const requiredCredits = calculateRequiredCredits();
       
-      const creditSuccess = await consumeCredits(
+      // Check if user has enough credits
+      const creditCheck = await checkUserCredits(user.id, 'googleAds', 1);
+      setIsCreditCheckPending(false);
+      
+      if (!creditCheck.hasEnough) {
+        setIsCreating(false);
+        // Navigate to billing page with information about required credits
+        navigate('/billing', { 
+          state: { 
+            from: 'campaign', 
+            requiredCredits: creditCheck.deficit
+          } 
+        });
+        return;
+      }
+
+      // Deduct credits for campaign creation
+      const creditSuccess = await deductUserCredits(
         user.id,
-        totalCredits,
-        'googleAds', // Changed from 'campaign_creation' to 'googleAds'
-        `Campaign: ${campaignData.name} - ${hasImages ? 'With images' : 'Text only'}`
+        'googleAds',
+        'Campaign Creation',
+        `Campaign: ${campaignData.name}`
       );
       
       if (!creditSuccess) {
         setIsCreating(false);
-        navigate('/billing', { state: { from: 'campaign', requiredCredits: totalCredits } });
+        toast({
+          title: "Credit Error",
+          description: "Failed to deduct credits. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
 
+      // If there are image ads, deduct credits for each image
+      if (metaAds.some(ad => ad.imageUrl || ad.imagePrompt)) {
+        const imageAdsCount = metaAds.filter(ad => ad.imageUrl || ad.imagePrompt).length;
+        await deductUserCredits(
+          user.id,
+          'imageGeneration',
+          'Image Generation',
+          `Campaign: ${campaignData.name}`,
+          imageAdsCount
+        );
+      }
+
+      // Insert campaign with 10% fee acknowledgment
       const { data, error } = await supabase
         .from('campaigns')
         .insert([
@@ -59,6 +118,7 @@ export const useCampaignCreation = (
             google_ads: googleAds,
             meta_ads: metaAds,
             status: 'active',
+            fee_acknowledged: true, // User acknowledges the 10% platform fee
             optimization_frequency: campaignData.optimizationFrequency || 'weekly'
           }
         ])
@@ -81,23 +141,6 @@ export const useCampaignCreation = (
         description: "There was an error creating your campaign",
         variant: "destructive",
       });
-      
-      try {
-        const requiredCredits = getCreditCost('googleAds'); // Changed from 'campaign_creation' to 'googleAds'
-        const hasImages = metaAds.some(ad => ad.imageUrl);
-        const imageCredits = hasImages ? getCreditCost('imageGeneration') : 0; // Changed from 'image_generation' to 'imageGeneration'
-        const totalCredits = requiredCredits + imageCredits;
-        
-        // Refund credits if campaign creation failed
-        await supabase
-          .from('profiles')
-          .update({ 
-            credits: user.credits + totalCredits 
-          })
-          .eq('id', user.id);
-      } catch (refundError) {
-        console.error('Error refunding credits:', refundError);
-      }
     } finally {
       setIsCreating(false);
     }
@@ -105,6 +148,8 @@ export const useCampaignCreation = (
 
   return {
     createCampaign,
-    isCreating
+    isCreating,
+    isCreditCheckPending,
+    calculateRequiredCredits
   };
 };
