@@ -13,14 +13,16 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 const Index: React.FC = () => {
-  // Use the enhanced auth redirect hook to handle redirection for authenticated users
   useAuthRedirect({ redirectAuthenticated: true, redirectPath: '/dashboard' });
   
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>AI-Powered Ad Manager | Zero Digital Agency</title>
-        <meta name="description" content="Automate your Google Ads & Meta Ads campaigns with AI-powered optimization. Create, manage, and optimize ads that convert better with less effort." />
+        <title>AI-Powered Ad Manager | Create & Optimize High-Converting Ads</title>
+        <meta 
+          name="description" 
+          content="Generate, optimize, and manage your Google & Meta ads with AI. Get 5X better ROAS with automated ad creation and optimization across platforms." 
+        />
       </Helmet>
       
       <AuthProvider>
@@ -29,29 +31,26 @@ const Index: React.FC = () => {
       
       <main>
         <Hero 
-          title="AI-Powered Ad Management" 
-          subtitle="Create, optimize, and scale your ad campaigns with intelligent automation"
+          title="Create High-Converting Ads with AI" 
+          subtitle="Generate, test, and optimize Google & Meta ads automatically. Get 5X better ROAS with AI-powered ad creation and management."
           primaryAction="/auth/register"
-          primaryActionText="Get Started"
+          primaryActionText="Start Free Trial"
           secondaryAction="/pricing"
-          secondaryActionText="See Pricing"
+          secondaryActionText="View Pricing"
         />
         
         <Features />
-        
         <Process />
-        
         <Trust />
-        
         <Pricing />
         
         <Cta 
-          title="Ready to transform your advertising strategy?"
-          subtitle="Join thousands of businesses saving time and money with AI-powered ad optimization."
+          title="Ready to transform your ad campaigns?"
+          subtitle="Join hundreds of businesses saving time and money with AI-powered ad optimization."
           primaryAction="/auth/register"
-          primaryActionText="Start for free"
+          primaryActionText="Start Free Trial"
           secondaryAction="/pricing" 
-          secondaryActionText="View pricing"
+          secondaryActionText="View Pricing"
         />
       </main>
       

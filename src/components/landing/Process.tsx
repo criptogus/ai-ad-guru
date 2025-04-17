@@ -8,7 +8,7 @@ export const Process: React.FC = () => {
     {
       icon: <Link className="h-6 w-6 text-brand-600" />,
       title: "Connect Your Accounts",
-      description: "Securely link your ad accounts with OAuth. No passwords stored."
+      description: "Securely link your Google & Meta ad accounts with OAuth. No passwords stored."
     },
     {
       icon: <Globe className="h-6 w-6 text-emerald-600" />,
@@ -17,18 +17,18 @@ export const Process: React.FC = () => {
     },
     {
       icon: <Brain className="h-6 w-6 text-brand-600" />,
-      title: "AI Scans Your Brand",
-      description: "GPT-4o identifies your unique selling points and competitive advantages."
+      title: "AI Creates Your Ads",
+      description: "Get 5 high-converting ad variations generated in seconds."
     },
     {
       icon: <Zap className="h-6 w-6 text-emerald-600" />,
-      title: "Generate Ads Instantly",
-      description: "Get 5 high-converting ad variations across all platforms in seconds."
+      title: "Launch Campaigns",
+      description: "Review AI-generated ads, make any edits, and publish with one click."
     },
     {
       icon: <TrendingUp className="h-6 w-6 text-brand-600" />,
-      title: "AI Optimizes Daily",
-      description: "Smart algorithms reallocate budget to top performers and test new ideas."
+      title: "24/7 AI Optimization",
+      description: "AI continuously tests new variations and optimizes your budget."
     }
   ];
 
