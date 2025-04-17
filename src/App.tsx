@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -15,9 +16,8 @@ import CreditsInfoPage from "./pages/CreditsInfoPage";
 import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/AppLayout";
-
-// Import the new BillingHistoryPage
 import BillingHistoryPage from "@/pages/BillingHistoryPage";
+import { useEffect } from "react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -103,7 +103,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/billing/history",
-    element: <BillingHistoryPage />,
+    element: (
+      <ProtectedRoute>
+        <BillingHistoryPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "*",

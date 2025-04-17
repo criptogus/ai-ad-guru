@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -10,9 +10,16 @@ import { toast } from 'sonner';
 const Authentication: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, isAuthenticated, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const defaultTab = location.pathname.includes('register') ? 'register' : 'login';
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleLogin = async (email: string, password: string) => {
     setIsSubmitting(true);
@@ -37,6 +44,11 @@ const Authentication: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  // If already authenticated and not loading, return null (the useEffect will redirect)
+  if (isAuthenticated && !isLoading) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-gray-100 dark:from-background dark:to-gray-900">

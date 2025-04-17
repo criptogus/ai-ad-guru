@@ -6,6 +6,7 @@ import './index.css'
 import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Debug utility for development - Check Supabase edge function connectivity
 if (import.meta.env.DEV) {
@@ -34,7 +35,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>
       <LanguageProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </LanguageProvider>
     </HelmetProvider>
   </React.StrictMode>,
