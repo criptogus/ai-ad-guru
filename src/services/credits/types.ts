@@ -46,3 +46,15 @@ export interface CreditTransaction {
  * Credit transaction type enumeration
  */
 export type CreditTransactionType = 'purchase' | 'usage' | 'refund' | 'welcome';
+
+/**
+ * Credit usage history entry
+ */
+export interface CreditUsage {
+  id: string;
+  userId: string;
+  amount: number;
+  action: CreditAction;
+  description: string;
+  timestamp: string;
+}

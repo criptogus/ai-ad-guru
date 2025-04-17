@@ -24,5 +24,5 @@ export * from './credits/creditUsage';
 export * from './credits/transactions';
 export * from './credits/types';
 
-// Re-export types
-export type { CreditTransaction, CreditTransactionType } from './credits/types';
+// Re-export specific types
+export type { CreditTransaction, CreditTransactionType, CreditUsage } from './credits/types';

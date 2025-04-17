@@ -13,6 +13,13 @@ export interface OptimizationResult {
   appliedChanges: boolean;
 }
 
+export enum OptimizationGoal {
+  CLICKS = 'clicks',
+  CONVERSIONS = 'conversions',
+  AWARENESS = 'awareness',
+  ROI = 'roi'
+}
+
 export const useAdOptimizer = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -48,7 +55,7 @@ export const useAdOptimizer = () => {
 
     try {
       // Check if user has enough credits
-      const hasCredits = await consumeCredits(user.id, 2, creditAction, `Google Ads Optimization - ${frequency}`);
+      const hasCredits = await consumeCredits(user.id, creditAction, `Google Ads Optimization - ${frequency}`);
       
       if (!hasCredits) {
         toast.error('Insufficient credits', {
@@ -103,7 +110,7 @@ export const useAdOptimizer = () => {
 
     try {
       // Check if user has enough credits
-      const hasCredits = await consumeCredits(user.id, 2, creditAction, `Meta Ads Optimization - ${frequency}`);
+      const hasCredits = await consumeCredits(user.id, creditAction, `Meta Ads Optimization - ${frequency}`);
       
       if (!hasCredits) {
         toast.error('Insufficient credits', {

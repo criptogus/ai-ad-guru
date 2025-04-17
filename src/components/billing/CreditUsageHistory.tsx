@@ -1,95 +1,113 @@
 
-import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Minus } from "lucide-react";
-import { getUserCreditHistory, CreditUsage } from "@/services";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserCreditHistory, CreditUsage } from '@/services';
 
-interface CreditUsageHistoryProps {
-  userId: string;
-}
-
-const CreditUsageHistory: React.FC<CreditUsageHistoryProps> = ({ userId }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [creditHistory, setCreditHistory] = useState<CreditUsage[]>([]);
+const CreditUsageHistory = () => {
+  const [usageHistory, setUsageHistory] = useState<CreditUsage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchCreditHistory = async () => {
-      setIsLoading(true);
+    const fetchUsageHistory = async () => {
+      if (!user) return;
+      
       try {
-        const history = await getUserCreditHistory(userId);
-        setCreditHistory(history);
+        setLoading(true);
+        const history = await getUserCreditHistory(user.id);
+        setUsageHistory(history);
       } catch (error) {
-        console.error("Error fetching credit history:", error);
+        console.error('Error fetching credit usage history:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchCreditHistory();
-  }, [userId]);
+    fetchUsageHistory();
+  }, [user]);
 
-  // Helper function to format the action type for display
-  const formatActionType = (action: string) => {
-    return action
-      .split(/[._]/)
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  const downloadCSV = () => {
+    if (!usageHistory.length) return;
+    
+    const headers = ['Date', 'Action', 'Description', 'Credits Used'];
+    const csvRows = [
+      headers.join(','),
+      ...usageHistory.map(item => {
+        const date = format(new Date(item.timestamp), 'yyyy-MM-dd HH:mm');
+        return [
+          `"${date}"`,
+          `"${item.action}"`,
+          `"${item.description}"`,
+          item.amount
+        ].join(',');
+      })
+    ];
+    
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `credit-usage-history-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (creditHistory.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No credit usage history available.
-      </div>
-    );
-  }
-
   return (
-    <div className="max-h-[400px] overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="text-right">Credits</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {creditHistory.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>
-                {format(new Date(item.createdAt), "MMM d, yyyy h:mm a")}
-              </TableCell>
-              <TableCell>{formatActionType(item.action)}</TableCell>
-              <TableCell>{item.description}</TableCell>
-              <TableCell className="text-right font-medium">
-                <div className="flex items-center justify-end">
-                  {item.amount < 0 ? (
-                    <Plus className="h-4 w-4 mr-1 text-green-600" />
-                  ) : (
-                    <Minus className="h-4 w-4 mr-1 text-red-600" />
-                  )}
-                  {Math.abs(item.amount)}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg font-medium">Credit Usage History</CardTitle>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={downloadCSV}
+          disabled={!usageHistory.length || loading}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        ) : usageHistory.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No credit usage history available.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Credits Used</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {usageHistory.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{format(new Date(item.timestamp), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell className="capitalize">{item.action.replace(/([A-Z])/g, ' $1').trim()}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-right font-medium">-{item.amount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
