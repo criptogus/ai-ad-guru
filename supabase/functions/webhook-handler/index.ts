@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.1';
 import Stripe from 'https://esm.sh/stripe@14.21.0';
@@ -137,6 +136,32 @@ serve(async (req) => {
         }
       } else {
         console.error('No user ID found in event data');
+      }
+    }
+
+    // Handle checkout session completed event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const userId = session.client_reference_id;
+      const credits = parseInt(session.metadata?.credits || '0');
+
+      if (userId && credits > 0) {
+        // Add credits to the ledger
+        const { error: creditError } = await supabase
+          .from('credit_ledger')
+          .insert({
+            user_id: userId,
+            change: credits,
+            reason: 'purchase',
+            ref_id: session.id
+          });
+
+        if (creditError) {
+          console.error('Error adding credits:', creditError);
+          throw creditError;
+        }
+
+        console.log(`Added ${credits} credits for user ${userId}`);
       }
     }
 

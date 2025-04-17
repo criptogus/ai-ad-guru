@@ -32,6 +32,8 @@ enabled = true
 enabled = true
 
 [functions]
+[functions.webhook-handler]
+verify_jwt = false
+
 [functions.generate-meta-ad-image]
 verify_jwt = true
-
