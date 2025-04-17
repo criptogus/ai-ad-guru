@@ -2,10 +2,11 @@
 // Export types
 export * from './types';
 
-// Export functions from creditCosts with specific names
+// Export functions from creditCosts
 export {
   CREDIT_COSTS,
   getCreditCost,
+  getAllCreditCosts,
   calculateTotalCreditCost
 } from './creditCosts';
 
@@ -22,6 +23,7 @@ export {
 export {
   consumeCredits,
   addCredits as addUserCredits,
+  checkUserCredits,
   checkCreditSufficiency
 } from './creditUsage';
 
@@ -36,6 +38,6 @@ export {
 
 // Export from creditChecks
 export {
-  checkUserCredits,
+  checkUserCredits as checkUserCreditBalance,
   deductUserCredits
 } from './creditChecks';

@@ -23,7 +23,8 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
-  const creditCost = getCreditCost("smartBanner");
+  const creditAction: CreditAction = "smartBanner";
+  const creditCost = getCreditCost(creditAction);
 
   const handleSaveToCampaign = async () => {
     if (!user || !backgroundImage) return;
@@ -32,7 +33,7 @@ const SaveToCampaignOption: React.FC<SaveToCampaignOptionProps> = ({
     try {
       const creditSuccess = await consumeCredits(
         user.id,
-        "smartBanner" as CreditAction,
+        creditAction,
         creditCost,
         `Smart Banner - ${platform} ${format}`
       );

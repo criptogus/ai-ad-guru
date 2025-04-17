@@ -1,9 +1,10 @@
+
 import { CreditAction } from './types';
 
 /**
  * Credit costs for various actions
  */
-const CREDIT_COSTS: Record<CreditAction, number> = {
+export const CREDIT_COSTS: Record<CreditAction, number> = {
   // Text ad generation
   textAd: 1,
   googleAds: 5,
@@ -41,4 +42,11 @@ export const getCreditCost = (action: CreditAction): number => {
  */
 export const getAllCreditCosts = (): Record<CreditAction, number> => {
   return { ...CREDIT_COSTS };
+};
+
+/**
+ * Calculate total credit cost for multiple actions
+ */
+export const calculateTotalCreditCost = (actions: CreditAction[]): number => {
+  return actions.reduce((total, action) => total + getCreditCost(action), 0);
 };

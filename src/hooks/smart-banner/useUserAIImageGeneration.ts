@@ -5,6 +5,7 @@ import { secureApi } from '@/services/api/secureApi';
 import { toast } from 'sonner';
 import { getCreditCost } from '@/services/credits/creditCosts';
 import { consumeCredits } from '@/services/credits/creditUsage';
+import { CreditAction } from '@/services/credits/types';
 
 interface ImageGenerationConfig {
   templateId?: string;
@@ -63,7 +64,8 @@ export const useUserAIImageGeneration = (): UseUserAIImageGenerationReturn => {
     
     try {
       // Get credit cost for image generation
-      const imageCost = getCreditCost('imageGeneration');
+      const creditAction: CreditAction = 'imageGeneration';
+      const imageCost = getCreditCost(creditAction);
       
       // Preview credit usage
       toast.info(`This will use ${imageCost} credits for image generation`);
@@ -71,8 +73,8 @@ export const useUserAIImageGeneration = (): UseUserAIImageGenerationReturn => {
       // Consume credits
       const creditSuccess = await consumeCredits(
         user.id,
+        creditAction,
         imageCost,
-        'imageGeneration',
         `AI Image Generation for Banner`
       );
       

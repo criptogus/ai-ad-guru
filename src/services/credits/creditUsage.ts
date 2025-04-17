@@ -45,6 +45,17 @@ export const checkUserCredits = async (
 };
 
 /**
+ * Alternative credit check for easier integration
+ */
+export const checkCreditSufficiency = async (
+  userId: string,
+  action: CreditAction
+): Promise<boolean> => {
+  const check = await checkUserCredits(userId, action);
+  return check.hasEnough;
+};
+
+/**
  * Consume credits for an action
  */
 export const consumeCredits = async (
