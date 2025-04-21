@@ -106,6 +106,9 @@ const useCampaignStepRenderer = ({
             analysisResult={analysisResult}
             onNext={handleNextWrapper}
             onBack={handleBack}
+            onUpdateCampaignData={(data) => {
+              setCampaignData(prev => ({...prev, ...data}));
+            }}
           />
         );
       case 5:
@@ -118,15 +121,15 @@ const useCampaignStepRenderer = ({
             linkedInAds={linkedInAds}
             isGenerating={isGenerating}
             loadingImageIndex={loadingImageIndex}
-            handleGenerateGoogleAds={handleGenerateGoogleAds}
-            handleGenerateMetaAds={handleGenerateMetaAds}
-            handleGenerateMicrosoftAds={handleGenerateMicrosoftAds}
-            handleGenerateLinkedInAds={handleGenerateLinkedInAds}
-            handleGenerateImage={handleGenerateImage}
-            handleUpdateGoogleAd={handleUpdateGoogleAd}
-            handleUpdateMetaAd={handleUpdateMetaAd}
-            handleUpdateMicrosoftAd={handleUpdateMicrosoftAd}
-            handleUpdateLinkedInAd={handleUpdateLinkedInAd}
+            onGenerateGoogleAds={handleGenerateGoogleAds}
+            onGenerateMetaAds={handleGenerateMetaAds}
+            onGenerateMicrosoftAds={handleGenerateMicrosoftAds}
+            onGenerateLinkedInAds={handleGenerateLinkedInAds}
+            onGenerateImage={handleGenerateImage}
+            onUpdateGoogleAd={handleUpdateGoogleAd}
+            onUpdateMetaAd={handleUpdateMetaAd}
+            onUpdateMicrosoftAd={handleUpdateMicrosoftAd}
+            onUpdateLinkedInAd={handleUpdateLinkedInAd}
             onNext={handleNextWrapper}
             onBack={handleBack}
             mindTriggers={campaignData.mindTriggers}

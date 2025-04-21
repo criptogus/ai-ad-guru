@@ -104,11 +104,48 @@ export const useTriggerData = () => {
     return getTriggers(platform);
   };
 
+  // Add the missing getPlatformTemplates function
+  const getPlatformTemplates = (platform: string): string[] => {
+    switch (platform) {
+      case "google":
+        return [
+          "Boost your [benefit] with our [product/service] - Perfect for [target audience]",
+          "Looking for [pain point solution]? Try our [product/service] today!",
+          "Save [time/money] with [product/service] - #1 choice for [target audience]"
+        ];
+      case "meta":
+        return [
+          "Transform your [area] with our innovative [product/service] 🚀",
+          "Tired of [pain point]? Discover how [product] is changing the game ✨",
+          "Join thousands who've improved their [benefit area] with [product/service] 💯"
+        ];
+      case "linkedin":
+        return [
+          "Industry-leading [product/service] for professionals seeking [benefit]",
+          "Boost your team's [metric] by [percentage] with our [solution]",
+          "The professional's choice for [industry]: [product/service] that delivers results"
+        ];
+      case "microsoft":
+        return [
+          "Maximize efficiency with [product/service] - Trusted by [notable clients]",
+          "Reduce [pain point] by [percentage] - Learn how [product/service] delivers",
+          "Enterprise-grade [solution] at competitive prices - See the difference"
+        ];
+      default:
+        return [
+          "Transform your business with our innovative solution",
+          "The perfect product for your specific needs",
+          "Join thousands of satisfied customers today"
+        ];
+    }
+  };
+
   return {
     getPlatformIcon,
     getPlatformDisplayName,
     getTriggers,
     getTriggerDescription,
-    getPlatformTriggers
+    getPlatformTriggers,
+    getPlatformTemplates
   };
 };

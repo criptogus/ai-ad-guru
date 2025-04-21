@@ -111,10 +111,7 @@ const CampaignSetupStep: React.FC<CampaignSetupStepProps> = ({
   };
 
   const handleUpdateCampaignData = (data: any) => {
-    onUpdateCampaignData({
-      ...campaignData,
-      ...data,
-    });
+    onUpdateCampaignData(data);
   };
 
   const handleAIFill = async () => {
