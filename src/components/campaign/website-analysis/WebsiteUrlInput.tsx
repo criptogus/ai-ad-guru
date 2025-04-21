@@ -31,16 +31,9 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
       return;
     }
 
-    // Validate URL format
-    try {
-      // Check if URL has protocol, if not add a temporary one for validation
-      const urlToValidate = website.trim().startsWith('http') 
-        ? website.trim() 
-        : `https://${website.trim().startsWith('www.') ? '' : 'www.'}${website.trim()}`;
-      
-      // This will throw an error if URL is invalid
-      new URL(urlToValidate);
-    } catch (err) {
+    // Simple domain validation (not comprehensive)
+    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+/;
+    if (!urlPattern.test(website.trim())) {
       setError("Please enter a valid website URL (e.g., example.com)");
       return;
     }

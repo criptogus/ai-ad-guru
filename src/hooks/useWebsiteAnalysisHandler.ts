@@ -30,21 +30,7 @@ export const useWebsiteAnalysisHandler = ({
       
       // Check if URL has a protocol, add https:// if missing
       if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        // If the URL doesn't start with www, add it if it doesn't have a subdomain already
-        if (!formattedUrl.startsWith('www.') && !formattedUrl.includes('.')) {
-          toast({
-            title: "Error",
-            description: "Please enter a valid domain (e.g., example.com)",
-            variant: "destructive",
-          });
-          return null;
-        }
-        
-        if (!formattedUrl.startsWith('www.') && !formattedUrl.includes('/')) {
-          formattedUrl = 'www.' + formattedUrl;
-        }
-        
-        // Add https protocol
+        // Add https protocol - don't automatically add www prefix as it might interfere with subdomains
         formattedUrl = 'https://' + formattedUrl;
       }
       

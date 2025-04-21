@@ -9,10 +9,6 @@ export async function fetchWebsiteData(url: string) {
     // Ensure URL has protocol
     let formattedUrl = url.trim();
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      // If the URL doesn't start with www, add it
-      if (!formattedUrl.startsWith('www.')) {
-        formattedUrl = 'www.' + formattedUrl;
-      }
       // Add https protocol
       formattedUrl = 'https://' + formattedUrl;
     }

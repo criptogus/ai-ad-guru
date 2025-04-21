@@ -57,7 +57,10 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   const handleAnalyzeClick = async () => {
     setProgress(10);
     console.log("Analyzing website:", website);
+    
+    // Don't manipulate the URL here, just pass it to the handler
     const result = await onAnalyzeWebsite(website);
+    
     console.log("Analysis result:", result);
     if (result) {
       setEditedResult({ ...result });
