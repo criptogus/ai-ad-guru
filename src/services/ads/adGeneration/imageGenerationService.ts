@@ -14,7 +14,10 @@ export interface ImageGenerationParams {
   height?: number;
   style?: string;
   format?: 'square' | 'story' | 'horizontal';
+  industry?: string;
   brandTone?: string;
+  campaignObjective?: string;
+  targetAudience?: string;
 }
 
 /**
@@ -24,15 +27,15 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
   try {
     console.log('Generating ad image with params:', params);
     
-    // Enhanced prompt for better results
-    const enhancedPrompt = `Create a professional, modern ${params.platform} advertisement image. ${params.prompt}. Use a clean design with vibrant colors and striking graphic elements. The style should be ${params.style || 'professional and business-oriented'}. Format: ${params.format || 'square (1:1)'}. Do not include any text or logos.`;
+    // Generate enhanced prompt based on campaign context
+    const enhancedPrompt = generateEnhancedPrompt(params);
+    console.log('Enhanced prompt:', enhancedPrompt);
     
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
         prompt: enhancedPrompt,
         platform: params.platform,
-        format: params.format || 'square',
-        brandTone: params.style || params.brandTone || 'professional'
+        format: params.format || 'square'
       }
     });
     
@@ -52,4 +55,84 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
     errorLogger.logError(error, 'generateAdImage');
     return null;
   }
+};
+
+/**
+ * Generate enhanced prompt based on campaign context
+ */
+const generateEnhancedPrompt = (params: ImageGenerationParams): string => {
+  const {
+    prompt,
+    platform,
+    format = 'square',
+    industry,
+    brandTone = 'professional',
+    campaignObjective,
+    targetAudience
+  } = params;
+
+  // Base photography and quality specifications
+  const baseQuality = "Photorealistic, ultra-realistic commercial photograph";
+  const lighting = getLightingByIndustry(industry);
+  const composition = getCompositionByFormat(format);
+  const mood = getMoodByObjective(campaignObjective, brandTone);
+  const style = getStyleByPlatform(platform);
+
+  // Combine elements into final prompt
+  const enhancedPrompt = `
+    ${baseQuality} of ${prompt}. 
+    ${lighting}. 
+    ${composition}. 
+    Focus on capturing the essence that appeals to ${targetAudience || 'the target audience'}. 
+    Mood is ${mood}. 
+    ${style}.
+  `.replace(/\s+/g, ' ').trim();
+
+  return enhancedPrompt;
+};
+
+const getLightingByIndustry = (industry?: string): string => {
+  const lightingMap: Record<string, string> = {
+    technology: "Clean commercial lighting with subtle blue tints",
+    fashion: "Soft natural window light with elegant shadows",
+    food: "Warm golden hour lighting with appetizing highlights",
+    health: "Bright, clean medical-grade lighting",
+    default: "Professional studio lighting with balanced shadows"
+  };
+
+  return lightingMap[industry?.toLowerCase() || 'default'];
+};
+
+const getCompositionByFormat = (format: string): string => {
+  const compositionMap: Record<string, string> = {
+    square: "Centered composition with rule of thirds, balanced negative space for text overlay",
+    story: "Vertical composition with strong visual hierarchy, space at top and bottom",
+    horizontal: "Wide cinematic composition with golden ratio placement",
+    default: "Professional advertising composition with clear focal point"
+  };
+
+  return compositionMap[format] || compositionMap.default;
+};
+
+const getMoodByObjective = (objective?: string, tone = 'professional'): string => {
+  const moodMap: Record<string, string> = {
+    branding: `sophisticated and ${tone}`,
+    leads: "engaging and action-oriented",
+    sales: "dynamic and persuasive",
+    awareness: "inspiring and memorable",
+    default: `professional and ${tone}`
+  };
+
+  return moodMap[objective?.toLowerCase() || 'default'];
+};
+
+const getStyleByPlatform = (platform: string): string => {
+  const styleMap: Record<string, string> = {
+    meta: "In the style of premium Instagram advertising, optimized for social engagement",
+    linkedin: "In the style of professional B2B advertising photography",
+    google: "In the style of high-impact display advertising",
+    default: "In the style of high-end commercial photography"
+  };
+
+  return styleMap[platform] || styleMap.default;
 };

@@ -41,7 +41,10 @@ export const useImageGenerationHandler = ({
         prompt: ad.imagePrompt,
         platform,
         format: format as 'square' | 'story' | 'horizontal',
-        style: format === 'story' ? 'vibrant' : 'professional'
+        industry: campaignData?.industry,
+        brandTone: campaignData?.brandTone || 'professional',
+        campaignObjective: campaignData?.objective,
+        targetAudience: campaignData?.targetAudience
       });
       
       if (imageUrl) {
