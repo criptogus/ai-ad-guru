@@ -15,7 +15,7 @@ serve(async (req) => {
 
   try {
     // Get request data
-    const { prompt, format, userId } = await req.json();
+    const { prompt, format, userId, language = 'portuguese' } = await req.json();
     
     if (!prompt) {
       return new Response(
@@ -28,12 +28,18 @@ serve(async (req) => {
     }
     
     console.log(`Generating Meta ad image with prompt: ${prompt.substring(0, 100)}...`);
-    console.log(`Format: ${format || 'default'}, User ID: ${userId || 'anonymous'}`);
+    console.log(`Format: ${format || 'default'}, User ID: ${userId || 'anonymous'}, Language: ${language}`);
     
     // Initialize OpenAI API
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not set");
+    }
+    
+    // Enhance prompt to ensure language consistency
+    let enhancedPrompt = prompt;
+    if (language === 'portuguese') {
+      enhancedPrompt = `Por favor, crie uma imagem para anúncio profissional em português brasileiro: ${prompt}. A imagem deve ter estética de alta qualidade, adequada para campanhas de marketing digital.`;
     }
     
     // Determine image size based on format
@@ -55,7 +61,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: prompt,
+        prompt: enhancedPrompt,
         n: 1,
         size: size,
         quality: "standard",

@@ -1,22 +1,21 @@
 
 import React from "react";
-import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdPreview from "../ad-preview/google/GoogleAdPreview";
 import { InstagramPreview } from "../ad-preview/meta";
 import { MicrosoftAdPreview } from "../ad-preview/microsoft";
 import LinkedInAdPreview from "../ad-preview/linkedin/LinkedInAdPreview";
-import { normalizeGoogleAd, normalizeMetaAd, getDomain } from "@/lib/utils";
 
 interface AdPreviewsSectionProps {
   platform: string;
   googleAds: GoogleAd[];
   metaAds: MetaAd[];
   microsoftAds: GoogleAd[];
-  linkedInAds?: MetaAd[];
+  linkedInAds: MetaAd[];
   websiteUrl: string;
   analysisResult: WebsiteAnalysisResult;
-  selectedPlatforms?: string[]; // Add this prop to control which platforms to show
+  selectedPlatforms: string[];
 }
 
 const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
@@ -24,34 +23,38 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   googleAds,
   metaAds,
   microsoftAds,
-  linkedInAds = [],
+  linkedInAds,
   websiteUrl,
   analysisResult,
-  selectedPlatforms = [], // Default to empty array if not provided
+  selectedPlatforms
 }) => {
-  // Extract domain from websiteUrl using the utility function
-  const domain = getDomain(websiteUrl);
+  // Only show this platform if it's in the selectedPlatforms
+  if (!selectedPlatforms.includes(platform)) {
+    return null;
+  }
 
-  // Check if this platform is selected by the user
-  const isPlatformSelected = (platformName: string) => {
-    // If no platforms are explicitly selected, show all (for backward compatibility)
-    if (!selectedPlatforms || selectedPlatforms.length === 0) {
-      return true;
+  // Get domain from website URL
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname.replace('www.', '');
+    } catch (e) {
+      return url;
     }
-    return selectedPlatforms.includes(platformName);
   };
 
-  // Get the appropriate ads to display based on platform
-  const getAdPreviews = () => {
-    // For the specific platform being viewed, always show it regardless of selection
-    switch(platform) {
-      case 'google':
-        return isPlatformSelected('google') && googleAds.length > 0 ? (
-          <div className="space-y-4">
-            <h4 className="text-md font-medium">Google Ads</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {googleAds.slice(0, 2).map((ad, index) => (
-                <div key={index} className="border rounded-md p-2">
+  const domain = getDomain(websiteUrl);
+  const companyName = analysisResult?.companyName || "Sua Empresa";
+
+  // Get ads based on platform
+  const renderPlatformAds = () => {
+    switch (platform) {
+      case "google":
+        return googleAds.length > 0 ? (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Anúncios do Google ({googleAds.length})</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {googleAds.map((ad, index) => (
+                <div key={`google-ad-${index}`} className="border rounded-md p-4">
                   <GoogleAdPreview ad={ad} domain={domain} />
                 </div>
               ))}
@@ -59,55 +62,44 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
           </div>
         ) : null;
       
-      case 'meta':
-        return isPlatformSelected('meta') && metaAds.length > 0 ? (
-          <div className="space-y-4">
-            <h4 className="text-md font-medium">Instagram Ads</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {metaAds.slice(0, 2).map((ad, index) => (
-                <div key={index} className="border rounded-md p-2">
-                  <InstagramPreview 
-                    ad={ad}
-                    companyName={analysisResult.companyName}
-                  />
+      case "meta":
+        return metaAds.length > 0 ? (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Anúncios do Instagram ({metaAds.length})</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {metaAds.map((ad, index) => (
+                <div key={`meta-ad-${index}`} className="border rounded-md p-4 flex justify-center">
+                  <InstagramPreview ad={ad} companyName={companyName} />
                 </div>
               ))}
             </div>
           </div>
         ) : null;
       
-      case 'linkedin':
-        return isPlatformSelected('linkedin') && linkedInAds.length > 0 ? (
-          <div className="space-y-4">
-            <h4 className="text-md font-medium">LinkedIn Ads</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {linkedInAds.slice(0, 2).map((ad, index) => (
-                <div key={index} className="border rounded-md p-2">
-                  <LinkedInAdPreview 
-                    ad={ad}
-                    analysisResult={analysisResult}
-                    imageFormat="landscape"
-                  />
+      case "microsoft":
+        return microsoftAds.length > 0 ? (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Anúncios do Microsoft Ads ({microsoftAds.length})</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {microsoftAds.map((ad, index) => (
+                <div key={`microsoft-ad-${index}`} className="border rounded-md p-4">
+                  <MicrosoftAdPreview ad={ad} domain={domain} />
                 </div>
               ))}
             </div>
           </div>
         ) : null;
       
-      case 'microsoft':
-        return isPlatformSelected('microsoft') && microsoftAds.length > 0 ? (
-          <div className="space-y-4">
-            <h4 className="text-md font-medium">Microsoft Ads</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {microsoftAds.slice(0, 2).map((ad, index) => {
-                // Always normalize Microsoft ads
-                const normalizedAd = normalizeGoogleAd(ad);
-                return (
-                  <div key={index} className="border rounded-md p-2">
-                    <MicrosoftAdPreview ad={normalizedAd} domain={domain} />
-                  </div>
-                );
-              })}
+      case "linkedin":
+        return linkedInAds.length > 0 ? (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium">Anúncios do LinkedIn ({linkedInAds.length})</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {linkedInAds.map((ad, index) => (
+                <div key={`linkedin-ad-${index}`} className="border rounded-md p-4 flex justify-center">
+                  <LinkedInAdPreview ad={ad} analysisResult={analysisResult} />
+                </div>
+              ))}
             </div>
           </div>
         ) : null;
@@ -117,12 +109,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
     }
   };
 
-  return (
-    <div>
-      <h3 className="text-lg font-semibold mb-2">Ad Previews</h3>
-      {getAdPreviews()}
-    </div>
-  );
+  return renderPlatformAds();
 };
 
 export default AdPreviewsSection;

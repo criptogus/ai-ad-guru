@@ -14,7 +14,7 @@ interface ImageDisplayProps {
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   imageUrl,
-  alt = "Instagram ad image",
+  alt = "Imagem do anúncio do Instagram",
   isLoading = false,
   onGenerateImage,
   imagePrompt,
@@ -44,7 +44,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
   const handleGenerateImage = async () => {
     if (onGenerateImage) {
-      console.log("Starting image generation with prompt:", imagePrompt);
+      console.log("Iniciando geração de imagem com prompt:", imagePrompt);
       setImgError(false);
       await onGenerateImage();
     }
@@ -52,7 +52,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
   // Improved error handling with retry logic
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Image failed to load:", imgSrc);
+    console.error("Falha ao carregar imagem:", imgSrc);
     
     // Try to reload the image a couple times with a new cache-buster
     if (retryCount < 2 && imageUrl) {
@@ -62,7 +62,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       // Add a delay before retrying
       setTimeout(() => {
         const newUrl = `${imageUrl}?retry=${nextRetry}&t=${Date.now()}`;
-        console.log(`Retrying image load (attempt ${nextRetry}):`, newUrl);
+        console.log(`Tentando recarregar imagem (tentativa ${nextRetry}):`, newUrl);
         setImgSrc(newUrl);
       }, 1000 * nextRetry); // Exponential backoff
     } else {
@@ -75,7 +75,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       const fallbackSvg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
           <rect width="100" height="100" fill="${fallbackColor}"/>
-          <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+          <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Imagem Indisponível</text>
         </svg>
       `;
       const encodedSvg = encodeURIComponent(fallbackSvg);
@@ -84,7 +84,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       // Mark the image as failed
       e.currentTarget.setAttribute('data-load-failed', 'true');
       
-      console.log("All retry attempts failed for image:", imageUrl);
+      console.log("Todas as tentativas de carregamento falharam para a imagem:", imageUrl);
     }
   };
 
@@ -102,14 +102,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             <>
               <Loader2 className="w-8 h-8 animate-spin mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center">
-                Generating image...
+                Gerando imagem...
               </p>
             </>
           ) : (
             <>
               <Image className="w-12 h-12 mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground text-center mb-4">
-                {imagePrompt ? "Click to generate image" : "No image available"}
+                {imagePrompt ? "Clique para gerar imagem" : "Nenhuma imagem disponível"}
               </p>
               {imagePrompt && onGenerateImage && (
                 <Button
@@ -117,7 +117,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                   size="sm"
                   onClick={handleGenerateImage}
                 >
-                  Generate Image
+                  Gerar Imagem
                 </Button>
               )}
             </>
@@ -147,7 +147,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
               onClick={handleGenerateImage}
               className="bg-white text-gray-800"
             >
-              Regenerate Image
+              Regenerar Imagem
             </Button>
           </div>
         )}
@@ -164,12 +164,12 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
+                  Gerando...
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Regenerate
+                  Regenerar
                 </>
               )}
             </Button>

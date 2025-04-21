@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useCredits } from '@/contexts/CreditsContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -10,7 +11,7 @@ export const useImageGeneration = () => {
 
   const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
     if (!prompt) {
-      setError("Image prompt is required");
+      setError("Descrição da imagem é necessária");
       return null;
     }
 
@@ -18,49 +19,69 @@ export const useImageGeneration = () => {
     setError(null);
 
     try {
-      console.log("Generating image with prompt:", prompt);
-      console.log("Additional info:", additionalInfo);
-
-      // In a real implementation, we'd call the Supabase function here
-      // For now, generate a mock image URL
-      // In production, this would call DALL-E or another AI image generation service
+      console.log("Gerando imagem com prompt:", prompt);
+      console.log("Informações adicionais:", additionalInfo);
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare the prompt with Portuguese language guarantee
+      let enhancedPrompt = prompt;
       
-      // Determine which type of placeholder to use based on platform and format
+      // Add language context if not specified
+      if (!prompt.toLowerCase().includes('português') && 
+          !prompt.toLowerCase().includes('brazilian')) {
+        enhancedPrompt = `Imagem profissional para anúncio em português: ${prompt}`;
+      }
+      
+      // Add brand context if available
+      if (additionalInfo?.brandName || additionalInfo?.companyName) {
+        const brandName = additionalInfo.brandName || additionalInfo.companyName;
+        enhancedPrompt += ` Marca: ${brandName}.`;
+      }
+      
+      // Add industry context if available
+      if (additionalInfo?.industry) {
+        enhancedPrompt += ` Indústria: ${additionalInfo.industry}.`;
+      }
+      
+      // Determine format based on platform and format
       const platform = additionalInfo?.platform || 'instagram';
       const imageFormat = additionalInfo?.imageFormat || additionalInfo?.format || 'square';
       
-      // Generate dimensions based on format
-      let dimensions = '1000x1000';
+      // Call the Supabase Edge Function for image generation
+      const { data, error: functionError } = await supabase.functions.invoke('generate-meta-ad-image', {
+        body: {
+          prompt: enhancedPrompt,
+          format: imageFormat,
+          userId: additionalInfo?.userId,
+          language: 'portuguese' // Force Portuguese language
+        }
+      });
       
-      if (imageFormat === 'portrait' || imageFormat === 'story') {
-        dimensions = '1000x1200';
-      } else if (imageFormat === 'landscape') {
-        dimensions = '1200x1000';
+      if (functionError) {
+        console.error("Erro na função de geração de imagem:", functionError);
+        throw new Error(functionError.message);
       }
       
-      // For testing, generate a more realistic placeholder using appropriate dimensions and colors
-      const imageUrl = `https://via.placeholder.com/${dimensions}/${getPlatformColor(platform)}/FFFFFF?text=${encodeURIComponent(getShortPrompt(prompt))}`;
+      if (!data?.success || !data?.imageUrl) {
+        throw new Error(data?.error || "Falha ao gerar imagem");
+      }
       
       // Apply credit deduction if available
       if (deductCredits) {
         // Standard cost for image generation is 5 credits
         deductCredits(5);
-        toast.success("Image Generated", {
-          description: "5 credits used for AI image generation"
+        toast.success("Imagem Gerada", {
+          description: "5 créditos utilizados para geração de imagem com IA"
         });
       }
       
-      console.log("Generated image URL:", imageUrl);
-      return imageUrl;
+      console.log("URL da imagem gerada:", data.imageUrl);
+      return data.imageUrl;
     } catch (err) {
-      console.error("Error generating image:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      console.error("Erro ao gerar imagem:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido ocorrido";
       setError(errorMessage);
       
-      toast.error("Failed to generate image", {
+      toast.error("Falha ao gerar imagem", {
         description: errorMessage
       });
       
@@ -68,30 +89,6 @@ export const useImageGeneration = () => {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  // Helper to get platform-specific colors for placeholders
-  const getPlatformColor = (platform: string): string => {
-    switch (platform.toLowerCase()) {
-      case 'instagram':
-      case 'meta':
-        return 'E4405F'; // Instagram red/pink
-      case 'linkedin':
-        return '0A66C2'; // LinkedIn blue
-      case 'google':
-        return '4285F4'; // Google blue
-      case 'microsoft':
-        return '00A4EF'; // Microsoft blue
-      default:
-        return '333333'; // Default dark gray
-    }
-  };
-  
-  // Helper to create a shortened prompt for the placeholder
-  const getShortPrompt = (prompt: string): string => {
-    const words = prompt.split(' ');
-    if (words.length <= 3) return prompt;
-    return words.slice(0, 3).join(' ') + '...';
   };
 
   return {

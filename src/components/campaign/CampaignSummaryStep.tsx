@@ -45,7 +45,7 @@ const CampaignSummaryStep: React.FC<CampaignSummaryStepProps> = ({
   return (
     <Card className="shadow-md">
       <CardHeader className="border-b">
-        <CardTitle className="text-xl font-semibold">Campaign Summary</CardTitle>
+        <CardTitle className="text-xl font-semibold">Resumo da Campanha</CardTitle>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         <CampaignDetailsSection 
@@ -61,10 +61,9 @@ const CampaignSummaryStep: React.FC<CampaignSummaryStepProps> = ({
         />
         
         {/* Only show ad previews for the selected platforms */}
-        {campaignData.platforms.map(platform => (
+        {campaignData.platforms.includes('google') && (
           <AdPreviewsSection
-            key={platform}
-            platform={platform}
+            platform="google"
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
@@ -73,14 +72,53 @@ const CampaignSummaryStep: React.FC<CampaignSummaryStepProps> = ({
             analysisResult={analysisResult}
             selectedPlatforms={campaignData.platforms}
           />
-        ))}
+        )}
+        
+        {campaignData.platforms.includes('meta') && (
+          <AdPreviewsSection
+            platform="meta"
+            googleAds={googleAds}
+            metaAds={metaAds}
+            microsoftAds={microsoftAds}
+            linkedInAds={linkedInAds}
+            websiteUrl={campaignData.targetUrl}
+            analysisResult={analysisResult}
+            selectedPlatforms={campaignData.platforms}
+          />
+        )}
+        
+        {campaignData.platforms.includes('microsoft') && (
+          <AdPreviewsSection
+            platform="microsoft"
+            googleAds={googleAds}
+            metaAds={metaAds}
+            microsoftAds={microsoftAds}
+            linkedInAds={linkedInAds}
+            websiteUrl={campaignData.targetUrl}
+            analysisResult={analysisResult}
+            selectedPlatforms={campaignData.platforms}
+          />
+        )}
+        
+        {campaignData.platforms.includes('linkedin') && (
+          <AdPreviewsSection
+            platform="linkedin"
+            googleAds={googleAds}
+            metaAds={metaAds}
+            microsoftAds={microsoftAds}
+            linkedInAds={linkedInAds}
+            websiteUrl={campaignData.targetUrl}
+            analysisResult={analysisResult}
+            selectedPlatforms={campaignData.platforms}
+          />
+        )}
         
         <div className="flex justify-between pt-4 border-t">
           <Button variant="outline" onClick={onBack}>
-            Back
+            Voltar
           </Button>
           <Button onClick={onCreateCampaign} disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Campaign"}
+            {isCreating ? "Criando..." : "Criar Campanha"}
           </Button>
         </div>
       </CardContent>
