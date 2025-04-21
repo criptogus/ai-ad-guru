@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { storeImageInSupabase } from "./storageHandler.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -74,19 +73,32 @@ serve(async (req) => {
     // Upload to Supabase storage
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const persistentImageUrl = await storeImageInSupabase(imageBlob, {
-      supabaseUrl,
-      supabaseServiceKey
-    });
+    const fileName = `ad-${Date.now()}.png`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('instagram-ads')
+      .upload(fileName, imageBlob, {
+        contentType: 'image/png',
+        cacheControl: '3600'
+      });
+
+    if (uploadError) {
+      console.error("Supabase storage upload error:", uploadError);
+      throw new Error("Failed to upload image to storage");
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('instagram-ads')
+      .getPublicUrl(fileName);
 
     console.log("Image processing completed successfully");
-    console.log("Final image URL:", persistentImageUrl);
+    console.log("Final image URL:", publicUrl);
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        imageUrl: persistentImageUrl 
+        imageUrl: publicUrl 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

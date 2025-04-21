@@ -24,9 +24,12 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
   try {
     console.log('Generating ad image with params:', params);
     
+    // Enhanced prompt for better results
+    const enhancedPrompt = `Create a professional, modern ${params.platform} advertisement image. ${params.prompt}. Use a clean design with vibrant colors and striking graphic elements. The style should be ${params.style || 'professional and business-oriented'}. Format: ${params.format || 'square (1:1)'}. Do not include any text or logos.`;
+    
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
-        prompt: params.prompt,
+        prompt: enhancedPrompt,
         platform: params.platform,
         format: params.format || 'square',
         brandTone: params.style || params.brandTone || 'professional'

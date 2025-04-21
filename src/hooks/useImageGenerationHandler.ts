@@ -35,18 +35,13 @@ export const useImageGenerationHandler = ({
       console.log("Generating image for ad:", ad);
       
       // Add additional context for image generation
-      const platform = campaignData?.platforms?.includes('meta') ? 'instagram' : 'linkedin';
+      const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       const format = ad.format || 'square';
-      const companyName = campaignData?.name || '';
-      const description = campaignData?.description || '';
-      
-      // Enhance prompt with branding context
-      const enhancedPrompt = `${ad.imagePrompt}. Em português brasileiro. Marca: ${companyName}. Contexto: ${description}`;
       
       // Call the image generation service
       const imageUrl = await generateAdImage({
-        prompt: enhancedPrompt,
-        platform: 'meta',
+        prompt: ad.imagePrompt,
+        platform,
         format: format as 'square' | 'story' | 'horizontal',
         style: format === 'story' ? 'vibrant' : 'professional'
       });
@@ -55,7 +50,7 @@ export const useImageGenerationHandler = ({
         toast.success("Imagem gerada com sucesso!");
         
         // Update the appropriate ad array
-        if (platform === 'instagram' && metaAds[index]) {
+        if (platform === 'meta' && metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
