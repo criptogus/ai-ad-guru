@@ -91,7 +91,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
       const fallbackSvg = encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
           <rect width="100" height="100" fill="#f0f0f0"/>
-          <text x="50" y="50" font-family="Arial" font-size="8" fill="#666666" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+          <text x="50" y="50" font-family="Arial" font-size="8" fill="#666666" text-anchor="middle" dominant-baseline="middle">Imagem Indisponível</text>
         </svg>
       `);
       e.currentTarget.src = `data:image/svg+xml,${fallbackSvg}`;
@@ -116,7 +116,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
         <div className="flex flex-col items-center justify-center h-full w-full">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           <p className="text-sm text-gray-500 mt-2">
-            {isLoading ? "Generating image..." : "Uploading image..."}
+            {isLoading ? "Gerando imagem..." : "Enviando imagem..."}
           </p>
         </div>
       </div>
@@ -129,7 +129,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
       <div className={imageContainerClasses}>
         <img
           src={imgSrc}
-          alt="Instagram content"
+          alt="Conteúdo do Instagram"
           className="w-full h-full object-cover"
           key={`ad-image-${imageKey}-${retryCount}`}
           onError={handleImageError}
@@ -144,7 +144,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
               onClick={handleGenerateClick}
               className="bg-white text-gray-800"
             >
-              Regenerate image
+              Regenerar imagem
             </Button>
           </div>
         )}
@@ -157,7 +157,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
               onClick={handleGenerateClick}
               className="bg-black/70 text-white border-white/20"
             >
-              Regenerate image
+              Regenerar imagem
             </Button>
           </div>
         )}

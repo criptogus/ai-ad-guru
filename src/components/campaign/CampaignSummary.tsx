@@ -51,36 +51,36 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Campaign Summary</CardTitle>
+        <CardTitle>Resumo da Campanha</CardTitle>
         <CardDescription>
-          Review your campaign details before finalizing
+          Revise os detalhes da sua campanha antes de finalizar
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Campaign Details</h3>
+            <h3 className="text-lg font-semibold mb-2">Detalhes da Campanha</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Campaign Name:</span>
+                <span className="text-muted-foreground">Nome da Campanha:</span>
                 <span className="font-medium">{campaignName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Budget:</span>
-                <span className="font-medium">${budget} {budgetType}</span>
+                <span className="text-muted-foreground">Orçamento:</span>
+                <span className="font-medium">${budget} {budgetType === 'daily' ? 'diário' : 'total'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Start Date:</span>
+                <span className="text-muted-foreground">Data de Início:</span>
                 <span className="font-medium">{startDate}</span>
               </div>
               {endDate && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">End Date:</span>
+                  <span className="text-muted-foreground">Data de Término:</span>
                   <span className="font-medium">{endDate}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Objective:</span>
+                <span className="text-muted-foreground">Objetivo:</span>
                 <span className="font-medium">{objective}</span>
               </div>
               <div className="flex justify-between">
@@ -90,22 +90,22 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
             </div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-2">Platforms</h3>
+            <h3 className="text-lg font-semibold mb-2">Plataformas</h3>
             <div className="space-y-2">
               {platforms.map((platformId, index) => (
                 <div key={index} className="flex items-center">
                   <span className="font-medium capitalize">{platformId} Ads</span>
                   {platformId === 'google' && googleAds.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">({googleAds.length} variations)</span>
+                    <span className="ml-2 text-sm text-muted-foreground">({googleAds.length} variações)</span>
                   )}
                   {platformId === 'meta' && metaAds.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">({metaAds.length} variations)</span>
+                    <span className="ml-2 text-sm text-muted-foreground">({metaAds.length} variações)</span>
                   )}
                   {platformId === 'linkedin' && linkedInAds.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">({linkedInAds.length} variations)</span>
+                    <span className="ml-2 text-sm text-muted-foreground">({linkedInAds.length} variações)</span>
                   )}
                   {platformId === 'microsoft' && microsoftAds.length > 0 && (
-                    <span className="ml-2 text-sm text-muted-foreground">({microsoftAds.length} variations)</span>
+                    <span className="ml-2 text-sm text-muted-foreground">({microsoftAds.length} variações)</span>
                   )}
                 </div>
               ))}
@@ -114,7 +114,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
         </div>
 
         <div className="border-t pt-4">
-          <h3 className="text-lg font-semibold mb-2">Target Audience</h3>
+          <h3 className="text-lg font-semibold mb-2">Público-Alvo</h3>
           <p>{targetAudience}</p>
         </div>
 
@@ -177,15 +177,15 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
 
         <div className="pt-4 border-t flex justify-between">
           <Button variant="outline" onClick={onEdit}>
-            Edit Campaign
+            Editar Campanha
           </Button>
           <Button onClick={onApprove} disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" /> Creating...
+                <Loader className="mr-2 h-4 w-4 animate-spin" /> Criando...
               </>
             ) : (
-              "Create Campaign"
+              "Criar Campanha"
             )}
           </Button>
         </div>

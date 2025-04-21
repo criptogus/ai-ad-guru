@@ -1,165 +1,160 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { errorLogger } from '@/services/libs/error-handling';
+import { toast } from 'sonner';
 
 export interface WebsiteAnalysisResult {
   companyName: string;
   companyDescription: string;
-  businessDescription?: string; // Keep as alias for companyDescription
   targetAudience: string;
-  brandTone: string;
   keywords: string[];
-  callToAction: string[];
-  uniqueSellingPoints: string[];
-  keySellingPoints?: string[];
-  websiteUrl?: string;
-  usps?: string[];
-  language?: string;
   industry?: string;
+  logo?: string;
+  colors?: string[];
+  language?: string;
 }
 
 export interface AnalysisCache {
-  fromCache: boolean;
-  cachedAt?: string;
-  expiresAt?: string;
+  id: string;
+  url: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export const useWebsiteAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [cacheInfo, setCacheInfo] = useState<AnalysisCache | null>(null);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+
+  const checkCachedAnalysis = async (url: string): Promise<WebsiteAnalysisResult | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('website_analysis_cache')
+        .select('*')
+        .eq('url', url)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Error checking cache:", error);
+        return null;
+      }
+
+      if (data) {
+        console.log("Found cached analysis for URL:", url);
+        setCacheInfo({
+          id: data.id,
+          url: data.url,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        });
+        return data.analysis_result as WebsiteAnalysisResult;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error in checkCachedAnalysis:", error);
+      return null;
+    }
+  };
+
+  const saveAnalysisToCache = async (url: string, result: WebsiteAnalysisResult): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('website_analysis_cache')
+        .insert({
+          url,
+          analysis_result: result,
+          language: result.language || 'pt-br'
+        });
+
+      if (error) {
+        console.error("Error saving to cache:", error);
+        return false;
+      }
+
+      console.log("Analysis saved to cache:", data);
+      return true;
+    } catch (error) {
+      console.error("Error in saveAnalysisToCache:", error);
+      return false;
+    }
+  };
 
   const analyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
-    if (!url || !url.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a website URL",
-        variant: "destructive",
-      });
+    if (!url) {
+      setError("URL é obrigatória para análise");
       return null;
     }
 
     setIsAnalyzing(true);
-    
+    setError(null);
+
     try {
-      // Format URL - ensure it has a protocol
-      let formattedUrl = url.trim();
-      
-      // If URL doesn't have a protocol, add https://
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        formattedUrl = 'https://' + formattedUrl;
-      }
-      
-      console.log('Attempting to analyze website URL:', formattedUrl);
-      
-      try {
-        // Try to call the Supabase function
-        const { data, error } = await supabase.functions.invoke('analyze-website', {
-          body: { url: formattedUrl },
+      // First check if we have a cached analysis
+      const cachedResult = await checkCachedAnalysis(url);
+      if (cachedResult) {
+        setAnalysisResult(cachedResult);
+        // Show success toast for cached result
+        toast.success("Análise concluída", {
+          description: "Resultados carregados do cache"
         });
-        
-        if (error) {
-          console.error('Error from Supabase:', error);
-          throw new Error(error.message || 'Failed to call analyze-website function');
-        }
-        
-        if (!data || !data.success) {
-          throw new Error(data?.error || 'Failed to analyze website');
-        }
-        
-        console.log('Real analysis result:', data);
-        
-        // Set cache info if available
-        if (data.fromCache) {
-          setCacheInfo({
-            fromCache: true,
-            cachedAt: data.cachedAt,
-            expiresAt: data.expiresAt
-          });
-        } else {
-          setCacheInfo(null);
-        }
-        
-        const result = data.data as WebsiteAnalysisResult;
-        // Ensure websiteUrl is set
-        result.websiteUrl = formattedUrl;
-        
-        // Set both descriptions
-        if (result.companyDescription && !result.businessDescription) {
-          result.businessDescription = result.companyDescription;
-        } else if (result.businessDescription && !result.companyDescription) {
-          result.companyDescription = result.businessDescription;
-        }
-        
-        setAnalysisResult(result);
-        return result;
-      } catch (supabaseError) {
-        console.warn('Supabase function error or not available:', supabaseError);
-        console.log('Using mock data instead');
-        
-        // Mock data for development
-        const result: WebsiteAnalysisResult = {
-          companyName: 'Example Company',
-          companyDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
-          businessDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
-          targetAudience: 'Small to medium-sized technology companies',
-          brandTone: 'Professional, innovative, trustworthy',
-          keywords: ['innovation', 'technology', 'solutions', 'business'],
-          callToAction: ['Contact us today', 'Schedule a demo', 'Learn more'],
-          uniqueSellingPoints: [
-            'Industry-leading technology',
-            '24/7 customer support',
-            'Customizable solutions'
-          ],
-          websiteUrl: formattedUrl,
-          industry: 'Technology'
-        };
-        
-        setAnalysisResult(result);
-        
-        toast({
-          title: "Website Analyzed (Demo Mode)",
-          description: "Using sample data in development environment",
-        });
-        
-        return result;
+        return cachedResult;
       }
-    } catch (error: any) {
-      console.error('Error analyzing website:', error);
-      errorLogger.logError(error, 'analyzeWebsite');
+
+      console.log("Analyzing website:", url);
       
-      toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze website. Please try again.",
-        variant: "destructive",
+      // Invoke the Supabase Edge Function for website analysis
+      const { data, error: functionError } = await supabase.functions.invoke('analyze-website', {
+        body: { url, language: 'pt-br' }
       });
+      
+      if (functionError) {
+        console.error("Error in analyze-website function:", functionError);
+        throw new Error(functionError.message);
+      }
+      
+      if (!data?.success) {
+        throw new Error(data?.error || "Falha na análise do site");
+      }
+      
+      const result = data.result as WebsiteAnalysisResult;
+      
+      // Save to cache
+      await saveAnalysisToCache(url, result);
+      
+      // Set the result
+      setAnalysisResult(result);
+      
+      // Show success toast
+      toast.success("Análise concluída", {
+        description: "Site analisado com sucesso"
+      });
+      
+      return result;
+    } catch (err) {
+      console.error("Error analyzing website:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido ocorrido";
+      setError(errorMessage);
+      
+      toast.error("Falha na análise", {
+        description: errorMessage
+      });
+      
       return null;
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  // Add a utility function to handle the aliasing when setting analysis results
-  const setCompatibleAnalysisResult = (result: WebsiteAnalysisResult | null) => {
-    if (result) {
-      // Ensure both business and company description are set
-      if (result.companyDescription && !result.businessDescription) {
-        result.businessDescription = result.companyDescription;
-      } else if (result.businessDescription && !result.companyDescription) {
-        result.companyDescription = result.businessDescription;
-      }
-    }
-    setAnalysisResult(result);
-  };
-
   return {
     analyzeWebsite,
-    isAnalyzing,
+    setAnalysisResult,
     analysisResult,
-    setAnalysisResult: setCompatibleAnalysisResult,
+    isAnalyzing,
+    error,
     cacheInfo
   };
 };
