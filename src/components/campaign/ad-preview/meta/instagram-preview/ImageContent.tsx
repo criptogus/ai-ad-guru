@@ -31,7 +31,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [imgSrc, setImgSrc] = useState<string | null>(ad.imageUrl || null);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   // Reset error state and retry count when ad.imageUrl changes
   useEffect(() => {
@@ -40,11 +40,12 @@ const ImageContent: React.FC<ImageContentProps> = ({
       setImageError(false);
       setRetryCount(0);
       
-      // Add cache-busting parameter to prevent stale cache issues
-      const cacheBuster = `?t=${new Date().getTime()}`;
-      const newUrl = ad.imageUrl.includes('?') 
-        ? `${ad.imageUrl}&cb=${cacheBuster}` 
-        : `${ad.imageUrl}${cacheBuster}`;
+      // Properly format the URL with a cache-busting parameter
+      // Fix the issue with multiple question marks
+      const timestamp = new Date().getTime();
+      const separator = ad.imageUrl.includes('?') ? '&' : '?';
+      const cacheBuster = `${separator}t=${timestamp}`;
+      const newUrl = `${ad.imageUrl}${cacheBuster}`;
       
       setImgSrc(newUrl);
     } else {
@@ -79,7 +80,9 @@ const ImageContent: React.FC<ImageContentProps> = ({
       
       // Add a delay before retrying to give servers time to recover
       setTimeout(() => {
-        const newUrl = `${ad.imageUrl}?retry=${nextRetry}&t=${new Date().getTime()}`;
+        // Use correct URL formatting (avoid multiple question marks)
+        const baseUrl = ad.imageUrl!.split('?')[0];
+        const newUrl = `${baseUrl}?retry=${nextRetry}&t=${new Date().getTime()}`;
         console.log(`Retrying image load (attempt ${nextRetry}):`, newUrl);
         setImgSrc(newUrl);
       }, 1000 * nextRetry); // Increase delay with each retry

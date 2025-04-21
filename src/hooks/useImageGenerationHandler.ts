@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
+import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
+import { toast } from "sonner";
 
 interface UseImageGenerationHandlerProps {
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
@@ -23,7 +25,9 @@ export const useImageGenerationHandler = ({
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (!ad.imagePrompt) {
-      console.warn("No image prompt provided for ad:", ad);
+      toast.error("Descrição da imagem ausente", {
+        description: "Não foi possível gerar a imagem sem uma descrição"
+      });
       return;
     }
     
@@ -37,40 +41,37 @@ export const useImageGenerationHandler = ({
         platform: campaignData?.platforms?.includes('meta') ? 'instagram' : 'linkedin',
         adType: 'feed',
         companyName: campaignData?.name || '',
-        industry: campaignData?.industry || '',
+        industry: campaignData?.description || '',
         targetAudience: campaignData?.targetAudience || '',
+        format: ad.format || 'square',
+        language: 'portuguese' // Ensure Portuguese language
       };
       
       console.log("Calling generateAdImage with prompt:", ad.imagePrompt);
       
-      // Use a placeholder image for development/demo purposes
-      // This will allow us to see something even if the image generation API isn't working
-      const usePlaceholder = true; // Toggle this for testing with placeholder images
+      // Generate unique filename based on timestamp and ad content
+      const timestamp = Date.now();
+      const imageName = `ad-${timestamp}-${index}.png`;
       
-      let imageUrl = null;
-      
-      if (usePlaceholder) {
-        // Use a placeholder image instead of generating one
-        const placeholders = [
-          "https://via.placeholder.com/1000x1000?text=Instagram+Ad+Sample",
-          "https://via.placeholder.com/800x800?text=Brand+Advertisement",
-          "https://via.placeholder.com/1200x1200?text=Product+Showcase"
-        ];
-        
-        // Pick a random placeholder
-        imageUrl = placeholders[Math.floor(Math.random() * placeholders.length)];
-        console.log("Using placeholder image:", imageUrl);
-        
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      } else {
-        // Actually call the image generation service
-        imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
-      }
+      // Call the image generation service with language and branding context
+      let imageUrl = await generateAdImage({
+        prompt: `${ad.imagePrompt}. Em português brasileiro. Marca: ${additionalInfo.companyName}`,
+        platform: additionalInfo.platform as 'meta' | 'linkedin' | 'google',
+        format: additionalInfo.format as 'square' | 'story' | 'horizontal' | undefined,
+        style: ad.brandTone || 'professional'
+      });
       
       console.log("Image URL received:", imageUrl);
       
       if (imageUrl) {
+        // Add cache-busting parameter to the URL
+        const cacheBuster = `t=${Date.now()}`;
+        imageUrl = imageUrl.includes('?') 
+          ? `${imageUrl}&${cacheBuster}` 
+          : `${imageUrl}?${cacheBuster}`;
+          
+        toast.success("Imagem gerada com sucesso!");
+          
         // Update the ad with the new image URL
         if (campaignData?.platforms?.includes('meta') && metaAds[index]) {
           const updatedAds = [...metaAds];
@@ -86,9 +87,15 @@ export const useImageGenerationHandler = ({
           console.warn("Could not determine which ad array to update for index:", index);
         }
       } else {
+        toast.error("Falha ao gerar imagem", {
+          description: "O serviço de geração de imagens não retornou uma URL válida"
+        });
         console.error("No image URL returned from generateAdImage");
       }
     } catch (error) {
+      toast.error("Erro ao gerar imagem", {
+        description: error instanceof Error ? error.message : "Erro desconhecido"
+      });
       console.error("Error generating image:", error);
     } finally {
       setLoadingImageIndex(null);
