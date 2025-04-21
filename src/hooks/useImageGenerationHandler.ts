@@ -5,7 +5,7 @@ import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationServ
 import { toast } from "sonner";
 
 interface UseImageGenerationHandlerProps {
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
+  generateAdImage: (params: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
   setMetaAds: (ads: MetaAd[]) => void;
@@ -54,11 +54,12 @@ export const useImageGenerationHandler = ({
       const imageName = `ad-${timestamp}-${index}.png`;
       
       // Call the image generation service with language and branding context
+      // Fix: Pass the parameters as an object with the correct structure
       let imageUrl = await generateAdImage({
         prompt: `${ad.imagePrompt}. Em português brasileiro. Marca: ${additionalInfo.companyName}`,
         platform: additionalInfo.platform as 'meta' | 'linkedin' | 'google',
         format: additionalInfo.format as 'square' | 'story' | 'horizontal' | undefined,
-        style: ad.brandTone || 'professional'
+        style: ad.format === 'story' ? 'vibrant' : 'professional' // Use format instead of brandTone
       });
       
       console.log("Image URL received:", imageUrl);
