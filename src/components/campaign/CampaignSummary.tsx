@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
 import AdPreviewsSection from "./summary/AdPreviewsSection";
 
 interface CampaignSummaryProps {
@@ -132,6 +132,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
+                  selectedPlatforms={platforms}
                 />
               )}
               {(platformId === 'meta' && metaAds.length > 0) && (
@@ -143,6 +144,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
+                  selectedPlatforms={platforms}
                 />
               )}
               {(platformId === 'linkedin' && linkedInAds.length > 0) && (
@@ -154,6 +156,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
+                  selectedPlatforms={platforms}
                 />
               )}
               {(platformId === 'microsoft' && microsoftAds.length > 0) && (
@@ -165,6 +168,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
                   linkedInAds={linkedInAds}
                   websiteUrl={websiteUrl}
                   analysisResult={analysisResult}
+                  selectedPlatforms={platforms}
                 />
               )}
             </div>
