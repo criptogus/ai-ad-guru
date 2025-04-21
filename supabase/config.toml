@@ -12,7 +12,6 @@ port = 54322
 [studio]
 enabled = true
 port = 54323
-api_url = "http://localhost"
 
 [inbucket]
 enabled = true
@@ -21,22 +20,5 @@ port = 54324
 [storage]
 enabled = true
 
-[auth]
-enabled = true
-port = 54325
-
-[realtime]
-enabled = true
-
-[scripts]
-enabled = true
-
-[functions]
-[functions.webhook-handler]
-verify_jwt = false
-
 [functions.generate-meta-ad-image]
-verify_jwt = true
-
-[functions.report-ad-spend]
 verify_jwt = false
