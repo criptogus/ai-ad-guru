@@ -1,14 +1,13 @@
 
-import React from "react";
-import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
-import WebsiteAnalysisStep from "@/components/campaign/WebsiteAnalysisStep";
-import PlatformSelectionStep from "@/components/campaign/PlatformSelectionStep";
-import { MindTriggerSelectionStep } from "@/components/campaign/mind-trigger";
-import AudienceAnalysisStep from "@/components/campaign/audience-analysis/AudienceAnalysisStep";
-import CampaignSetupStep from "@/components/campaign/CampaignSetupStep";
-import AdPreviewStep from "@/components/campaign/ad-preview/AdPreviewStep";
-import CampaignSummary from "@/components/campaign/CampaignSummary";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
+import React from 'react';
+import { WebsiteAnalysisResult, AnalysisCache } from '@/hooks/useWebsiteAnalysis';
+import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
+import WebsiteAnalysisStep from '@/components/campaign/WebsiteAnalysisStep';
+import PlatformSelectionStep from '@/components/campaign/PlatformSelectionStep';
+import MindTriggerSelectionStep from '@/components/campaign/mind-trigger/MindTriggerSelectionStep';
+import CampaignSetupStep from '@/components/campaign/CampaignSetupStep';
+import AdPreviewStep from '@/components/campaign/ad-preview/AdPreviewStep';
+// Import other steps as needed
 
 interface UseCampaignStepRendererProps {
   currentStep: number;
@@ -27,7 +26,7 @@ interface UseCampaignStepRendererProps {
   handleGenerateMetaAds: () => Promise<void>;
   handleGenerateMicrosoftAds: () => Promise<void>;
   handleGenerateLinkedInAds: () => Promise<void>;
-  handleGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
+  handleGenerateImage: (index: number) => Promise<void>;
   handleUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   handleUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
   handleUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
@@ -65,12 +64,11 @@ const useCampaignStepRenderer = ({
   handleBack,
   handleNextWrapper,
   createCampaign,
-  cacheInfo,
+  cacheInfo
 }: UseCampaignStepRendererProps) => {
+  console.log("Rendering step:", currentStep, "Campaign data:", campaignData);
+  
   const getStepContent = () => {
-    // Add logging to debug the current step
-    console.log("Rendering step:", currentStep, "Campaign data:", campaignData);
-    
     switch (currentStep) {
       case 1:
         return (
@@ -78,13 +76,14 @@ const useCampaignStepRenderer = ({
             isAnalyzing={isAnalyzing}
             analysisResult={analysisResult}
             onAnalyzeWebsite={handleWebsiteAnalysis}
-            onNext={() => handleNextWrapper()}
+            onNext={handleNextWrapper}
             cacheInfo={cacheInfo}
           />
         );
       case 2:
         return (
           <PlatformSelectionStep 
+            campaignData={campaignData}
             onNext={(data) => handleNextWrapper(data)}
             onBack={handleBack}
           />
@@ -92,84 +91,68 @@ const useCampaignStepRenderer = ({
       case 3:
         return (
           <MindTriggerSelectionStep
-            selectedPlatforms={campaignData.platforms || []}
-            selectedTriggers={campaignData.mindTriggers || {}}
-            onTriggersChange={(mindTriggers) => {
-              setCampaignData(prev => ({
-                ...prev,
-                mindTriggers
-              }));
-            }}
+            campaignData={campaignData}
+            setCampaignData={setCampaignData}
+            onNext={handleNextWrapper}
             onBack={handleBack}
-            onNext={() => handleNextWrapper()}
           />
         );
       case 4:
         return (
-          <AudienceAnalysisStep
+          <CampaignSetupStep
+            campaignData={campaignData}
             analysisResult={analysisResult}
+            onNext={(data) => handleNextWrapper(data)}
             onBack={handleBack}
-            onNext={() => handleNextWrapper()}
           />
         );
       case 5:
         return (
-          <CampaignSetupStep
-            analysisResult={analysisResult}
-            campaignData={campaignData}
-            onUpdateCampaignData={(setupData) => setCampaignData(prev => ({ ...prev, ...setupData }))}
-            onBack={handleBack}
-            onNext={() => handleNextWrapper()}
-          />
-        );
-      case 6:
-        return (
           <AdPreviewStep
-            analysisResult={analysisResult}
+            campaignData={campaignData}
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
             linkedInAds={linkedInAds}
             isGenerating={isGenerating}
             loadingImageIndex={loadingImageIndex}
-            onGenerateGoogleAds={handleGenerateGoogleAds}
-            onGenerateMetaAds={handleGenerateMetaAds}
-            onGenerateMicrosoftAds={handleGenerateMicrosoftAds}
-            onGenerateLinkedInAds={handleGenerateLinkedInAds}
-            onGenerateImage={handleGenerateImage}
-            onUpdateGoogleAd={handleUpdateGoogleAd}
-            onUpdateMetaAd={handleUpdateMetaAd}
-            onUpdateMicrosoftAd={handleUpdateMicrosoftAd}
-            onUpdateLinkedInAd={handleUpdateLinkedInAd}
-            onNext={() => handleNextWrapper()}
+            handleGenerateGoogleAds={handleGenerateGoogleAds}
+            handleGenerateMetaAds={handleGenerateMetaAds}
+            handleGenerateMicrosoftAds={handleGenerateMicrosoftAds}
+            handleGenerateLinkedInAds={handleGenerateLinkedInAds}
+            handleGenerateImage={handleGenerateImage}
+            handleUpdateGoogleAd={handleUpdateGoogleAd}
+            handleUpdateMetaAd={handleUpdateMetaAd}
+            handleUpdateMicrosoftAd={handleUpdateMicrosoftAd}
+            handleUpdateLinkedInAd={handleUpdateLinkedInAd}
+            onNext={handleNextWrapper}
             onBack={handleBack}
-            mindTriggers={campaignData.mindTriggers}
           />
         );
-      case 7:
+      case 6:
         return (
-          <CampaignSummary
-            campaignName={campaignData.name || ""}
-            platforms={campaignData.platforms || []}
-            budget={campaignData.budget || 0}
-            budgetType={campaignData.budgetType || "daily"}
-            startDate={campaignData.startDate || ""}
-            endDate={campaignData.endDate}
-            objective={campaignData.objective || ""}
-            targetAudience={campaignData.targetAudience || ""}
-            websiteUrl={campaignData.targetUrl || analysisResult?.websiteUrl || ""}
-            analysisResult={analysisResult}
-            googleAds={googleAds}
-            metaAds={metaAds}
-            microsoftAds={microsoftAds}
-            linkedInAds={linkedInAds}
-            onApprove={createCampaign}
-            onEdit={handleBack}
-            isLoading={isCreating}
-          />
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Campaign Summary</h2>
+            {/* Summary content */}
+            <div className="flex justify-between mt-6">
+              <button
+                onClick={handleBack}
+                className="px-4 py-2 border rounded-md hover:bg-gray-100"
+              >
+                Back
+              </button>
+              <button
+                onClick={createCampaign}
+                disabled={isCreating}
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 disabled:opacity-70"
+              >
+                {isCreating ? 'Creating...' : 'Create Campaign'}
+              </button>
+            </div>
+          </div>
         );
       default:
-        return null;
+        return <div>Unknown step</div>;
     }
   };
 

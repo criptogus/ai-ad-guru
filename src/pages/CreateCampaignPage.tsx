@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -96,9 +97,11 @@ const CreateCampaignPage: React.FC = () => {
     setCampaignData(prev => ({ ...prev, targetUrl: url }));
     
     try {
+      console.log("Starting website analysis for URL:", url);
       const result = await analyzeWebsite(url);
       
       if (result) {
+        console.log("Analysis successful:", result);
         setCampaignData(prev => ({ 
           ...prev, 
           name: result.companyName ? `${result.companyName} Campaign` : 'New Campaign',
@@ -302,6 +305,7 @@ const CreateCampaignPage: React.FC = () => {
         linkedInAds
       };
       
+      console.log("Creating campaign with params:", campaignParams);
       const result = await createCampaign(campaignParams);
       
       if (result) {

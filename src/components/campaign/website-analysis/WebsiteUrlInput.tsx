@@ -45,6 +45,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
       return;
     }
     
+    console.log("Starting website analysis for:", website);
     onAnalyze();
   };
 
