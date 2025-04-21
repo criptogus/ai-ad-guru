@@ -8,7 +8,7 @@ export interface CampaignCreationParams {
   description?: string;
   platforms: string[];
   budget?: number;
-  budgetType?: 'daily' | 'lifetime';
+  budgetType?: 'daily' | 'lifetime'; // Restrict to these literal types
   startDate?: string;
   endDate?: string;
   targetAudience?: string;

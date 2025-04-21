@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useWebsiteAnalysis, WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
-import { useCampaignCreation } from "@/hooks/useCampaignCreation";
+import { useCampaignCreation, CampaignCreationParams } from "@/hooks/useCampaignCreation";
 import { useCampaignState } from "@/hooks/useCampaignState";
 import { useGoogleAdGeneration } from "@/hooks/adGeneration/useGoogleAdGeneration";
 import { useMetaAdGeneration } from "@/hooks/adGeneration/useMetaAdGeneration";
@@ -16,7 +15,6 @@ import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 
-// Define the CampaignCreationParams interface
 interface CampaignCreationParams {
   name: string;
   description: string;
@@ -40,7 +38,6 @@ const CreateCampaignPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   
-  // Analysis hooks
   const { 
     analyzeWebsite, 
     analysisResult, 
@@ -49,7 +46,6 @@ const CreateCampaignPage: React.FC = () => {
     cacheInfo 
   } = useWebsiteAnalysis();
   
-  // Campaign data state hook
   const { 
     campaignData, 
     setCampaignData, 
@@ -63,13 +59,23 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   } = useCampaignState();
   
-  // Ad generation hooks
-  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration({});
-  const { generateMetaAds, isGenerating: isGeneratingMetaAds } = useMetaAdGeneration();
-  const { generateMicrosoftAds, isGenerating: isGeneratingMicrosoftAds } = useMicrosoftAdGeneration();
-  const { generateLinkedInAds, isGenerating: isGeneratingLinkedInAds } = useLinkedInAdGeneration();
+  const { 
+    generateGoogleAds, 
+    isGenerating: isGeneratingGoogleAds 
+  } = useGoogleAdGeneration({});
+  const { 
+    generateMetaAds, 
+    isGenerating: isGeneratingMetaAds 
+  } = useMetaAdGeneration();
+  const { 
+    generateMicrosoftAds, 
+    isGenerating: isGeneratingMicrosoftAds 
+  } = useMicrosoftAdGeneration();
+  const { 
+    generateLinkedInAds, 
+    isGenerating: isGeneratingLinkedInAds 
+  } = useLinkedInAdGeneration();
   
-  // Image generation hooks
   const { generateAdImage } = useImageGeneration();
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
     generateAdImage,
@@ -80,27 +86,22 @@ const CreateCampaignPage: React.FC = () => {
     campaignData
   });
   
-  // Campaign creation hook
   const { createCampaign } = useCampaignCreation();
   
-  // Check if any ad generation is in progress
   const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || isGeneratingMicrosoftAds || isGeneratingLinkedInAds;
   
-  // Handle the back button
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
   
-  // Handle the next button
   const handleNext = () => {
     if (currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
   };
   
-  // Handle the next button with data
   const handleNextWrapper = (data?: any) => {
     if (data) {
       setCampaignData(prev => ({ ...prev, ...data }));
@@ -108,16 +109,13 @@ const CreateCampaignPage: React.FC = () => {
     handleNext();
   };
   
-  // Handle website analysis
   const handleWebsiteAnalysis = async (url: string): Promise<WebsiteAnalysisResult | null> => {
-    // Set the target URL in campaign data
     setCampaignData(prev => ({ ...prev, targetUrl: url }));
     
     try {
       const result = await analyzeWebsite(url);
       
       if (result) {
-        // Update campaign data with analysis result
         setCampaignData(prev => ({ 
           ...prev, 
           name: result.companyName ? `${result.companyName} Campaign` : 'New Campaign',
@@ -140,7 +138,6 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Handle Google Ads generation
   const handleGenerateGoogleAds = async () => {
     if (!analysisResult) return;
     
@@ -175,7 +172,6 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Handle Meta Ads generation
   const handleGenerateMetaAds = async () => {
     if (!analysisResult) return;
     
@@ -210,7 +206,6 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Handle Microsoft Ads generation
   const handleGenerateMicrosoftAds = async () => {
     if (!analysisResult) return;
     
@@ -245,7 +240,6 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Handle LinkedIn Ads generation
   const handleGenerateLinkedInAds = async () => {
     if (!analysisResult) return;
     
@@ -280,47 +274,41 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Handle updating Google Ad
   const handleUpdateGoogleAd = (index: number, updatedAd: any) => {
     const updatedAds = [...googleAds];
     updatedAds[index] = updatedAd;
     setGoogleAds(updatedAds);
   };
   
-  // Handle updating Meta Ad
   const handleUpdateMetaAd = (index: number, updatedAd: any) => {
     const updatedAds = [...metaAds];
     updatedAds[index] = updatedAd;
     setMetaAds(updatedAds);
   };
   
-  // Handle updating Microsoft Ad
   const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
     const updatedAds = [...microsoftAds];
     updatedAds[index] = updatedAd;
     setMicrosoftAds(updatedAds);
   };
   
-  // Handle updating LinkedIn Ad
   const handleUpdateLinkedInAd = (index: number, updatedAd: any) => {
     const updatedAds = [...linkedInAds];
     updatedAds[index] = updatedAd;
     setLinkedInAds(updatedAds);
   };
   
-  // Handle creating campaign
   const handleCreateCampaign = async () => {
     setIsCreating(true);
     
     try {
-      // Make sure all required fields are present
       const campaignParams: CampaignCreationParams = {
         name: campaignData.name || 'New Campaign',
         description: campaignData.description || '',
         targetUrl: campaignData.targetUrl,
         platforms: campaignData.platforms || ['google'],
         budget: campaignData.budget || 100,
-        budgetType: campaignData.budgetType || 'daily',
+        budgetType: (campaignData.budgetType as 'daily' | 'lifetime') || 'daily',
         startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
         endDate: campaignData.endDate,
         objective: campaignData.objective || 'awareness',
@@ -339,7 +327,6 @@ const CreateCampaignPage: React.FC = () => {
           description: "Your campaign has been created successfully."
         });
         
-        // Redirect to campaigns page
         navigate('/campaigns');
       }
     } catch (error) {
@@ -354,7 +341,6 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
-  // Get the step content
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -384,7 +370,6 @@ const CreateCampaignPage: React.FC = () => {
     cacheInfo
   });
   
-  // Log the current state for debugging
   console.log("CreateCampaignPage rendering with step:", currentStep, "and campaign data:", campaignData);
 
   return (
@@ -394,10 +379,8 @@ const CreateCampaignPage: React.FC = () => {
           <h1 className="text-3xl font-bold">Create New Campaign</h1>
         </div>
         
-        {/* Stepper */}
         <Stepper currentStep={currentStep} />
         
-        {/* Step Content */}
         <Card>
           <CardContent className="p-0">
             {getStepContent()}

@@ -2,8 +2,28 @@
 import { useState } from 'react';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 
+// Define a more comprehensive interface for campaign data
+interface CampaignData {
+  name: string;
+  description: string;
+  platforms: string[];
+  mindTriggers: Record<string, string>;
+  targetUrl?: string;
+  budget?: number;
+  budgetType?: 'daily' | 'lifetime'; // Restrict to these literal types
+  startDate?: string;
+  endDate?: string;
+  objective?: string;
+  targetAudience?: string;
+  keywords?: string[];
+  websiteUrl?: string;
+  country?: string;
+  language?: string;
+  optimizationFrequency?: string;
+}
+
 export const useCampaignState = () => {
-  const [campaignData, setCampaignData] = useState({
+  const [campaignData, setCampaignData] = useState<CampaignData>({
     name: '',
     description: '',
     platforms: [] as string[],
