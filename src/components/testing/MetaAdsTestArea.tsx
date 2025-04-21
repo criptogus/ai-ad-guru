@@ -23,14 +23,13 @@ const MetaAdsTestArea: React.FC = () => {
   const { generateAdImage, isGenerating, error } = useImageGeneration();
   const { user } = useAuth();
   
-  // Company info state from website analysis, replaced with default data that matches WebsiteAnalysisResult type
   const [companyInfo, setCompanyInfo] = useState<WebsiteAnalysisResult>({
     companyName: "Sample Company",
     companyDescription: "A leading provider of technology solutions",
     businessDescription: "A leading provider of technology solutions",
     brandTone: "Professional & Modern",
     targetAudience: "Business professionals, 30-45 years old",
-    uniqueSellingPoints: ["Quality", "Innovation", "Reliability"], // Changed to array
+    uniqueSellingPoints: ["Quality", "Innovation", "Reliability"],
     keywords: ["efficiency", "professional", "innovation", "time-saving", "productivity", "modern solution"],
     callToAction: ["Contact us today", "Learn more"],
     websiteUrl: "https://example.com"
@@ -38,8 +37,8 @@ const MetaAdsTestArea: React.FC = () => {
   
   const [industry, setIndustry] = useState("Technology");
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
-  const [imageFormat, setImageFormat] = useState<"square" | "portrait" | "landscape">("square"); // Explicitly typed as allowed values
-  
+  const [imageFormat, setImageFormat] = useState<"square" | "portrait" | "landscape">("square");
+
   const handleCompanyNameChange = (value: string) => {
     setCompanyInfo({ ...companyInfo, companyName: value });
   };

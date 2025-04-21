@@ -14,16 +14,20 @@ const AdFormatPreviewsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
   
   // Sample data for previews
-  const analysisResult: WebsiteAnalysisResult = {
-    companyName: "Acme Tech Solutions",
-    companyDescription: "Leading provider of AI-powered business solutions",
-    businessDescription: "Leading provider of AI-powered business solutions",
-    brandTone: "Professional & Innovative",
-    targetAudience: "Business professionals, tech enthusiasts",
-    uniqueSellingPoints: ["AI-powered", "Easy to use", "24/7 support"],
-    keywords: ["technology", "innovation", "AI", "productivity", "efficiency"],
-    callToAction: ["Get Started Today", "Book a Demo"],
-    websiteUrl: "https://acmetech.example.com"
+  const mockAnalysisResult: WebsiteAnalysisResult = {
+    companyName: "Enterprise Solutions Inc.",
+    companyDescription: "Enterprise-grade business solutions for modern companies",
+    businessDescription: "Enterprise-grade business solutions for modern companies",
+    brandTone: "Professional and authoritative",
+    targetAudience: "B2B decision makers and enterprise-level businesses",
+    uniqueSellingPoints: [
+      "End-to-end business process automation",
+      "Advanced analytics and reporting",
+      "Enterprise-grade security and compliance"
+    ],
+    keywords: ["enterprise", "B2B", "automation", "analytics", "business solutions"],
+    callToAction: ["Schedule a Demo", "Contact Sales"],
+    websiteUrl: "https://example.com"
   };
   
   const googleAd: GoogleAd = {
@@ -87,7 +91,7 @@ const AdFormatPreviewsPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <AdPreviewSwitcher 
-                analysisResult={analysisResult}
+                analysisResult={mockAnalysisResult}
                 googleAd={googleAd}
                 metaAd={metaAd}
                 microsoftAd={googleAd}
@@ -106,7 +110,7 @@ const AdFormatPreviewsPage: React.FC = () => {
               <div className="flex flex-col items-center">
                 <GoogleAdPreview 
                   ad={googleAd} 
-                  domain={analysisResult.websiteUrl?.replace('https://', '').replace('http://', '') || 'example.com'} 
+                  domain={mockAnalysisResult.websiteUrl?.replace('https://', '').replace('http://', '') || 'example.com'} 
                 />
                 
                 <div className="mt-8 text-sm text-muted-foreground max-w-2xl">
@@ -136,7 +140,7 @@ const AdFormatPreviewsPage: React.FC = () => {
                     <Label className="mb-4">Feed Post</Label>
                     <InstagramPreview 
                       ad={metaAd} 
-                      companyName={analysisResult.companyName} 
+                      companyName={mockAnalysisResult.companyName} 
                       viewMode="feed" 
                     />
                   </div>
@@ -145,7 +149,7 @@ const AdFormatPreviewsPage: React.FC = () => {
                     <Label className="mb-4">Story</Label>
                     <InstagramPreview 
                       ad={metaAd} 
-                      companyName={analysisResult.companyName} 
+                      companyName={mockAnalysisResult.companyName} 
                       viewMode="story" 
                     />
                   </div>
@@ -175,7 +179,7 @@ const AdFormatPreviewsPage: React.FC = () => {
               <div className="flex flex-col items-center">
                 <LinkedInAdPreview 
                   ad={linkedInAd} 
-                  analysisResult={analysisResult} 
+                  analysisResult={mockAnalysisResult} 
                 />
                 
                 <div className="mt-8 text-sm text-muted-foreground max-w-2xl">
@@ -203,7 +207,7 @@ const AdFormatPreviewsPage: React.FC = () => {
               <div className="flex flex-col items-center">
                 <MicrosoftAdPreview 
                   ad={googleAd} 
-                  domain={analysisResult.websiteUrl?.replace('https://', '').replace('http://', '') || 'example.com'} 
+                  domain={mockAnalysisResult.websiteUrl?.replace('https://', '').replace('http://', '') || 'example.com'} 
                 />
                 
                 <div className="mt-8 text-sm text-muted-foreground max-w-2xl">

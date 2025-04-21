@@ -1,48 +1,66 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useCredits } from '@/contexts/CreditsContext';
+import { toast } from 'sonner';
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { deductCredits } = useCredits();
 
-  const generateAdImage = async (prompt: string, additionalInfo?: any) => {
+  const generateAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
+    if (!prompt) {
+      setError("Image prompt is required");
+      return null;
+    }
+
     setIsGenerating(true);
     setError(null);
-    
+
     try {
       console.log("Generating image with prompt:", prompt);
+      console.log("Additional info:", additionalInfo);
+
+      // In a real implementation, we'd call the Supabase function here
+      // For now, generate a mock image URL
+      // In production, this would call DALL-E or another AI image generation service
       
-      // Placeholder implementation - in a real app, this would call an AI image generation API
-      // For now, return a placeholder image URL
-      const placeholderUrls = [
-        "https://placehold.co/600x400/3b82f6/ffffff?text=AI+Generated+Image",
-        "https://placehold.co/600x400/22c55e/ffffff?text=Brand+Image",
-        "https://placehold.co/600x400/eab308/ffffff?text=Product+Shot"
-      ];
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Generate a placeholder image URL (using placeholder.com)
+      const imageFormat = additionalInfo?.imageFormat || 'square';
+      let dimensions = '1000x1000';
       
-      // Return a random placeholder image
-      const imageUrl = placeholderUrls[Math.floor(Math.random() * placeholderUrls.length)];
+      if (imageFormat === 'portrait') {
+        dimensions = '1000x1200';
+      } else if (imageFormat === 'landscape') {
+        dimensions = '1200x1000';
+      }
       
-      toast({
-        title: "Image Generated",
-        description: "Successfully generated ad image"
-      });
+      // For testing, return a placeholder image
+      const imageUrl = `https://via.placeholder.com/${dimensions}?text=${encodeURIComponent(prompt.substring(0, 20))}`;
       
+      // Apply credit deduction if available
+      if (deductCredits) {
+        // Standard cost for image generation is 5 credits
+        deductCredits(5);
+        toast.success("Image Generated", {
+          description: "5 credits used for AI image generation"
+        });
+      }
+      
+      console.log("Generated image URL:", imageUrl);
       return imageUrl;
-    } catch (error) {
-      console.error("Error generating image:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate image. Please try again.";
+    } catch (err) {
+      console.error("Error generating image:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       setError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
+      
+      toast.error("Failed to generate image", {
         description: errorMessage
       });
+      
       return null;
     } finally {
       setIsGenerating(false);

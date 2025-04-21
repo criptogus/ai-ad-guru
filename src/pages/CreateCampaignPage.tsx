@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +45,7 @@ const CreateCampaignPage: React.FC = () => {
   } = useCampaignState();
   
   // Ad generation hooks
-  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration();
+  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration({});
   const { generateMetaAds, isGenerating: isGeneratingMetaAds } = useMetaAdGeneration();
   const { generateMicrosoftAds, isGenerating: isGeneratingMicrosoftAds } = useMicrosoftAdGeneration();
   const { generateLinkedInAds, isGenerating: isGeneratingLinkedInAds } = useLinkedInAdGeneration();
@@ -295,13 +294,23 @@ const CreateCampaignPage: React.FC = () => {
     setIsCreating(true);
     
     try {
-      const result = await createCampaign({
+      // Make sure all required fields are present
+      const campaignParams = {
         ...campaignData,
         googleAds,
         metaAds,
         microsoftAds,
-        linkedInAds
-      });
+        linkedInAds,
+        name: campaignData.name || 'New Campaign',  // Ensure name is not optional
+        description: campaignData.description || '',
+        budget: campaignData.budget || 100,
+        budgetType: campaignData.budgetType || 'daily',
+        startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
+        platforms: campaignData.platforms || ['google'],
+        objective: campaignData.objective || 'awareness'
+      };
+      
+      const result = await createCampaign(campaignParams);
       
       if (result) {
         toast({
