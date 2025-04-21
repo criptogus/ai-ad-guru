@@ -47,13 +47,8 @@ export const useWebsiteAnalysis = () => {
       // Format URL - ensure it has a protocol
       let formattedUrl = url.trim();
       
-      // If URL doesn't have a protocol and doesn't start with www, add www
+      // If URL doesn't have a protocol, add https://
       if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        // If the URL doesn't start with www, add it
-        if (!formattedUrl.startsWith('www.')) {
-          formattedUrl = 'www.' + formattedUrl;
-        }
-        // Add https protocol
         formattedUrl = 'https://' + formattedUrl;
       }
       

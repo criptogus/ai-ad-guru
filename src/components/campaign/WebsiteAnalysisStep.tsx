@@ -58,7 +58,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     setProgress(10);
     console.log("Analyzing website:", website);
     
-    // Don't manipulate the URL here, just pass it to the handler
+    // Call the analyze function with the user-entered URL
     const result = await onAnalyzeWebsite(website);
     
     console.log("Analysis result:", result);

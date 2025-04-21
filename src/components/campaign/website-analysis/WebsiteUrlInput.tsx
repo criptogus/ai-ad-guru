@@ -31,8 +31,8 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
       return;
     }
 
-    // Simple domain validation (not comprehensive)
-    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+/;
+    // More robust domain validation (allows subdomains and different TLDs)
+    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?/;
     if (!urlPattern.test(website.trim())) {
       setError("Please enter a valid website URL (e.g., example.com)");
       return;
@@ -59,7 +59,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
           <Input
             id="website-url"
             type="text"
-            placeholder="www.your-website.com"
+            placeholder="example.com or www.example.com"
             value={website}
             onChange={(e) => handleUrlChange(e.target.value)}
             required

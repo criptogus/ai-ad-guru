@@ -25,23 +25,14 @@ export const useWebsiteAnalysisHandler = ({
         return null;
       }
       
-      // Format URL if needed
-      let formattedUrl = url.trim();
-      
-      // Check if URL has a protocol, add https:// if missing
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        // Add https protocol - don't automatically add www prefix as it might interfere with subdomains
-        formattedUrl = 'https://' + formattedUrl;
-      }
-      
-      console.log("Analyzing website with formatted URL:", formattedUrl);
+      console.log("Starting website analysis with URL:", url);
       
       toast({
         title: "Analyzing website",
         description: "Please wait while we analyze your website...",
       });
       
-      const result = await handleAnalyzeWebsite(formattedUrl);
+      const result = await handleAnalyzeWebsite(url);
       
       if (result) {
         setAnalysisResult(result);
