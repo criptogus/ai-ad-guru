@@ -50,4 +50,3 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
     return null;
   }
 };
-

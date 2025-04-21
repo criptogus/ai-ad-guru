@@ -15,6 +15,7 @@ import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 import { CampaignProvider } from "@/contexts/CampaignContext";
+import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -60,9 +61,7 @@ const CreateCampaignPage: React.FC = () => {
     isGenerating: isGeneratingLinkedInAds 
   } = useLinkedInAdGeneration();
   
-  const { generateAdImage } = useImageGeneration();
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
-    generateAdImage,
     metaAds,
     linkedInAds,
     setMetaAds,
