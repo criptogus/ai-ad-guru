@@ -2,18 +2,24 @@
 import React from "react";
 import { Chrome, Linkedin, Instagram, Target } from "lucide-react";
 
+export interface Trigger {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export const useTriggerData = () => {
   // Get platform icon component
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case "google":
-        return <Chrome className="h-4 w-4 text-red-500" />;
+        return React.createElement(Chrome, { className: "h-4 w-4 text-red-500" });
       case "linkedin":
-        return <Linkedin className="h-4 w-4 text-blue-700" />;
+        return React.createElement(Linkedin, { className: "h-4 w-4 text-blue-700" });
       case "meta":
-        return <Instagram className="h-4 w-4 text-pink-600" />;
+        return React.createElement(Instagram, { className: "h-4 w-4 text-pink-600" });
       case "microsoft":
-        return <Target className="h-4 w-4 text-blue-500" />;
+        return React.createElement(Target, { className: "h-4 w-4 text-blue-500" });
       default:
         return null;
     }
@@ -35,8 +41,25 @@ export const useTriggerData = () => {
     }
   };
 
+  // Get trigger description for a given trigger ID
+  const getTriggerDescription = (triggerId: string): string => {
+    const triggers = getTriggers("google"); // Default to Google triggers
+    const trigger = triggers.find(t => t.id === triggerId);
+    
+    if (trigger) {
+      return `${trigger.name}: ${trigger.description}`;
+    }
+    
+    // Handle custom triggers
+    if (triggerId.startsWith('custom:')) {
+      return triggerId.replace('custom:', '');
+    }
+    
+    return "No description available";
+  };
+
   // Get available triggers
-  const getTriggers = (platform: string) => {
+  const getTriggers = (platform: string): Trigger[] => {
     // These are the psychological triggers we can use for ads
     const commonTriggers = [
       { id: "scarcity", name: "Scarcity", description: "Create a sense of limited availability" },
@@ -50,7 +73,7 @@ export const useTriggerData = () => {
     ];
     
     // Platform-specific triggers
-    const platformTriggers = {
+    const platformTriggers: Record<string, Trigger[]> = {
       google: [
         ...commonTriggers,
         { id: "problem_solution", name: "Problem-Solution", description: "Present a clear problem and your solution" },
@@ -73,12 +96,19 @@ export const useTriggerData = () => {
       ]
     };
     
-    return platformTriggers[platform as keyof typeof platformTriggers] || commonTriggers;
+    return platformTriggers[platform] || commonTriggers;
+  };
+
+  // Get platform-specific triggers
+  const getPlatformTriggers = (platform: string): Trigger[] => {
+    return getTriggers(platform);
   };
 
   return {
     getPlatformIcon,
     getPlatformDisplayName,
-    getTriggers
+    getTriggers,
+    getTriggerDescription,
+    getPlatformTriggers
   };
 };
