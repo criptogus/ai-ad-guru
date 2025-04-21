@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,24 @@ import { Stepper } from "@/components/campaign/Stepper";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
+
+// Define the CampaignCreationParams interface
+interface CampaignCreationParams {
+  name: string;
+  description: string;
+  targetUrl?: string;
+  platforms: string[];
+  budget?: number;
+  budgetType?: string;
+  startDate?: string;
+  endDate?: string;
+  objective?: string;
+  mindTriggers?: Record<string, string>;
+  googleAds?: any[];
+  metaAds?: any[];
+  microsoftAds?: any[];
+  linkedInAds?: any[];
+}
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -295,19 +314,21 @@ const CreateCampaignPage: React.FC = () => {
     
     try {
       // Make sure all required fields are present
-      const campaignParams = {
-        ...campaignData,
-        googleAds,
-        metaAds,
-        microsoftAds,
-        linkedInAds,
-        name: campaignData.name || 'New Campaign',  // Ensure name is not optional
+      const campaignParams: CampaignCreationParams = {
+        name: campaignData.name || 'New Campaign',
         description: campaignData.description || '',
+        targetUrl: campaignData.targetUrl,
+        platforms: campaignData.platforms || ['google'],
         budget: campaignData.budget || 100,
         budgetType: campaignData.budgetType || 'daily',
         startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
-        platforms: campaignData.platforms || ['google'],
-        objective: campaignData.objective || 'awareness'
+        endDate: campaignData.endDate,
+        objective: campaignData.objective || 'awareness',
+        mindTriggers: campaignData.mindTriggers,
+        googleAds,
+        metaAds,
+        microsoftAds,
+        linkedInAds
       };
       
       const result = await createCampaign(campaignParams);

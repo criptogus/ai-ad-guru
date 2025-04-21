@@ -1,4 +1,3 @@
-
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +30,7 @@ const AdEditorSection: React.FC<AdEditorSectionProps> = ({
   const handleFormatChange = (value: string) => {
     onUpdate({
       ...ad,
-      format: value as "feed" | "story" | "reel"
+      format: value as "square" | "portrait" | "landscape" | "feed" | "story" | "reel"
     });
   };
 
@@ -43,22 +42,22 @@ const AdEditorSection: React.FC<AdEditorSectionProps> = ({
         <ToggleGroup 
           type="single" 
           variant="outline"
-          value={ad.format || "feed"}
+          value={ad.format || "square"}
           onValueChange={handleFormatChange}
           className="justify-start"
           disabled={!isEditing}
         >
-          <ToggleGroupItem value="feed" className="gap-1">
+          <ToggleGroupItem value="square" className="gap-1">
             <Newspaper className="h-4 w-4" />
-            <span>Feed</span>
+            <span>Square</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="story" className="gap-1">
+          <ToggleGroupItem value="portrait" className="gap-1">
             <Smartphone className="h-4 w-4" />
-            <span>Story</span>
+            <span>Portrait</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="reel" className="gap-1">
+          <ToggleGroupItem value="landscape" className="gap-1">
             <Video className="h-4 w-4" />
-            <span>Reel</span>
+            <span>Landscape</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

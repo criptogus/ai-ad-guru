@@ -20,14 +20,14 @@ export const useMetaAdGeneration = () => {
           primaryText: `Looking for the best ${params.industry || 'solution'}? ${params.companyName || 'We'} helps ${params.targetAudience || 'you'} achieve more.`,
           description: "Learn More",
           imagePrompt: `Professional image for ${params.companyName || 'a company'} in the ${params.industry || 'business'} industry`,
-          format: "feed"
+          format: "square" // Changed from "feed" to "square"
         },
         {
           headline: `Discover ${params.companyName || 'Our'} Solutions`,
           primaryText: `${params.companyName || 'We'} provides industry-leading ${params.industry || 'services'} for ${params.targetAudience || 'customers'}.`,
           description: "Shop Now",
           imagePrompt: `Instagram worthy product image for ${params.companyName || 'a company'} featuring ${params.industry || 'products'}`,
-          format: "feed"
+          format: "square" // Changed from "feed" to "square"
         }
       ];
       

@@ -48,10 +48,10 @@ const AdFormatPreviewsPage: React.FC = () => {
       "Join 10,000+ businesses already saving time and money. 24/7 support included."
     ],
     siteLinks: [
-      { title: "Product Features", description: "Explore our key features", link: "/features" },
-      { title: "Pricing Plans", description: "Find the right plan for you", link: "/pricing" },
-      { title: "Case Studies", description: "See customer success stories", link: "/case-studies" },
-      { title: "Support", description: "Get help when you need it", link: "/support" }
+      { title: "Product Features", description: "Explore our key features", url: "/features" },
+      { title: "Pricing Plans", description: "Find the right plan for you", url: "/pricing" },
+      { title: "Case Studies", description: "See customer success stories", url: "/case-studies" },
+      { title: "Support", description: "Get help when you need it", url: "/support" }
     ]
   };
   

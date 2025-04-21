@@ -19,15 +19,15 @@ export const useLinkedInAdGeneration = () => {
           headline: `${params.companyName || 'Brand'} - ${params.industry || 'Solutions'} for Professionals`,
           primaryText: `Are you looking to enhance your ${params.industry || 'business'}? ${params.companyName || 'We'} provides solutions tailored for ${params.targetAudience || 'professionals'}.`,
           description: "Learn More",
-          imagePrompt: `Professional LinkedIn image for ${params.companyName || 'a company'} showing expertise in ${params.industry || 'business'}`,
-          callToAction: "Contact Us"
+          imagePrompt: `Professional LinkedIn image for ${params.companyName || 'a company'} showing expertise in ${params.industry || 'business'}`
+          // Removed callToAction property
         },
         {
           headline: `Grow Your Career with ${params.companyName || 'Our'} ${params.industry || 'Solutions'}`,
           primaryText: `${params.companyName || 'We'} helps ${params.targetAudience || 'professionals'} achieve more with our industry-leading ${params.industry || 'services'}.`,
           description: "Discover More",
-          imagePrompt: `Professional corporate image for LinkedIn showing ${params.industry || 'business'} professionals in action`,
-          callToAction: "Learn More"
+          imagePrompt: `Professional corporate image for LinkedIn showing ${params.industry || 'business'} professionals in action`
+          // Removed callToAction property
         }
       ];
       

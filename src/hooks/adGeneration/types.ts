@@ -22,7 +22,9 @@ export interface MetaAd {
   description?: string;
   imagePrompt?: string;
   imageUrl?: string;
-  format?: "square" | "portrait" | "landscape";
+  format?: "square" | "portrait" | "landscape" | "feed" | "story" | "reel";
+  hashtags?: string[] | string;
+  callToAction?: string;
 }
 
 // Microsoft Ad type definitions
