@@ -77,6 +77,13 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   
   const daysRemaining = getDaysRemaining();
 
+  // Convert callToAction to array if it's a string
+  const callToActionArray = Array.isArray(analysisResult.callToAction) 
+    ? analysisResult.callToAction 
+    : analysisResult.callToAction 
+      ? [analysisResult.callToAction as string] 
+      : [];
+
   return (
     <div className="space-y-6">
       <div className="p-5 rounded-lg border bg-card text-card-foreground">
@@ -123,7 +130,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             />
             
             <CtaEditor 
-              callToActions={analysisResult.callToAction || []}
+              callToActions={callToActionArray}
               onCtaChange={handleCtaChange}
             />
           </div>

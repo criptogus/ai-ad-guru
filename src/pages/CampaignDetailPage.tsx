@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,20 +58,11 @@ const CampaignDetailPage: React.FC = () => {
     });
   };
 
-  const mockAnalysisResult: WebsiteAnalysisResult = {
-    websiteUrl: "https://example.com/campaign",
-    companyName: "Tech Solutions Inc.",
-    companyDescription: "Leading provider of technology solutions for businesses",
-    businessDescription: "Leading provider of technology solutions for businesses",
-    keywords: ["technology", "solutions", "business", "innovation"],
-    targetAudience: "Small to medium-sized businesses looking for technology solutions",
-    uniqueSellingPoints: [
-      "24/7 customer support",
-      "Customizable solutions",
-      "Cost-effective pricing"
-    ],
-    callToAction: ["Contact us today", "Schedule a demo"],
-    brandTone: "Professional, reliable, innovative"
+  // Helper function to format callToAction for display
+  const formatCallToAction = (cta: string[] | string | undefined): string => {
+    if (!cta) return "";
+    if (Array.isArray(cta)) return cta.join(", ");
+    return cta;
   };
 
   return (
@@ -130,7 +122,7 @@ const CampaignDetailPage: React.FC = () => {
                 </div>
                 <div className="grid gap-4">
                   <Label>Call to Action</Label>
-                  <Input value={websiteAnalysisData.callToAction.join(", ")} readOnly />
+                  <Input value={formatCallToAction(websiteAnalysisData.callToAction)} readOnly />
                 </div>
                 <div className="grid gap-4">
                   <Label>Unique Selling Points</Label>
