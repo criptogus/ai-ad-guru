@@ -19,7 +19,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   
-  console.log("AppLayout rendering with activePage:", activePage); // Add logging
+  console.log("AppLayout rendering with activePage:", activePage, "withSidebar:", withSidebar); // Add logging
   
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {
@@ -32,11 +32,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   return (
     <div className="h-screen w-full flex overflow-hidden bg-background dark:bg-gray-900">
-      {withSidebar && (
-        <TooltipProvider>
-          <SidebarNavigation activePage={activePage} />
-        </TooltipProvider>
-      )}
+      <TooltipProvider>
+        <SidebarNavigation activePage={activePage} />
+      </TooltipProvider>
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden flex flex-col">

@@ -24,7 +24,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
   const location = useLocation();
   const currentPath = location.pathname;
   
-  console.log("Navigation rendering with activePage:", activePage, "currentPath:", currentPath); // Add logging
+  console.log("Navigation items rendering with activePage:", activePage, "currentPath:", currentPath); // Add logging
 
   const items = [
     {
@@ -48,7 +48,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
     {
       name: 'Credits',
       icon: CreditCard,
-      path: '/credits-info',
+      path: '/credits',
       active: currentPath.includes('/credits') || activePage === 'credits',
     },
     {

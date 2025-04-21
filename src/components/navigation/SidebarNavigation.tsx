@@ -16,12 +16,14 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
   const currentPath = location.pathname;
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
-  const { logout } = useLogoutAction(setUser); // Removed navigate argument
+  const { logout } = useLogoutAction(setUser);
   const [collapsed, setCollapsed] = React.useState(false);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
+
+  console.log("SidebarNavigation rendering with activePage:", activePage); // Add logging
 
   return (
     <div className={cn(
@@ -76,4 +78,3 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ activePage }) => 
 };
 
 export default SidebarNavigation;
-

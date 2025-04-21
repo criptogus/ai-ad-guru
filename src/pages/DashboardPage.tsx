@@ -43,7 +43,7 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <AppLayout activePage="dashboard" withSidebar={true}>
+    <AppLayout activePage="dashboard">
       <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
         

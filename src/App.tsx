@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Authentication from "./pages/Authentication";
-import Dashboard from "./pages/Dashboard";
+import DashboardPage from "./pages/DashboardPage";
 import CampaignsPage from "./pages/CampaignsPage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -11,7 +11,6 @@ import ConfigPage from "./pages/ConfigPage";
 import CreditsInfoPage from "./pages/CreditsInfoPage";
 import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
-import AppLayout from "./components/AppLayout";
 import BillingHistoryPage from "@/pages/BillingHistoryPage";
 import ProtectedRoute from './components/ProtectedRoute';
 import { setNavigate } from './hooks/adConnections/utils/navigationUtils';
@@ -28,7 +27,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/auth" replace />} />
       <Route path="/auth" element={<Authentication />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
       <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
