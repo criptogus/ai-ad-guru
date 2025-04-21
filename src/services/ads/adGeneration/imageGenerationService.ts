@@ -23,10 +23,35 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
       return null;
     }
     
+    // Ensure language consistency
+    const language = params.language || 'portuguese';
+    
     // Enhance the prompt with campaign context
-    const enhancedPrompt = params.prompt.includes('profissional')
-      ? params.prompt
-      : `Fotografia publicitária profissional: ${params.prompt}`;
+    let enhancedPrompt = params.prompt;
+    
+    // If the prompt appears generic, add more context
+    if (enhancedPrompt.toLowerCase().includes('professional') || 
+        enhancedPrompt.toLowerCase().includes('image for') ||
+        enhancedPrompt.length < 50) {
+      
+      // Add context from available campaign data
+      const contextElements = [];
+      
+      if (params.industry) contextElements.push(`Indústria: ${params.industry}`);
+      if (params.targetAudience) contextElements.push(`Público: ${params.targetAudience}`);
+      if (params.campaignObjective) contextElements.push(`Objetivo: ${params.campaignObjective}`);
+      if (params.brandTone) contextElements.push(`Tom: ${params.brandTone}`);
+      
+      const additionalContext = contextElements.join('. ');
+      enhancedPrompt = `${enhancedPrompt}. ${additionalContext}`;
+    }
+    
+    // Add language-appropriate prefix to ensure proper language generation
+    if (language === 'portuguese') {
+      enhancedPrompt = `Criação de imagem publicitária profissional em português: ${enhancedPrompt}`;
+    } else if (language === 'english') {
+      enhancedPrompt = `Professional advertising image creation in English: ${enhancedPrompt}`;
+    }
     
     console.log('Enhanced prompt for image generation:', enhancedPrompt);
     
@@ -35,7 +60,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
         prompt: enhancedPrompt,
         platform: params.platform,
         format: params.format,
-        language: params.language || 'portuguese',
+        language: language,
         additional: {
           industry: params.industry,
           brandTone: params.brandTone,

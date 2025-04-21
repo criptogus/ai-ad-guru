@@ -7,6 +7,14 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): string => {
     throw new Error('Missing required campaign data for prompt generation');
   }
 
+  // Ensure we have a language, defaulting to Portuguese
+  const language = data.language || 'portuguese';
+  const mindTrigger = data.mindTrigger || '';
+  const platforms = (data.platforms || ['google']).join(', ');
+  const differentials = data.differentials?.join(', ') || 'não especificado';
+
+  console.log(`Building prompt for ${platforms} in ${language} language`);
+
   const prompt = `
 Crie anúncios publicitários para os seguintes dados da empresa:
 
@@ -16,10 +24,10 @@ Crie anúncios publicitários para os seguintes dados da empresa:
 👥 Público-alvo: ${data.targetAudience}
 🔑 Produto/serviço promovido: ${data.product || data.objective}
 💬 Tom de voz: ${data.brandTone || 'profissional'}
-🚀 Diferenciais da empresa: ${data.differentials?.join(', ') || 'não especificado'}
-🎯 Gatilho mental escolhido: ${data.mindTrigger || 'não especificado'}
-🌎 Idioma do anúncio: ${data.language || 'portuguese'}
-📊 Plataformas selecionadas: ${(data.platforms || ['google']).join(', ')}
+🚀 Diferenciais da empresa: ${differentials}
+🎯 Gatilho mental escolhido: ${mindTrigger}
+🌎 Idioma do anúncio: ${language}
+📊 Plataformas selecionadas: ${platforms}
 
 Siga as regras abaixo:
 
@@ -61,8 +69,15 @@ Siga as regras abaixo:
   ]
 }
 
-Lembre-se: todos os textos devem estar em ${data.language || 'portuguese'}. Não use exemplos genéricos ou textos-modelo. Gere conteúdo criativo real baseado nos dados da empresa. Responda APENAS em ${data.language || 'portuguese'}. Não misture idiomas.`;
+INSTRUÇÕES IMPORTANTES:
+- Todos os textos DEVEM estar em ${language}. 
+- NÃO misture idiomas.
+- Os prompts de imagem devem descrever detalhadamente uma cena contextualizada ao negócio, NUNCA use frases genéricas como "Professional image for [company]".
+- Descreva a cena, o público, o ambiente e o objetivo do negócio nos prompts de imagem.
+- NÃO use palavras em inglês em anúncios em português.
+- NÃO use exemplo genéricos ou modelos de texto. Crie conteúdo específico e relevante baseado na empresa.
+- Responda APENAS em ${language}.`;
 
-  console.log('Generated prompt:', prompt);
+  console.log('Generated prompt:', prompt.substring(0, 150) + '...');
   return prompt;
 };

@@ -42,6 +42,7 @@ export const useImageGenerationHandler = ({
       const adFormat = (ad.format || 'square') as AdFormat;
       const format = formatMapping[adFormat];
       
+      // Gather all relevant campaign context for image generation
       const imageUrl = await generateAdImage({
         prompt: ad.imagePrompt,
         platform,
