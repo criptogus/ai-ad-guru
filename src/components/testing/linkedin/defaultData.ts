@@ -12,6 +12,7 @@ export const defaultAd: MetaAd = {
 
 export const defaultAnalysisResult: WebsiteAnalysisResult = {
   companyName: "Enterprise Solutions Inc.",
+  companyDescription: "Enterprise-grade business solutions for modern companies",
   businessDescription: "Enterprise-grade business solutions for modern companies",
   websiteUrl: "https://enterprise-solutions.example.com",
   brandTone: "Professional and authoritative",

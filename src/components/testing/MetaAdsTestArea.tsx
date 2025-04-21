@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,16 +26,16 @@ const MetaAdsTestArea: React.FC = () => {
   // Company info state from website analysis, replaced with default data that matches WebsiteAnalysisResult type
   const [companyInfo, setCompanyInfo] = useState<WebsiteAnalysisResult>({
     companyName: "Sample Company",
+    companyDescription: "A leading provider of technology solutions",
+    businessDescription: "A leading provider of technology solutions",
     brandTone: "Professional & Modern",
     targetAudience: "Business professionals, 30-45 years old",
     uniqueSellingPoints: ["Quality", "Innovation", "Reliability"], // Changed to array
     keywords: ["efficiency", "professional", "innovation", "time-saving", "productivity", "modern solution"],
     callToAction: ["Contact us today", "Learn more"],
-    businessDescription: "A leading provider of technology solutions",
     websiteUrl: "https://example.com"
   });
   
-  // Meta-specific image generation parameters with proper typing
   const [industry, setIndustry] = useState("Technology");
   const [adTheme, setAdTheme] = useState("Innovation & Technology");
   const [imageFormat, setImageFormat] = useState<"square" | "portrait" | "landscape">("square"); // Explicitly typed as allowed values
@@ -49,9 +48,7 @@ const MetaAdsTestArea: React.FC = () => {
     setTestAd({ ...testAd, [field]: value });
   };
 
-  // Create a type-safe wrapper function for imageFormat changes
   const handleImageFormatChange = (value: string) => {
-    // Check if the value is one of the allowed formats
     if (value === "square" || value === "portrait" || value === "landscape") {
       setImageFormat(value);
     } else {
@@ -61,15 +58,15 @@ const MetaAdsTestArea: React.FC = () => {
 
   const handleReset = () => {
     setTestAd(defaultMetaAd);
-    // Reset with all required properties matching WebsiteAnalysisResult type
     setCompanyInfo({
       companyName: "Sample Company",
+      companyDescription: "A leading provider of technology solutions",
+      businessDescription: "A leading provider of technology solutions",
       brandTone: "Professional & Modern",
       targetAudience: "Business professionals, 30-45 years old",
-      uniqueSellingPoints: ["Quality", "Innovation", "Reliability"], // Array format
+      uniqueSellingPoints: ["Quality", "Innovation", "Reliability"],
       keywords: ["efficiency", "professional", "innovation", "time-saving", "productivity", "modern solution"],
       callToAction: ["Contact us today", "Learn more"],
-      businessDescription: "A leading provider of technology solutions",
       websiteUrl: "https://example.com"
     });
     toast.info("Test ad reset to default values");
@@ -82,7 +79,6 @@ const MetaAdsTestArea: React.FC = () => {
     }
 
     try {
-      // Create additional context for image generation
       const additionalInfo = {
         companyName: companyInfo.companyName,
         brandTone: companyInfo.brandTone,
@@ -90,7 +86,7 @@ const MetaAdsTestArea: React.FC = () => {
         uniqueSellingPoints: companyInfo.uniqueSellingPoints,
         industry: industry,
         adTheme: adTheme,
-        imageFormat: imageFormat, // This is now properly typed as "square" | "portrait" | "landscape"
+        imageFormat: imageFormat,
         platform: "instagram",
         userId: user?.id
       };
@@ -100,7 +96,6 @@ const MetaAdsTestArea: React.FC = () => {
       if (imageUrl) {
         setTestAd(prev => ({ ...prev, imageUrl }));
         
-        // Show credit usage toast
         toast.success("Instagram ad image generated", {
           description: "5 credits were used for this AI-powered image generation"
         });
@@ -119,10 +114,8 @@ const MetaAdsTestArea: React.FC = () => {
       return;
     }
     
-    // Add the current test ad to the list
     setTestAds(prev => [...prev, { ...testAd }]);
     
-    // Reset the form for a new ad
     setTestAd({
       headline: "",
       primaryText: "",
@@ -158,7 +151,6 @@ const MetaAdsTestArea: React.FC = () => {
               onReset={handleReset}
             />
             
-            {/* Display preview and rest of component */}
             <div className="space-y-4">
               <div className="border rounded-md overflow-hidden">
                 {testAd.imageUrl ? (
@@ -182,7 +174,6 @@ const MetaAdsTestArea: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Display test ads list */}
       {testAds.length > 0 && (
         <Card>
           <CardHeader>

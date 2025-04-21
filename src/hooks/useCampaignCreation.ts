@@ -5,14 +5,14 @@ import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 
 export interface CampaignCreationParams {
   name: string;
-  description: string;
+  description?: string;
   platforms: string[];
-  budget: number;
-  budgetType: 'daily' | 'lifetime';
-  startDate: string;
+  budget?: number;
+  budgetType?: 'daily' | 'lifetime';
+  startDate?: string;
   endDate?: string;
-  targetAudience: string;
-  objective: string;
+  targetAudience?: string;
+  objective?: string;
   googleAds?: GoogleAd[];
   metaAds?: MetaAd[];
   microsoftAds?: GoogleAd[];

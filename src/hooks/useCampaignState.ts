@@ -1,29 +1,20 @@
 
-import { useState } from "react";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
-
-export interface CampaignData {
-  name?: string;
-  description?: string;
-  targetUrl?: string;
-  platforms?: string[];
-  budget?: number;
-  budgetType?: 'daily' | 'lifetime';
-  startDate?: string;
-  endDate?: string;
-  objective?: string;
-  targetAudience?: string;
-  keywords?: string[];
-  mindTriggers?: Record<string, string>;
-}
+import { useState } from 'react';
+import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 
 export const useCampaignState = () => {
-  const [campaignData, setCampaignData] = useState<CampaignData>({});
+  const [campaignData, setCampaignData] = useState({
+    name: '',
+    description: '',
+    platforms: [] as string[],
+    mindTriggers: {} as Record<string, string>
+  });
+  
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
   const [metaAds, setMetaAds] = useState<MetaAd[]>([]);
   const [microsoftAds, setMicrosoftAds] = useState<GoogleAd[]>([]);
   const [linkedInAds, setLinkedInAds] = useState<MetaAd[]>([]);
-
+  
   return {
     campaignData,
     setCampaignData,

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -17,12 +16,13 @@ const AdFormatPreviewsPage: React.FC = () => {
   // Sample data for previews
   const analysisResult: WebsiteAnalysisResult = {
     companyName: "Acme Tech Solutions",
+    companyDescription: "Leading provider of AI-powered business solutions",
+    businessDescription: "Leading provider of AI-powered business solutions",
     brandTone: "Professional & Innovative",
     targetAudience: "Business professionals, tech enthusiasts",
     uniqueSellingPoints: ["AI-powered", "Easy to use", "24/7 support"],
     keywords: ["technology", "innovation", "AI", "productivity", "efficiency"],
     callToAction: ["Get Started Today", "Book a Demo"],
-    businessDescription: "Leading provider of AI-powered business solutions",
     websiteUrl: "https://acmetech.example.com"
   };
   

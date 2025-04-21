@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface WebsiteAnalysisResult {
   companyName: string;
   companyDescription: string;
-  businessDescription?: string; // Alias for companyDescription
+  businessDescription?: string; // Keep as alias for companyDescription
   targetAudience: string;
   brandTone: string;
   keywords: string[];
@@ -77,9 +77,11 @@ export const useWebsiteAnalysis = () => {
         industry: 'Technology'
       };
       
-      // Ensure businessDescription is always set to match companyDescription for compatibility
+      // Ensure both companyDescription and businessDescription are set
       if (result.companyDescription && !result.businessDescription) {
         result.businessDescription = result.companyDescription;
+      } else if (result.businessDescription && !result.companyDescription) {
+        result.companyDescription = result.businessDescription;
       }
       
       setAnalysisResult(result);
@@ -106,7 +108,7 @@ export const useWebsiteAnalysis = () => {
   // Add a utility function to handle the aliasing when setting analysis results
   const setCompatibleAnalysisResult = (result: WebsiteAnalysisResult | null) => {
     if (result) {
-      // Ensure businessDescription matches companyDescription
+      // Ensure both business and company description are set
       if (result.companyDescription && !result.businessDescription) {
         result.businessDescription = result.companyDescription;
       } else if (result.businessDescription && !result.companyDescription) {
