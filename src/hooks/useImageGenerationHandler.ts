@@ -34,11 +34,9 @@ export const useImageGenerationHandler = ({
     try {
       console.log("Generating image for ad:", ad);
       
-      // Add additional context for image generation
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       const format = ad.format || 'square';
       
-      // Call the image generation service
       const imageUrl = await generateAdImage({
         prompt: ad.imagePrompt,
         platform,
@@ -49,7 +47,6 @@ export const useImageGenerationHandler = ({
       if (imageUrl) {
         toast.success("Imagem gerada com sucesso!");
         
-        // Update the appropriate ad array
         if (platform === 'meta' && metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
