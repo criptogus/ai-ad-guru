@@ -32,17 +32,17 @@ export const useImageGenerationHandler = ({
     setLoadingImageIndex(index);
     
     try {
-      console.log("Generating image for ad:", ad);
+      // Log the image prompt being used
+      console.log("Starting image generation for ad:", ad);
       console.log("Using image prompt:", ad.imagePrompt);
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
-      const format = ad.format || 'square';
       
-      // Use the image_prompt directly from the API response
+      // Generate image using the specific image prompt from the ad
       const imageUrl = await generateAdImage({
-        prompt: ad.imagePrompt, // Use the AI-generated image prompt directly
+        prompt: ad.imagePrompt,
         platform,
-        format: format as 'square' | 'story' | 'horizontal',
+        format: ad.format || 'square',
         industry: campaignData?.industry,
         brandTone: campaignData?.brandTone || 'professional',
         campaignObjective: campaignData?.objective,
@@ -53,6 +53,7 @@ export const useImageGenerationHandler = ({
       if (imageUrl) {
         toast.success("Imagem gerada com sucesso!");
         
+        // Update the correct ad array based on platform
         if (platform === 'meta' && metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
