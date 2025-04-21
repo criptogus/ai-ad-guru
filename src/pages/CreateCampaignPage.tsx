@@ -14,6 +14,7 @@ import { Stepper } from "@/components/campaign/Stepper";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
+import { CampaignProvider } from "@/contexts/CampaignContext";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -369,21 +370,23 @@ const CreateCampaignPage: React.FC = () => {
   console.log("CreateCampaignPage rendering with step:", currentStep, "and campaign data:", campaignData);
 
   return (
-    <AppLayout activePage="campaigns">
-      <div className="container py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Create New Campaign</h1>
+    <CampaignProvider>
+      <AppLayout activePage="campaigns">
+        <div className="container py-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Create New Campaign</h1>
+          </div>
+          
+          <Stepper currentStep={currentStep} />
+          
+          <Card>
+            <CardContent className="p-0">
+              {getStepContent()}
+            </CardContent>
+          </Card>
         </div>
-        
-        <Stepper currentStep={currentStep} />
-        
-        <Card>
-          <CardContent className="p-0">
-            {getStepContent()}
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+      </AppLayout>
+    </CampaignProvider>
   );
 };
 
