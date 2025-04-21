@@ -60,7 +60,7 @@ const CampaignSummaryStep: React.FC<CampaignSummaryStepProps> = ({
           endDate={campaignData.endDate}
         />
         
-        {/* Pass the selected platforms to the AdPreviewsSection */}
+        {/* Only show ad previews for the selected platforms */}
         {campaignData.platforms.map(platform => (
           <AdPreviewsSection
             key={platform}

@@ -1,27 +1,22 @@
 
 import React from "react";
 import { format } from "date-fns";
+import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 
 interface CampaignDetailsSectionProps {
-  campaignName: string;
-  platform: string;
-  budget: number;
-  budgetType: string;
-  startDate: string | Date;
-  endDate: string | Date | null | undefined;
-  objective: string;
-  websiteUrl: string;
+  campaignData: {
+    name?: string;
+    description?: string;
+    targetUrl?: string;
+    objective?: string;
+    platforms?: string[];
+  };
+  analysisResult: WebsiteAnalysisResult;
 }
 
 const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
-  campaignName,
-  platform,
-  budget,
-  budgetType,
-  startDate,
-  endDate,
-  objective,
-  websiteUrl,
+  campaignData,
+  analysisResult,
 }) => {
   // Extract domain from websiteUrl
   const getDomain = (url: string) => {
@@ -32,17 +27,11 @@ const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
     }
   };
 
-  // Format dates to strings if they are Date objects
-  const formatDate = (date: string | Date | null | undefined) => {
-    if (!date) return "N/A";
-    if (date instanceof Date) {
-      return format(date, "MMM d, yyyy");
-    }
-    return date;
+  // Get platform names as comma-separated string
+  const getPlatformNames = (platforms: string[] = []) => {
+    if (platforms.length === 0) return "None";
+    return platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(", ");
   };
-
-  const formattedStartDate = formatDate(startDate);
-  const formattedEndDate = formatDate(endDate) || "Ongoing";
 
   return (
     <div>
@@ -50,28 +39,36 @@ const CampaignDetailsSection: React.FC<CampaignDetailsSectionProps> = ({
       <div className="space-y-2">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Name:</span>
-          <span className="font-medium">{campaignName}</span>
+          <span className="font-medium">{campaignData.name || "New Campaign"}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Platform:</span>
-          <span className="font-medium">{platform}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Budget:</span>
-          <span className="font-medium">${budget} ({budgetType})</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Duration:</span>
-          <span className="font-medium">{formattedStartDate} to {formattedEndDate}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Objective:</span>
-          <span className="font-medium">{objective}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Website:</span>
-          <span className="font-medium">{getDomain(websiteUrl)}</span>
-        </div>
+        {campaignData.platforms && campaignData.platforms.length > 0 && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Platforms:</span>
+            <span className="font-medium">{getPlatformNames(campaignData.platforms)}</span>
+          </div>
+        )}
+        {campaignData.objective && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Objective:</span>
+            <span className="font-medium">{campaignData.objective}</span>
+          </div>
+        )}
+        {campaignData.targetUrl && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Website:</span>
+            <span className="font-medium">{getDomain(campaignData.targetUrl)}</span>
+          </div>
+        )}
+        {campaignData.description && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Description:</span>
+            <span className="font-medium truncate max-w-[250px]" title={campaignData.description}>
+              {campaignData.description.length > 50 
+                ? `${campaignData.description.substring(0, 50)}...` 
+                : campaignData.description}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
