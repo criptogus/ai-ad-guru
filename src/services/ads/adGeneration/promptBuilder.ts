@@ -1,7 +1,7 @@
 
-import { CampaignPromptData } from './types';
+import { CampaignPromptData, PromptMessages } from './types/promptTypes';
 
-export const buildAdGenerationPrompt = (data: CampaignPromptData): string => {
+export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessages => {
   // Early validation of required fields
   if (!data.companyName || !data.websiteUrl || !data.objective || !data.targetAudience) {
     throw new Error('Missing required campaign data for prompt generation');
@@ -9,14 +9,13 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): string => {
 
   // Ensure we have a language, defaulting to Portuguese
   const language = data.language || 'portuguese';
-  const platforms = (data.platforms || ['google']).join(', ');
   
   // Get formatted differentials
   const differentials = data.differentials?.join(', ') || 'não especificado';
   
   // Build the system message for the AI
   const systemMessage = `Você é um redator e designer de anúncios de uma agência premiada, especialista em criar campanhas com alta conversão. 
-Sua missão é criar textos e imagens para anúncios em ${platforms} com base no contexto fornecido, 
+Sua missão é criar textos e imagens para anúncios em Google Ads, Instagram, LinkedIn e Microsoft Ads com base no contexto fornecido, 
 garantindo relevância, originalidade, coerência e persuasão. Você sempre respeita o idioma da campanha (${language}) 
 e os formatos exigidos por cada plataforma.`;
 
@@ -57,29 +56,21 @@ e os formatos exigidos por cada plataforma.`;
   ],
   "instagram_ads": [
     {
-      "headline": "",
-      "primaryText": "",
-      "description": "",
-      "callToAction": "",
-      "imagePrompt": ""
+      "text": "",
+      "image_prompt": ""
     }
   ],
   "linkedin_ads": [
     {
-      "headline": "",
-      "primaryText": "",
-      "description": "",
-      "callToAction": "",
-      "imagePrompt": ""
+      "text": "",
+      "image_prompt": ""
     }
   ],
   "microsoft_ads": [
     {
       "headline_1": "",
       "headline_2": "",
-      "headline_3": "",
-      "description_1": "",
-      "description_2": "",
+      "description": "",
       "display_url": ""
     }
   ]
@@ -96,9 +87,6 @@ e os formatos exigidos por cada plataforma.`;
 
 Retorne apenas o JSON, sem explicações adicionais.`;
 
-  console.log('Using system message:', systemMessage.substring(0, 150) + '...');
-  console.log('Using user message:', userMessage.substring(0, 150) + '...');
-  
   return {
     systemMessage,
     userMessage
