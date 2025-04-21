@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useWebsiteAnalysis, WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
-import { useCampaignCreation, CampaignCreationParams } from "@/hooks/useCampaignCreation";
+import { useCampaignCreation } from "@/hooks/useCampaignCreation";
 import { useCampaignState } from "@/hooks/useCampaignState";
 import { useGoogleAdGeneration } from "@/hooks/adGeneration/useGoogleAdGeneration";
 import { useMetaAdGeneration } from "@/hooks/adGeneration/useMetaAdGeneration";
@@ -14,23 +14,6 @@ import { Stepper } from "@/components/campaign/Stepper";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
-
-interface CampaignCreationParams {
-  name: string;
-  description: string;
-  targetUrl?: string;
-  platforms: string[];
-  budget?: number;
-  budgetType?: string;
-  startDate?: string;
-  endDate?: string;
-  objective?: string;
-  mindTriggers?: Record<string, string>;
-  googleAds?: any[];
-  metaAds?: any[];
-  microsoftAds?: any[];
-  linkedInAds?: any[];
-}
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -302,7 +285,7 @@ const CreateCampaignPage: React.FC = () => {
     setIsCreating(true);
     
     try {
-      const campaignParams: CampaignCreationParams = {
+      const campaignParams = {
         name: campaignData.name || 'New Campaign',
         description: campaignData.description || '',
         targetUrl: campaignData.targetUrl,
