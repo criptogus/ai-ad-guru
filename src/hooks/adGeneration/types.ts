@@ -10,6 +10,8 @@ export interface GoogleAd {
   finalUrl?: string;
   headlines?: string[];
   descriptions?: string[];
+  displayPath?: string;
+  siteLinks?: Array<{title: string, link: string, description?: string}>;
 }
 
 export interface MetaAd {
@@ -20,5 +22,11 @@ export interface MetaAd {
   imagePrompt?: string;
   callToAction?: string;
   format?: "feed" | "story" | "reel";
-  hashtags?: string[];
+  hashtags?: string[] | string;
 }
+
+// Export MicrosoftAd type (similar to GoogleAd)
+export type MicrosoftAd = GoogleAd;
+
+// Export LinkedInAd type (similar to MetaAd)
+export type LinkedInAd = MetaAd;

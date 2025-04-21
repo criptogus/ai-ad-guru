@@ -6,7 +6,7 @@ import { useAdGeneration } from './adGeneration';
 export { useAdGeneration };
 
 // Re-export types using 'export type' syntax
-export type { GoogleAd, MetaAd } from './adGeneration/types';
+export type { GoogleAd, MetaAd, MicrosoftAd, LinkedInAd } from './adGeneration/types';
 
 // Re-export all other types
 export * from './adGeneration/types';

@@ -5,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface WebsiteAnalysisResult {
   companyName: string;
-  companyDescription: string; // Changed from businessDescription to match usage
+  companyDescription: string;
+  businessDescription?: string; // Alias for companyDescription
   targetAudience: string;
   brandTone: string;
   keywords: string[];
@@ -15,7 +16,7 @@ export interface WebsiteAnalysisResult {
   websiteUrl?: string;
   usps?: string[];
   language?: string;
-  industry?: string; // Added industry property
+  industry?: string;
 }
 
 export interface AnalysisCache {
@@ -62,6 +63,7 @@ export const useWebsiteAnalysis = () => {
       const result: WebsiteAnalysisResult = {
         companyName: 'Example Company',
         companyDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
+        businessDescription: 'Example Company provides innovative solutions for businesses in the technology sector.', // Add this for compatibility
         targetAudience: 'Small to medium-sized technology companies',
         brandTone: 'Professional, innovative, trustworthy',
         keywords: ['innovation', 'technology', 'solutions', 'business'],
@@ -74,6 +76,11 @@ export const useWebsiteAnalysis = () => {
         websiteUrl: formattedUrl,
         industry: 'Technology'
       };
+      
+      // Ensure businessDescription is always set to match companyDescription for compatibility
+      if (result.companyDescription && !result.businessDescription) {
+        result.businessDescription = result.companyDescription;
+      }
       
       setAnalysisResult(result);
       
@@ -96,11 +103,24 @@ export const useWebsiteAnalysis = () => {
     }
   };
 
+  // Add a utility function to handle the aliasing when setting analysis results
+  const setCompatibleAnalysisResult = (result: WebsiteAnalysisResult | null) => {
+    if (result) {
+      // Ensure businessDescription matches companyDescription
+      if (result.companyDescription && !result.businessDescription) {
+        result.businessDescription = result.companyDescription;
+      } else if (result.businessDescription && !result.companyDescription) {
+        result.companyDescription = result.businessDescription;
+      }
+    }
+    setAnalysisResult(result);
+  };
+
   return {
     analyzeWebsite,
     isAnalyzing,
     analysisResult,
-    setAnalysisResult,
+    setAnalysisResult: setCompatibleAnalysisResult,
     cacheInfo
   };
 };

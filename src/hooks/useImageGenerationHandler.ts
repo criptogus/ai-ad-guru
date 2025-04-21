@@ -1,15 +1,14 @@
 
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { CampaignData } from "@/hooks/useCampaignState";
 
 interface UseImageGenerationHandlerProps {
   generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
-  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  campaignData: CampaignData;
+  setMetaAds: (ads: MetaAd[]) => void;
+  setLinkedInAds: (ads: MetaAd[]) => void;
+  campaignData: any;
 }
 
 export const useImageGenerationHandler = ({
@@ -23,34 +22,31 @@ export const useImageGenerationHandler = ({
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
+    if (!ad.imagePrompt) return;
+    
+    setLoadingImageIndex(index);
+    
     try {
-      setLoadingImageIndex(index);
+      console.log("Generating image for ad:", ad);
       
-      // Extract prompt text from the ad
-      const promptText = ad.imagePrompt || ad.description || "";
-      const promptWithContext = `${promptText}. Brand: ${campaignData.name || 'Brand'}, Industry: ${campaignData.description || 'Business'}`;
+      // Add additional context for image generation
+      const additionalInfo = {
+        platform: campaignData?.platforms?.includes('meta') ? 'instagram' : 'linkedin',
+        adType: 'feed',
+        companyName: campaignData?.companyName || '',
+        industry: campaignData?.industry || '',
+        targetAudience: campaignData?.targetAudience || '',
+      };
       
-      // Add format context if it exists
-      const formatContext = ad.format ? `. Format: ${ad.format}` : '';
-      const finalPrompt = promptWithContext + formatContext;
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
-      // Generate the image
-      const imageUrl = await generateAdImage(finalPrompt, {
-        ad,
-        campaignData,
-        index
-      });
-      
-      // Update the ad with the new image URL if successful
       if (imageUrl) {
-        // Check if this is a Meta ad
-        if (metaAds[index]) {
+        // Update the ad with the new image URL
+        if (additionalInfo.platform === 'instagram') {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-        } 
-        // Check if this is a LinkedIn ad
-        else if (linkedInAds[index]) {
+        } else {
           const updatedAds = [...linkedInAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);

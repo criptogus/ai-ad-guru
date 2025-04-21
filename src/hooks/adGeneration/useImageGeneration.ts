@@ -4,10 +4,12 @@ import { useToast } from "@/hooks/use-toast";
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateAdImage = async (prompt: string, additionalInfo?: any) => {
     setIsGenerating(true);
+    setError(null);
     
     try {
       console.log("Generating image with prompt:", prompt);
@@ -34,10 +36,12 @@ export const useImageGeneration = () => {
       return imageUrl;
     } catch (error) {
       console.error("Error generating image:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate image. Please try again.";
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Generation Error",
-        description: "Failed to generate image. Please try again."
+        description: errorMessage
       });
       return null;
     } finally {
@@ -47,6 +51,7 @@ export const useImageGeneration = () => {
 
   return {
     generateAdImage,
-    isGenerating
+    isGenerating,
+    error
   };
 };

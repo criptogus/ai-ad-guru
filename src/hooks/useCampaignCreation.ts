@@ -30,7 +30,39 @@ export const useCampaignCreation = () => {
     setIsCreating(true);
     
     try {
-      // This is a simplified implementation for now
+      // Ensure all required fields are present
+      if (!params.name) {
+        params.name = "New Campaign";
+      }
+      
+      if (!params.description) {
+        params.description = "";
+      }
+      
+      if (!params.platforms || params.platforms.length === 0) {
+        params.platforms = ["google"];
+      }
+      
+      if (!params.budget) {
+        params.budget = 100;
+      }
+      
+      if (!params.budgetType) {
+        params.budgetType = 'daily';
+      }
+      
+      if (!params.startDate) {
+        params.startDate = new Date().toISOString().split('T')[0];
+      }
+      
+      if (!params.targetAudience) {
+        params.targetAudience = "";
+      }
+      
+      if (!params.objective) {
+        params.objective = "awareness";
+      }
+      
       console.log("Creating campaign with params:", params);
       
       // Return a placeholder success result
