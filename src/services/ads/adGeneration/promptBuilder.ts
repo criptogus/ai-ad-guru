@@ -9,40 +9,47 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): string => {
 
   // Ensure we have a language, defaulting to Portuguese
   const language = data.language || 'portuguese';
-  const mindTrigger = data.mindTrigger || '';
   const platforms = (data.platforms || ['google']).join(', ');
+  
+  // Get formatted differentials
   const differentials = data.differentials?.join(', ') || 'não especificado';
+  
+  // Build the system message for the AI
+  const systemMessage = `Você é um redator e designer de anúncios de uma agência premiada, especialista em criar campanhas com alta conversão. 
+Sua missão é criar textos e imagens para anúncios em ${platforms} com base no contexto fornecido, 
+garantindo relevância, originalidade, coerência e persuasão. Você sempre respeita o idioma da campanha (${language}) 
+e os formatos exigidos por cada plataforma.`;
 
-  console.log(`Building prompt for ${platforms} in ${language} language`);
+  // Build the user message with all campaign details
+  const userMessage = `Use os dados abaixo para gerar os anúncios:
 
-  const prompt = `
-Crie anúncios publicitários para os seguintes dados da empresa:
+### 📌 Empresa
+- Nome: ${data.companyName}
+- Site: ${data.websiteUrl}
 
-📌 Nome da empresa: ${data.companyName}
-🌐 Site: ${data.websiteUrl}
-🎯 Objetivo da campanha: ${data.objective}
-👥 Público-alvo: ${data.targetAudience}
-🔑 Produto/serviço promovido: ${data.product || data.objective}
-💬 Tom de voz: ${data.brandTone || 'profissional'}
-🚀 Diferenciais da empresa: ${differentials}
-🎯 Gatilho mental escolhido: ${mindTrigger}
-🌎 Idioma do anúncio: ${language}
-📊 Plataformas selecionadas: ${platforms}
+### 🎯 Campanha
+- Objetivo da campanha: ${data.objective}
+- Produto/serviço promovido: ${data.product || data.objective}
+- Público-alvo: ${data.targetAudience}
+- Tom de voz: ${data.brandTone || 'profissional'}
+- Diferenciais da empresa: ${differentials}
+- Gatilho mental principal: ${data.mindTrigger || ''}
+- Idioma da campanha: ${language}
 
-Siga as regras abaixo:
+### 🧠 Regras para geração:
+1. Utilize APENAS o idioma ${language} em TODOS os textos, sem exceção.
+2. Use linguagem adaptada ao público e tom de voz da marca.
+3. Para cada plataforma, siga as práticas recomendadas de copywriting.
+4. Gere variações realistas e otimizadas para conversão.
+5. Crie prompts de imagem (sem texto sobreposto) para Instagram e LinkedIn, com estilo fotográfico premium e contexto visual alinhado à campanha.
 
-1. Gere 5 variações de anúncios de texto (respeitando os limites por plataforma).
-2. Gere 5 prompts para geração de imagem publicitária, SEM texto embutido na imagem, mas com composição visual clara para Instagram e LinkedIn (estilo agência de Nova York).
-3. Use o contexto da marca, público e tom de voz para criar peças altamente persuasivas e adaptadas ao canal.
-4. Utilize técnicas de copywriting (AIDA, PAS, perguntas no título etc.).
-5. Destaque benefícios e CTA direto.
-6. Responda apenas com um JSON estruturado assim:
-
+### 📦 Estrutura de saída esperada (JSON):
 {
   "google_ads": [
     {
       "headline_1": "",
       "headline_2": "",
+      "headline_3": "",
       "description_1": "",
       "description_2": "",
       "display_url": ""
@@ -50,34 +57,50 @@ Siga as regras abaixo:
   ],
   "instagram_ads": [
     {
-      "text": "",
-      "image_prompt": ""
+      "headline": "",
+      "primaryText": "",
+      "description": "",
+      "callToAction": "",
+      "imagePrompt": ""
     }
   ],
   "linkedin_ads": [
     {
-      "text": "",
-      "image_prompt": ""
+      "headline": "",
+      "primaryText": "",
+      "description": "",
+      "callToAction": "",
+      "imagePrompt": ""
     }
   ],
   "microsoft_ads": [
     {
       "headline_1": "",
       "headline_2": "",
-      "description": ""
+      "headline_3": "",
+      "description_1": "",
+      "description_2": "",
+      "display_url": ""
     }
   ]
 }
 
-INSTRUÇÕES IMPORTANTES:
-- Todos os textos DEVEM estar em ${language}. 
-- NÃO misture idiomas.
-- Os prompts de imagem devem descrever detalhadamente uma cena contextualizada ao negócio, NUNCA use frases genéricas como "Professional image for [company]".
-- Descreva a cena, o público, o ambiente e o objetivo do negócio nos prompts de imagem.
-- NÃO use palavras em inglês em anúncios em português.
-- NÃO use exemplo genéricos ou modelos de texto. Crie conteúdo específico e relevante baseado na empresa.
-- Responda APENAS em ${language}.`;
+### 📌 Observações importantes:
+- TODOS os textos devem estar em ${language} e NUNCA em outro idioma.
+- Os textos devem parecer escritos por humanos com domínio em marketing.
+- Os prompts de imagem devem descrever visualmente a campanha (produto, persona, emoção, estética), sem mencionar marcas genéricas ou escrever texto na imagem.
+- Os prompts de imagem devem ser detalhados, específicos para ${data.companyName} e contextualmente relevantes ao negócio.
+- Gere resultados como se fossem criados por uma agência sênior de Nova York ou Londres.
+- NUNCA use palavras em inglês se o idioma for português, nem português se o idioma for inglês.
+- NUNCA use texto genérico ou óbvio como "Your Company" ou "Sua Empresa".
 
-  console.log('Generated prompt:', prompt.substring(0, 150) + '...');
-  return prompt;
+Retorne apenas o JSON, sem explicações adicionais.`;
+
+  console.log('Using system message:', systemMessage.substring(0, 150) + '...');
+  console.log('Using user message:', userMessage.substring(0, 150) + '...');
+  
+  return {
+    systemMessage,
+    userMessage
+  };
 };

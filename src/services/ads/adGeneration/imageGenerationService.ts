@@ -16,7 +16,7 @@ export interface ImageGenerationParams {
 
 export const generateAdImage = async (params: ImageGenerationParams): Promise<string | null> => {
   try {
-    console.log('Starting image generation with params:', params);
+    console.log('Starting image generation with params:', JSON.stringify(params, null, 2));
     
     if (!params.prompt) {
       console.error('Missing image prompt');
@@ -29,7 +29,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
     // Enhance the prompt with campaign context
     let enhancedPrompt = params.prompt;
     
-    // If the prompt appears generic, add more context
+    // If the prompt appears generic or too short, add more context
     if (enhancedPrompt.toLowerCase().includes('professional') || 
         enhancedPrompt.toLowerCase().includes('image for') ||
         enhancedPrompt.length < 50) {
@@ -47,10 +47,12 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
     }
     
     // Add language-appropriate prefix to ensure proper language generation
-    if (language === 'portuguese') {
-      enhancedPrompt = `Criação de imagem publicitária profissional em português: ${enhancedPrompt}`;
-    } else if (language === 'english') {
-      enhancedPrompt = `Professional advertising image creation in English: ${enhancedPrompt}`;
+    if (language.toLowerCase().includes('portuguese') || language.toLowerCase().includes('português')) {
+      enhancedPrompt = `Criação de imagem publicitária profissional em português: ${enhancedPrompt}. 
+Não inclua texto na imagem. Estilo fotográfico de alta qualidade, como uma produção profissional.`;
+    } else if (language.toLowerCase().includes('english')) {
+      enhancedPrompt = `Professional advertising image creation in English: ${enhancedPrompt}. 
+Do not include text in the image. High-quality photographic style, like a professional production.`;
     }
     
     console.log('Enhanced prompt for image generation:', enhancedPrompt);
@@ -75,7 +77,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
       return null;
     }
     
-    console.log('Successfully generated image:', data.imageUrl.substring(0, 50) + '...');
+    console.log('Successfully generated image URL:', data.imageUrl.substring(0, 50) + '...');
     return data.imageUrl;
   } catch (error) {
     errorLogger.logError(error, 'generateAdImage');

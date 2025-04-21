@@ -6,16 +6,18 @@ import { buildAdGenerationPrompt } from './promptBuilder';
 
 export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAdContent | null> => {
   try {
-    console.log('Generating ads with data:', data);
+    console.log('Generating ads with data:', JSON.stringify(data, null, 2));
     
     // Build a detailed prompt using the provided template structure
-    const prompt = buildAdGenerationPrompt(data);
+    const { systemMessage, userMessage } = buildAdGenerationPrompt(data);
     
-    // Call the Supabase function to generate ads
+    // Call the Supabase function to generate ads with the new prompt structure
     const { data: response, error } = await supabase.functions.invoke('generate-ads', {
       body: {
-        prompt,
-        language: data.language || 'portuguese'
+        systemMessage,
+        userMessage,
+        language: data.language || 'portuguese',
+        temperature: 0.7  // Slightly lower temperature for more consistent results
       }
     });
     
@@ -32,14 +34,14 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
     
     // Validate the generated content
     const content = response.content;
-    const validationResult = validateGeneratedContent(content, data.language || 'portuguese');
+    const validationResult = validateGeneratedContent(content, data);
     
     if (!validationResult.isValid) {
       console.error('Generated content validation failed:', validationResult.reason);
       return null;
     }
     
-    console.log('Successfully generated ads:', content);
+    console.log('Successfully generated ads, sample:', JSON.stringify(content).substring(0, 300) + '...');
     return content;
   } catch (error) {
     errorLogger.logError(error, 'generateAds');
@@ -52,32 +54,67 @@ interface ValidationResult {
   reason?: string;
 }
 
-const validateGeneratedContent = (content: any, language: string): ValidationResult => {
-  // Validate that we have at least one ad for each platform
-  if (!content.google_ads?.length && !content.instagram_ads?.length && 
-      !content.linkedin_ads?.length && !content.microsoft_ads?.length) {
+const validateGeneratedContent = (content: any, campaignData: CampaignPromptData): ValidationResult => {
+  const language = campaignData.language || 'portuguese';
+  const companyName = campaignData.companyName || '';
+  
+  // Validate that we have at least one ad for each requested platform
+  const requestedPlatforms = campaignData.platforms || ['google'];
+  let missingPlatforms = [];
+  
+  if (requestedPlatforms.includes('google') && (!content.google_ads || content.google_ads.length === 0)) {
+    missingPlatforms.push('google');
+  }
+  if (requestedPlatforms.includes('meta') && (!content.instagram_ads || content.instagram_ads.length === 0)) {
+    missingPlatforms.push('instagram');
+  }
+  if (requestedPlatforms.includes('linkedin') && (!content.linkedin_ads || content.linkedin_ads.length === 0)) {
+    missingPlatforms.push('linkedin');
+  }
+  if (requestedPlatforms.includes('microsoft') && (!content.microsoft_ads || content.microsoft_ads.length === 0)) {
+    missingPlatforms.push('microsoft');
+  }
+  
+  if (missingPlatforms.length > 0) {
     return {
       isValid: false,
-      reason: 'No ads were generated for any platform'
+      reason: `Missing ads for requested platforms: ${missingPlatforms.join(', ')}`
     };
   }
 
-  // Check for example or placeholder text
+  // Check for common placeholders and generic text
   const contentJson = JSON.stringify(content).toLowerCase();
-  if (contentJson.includes('example') || contentJson.includes('placeholder') || 
-      contentJson.includes('sample') || contentJson.includes('your company')) {
+  const genericTerms = [
+    'example', 'exemplo', 'placeholder', 'sample', 'amostra', 
+    'your company', 'sua empresa', 'your business', 'seu negócio',
+    'company name', 'nome da empresa', 'click here', 'clique aqui'
+  ];
+  
+  for (const term of genericTerms) {
+    if (contentJson.includes(term.toLowerCase())) {
+      return {
+        isValid: false,
+        reason: `Generated content contains generic placeholder: "${term}"`
+      };
+    }
+  }
+  
+  // Check that company name is actually used in the content
+  if (!contentJson.toLowerCase().includes(companyName.toLowerCase()) && companyName.length > 0) {
     return {
       isValid: false,
-      reason: 'Generated content contains example or placeholder text'
+      reason: `Generated content does not mention company name "${companyName}"`
     };
   }
 
-  // Check for language inconsistency (basic check)
-  // If language is Portuguese, check for common English words that shouldn't be there
-  if (language.toLowerCase() === 'portuguese') {
-    const englishWords = ['your', 'company', 'business', 'product', 'service', 'professional', 'image for'];
+  // Check for language consistency based on specified language
+  // For Portuguese content: Check for common English words that shouldn't be there
+  if (language.toLowerCase().includes('portuguese') || language.toLowerCase().includes('português')) {
+    const englishWords = ['your', 'business', 'product', 'service', 'professional', 'image for', 'get', 'now', 'free', 'today'];
     for (const word of englishWords) {
-      if (contentJson.includes(` ${word} `)) {
+      // Use word boundary to avoid partial matches
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      if (regex.test(contentJson)) {
         return {
           isValid: false,
           reason: `English word "${word}" found in Portuguese ad content`
@@ -86,11 +123,13 @@ const validateGeneratedContent = (content: any, language: string): ValidationRes
     }
   }
 
-  // If language is English, check for common Portuguese words
-  if (language.toLowerCase() === 'english') {
-    const portugueseWords = ['empresa', 'negócio', 'produto', 'serviço', 'profissional', 'imagem para'];
+  // For English content: Check for common Portuguese words
+  if (language.toLowerCase().includes('english') || language.toLowerCase() === 'inglês') {
+    const portugueseWords = ['empresa', 'negócio', 'produto', 'serviço', 'profissional', 'imagem para', 'agora', 'grátis', 'hoje'];
     for (const word of portugueseWords) {
-      if (contentJson.includes(` ${word} `)) {
+      // Use word boundary to avoid partial matches
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      if (regex.test(contentJson)) {
         return {
           isValid: false,
           reason: `Portuguese word "${word}" found in English ad content`
@@ -99,5 +138,28 @@ const validateGeneratedContent = (content: any, language: string): ValidationRes
     }
   }
 
+  // Check image prompts for quality
+  const imagePrompts = [
+    ...(content.instagram_ads || []).map((ad: any) => ad.imagePrompt || ''),
+    ...(content.linkedin_ads || []).map((ad: any) => ad.imagePrompt || '')
+  ].filter(prompt => prompt.length > 0);
+  
+  for (const prompt of imagePrompts) {
+    if (prompt.length < 30) {
+      return {
+        isValid: false,
+        reason: `Image prompt too short: "${prompt}"`
+      };
+    }
+    
+    if (!prompt.toLowerCase().includes(companyName.toLowerCase()) && companyName.length > 0) {
+      return {
+        isValid: false,
+        reason: `Image prompt does not reference the company context: "${prompt}"`
+      };
+    }
+  }
+
   return { isValid: true };
 };
+

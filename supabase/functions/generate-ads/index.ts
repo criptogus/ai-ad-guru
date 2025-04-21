@@ -13,36 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, language } = await req.json();
+    const { systemMessage, userMessage, language = 'portuguese', temperature = 0.7 } = await req.json();
     
     // Validate input data
-    if (!prompt) {
-      throw new Error("Prompt is required");
+    if (!systemMessage || !userMessage) {
+      throw new Error("Both systemMessage and userMessage are required");
     }
     
-    console.log(`Starting ad generation with language: ${language || 'default'}`);
-    console.log(`Prompt preview: ${prompt.substring(0, 150)}...`);
+    console.log(`Starting ad generation with language: ${language}`);
+    console.log(`System message preview: ${systemMessage.substring(0, 100)}...`);
+    console.log(`User message preview: ${userMessage.substring(0, 100)}...`);
     
     const openai = createOpenAIClient(Deno.env.get('OPENAI_API_KEY') || '');
 
-    // System prompt reinforces quality and JSON format requirements
-    const systemPrompt = "Você é um redator publicitário sênior premiado em Cannes e especialista em growth hacking. " +
-      "Trabalha em uma agência criativa de alto padrão e domina estratégias para campanhas em Google Ads, Instagram, LinkedIn e Microsoft Ads. " +
-      "Sua missão é criar anúncios que convertem, respeitando as limitações de cada plataforma e usando gatilhos mentais, " +
-      "copywriting persuasivo e storytelling moderno. Responda SEMPRE no formato JSON especificado, sem texto adicional.";
-
-    // Make the actual API call
+    // Make the API call using the new messages format
     const response = await openai.createChatCompletion({
       model: "gpt-4o",
-      temperature: 0.9,
+      temperature: temperature,
       messages: [
         {
           role: "system",
-          content: systemPrompt
+          content: systemMessage
         },
         {
           role: "user",
-          content: prompt
+          content: userMessage
         }
       ]
     });
@@ -53,8 +48,6 @@ serve(async (req) => {
     }
 
     console.log("Content received from OpenAI API");
-    
-    // Log a small preview of the response for debugging
     console.log("Response preview:", content.substring(0, 200) + "...");
 
     try {
@@ -81,7 +74,7 @@ serve(async (req) => {
         }
       }
       
-      // Validate the parsed content
+      // Validate the parsed content has expected structure
       if (!parsedContent || typeof parsedContent !== 'object') {
         throw new Error("Invalid response format: Not a valid JSON object");
       }

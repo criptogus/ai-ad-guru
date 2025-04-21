@@ -33,8 +33,15 @@ export const useImageGenerationHandler = ({
     setLoadingImageIndex(index);
     
     try {
-      console.log("Starting image generation for ad:", ad);
+      console.log("Starting image generation for ad:", JSON.stringify(ad, null, 2));
       console.log("Using image prompt:", ad.imagePrompt);
+      console.log("With campaign context:", JSON.stringify({
+        industry: campaignData?.industry,
+        brandTone: campaignData?.brandTone,
+        objective: campaignData?.objective,
+        targetAudience: campaignData?.targetAudience,
+        language: campaignData?.language
+      }, null, 2));
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
