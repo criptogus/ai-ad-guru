@@ -10,6 +10,7 @@ export interface CampaignPromptData {
   language?: string;
   industry?: string;
   differentials?: string[];
+  platforms?: string[]; // Added platforms property
 }
 
 export interface PromptMessages {
