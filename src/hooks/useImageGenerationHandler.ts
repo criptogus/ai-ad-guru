@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
+import { formatMapping, AdFormat } from "@/types/adFormats";
 import { toast } from "sonner";
 
 interface UseImageGenerationHandlerProps {
@@ -32,35 +33,15 @@ export const useImageGenerationHandler = ({
     setLoadingImageIndex(index);
     
     try {
-      // Log the image prompt being used
       console.log("Starting image generation for ad:", ad);
       console.log("Using image prompt:", ad.imagePrompt);
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
-      // Convert format to compatible type if needed
-      let format: "square" | "story" | "horizontal" = "square";
+      // Convert the ad format to our generation format
+      const adFormat = (ad.format || 'square') as AdFormat;
+      const format = formatMapping[adFormat];
       
-      // Map the ad format to the compatible format type
-      if (ad.format) {
-        switch (ad.format) {
-          case "portrait":
-          case "reel":
-            format = "story";
-            break;
-          case "landscape":
-          case "feed":
-            format = "horizontal";
-            break;
-          case "square":
-            format = "square";
-            break;
-          default:
-            format = "square";
-        }
-      }
-      
-      // Generate image using the specific image prompt from the ad
       const imageUrl = await generateAdImage({
         prompt: ad.imagePrompt,
         platform,
@@ -75,7 +56,6 @@ export const useImageGenerationHandler = ({
       if (imageUrl) {
         toast.success("Imagem gerada com sucesso!");
         
-        // Update the correct ad array based on platform
         if (platform === 'meta' && metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };

@@ -1,16 +1,12 @@
 
-/**
- * Image Generation Service
- * Handles generation and storage of ad images
- */
-
+import { GenerationFormat } from '@/types/adFormats';
 import { errorLogger } from '@/services/libs/error-handling';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ImageGenerationParams {
   prompt: string;
   platform: 'meta' | 'linkedin' | 'google';
-  format?: 'square' | 'story' | 'horizontal';
+  format: GenerationFormat;
   industry?: string;
   brandTone?: string;
   campaignObjective?: string;
@@ -38,7 +34,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
       body: { 
         prompt: enhancedPrompt,
         platform: params.platform,
-        format: params.format || 'square',
+        format: params.format,
         language: params.language || 'portuguese',
         additional: {
           industry: params.industry,
