@@ -1,114 +1,59 @@
 
 /**
  * Google Ads Options
- * Contains utility functions to generate headline and description options for Google Ads
+ * Contains options and formatting utilities for Google ads
  */
 
-import { errorLogger } from '@/services/libs/error-handling';
+export interface AdFormatOptions {
+  maxLength: number;
+  recommendedLength: number;
+  minRecommendedLength?: number;
+  description?: string;
+}
 
-/**
- * Get headline options for Google Ads based on provided parameters
- */
-export const getHeadlineOptions = (params: any = {}): string[] => {
-  try {
-    const { companyName, industry, callToAction } = params;
-    
-    // Default options if specific parameters aren't provided
-    const defaultHeadlines = [
-      "Quality Services",
-      "Professional Solutions",
-      "Expert Assistance",
-      "Top-Rated Service",
-      "Premium Solutions"
-    ];
-    
-    // Dynamic headlines based on provided parameters
-    const dynamicHeadlines: string[] = [];
-    
-    if (companyName) {
-      dynamicHeadlines.push(
-        `${companyName} - Professional Services`,
-        `Discover ${companyName}`,
-        `Why Choose ${companyName}?`
-      );
-    }
-    
-    if (industry) {
-      dynamicHeadlines.push(
-        `Leading ${industry} Services`,
-        `${industry} Experts`,
-        `Professional ${industry} Solutions`
-      );
-    }
-    
-    if (callToAction) {
-      dynamicHeadlines.push(
-        `${callToAction}`,
-        `${callToAction} Today`
-      );
-    }
-    
-    // Return dynamic headlines first, then default ones, up to 15 options
-    return [...new Set([...dynamicHeadlines, ...defaultHeadlines])].slice(0, 15);
-  } catch (error) {
-    console.error("Error generating headline options:", error);
-    return [
-      "Quality Services",
-      "Professional Solutions",
-      "Expert Assistance",
-      "Top-Rated Service",
-      "Premium Solutions"
-    ];
-  }
+export const getHeadlineOptions = (): AdFormatOptions => {
+  return {
+    maxLength: 30,
+    recommendedLength: 25,
+    minRecommendedLength: 10,
+    description: "Headlines should be short, impactful, and include keywords when possible."
+  };
 };
 
-/**
- * Get description options for Google Ads based on provided parameters
- */
-export const getDescriptionOptions = (params: any = {}): string[] => {
-  try {
-    const { companyName, targetAudience, callToAction, businessDescription } = params;
-    
-    // Default options if specific parameters aren't provided
-    const defaultDescriptions = [
-      "We provide professional services tailored to your needs. Contact us today for more information.",
-      "Quality solutions for your business. Get started with a free consultation.",
-      "Expert team ready to help you succeed. Call us today to learn more.",
-      "Trusted by thousands of customers. Find out why we're the top choice.",
-      "Affordable and reliable services. Contact us now for a custom quote."
-    ];
-    
-    // Dynamic descriptions based on provided parameters
-    const dynamicDescriptions: string[] = [];
-    
-    if (businessDescription) {
-      dynamicDescriptions.push(
-        `${businessDescription.substring(0, 80)}${businessDescription.length > 80 ? '...' : ''}`,
-        `${businessDescription.substring(0, 70)}${businessDescription.length > 70 ? '...' : ''} Contact us today!`
-      );
-    }
-    
-    if (companyName && targetAudience) {
-      dynamicDescriptions.push(
-        `${companyName} helps ${targetAudience} achieve better results. Contact us to learn more.`,
-        `Designed for ${targetAudience}. ${companyName} delivers quality service every time.`
-      );
-    }
-    
-    if (callToAction) {
-      dynamicDescriptions.push(
-        `${callToAction}. Our expert team is ready to assist you.`,
-        `${callToAction}. Trusted by thousands of satisfied customers.`
-      );
-    }
-    
-    // Return dynamic descriptions first, then default ones, up to 4 options
-    return [...new Set([...dynamicDescriptions, ...defaultDescriptions])].slice(0, 4);
-  } catch (error) {
-    console.error("Error generating description options:", error);
-    return [
-      "We provide professional services tailored to your needs. Contact us today for more information.",
-      "Quality solutions for your business. Get started with a free consultation."
-    ];
-  }
+export const getDescriptionOptions = (): AdFormatOptions => {
+  return {
+    maxLength: 90,
+    recommendedLength: 80,
+    minRecommendedLength: 40,
+    description: "Descriptions should provide more detail about your offering and include a clear call to action."
+  };
 };
+
+export const getPathOptions = (): AdFormatOptions => {
+  return {
+    maxLength: 15,
+    recommendedLength: 10,
+    description: "Paths should be relevant to your landing page URL and help users understand where they'll go."
+  };
+};
+
+export const formatGoogleAdText = (text: string): string => {
+  if (!text) return '';
+  
+  // Ensure there's a space after periods, commas, and other punctuation
+  let formattedText = text.replace(/([.,:;!?])([^\s])/g, '$1 $2');
+  
+  // Ensure proper capitalization at the start of sentences
+  formattedText = formattedText.replace(/(^|[.!?]\s+)([a-z])/g, (match, p1, p2) => {
+    return p1 + p2.toUpperCase();
+  });
+  
+  return formattedText;
+};
+
+export const normalizeDescriptions = (descriptions: string[]): string[] => {
+  if (!descriptions || !descriptions.length) return [];
+  
+  return descriptions.map(desc => formatGoogleAdText(desc));
+};
+
