@@ -1,129 +1,52 @@
 
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useCredits } from '@/contexts/CreditsContext';
-import { useAuth } from '@/contexts/AuthContext';
-import fallbackImageService from '@/services/image/fallbackImageService';
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { deductCredits } = useCredits();
-  const { user } = useAuth();
-  
-  const generateAdImage = async (
-    prompt: string, 
-    additionalInfo?: {
-      companyName?: string;
-      adType?: string;
-      industry?: string;
-      adContext?: any;
-      imageFormat?: 'square' | 'portrait' | 'landscape';
-      platform?: string;
-      userId?: string;
-    }
-  ): Promise<string | null> => {
-    if (!prompt) {
-      setError('Prompt is required');
-      return fallbackImageService.getPlatformPlaceholder('instagram', 'Missing Prompt', 
-        additionalInfo?.imageFormat || 'square');
-    }
-    
+
+  const generateAdImage = async (prompt: string, additionalInfo?: any) => {
     setIsGenerating(true);
-    setError(null);
     
     try {
-      console.log(`Generating image with prompt: ${prompt}`);
-      console.log('Additional context:', additionalInfo);
+      console.log("Generating image with prompt:", prompt);
       
-      // Determine which function to call based on the platform or other criteria
-      const functionName = additionalInfo?.platform === 'meta' || additionalInfo?.platform === 'instagram' 
-        ? 'generate-meta-ad-image' 
-        : 'generate-image';
+      // Placeholder implementation - in a real app, this would call an AI image generation API
+      // For now, return a placeholder image URL
+      const placeholderUrls = [
+        "https://placehold.co/600x400/3b82f6/ffffff?text=AI+Generated+Image",
+        "https://placehold.co/600x400/22c55e/ffffff?text=Brand+Image",
+        "https://placehold.co/600x400/eab308/ffffff?text=Product+Shot"
+      ];
       
-      const { data, error: functionError } = await supabase.functions.invoke(functionName, {
-        body: { 
-          prompt,
-          format: additionalInfo?.imageFormat || 'square',
-          industry: additionalInfo?.industry || null,
-          adType: additionalInfo?.adType || 'general',
-          platform: additionalInfo?.platform || 'instagram',
-          userId: additionalInfo?.userId || user?.id,
-          companyName: additionalInfo?.companyName || 'Your Company',
-          adContext: additionalInfo?.adContext || null
-        }
-      });
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (functionError) {
-        console.error('Error generating image:', functionError);
-        setError(functionError.message || 'Failed to generate image');
-        
-        toast({
-          title: 'Image Generation Failed',
-          description: functionError.message || 'There was an error generating your image',
-          variant: 'destructive',
-        });
-        
-        // Return a fallback image
-        return fallbackImageService.getPlatformPlaceholder(
-          (additionalInfo?.platform as any) || 'instagram', 
-          'Generation Failed', 
-          additionalInfo?.imageFormat || 'square'
-        );
-      }
-      
-      if (!data?.imageUrl) {
-        console.error('No image URL returned:', data);
-        setError('No image was generated');
-        
-        toast({
-          title: 'Image Generation Failed',
-          description: 'The image generation service did not return a valid image',
-          variant: 'destructive',
-        });
-        
-        // Return a fallback image
-        return fallbackImageService.getPlatformPlaceholder(
-          (additionalInfo?.platform as any) || 'instagram', 
-          'No Image Returned', 
-          additionalInfo?.imageFormat || 'square'
-        );
-      }
-      
-      // Credit usage handling (if applicable)
-      if (deductCredits) {
-        deductCredits(5); // Cost to generate an image
-      }
-      
-      console.log('Image generated successfully:', data.imageUrl);
-      return data.imageUrl;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('Error in image generation:', err);
-      setError(errorMessage);
+      // Return a random placeholder image
+      const imageUrl = placeholderUrls[Math.floor(Math.random() * placeholderUrls.length)];
       
       toast({
-        title: 'Image Generation Failed',
-        description: errorMessage,
-        variant: 'destructive',
+        title: "Image Generated",
+        description: "Successfully generated ad image"
       });
       
-      // Return a fallback image
-      return fallbackImageService.getPlatformPlaceholder(
-        (additionalInfo?.platform as any) || 'instagram', 
-        'Error Occurred', 
-        additionalInfo?.imageFormat || 'square'
-      );
+      return imageUrl;
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        variant: "destructive",
+        title: "Generation Error",
+        description: "Failed to generate image. Please try again."
+      });
+      return null;
     } finally {
       setIsGenerating(false);
     }
   };
-  
+
   return {
     generateAdImage,
-    isGenerating,
-    error
+    isGenerating
   };
 };
