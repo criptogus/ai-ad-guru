@@ -33,13 +33,32 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
       return null;
     }
     
-    // Usar o prompt diretamente do JSON de resposta do GPT
+    // Verificar se o prompt está em inglês - DALL-E funciona melhor com prompts em inglês
+    // Se o prompt não estiver em inglês e o idioma da campanha for diferente do inglês,
+    // adicionar um prefixo solicitando uma imagem profissional publicitária
+    let enhancedPrompt = params.prompt;
+    const isEnglishPrompt = !params.language || params.language.toLowerCase() === 'english' || 
+                             params.language.toLowerCase() === 'inglês' || 
+                             params.language.toLowerCase() === 'en';
+    
+    if (!isEnglishPrompt && !enhancedPrompt.toLowerCase().includes('high-end advertising')) {
+      enhancedPrompt = `High-end advertising photograph: ${enhancedPrompt}`;
+    }
+    
+    console.log('Prompt aprimorado para imagem:', enhancedPrompt);
+    
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
-        prompt: params.prompt,
+        prompt: enhancedPrompt,
         platform: params.platform,
         format: params.format || 'square',
-        language: params.language || 'portuguese'
+        language: params.language || 'portuguese',
+        additional: {
+          industry: params.industry,
+          brandTone: params.brandTone,
+          campaignObjective: params.campaignObjective,
+          targetAudience: params.targetAudience
+        }
       }
     });
     
@@ -48,6 +67,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
       return null;
     }
     
+    console.log('Imagem gerada com sucesso:', data.imageUrl.substring(0, 50) + '...');
     return data.imageUrl;
   } catch (error) {
     errorLogger.logError(error, 'generateAdImage');
@@ -58,7 +78,7 @@ export const generateAdImage = async (params: ImageGenerationParams): Promise<st
 /**
  * Generate enhanced prompt based on campaign context
  */
-const generateEnhancedPrompt = (params: ImageGenerationParams): string => {
+export const generateEnhancedPrompt = (params: ImageGenerationParams): string => {
   const {
     prompt,
     platform,

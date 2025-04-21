@@ -33,18 +33,21 @@ export const useImageGenerationHandler = ({
     
     try {
       console.log("Generating image for ad:", ad);
+      console.log("Using image prompt:", ad.imagePrompt);
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       const format = ad.format || 'square';
       
+      // Use the image_prompt directly from the API response
       const imageUrl = await generateAdImage({
-        prompt: ad.imagePrompt,
+        prompt: ad.imagePrompt, // Use the AI-generated image prompt directly
         platform,
         format: format as 'square' | 'story' | 'horizontal',
         industry: campaignData?.industry,
         brandTone: campaignData?.brandTone || 'professional',
         campaignObjective: campaignData?.objective,
-        targetAudience: campaignData?.targetAudience
+        targetAudience: campaignData?.targetAudience,
+        language: campaignData?.language || 'portuguese'
       });
       
       if (imageUrl) {
