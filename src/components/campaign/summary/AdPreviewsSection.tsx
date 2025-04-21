@@ -16,6 +16,7 @@ interface AdPreviewsSectionProps {
   linkedInAds?: MetaAd[];
   websiteUrl: string;
   analysisResult: WebsiteAnalysisResult;
+  selectedPlatforms?: string[]; // Add this prop to control which platforms to show
 }
 
 const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
@@ -26,15 +27,26 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   linkedInAds = [],
   websiteUrl,
   analysisResult,
+  selectedPlatforms = [], // Default to empty array if not provided
 }) => {
   // Extract domain from websiteUrl using the utility function
   const domain = getDomain(websiteUrl);
 
+  // Check if this platform is selected by the user
+  const isPlatformSelected = (platformName: string) => {
+    // If no platforms are explicitly selected, show all (for backward compatibility)
+    if (!selectedPlatforms || selectedPlatforms.length === 0) {
+      return true;
+    }
+    return selectedPlatforms.includes(platformName);
+  };
+
   // Get the appropriate ads to display based on platform
   const getAdPreviews = () => {
+    // For the specific platform being viewed, always show it regardless of selection
     switch(platform) {
       case 'google':
-        return googleAds.length > 0 ? (
+        return isPlatformSelected('google') && googleAds.length > 0 ? (
           <div className="space-y-4">
             <h4 className="text-md font-medium">Google Ads</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -48,7 +60,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
         ) : null;
       
       case 'meta':
-        return metaAds.length > 0 ? (
+        return isPlatformSelected('meta') && metaAds.length > 0 ? (
           <div className="space-y-4">
             <h4 className="text-md font-medium">Instagram Ads</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,7 +77,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
         ) : null;
       
       case 'linkedin':
-        return linkedInAds.length > 0 ? (
+        return isPlatformSelected('linkedin') && linkedInAds.length > 0 ? (
           <div className="space-y-4">
             <h4 className="text-md font-medium">LinkedIn Ads</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,7 +95,7 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
         ) : null;
       
       case 'microsoft':
-        return microsoftAds.length > 0 ? (
+        return isPlatformSelected('microsoft') && microsoftAds.length > 0 ? (
           <div className="space-y-4">
             <h4 className="text-md font-medium">Microsoft Ads</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

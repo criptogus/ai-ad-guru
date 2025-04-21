@@ -28,18 +28,21 @@ export const useImageGeneration = () => {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Generate a placeholder image URL (using placeholder.com)
-      const imageFormat = additionalInfo?.imageFormat || 'square';
+      // Determine which type of placeholder to use based on platform and format
+      const platform = additionalInfo?.platform || 'instagram';
+      const imageFormat = additionalInfo?.imageFormat || additionalInfo?.format || 'square';
+      
+      // Generate dimensions based on format
       let dimensions = '1000x1000';
       
-      if (imageFormat === 'portrait') {
+      if (imageFormat === 'portrait' || imageFormat === 'story') {
         dimensions = '1000x1200';
       } else if (imageFormat === 'landscape') {
         dimensions = '1200x1000';
       }
       
-      // For testing, return a placeholder image
-      const imageUrl = `https://via.placeholder.com/${dimensions}?text=${encodeURIComponent(prompt.substring(0, 20))}`;
+      // For testing, generate a more realistic placeholder using appropriate dimensions and colors
+      const imageUrl = `https://via.placeholder.com/${dimensions}/${getPlatformColor(platform)}/FFFFFF?text=${encodeURIComponent(getShortPrompt(prompt))}`;
       
       // Apply credit deduction if available
       if (deductCredits) {
@@ -65,6 +68,30 @@ export const useImageGeneration = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Helper to get platform-specific colors for placeholders
+  const getPlatformColor = (platform: string): string => {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+      case 'meta':
+        return 'E4405F'; // Instagram red/pink
+      case 'linkedin':
+        return '0A66C2'; // LinkedIn blue
+      case 'google':
+        return '4285F4'; // Google blue
+      case 'microsoft':
+        return '00A4EF'; // Microsoft blue
+      default:
+        return '333333'; // Default dark gray
+    }
+  };
+  
+  // Helper to create a shortened prompt for the placeholder
+  const getShortPrompt = (prompt: string): string => {
+    const words = prompt.split(' ');
+    if (words.length <= 3) return prompt;
+    return words.slice(0, 3).join(' ') + '...';
   };
 
   return {

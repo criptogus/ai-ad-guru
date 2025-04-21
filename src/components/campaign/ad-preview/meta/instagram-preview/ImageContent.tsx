@@ -52,6 +52,14 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   }, [ad.imageUrl]);
 
+  // If we have no image, attempt to generate one automatically
+  useEffect(() => {
+    if (!ad.imageUrl && ad.imagePrompt && onGenerateImage && !isLoading) {
+      console.log("No image URL but we have a prompt, triggering image generation:", ad.imagePrompt);
+      onGenerateImage();
+    }
+  }, [ad.imageUrl, ad.imagePrompt, onGenerateImage, isLoading]);
+
   const handleGenerateClick = async () => {
     if (onGenerateImage) {
       console.log("ImageContent: Triggering image generation");
