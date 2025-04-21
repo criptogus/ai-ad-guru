@@ -1,4 +1,3 @@
-
 /**
  * Image Generation Service
  * Handles generation and storage of ad images
@@ -18,6 +17,7 @@ export interface ImageGenerationParams {
   brandTone?: string;
   campaignObjective?: string;
   targetAudience?: string;
+  language?: string;
 }
 
 /**
@@ -25,28 +25,26 @@ export interface ImageGenerationParams {
  */
 export const generateAdImage = async (params: ImageGenerationParams): Promise<string | null> => {
   try {
-    console.log('Generating ad image with params:', params);
+    console.log('Gerando imagem publicitária com params:', params);
     
-    // Generate enhanced prompt based on campaign context
-    const enhancedPrompt = generateEnhancedPrompt(params);
-    console.log('Enhanced prompt:', enhancedPrompt);
-    
-    const { data, error } = await supabase.functions.invoke('generate-image', {
-      body: { 
-        prompt: enhancedPrompt,
-        platform: params.platform,
-        format: params.format || 'square'
-      }
-    });
-    
-    if (error) {
-      console.error('Error generating image:', error);
-      errorLogger.logError(error, 'generateAdImage');
+    // Gerar imagem apenas se houver um prompt válido
+    if (!params.prompt) {
+      console.error('Prompt de imagem ausente');
       return null;
     }
     
-    if (!data?.success || !data?.imageUrl) {
-      console.error('Image generation failed:', data?.error || 'No image URL returned');
+    // Usar o prompt diretamente do JSON de resposta do GPT
+    const { data, error } = await supabase.functions.invoke('generate-image', {
+      body: { 
+        prompt: params.prompt,
+        platform: params.platform,
+        format: params.format || 'square',
+        language: params.language || 'portuguese'
+      }
+    });
+    
+    if (error || !data?.success || !data?.imageUrl) {
+      console.error('Erro ao gerar imagem:', error || data?.error || 'URL não gerada');
       return null;
     }
     
