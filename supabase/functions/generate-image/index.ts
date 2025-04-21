@@ -1,19 +1,21 @@
 
-// Define CORS headers
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { storeImageInSupabase } from "./storageHandler.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse request body
     const { prompt, platform = 'meta', format = 'square', brandTone = 'professional' } = await req.json();
     
     console.log(`Generating image for prompt: ${prompt}`);
@@ -32,29 +34,59 @@ Deno.serve(async (req) => {
       );
     }
 
-    // For testing and development, use placeholders based on format
-    let placeholderImage;
-    
-    if (format === 'square') {
-      placeholderImage = 'https://placehold.co/1000x1000/EEEEEE/31343C?text=Instagram+Ad';
-    } else if (format === 'story' || format === 'portrait') {
-      placeholderImage = 'https://placehold.co/1080x1920/EEEEEE/31343C?text=Instagram+Story';
-    } else if (format === 'landscape' || format === 'horizontal') {
-      placeholderImage = 'https://placehold.co/1200x628/EEEEEE/31343C?text=LinkedIn+Ad';
-    } else {
-      placeholderImage = 'https://placehold.co/1000x1000/EEEEEE/31343C?text=Default+Ad';
+    // Call OpenAI API to generate image
+    const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: format === 'story' ? '1024x1792' : '1024x1024',
+        quality: 'standard',
+      }),
+    });
+
+    if (!openaiResponse.ok) {
+      const error = await openaiResponse.json();
+      console.error("OpenAI API error:", error);
+      throw new Error(`OpenAI API error: ${error.error?.message || "Unknown error"}`);
     }
 
-    // Add dynamic text from the prompt to the placeholder
-    const shortPrompt = prompt.substring(0, 30).replace(/\s+/g, '+');
-    placeholderImage = placeholderImage.replace('Ad', `${shortPrompt}...`);
+    const openaiData = await openaiResponse.json();
+    const imageUrl = openaiData.data[0].url;
+    
+    console.log("OpenAI image generated successfully, downloading...");
 
-    console.log(`Generated placeholder image URL: ${placeholderImage}`);
+    // Download the generated image
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error("Failed to download generated image");
+    }
+
+    const imageBlob = await imageResponse.blob();
+    
+    console.log("Image downloaded, uploading to Supabase storage...");
+
+    // Upload to Supabase storage
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+    const persistentImageUrl = await storeImageInSupabase(imageBlob, {
+      supabaseUrl,
+      supabaseServiceKey
+    });
+
+    console.log("Image processing completed successfully");
+    console.log("Final image URL:", persistentImageUrl);
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        imageUrl: placeholderImage 
+        imageUrl: persistentImageUrl 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -62,17 +94,15 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Image generation error:", error);
-    
+    console.error("Error in generate-image function:", error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: "Failed to generate image",
-        details: error instanceof Error ? error.message : "Unknown error" 
+        error: error.message || "An error occurred while generating the image" 
       }),
-      {
+      { 
+        status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
       }
     );
   }
