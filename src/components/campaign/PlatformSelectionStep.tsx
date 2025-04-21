@@ -7,7 +7,7 @@ import { AlertCircle, Chrome, Linkedin, Instagram, Target } from "lucide-react";
 import { useCampaign } from "@/contexts/CampaignContext";
 
 interface PlatformSelectionStepProps {
-  onNext: (data?: { platforms: string[] }) => boolean | void;
+  onNext: (data?: any) => void;
   onBack: () => void;
 }
 
@@ -67,11 +67,6 @@ const PlatformSelectionStep: React.FC<PlatformSelectionStepProps> = ({
   const handleNextClick = () => {
     // First update the data
     onNext({ platforms: selectedPlatforms });
-    
-    // Then explicitly call onNext again with no arguments to force navigation
-    setTimeout(() => {
-      onNext();
-    }, 100);
   };
 
   const showWarning = selectedPlatforms.length === 0;

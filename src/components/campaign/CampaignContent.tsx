@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -149,6 +150,18 @@ const CampaignContent: React.FC = () => {
     if (!data) {
       toast.success(`Moving to step ${currentStep + 1}`);
       handleNext();
+    }
+  };
+
+  // Create a wrapper for handleGenerateImage that adapts to the expected signature
+  const handleGenerateImageWrapper = async (index: number) => {
+    if (index < 0) return;
+    
+    // Determine which ad to use based on the index
+    if (metaAds && metaAds.length > index) {
+      await handleGenerateImage(metaAds[index], index);
+    } else if (linkedInAds && linkedInAds.length > index) {
+      await handleGenerateImage(linkedInAds[index], index);
     }
   };
 

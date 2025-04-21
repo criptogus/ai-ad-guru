@@ -4,7 +4,7 @@ import { WebsiteAnalysisResult, AnalysisCache } from '@/hooks/useWebsiteAnalysis
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 import WebsiteAnalysisStep from '@/components/campaign/WebsiteAnalysisStep';
 import PlatformSelectionStep from '@/components/campaign/PlatformSelectionStep';
-import MindTriggerSelectionStep from '@/components/campaign/mind-trigger/MindTriggerSelectionStep';
+import { MindTriggerSelectionStep } from '@/components/campaign/mind-trigger/MindTriggerSelectionStep';
 import CampaignSetupStep from '@/components/campaign/CampaignSetupStep';
 import AdPreviewStep from '@/components/campaign/ad-preview/AdPreviewStep';
 // Import other steps as needed
@@ -26,7 +26,7 @@ interface UseCampaignStepRendererProps {
   handleGenerateMetaAds: () => Promise<void>;
   handleGenerateMicrosoftAds: () => Promise<void>;
   handleGenerateLinkedInAds: () => Promise<void>;
-  handleGenerateImage: (index: number) => Promise<void>;
+  handleGenerateImage: (ad: MetaAd, index: number) => Promise<void>;
   handleUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   handleUpdateMetaAd: (index: number, updatedAd: MetaAd) => void;
   handleUpdateMicrosoftAd: (index: number, updatedAd: GoogleAd) => void;
@@ -83,18 +83,20 @@ const useCampaignStepRenderer = ({
       case 2:
         return (
           <PlatformSelectionStep 
-            campaignData={campaignData}
-            onNext={(data) => handleNextWrapper(data)}
+            onNext={handleNextWrapper}
             onBack={handleBack}
           />
         );
       case 3:
         return (
           <MindTriggerSelectionStep
-            campaignData={campaignData}
-            setCampaignData={setCampaignData}
-            onNext={handleNextWrapper}
+            selectedPlatforms={campaignData.platforms || []}
+            selectedTriggers={campaignData.mindTriggers || {}}
+            onTriggersChange={(triggers) => {
+              setCampaignData(prev => ({...prev, mindTriggers: triggers}));
+            }}
             onBack={handleBack}
+            onNext={handleNextWrapper}
           />
         );
       case 4:
@@ -102,14 +104,14 @@ const useCampaignStepRenderer = ({
           <CampaignSetupStep
             campaignData={campaignData}
             analysisResult={analysisResult}
-            onNext={(data) => handleNextWrapper(data)}
+            onNext={handleNextWrapper}
             onBack={handleBack}
           />
         );
       case 5:
         return (
           <AdPreviewStep
-            campaignData={campaignData}
+            analysisResult={analysisResult}
             googleAds={googleAds}
             metaAds={metaAds}
             microsoftAds={microsoftAds}
@@ -127,6 +129,7 @@ const useCampaignStepRenderer = ({
             handleUpdateLinkedInAd={handleUpdateLinkedInAd}
             onNext={handleNextWrapper}
             onBack={handleBack}
+            mindTriggers={campaignData.mindTriggers}
           />
         );
       case 6:

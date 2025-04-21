@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -328,6 +327,16 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
   
+  const handleGenerateImageWrapper = async (index: number) => {
+    if (index < 0) return;
+    
+    if (metaAds && metaAds.length > index) {
+      await handleGenerateImage(metaAds[index], index);
+    } else if (linkedInAds && linkedInAds.length > index) {
+      await handleGenerateImage(linkedInAds[index], index);
+    }
+  };
+  
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -356,7 +365,7 @@ const CreateCampaignPage: React.FC = () => {
     createCampaign: handleCreateCampaign,
     cacheInfo
   });
-  
+
   console.log("CreateCampaignPage rendering with step:", currentStep, "and campaign data:", campaignData);
 
   return (

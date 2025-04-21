@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTriggerData } from './useTriggerData';
-import { Label } from '@/components/ui/label';
-import { SparklesIcon } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle2 } from 'lucide-react';
 
 interface TriggerSelectorSectionProps {
   title: string;
@@ -21,44 +19,38 @@ const TriggerSelectorSection: React.FC<TriggerSelectorSectionProps> = ({
 }) => {
   const { getTriggers } = useTriggerData();
   const triggers = getTriggers(platform);
-
+  
   return (
-    <Card className="border border-border shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center text-lg font-semibold">
-          <SparklesIcon className="h-5 w-5 mr-2 text-primary" />
-          {title} Mind Triggers
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-6">
-          Select a psychological trigger to enhance your ad copy. Different platforms respond better to different psychological approaches.
-        </p>
-        
-        <RadioGroup 
-          value={selected} 
-          onValueChange={onSelect}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-        >
-          {triggers.map((trigger) => (
-            <div key={trigger.id} className="relative">
-              <RadioGroupItem
-                value={trigger.id}
-                id={`trigger-${trigger.id}`}
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor={`trigger-${trigger.id}`}
-                className="flex flex-col h-full p-4 rounded-xl border border-border peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"
-              >
-                <span className="text-base font-medium mb-1">{trigger.name}</span>
-                <span className="text-sm text-muted-foreground">{trigger.description}</span>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">{title} Mind Triggers</h3>
+      <p className="text-sm text-muted-foreground">
+        Select a psychological trigger to enhance your {title} ad copy.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {triggers.map((trigger) => (
+          <Card 
+            key={trigger.id}
+            className={`cursor-pointer transition-all ${
+              selected === trigger.id 
+                ? 'border-primary bg-primary/5' 
+                : 'hover:border-primary/50'
+            }`}
+            onClick={() => onSelect(trigger.id)}
+          >
+            <CardContent className="p-4 relative">
+              {selected === trigger.id && (
+                <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary" />
+              )}
+              <h4 className="font-semibold">{trigger.name}</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                {trigger.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 };
 
