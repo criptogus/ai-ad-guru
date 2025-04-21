@@ -6,12 +6,17 @@ import { toast } from 'sonner';
 export interface WebsiteAnalysisResult {
   companyName: string;
   companyDescription: string;
+  businessDescription?: string;
   targetAudience: string;
   keywords: string[];
   industry?: string;
   logo?: string;
   colors?: string[];
   language?: string;
+  websiteUrl?: string;
+  brandTone?: string;
+  uniqueSellingPoints?: string[];
+  callToAction?: string[] | string;
 }
 
 export interface AnalysisCache {
@@ -19,6 +24,9 @@ export interface AnalysisCache {
   url: string;
   createdAt: string;
   updatedAt?: string;
+  fromCache?: boolean;
+  cachedAt?: string;
+  expiresAt?: string;
 }
 
 export const useWebsiteAnalysis = () => {
@@ -48,7 +56,10 @@ export const useWebsiteAnalysis = () => {
           id: data.id,
           url: data.url,
           createdAt: data.created_at,
-          updatedAt: data.updated_at
+          updatedAt: data.updated_at,
+          fromCache: true,
+          cachedAt: data.created_at,
+          expiresAt: data.expires_at
         });
         return data.analysis_result as WebsiteAnalysisResult;
       }
@@ -96,12 +107,18 @@ export const useWebsiteAnalysis = () => {
       // First check if we have a cached analysis
       const cachedResult = await checkCachedAnalysis(url);
       if (cachedResult) {
-        setAnalysisResult(cachedResult);
+        // Ensure the websiteUrl property is set on the cached result
+        const resultWithUrl = {
+          ...cachedResult,
+          websiteUrl: url
+        };
+        setAnalysisResult(resultWithUrl);
+        
         // Show success toast for cached result
         toast.success("Análise concluída", {
           description: "Resultados carregados do cache"
         });
-        return cachedResult;
+        return resultWithUrl;
       }
 
       console.log("Analyzing website:", url);
@@ -121,6 +138,16 @@ export const useWebsiteAnalysis = () => {
       }
       
       const result = data.result as WebsiteAnalysisResult;
+      
+      // Ensure the websiteUrl property is set
+      result.websiteUrl = url;
+      
+      // Ensure backwards compatibility with companyDescription/businessDescription
+      if (result.companyDescription && !result.businessDescription) {
+        result.businessDescription = result.companyDescription;
+      } else if (result.businessDescription && !result.companyDescription) {
+        result.companyDescription = result.businessDescription;
+      }
       
       // Save to cache
       await saveAnalysisToCache(url, result);

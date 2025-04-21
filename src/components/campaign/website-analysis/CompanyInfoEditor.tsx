@@ -33,8 +33,11 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
         </label>
         <Textarea
           id="business-description"
-          value={analysisResult.businessDescription}
-          onChange={(e) => onTextChange('businessDescription', e.target.value)}
+          value={analysisResult.businessDescription || analysisResult.companyDescription}
+          onChange={(e) => {
+            onTextChange('businessDescription' as keyof WebsiteAnalysisResult, e.target.value);
+            onTextChange('companyDescription', e.target.value);
+          }}
           className="w-full resize-none"
           rows={3}
         />
@@ -46,8 +49,8 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
         </label>
         <Input
           id="brand-tone"
-          value={analysisResult.brandTone}
-          onChange={(e) => onTextChange('brandTone', e.target.value)}
+          value={analysisResult.brandTone || ''}
+          onChange={(e) => onTextChange('brandTone' as keyof WebsiteAnalysisResult, e.target.value)}
           className="w-full"
         />
       </div>

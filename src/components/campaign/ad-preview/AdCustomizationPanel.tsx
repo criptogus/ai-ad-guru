@@ -23,7 +23,7 @@ const AdCustomizationPanel: React.FC<AdCustomizationPanelProps> = ({
             <div>
               <h3 className="font-medium mb-1">Business Summary</h3>
               <p className="text-muted-foreground line-clamp-3">
-                {analysisResult.businessDescription || "No business description available"}
+                {analysisResult.businessDescription || analysisResult.companyDescription || "No business description available"}
               </p>
             </div>
             <div>

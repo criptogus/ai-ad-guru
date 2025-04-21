@@ -41,11 +41,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   };
 
   const handleUspChange = (index: number, value: string) => {
-    onArrayItemChange('uniqueSellingPoints', index, value);
+    onArrayItemChange('uniqueSellingPoints' as 'keywords', index, value);
   };
 
   const handleCtaChange = (index: number, value: string) => {
-    onArrayItemChange('callToAction', index, value);
+    onArrayItemChange('callToAction' as 'keywords', index, value);
   };
 
   const formatCacheDate = (dateString?: string) => {
@@ -118,12 +118,12 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             />
             
             <UspEditor 
-              uniqueSellingPoints={analysisResult.uniqueSellingPoints}
+              uniqueSellingPoints={analysisResult.uniqueSellingPoints || []}
               onUspChange={handleUspChange}
             />
             
             <CtaEditor 
-              callToActions={analysisResult.callToAction}
+              callToActions={analysisResult.callToAction || []}
               onCtaChange={handleCtaChange}
             />
           </div>

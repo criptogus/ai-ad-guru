@@ -85,7 +85,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   ) => {
     if (!editedResult) return;
     
-    const newArray = [...editedResult[field]];
+    const newArray = [...(editedResult[field] as string[])];
     newArray[index] = value;
     
     setEditedResult({
