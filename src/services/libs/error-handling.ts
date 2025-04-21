@@ -1,62 +1,38 @@
 
 /**
- * Error Logger Service
- * Centralized error logging for the application
+ * Error Logging Service
+ * Provides utilities for consistent error logging across the application
  */
 
 interface ErrorLoggerInterface {
-  logError: (error: unknown, context?: string) => void;
-  logWarning: (message: string, context?: string) => void;
-  logInfo: (message: string, context?: string) => void;
+  logError: (error: any, source?: string) => void;
+  logWarning: (message: string, source?: string) => void;
+  logInfo: (message: string, source?: string) => void;
 }
 
-class ErrorLogger implements ErrorLoggerInterface {
+/**
+ * Error logger utility for standardized error handling
+ */
+export const errorLogger: ErrorLoggerInterface = {
   /**
-   * Log an error with optional context
+   * Log an error with source information
    */
-  logError(error: unknown, context?: string): void {
-    const errorObject = error instanceof Error ? error : new Error(String(error));
-    
-    // Format the log with context if provided
-    const logMessage = context 
-      ? `[${context}] ${errorObject.message}`
-      : errorObject.message;
-    
-    console.error(logMessage);
-    
-    // In production, we could send this to a logging service
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to monitoring service like Sentry
-      // Example: Sentry.captureException(errorObject, { extra: { context } });
-    }
-  }
+  logError: (error: any, source?: string) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[Error${source ? ` in ${source}` : ''}]: ${errorMessage}`, error);
+  },
   
   /**
-   * Log a warning message with optional context
+   * Log a warning with source information
    */
-  logWarning(message: string, context?: string): void {
-    const logMessage = context ? `[${context}] ${message}` : message;
-    console.warn(logMessage);
-    
-    // In production, we could send this to a logging service
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to monitoring service
-    }
-  }
+  logWarning: (message: string, source?: string) => {
+    console.warn(`[Warning${source ? ` in ${source}` : ''}]: ${message}`);
+  },
   
   /**
-   * Log an info message with optional context
+   * Log information with source information
    */
-  logInfo(message: string, context?: string): void {
-    const logMessage = context ? `[${context}] ${message}` : message;
-    console.info(logMessage);
-    
-    // In production, we could send this to a logging service
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to monitoring service
-    }
+  logInfo: (message: string, source?: string) => {
+    console.info(`[Info${source ? ` from ${source}` : ''}]: ${message}`);
   }
-}
-
-// Export a singleton instance of the error logger
-export const errorLogger = new ErrorLogger();
+};

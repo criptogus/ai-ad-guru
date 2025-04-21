@@ -5,4 +5,5 @@ export * from './googleAdGenerator';
 export * from './googleAdsConnector';
 export * from './googleOAuthService';
 export * from './googleConnectionService';
+export * from './options';
 export * from './types/googleConnector';
