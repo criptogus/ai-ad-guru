@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
@@ -18,6 +18,39 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
   isAnalyzing,
 }) => {
   const [error, setError] = useState<string | null>(null);
+  const [isValid, setIsValid] = useState(false);
+
+  // Validate URL whenever it changes
+  useEffect(() => {
+    validateUrl(website);
+  }, [website]);
+
+  const validateUrl = (url: string): boolean => {
+    // Clear error if empty (we'll handle this separately)
+    if (!url.trim()) {
+      setError(null);
+      setIsValid(false);
+      return false;
+    }
+
+    // For validation purposes, let's add protocol if missing
+    let testUrl = url.trim();
+    if (!testUrl.startsWith('http://') && !testUrl.startsWith('https://')) {
+      testUrl = 'https://' + testUrl;
+    }
+
+    // Test if it's a valid URL
+    try {
+      new URL(testUrl);
+      setError(null);
+      setIsValid(true);
+      return true;
+    } catch (e) {
+      setError("Please enter a valid website URL (e.g., example.com)");
+      setIsValid(false);
+      return false;
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +64,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
       return;
     }
 
-    // More robust domain validation (allows subdomains and different TLDs)
-    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?/;
-    if (!urlPattern.test(website.trim())) {
+    if (!isValid) {
       setError("Please enter a valid website URL (e.g., example.com)");
       return;
     }
@@ -71,7 +102,7 @@ const WebsiteUrlInput: React.FC<WebsiteUrlInputProps> = ({
         </div>
         <Button 
           type="submit" 
-          disabled={!website.trim() || isAnalyzing}
+          disabled={!website.trim() || isAnalyzing || !isValid}
           className="min-w-[100px]"
         >
           {isAnalyzing ? (

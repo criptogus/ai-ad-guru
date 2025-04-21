@@ -33,12 +33,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   useEffect(() => {
     if (analysisResult && !editedResult) {
       setEditedResult({ ...analysisResult });
+      console.log("Initialized edited result from analysis result:", analysisResult);
     }
   }, [analysisResult, editedResult]);
 
   // Simulate progress when analyzing
   useEffect(() => {
     if (isAnalyzing) {
+      console.log("Analysis in progress, updating progress bar");
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
@@ -95,6 +97,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   const handleNext = () => {
     // Pass the edited result back through context or props
     if (editedResult) {
+      console.log("Moving to next step with edited result:", editedResult);
       onNext();
     }
   };

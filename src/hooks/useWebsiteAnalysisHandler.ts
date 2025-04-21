@@ -2,6 +2,7 @@
 import { useCallback } from "react";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useToast } from "@/hooks/use-toast";
+import { errorLogger } from "@/services/libs/error-handling";
 
 interface UseWebsiteAnalysisHandlerProps {
   handleAnalyzeWebsite: (url: string) => Promise<WebsiteAnalysisResult | null>;
@@ -25,14 +26,24 @@ export const useWebsiteAnalysisHandler = ({
         return null;
       }
       
-      console.log("Starting website analysis with URL:", url);
+      // Format URL - ensure it has a protocol
+      let formattedUrl = url.trim();
+      
+      // If URL doesn't have a protocol, add https://
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl;
+      }
+      
+      console.log("Analyzing website with formatted URL:", formattedUrl);
       
       toast({
         title: "Analyzing website",
         description: "Please wait while we analyze your website...",
       });
       
-      const result = await handleAnalyzeWebsite(url);
+      const result = await handleAnalyzeWebsite(formattedUrl);
+      
+      console.log("Analysis result received:", result ? "Success" : "Null or undefined");
       
       if (result) {
         setAnalysisResult(result);
@@ -51,6 +62,7 @@ export const useWebsiteAnalysisHandler = ({
       return result;
     } catch (error: any) {
       console.error("Error during website analysis:", error);
+      errorLogger.logError(error, "handleWebsiteAnalysis");
       
       toast({
         title: "Analysis error",

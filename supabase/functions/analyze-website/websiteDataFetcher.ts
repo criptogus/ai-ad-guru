@@ -19,11 +19,13 @@ export async function fetchWebsiteData(url: string) {
     const response = await fetch(formattedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(15000) // 15 second timeout
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch website: ${response.status}`);
+      throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
     }
 
     const html = await response.text();
@@ -72,7 +74,8 @@ export async function fetchWebsiteData(url: string) {
       title,
       description: metaDescription,
       keywords: metaKeywords,
-      visibleText
+      visibleText,
+      url: formattedUrl // Include the formatted URL in the result
     };
   } catch (error) {
     console.error("Error in fetchWebsiteData:", error);

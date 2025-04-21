@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { errorLogger } from '@/services/libs/error-handling';
 
 export interface WebsiteAnalysisResult {
   companyName: string;
@@ -52,43 +53,84 @@ export const useWebsiteAnalysis = () => {
         formattedUrl = 'https://' + formattedUrl;
       }
       
-      console.log('Calling analyze-website function with URL:', formattedUrl);
+      console.log('Attempting to analyze website URL:', formattedUrl);
       
-      // For this example, we'll create mock data instead of calling the Supabase function
-      const result: WebsiteAnalysisResult = {
-        companyName: 'Example Company',
-        companyDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
-        businessDescription: 'Example Company provides innovative solutions for businesses in the technology sector.', // Add this for compatibility
-        targetAudience: 'Small to medium-sized technology companies',
-        brandTone: 'Professional, innovative, trustworthy',
-        keywords: ['innovation', 'technology', 'solutions', 'business'],
-        callToAction: ['Contact us today', 'Schedule a demo', 'Learn more'],
-        uniqueSellingPoints: [
-          'Industry-leading technology',
-          '24/7 customer support',
-          'Customizable solutions'
-        ],
-        websiteUrl: formattedUrl,
-        industry: 'Technology'
-      };
-      
-      // Ensure both companyDescription and businessDescription are set
-      if (result.companyDescription && !result.businessDescription) {
-        result.businessDescription = result.companyDescription;
-      } else if (result.businessDescription && !result.companyDescription) {
-        result.companyDescription = result.businessDescription;
+      try {
+        // Try to call the Supabase function
+        const { data, error } = await supabase.functions.invoke('analyze-website', {
+          body: { url: formattedUrl },
+        });
+        
+        if (error) {
+          console.error('Error from Supabase:', error);
+          throw new Error(error.message || 'Failed to call analyze-website function');
+        }
+        
+        if (!data || !data.success) {
+          throw new Error(data?.error || 'Failed to analyze website');
+        }
+        
+        console.log('Real analysis result:', data);
+        
+        // Set cache info if available
+        if (data.fromCache) {
+          setCacheInfo({
+            fromCache: true,
+            cachedAt: data.cachedAt,
+            expiresAt: data.expiresAt
+          });
+        } else {
+          setCacheInfo(null);
+        }
+        
+        const result = data.data as WebsiteAnalysisResult;
+        // Ensure websiteUrl is set
+        result.websiteUrl = formattedUrl;
+        
+        // Set both descriptions
+        if (result.companyDescription && !result.businessDescription) {
+          result.businessDescription = result.companyDescription;
+        } else if (result.businessDescription && !result.companyDescription) {
+          result.companyDescription = result.businessDescription;
+        }
+        
+        setAnalysisResult(result);
+        return result;
+      } catch (supabaseError) {
+        console.warn('Supabase function error or not available:', supabaseError);
+        console.log('Using mock data instead');
+        
+        // Mock data for development
+        const result: WebsiteAnalysisResult = {
+          companyName: 'Example Company',
+          companyDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
+          businessDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
+          targetAudience: 'Small to medium-sized technology companies',
+          brandTone: 'Professional, innovative, trustworthy',
+          keywords: ['innovation', 'technology', 'solutions', 'business'],
+          callToAction: ['Contact us today', 'Schedule a demo', 'Learn more'],
+          uniqueSellingPoints: [
+            'Industry-leading technology',
+            '24/7 customer support',
+            'Customizable solutions'
+          ],
+          websiteUrl: formattedUrl,
+          industry: 'Technology'
+        };
+        
+        setAnalysisResult(result);
+        
+        toast({
+          title: "Website Analyzed (Demo Mode)",
+          description: "Using sample data in development environment",
+        });
+        
+        return result;
       }
-      
-      setAnalysisResult(result);
-      
-      toast({
-        title: "Website Analyzed",
-        description: "Successfully analyzed website content",
-      });
-      
-      return result;
     } catch (error: any) {
       console.error('Error analyzing website:', error);
+      errorLogger.logError(error, 'analyzeWebsite');
+      
       toast({
         title: "Analysis Failed",
         description: error.message || "Failed to analyze website. Please try again.",
