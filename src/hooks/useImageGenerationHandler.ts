@@ -38,11 +38,33 @@ export const useImageGenerationHandler = ({
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
+      // Convert format to compatible type if needed
+      let format: "square" | "story" | "horizontal" = "square";
+      
+      // Map the ad format to the compatible format type
+      if (ad.format) {
+        switch (ad.format) {
+          case "portrait":
+          case "reel":
+            format = "story";
+            break;
+          case "landscape":
+          case "feed":
+            format = "horizontal";
+            break;
+          case "square":
+            format = "square";
+            break;
+          default:
+            format = "square";
+        }
+      }
+      
       // Generate image using the specific image prompt from the ad
       const imageUrl = await generateAdImage({
         prompt: ad.imagePrompt,
         platform,
-        format: ad.format || 'square',
+        format,
         industry: campaignData?.industry,
         brandTone: campaignData?.brandTone || 'professional',
         campaignObjective: campaignData?.objective,
