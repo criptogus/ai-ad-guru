@@ -8,8 +8,8 @@ import { toast } from "sonner";
 interface UseImageGenerationHandlerProps {
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
-  setMetaAds: (ads: MetaAd[]) => void;
-  setLinkedInAds: (ads: MetaAd[]) => void;
+  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
   campaignData: any;
 }
 
@@ -38,7 +38,7 @@ export const useImageGenerationHandler = ({
       
       const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
-      // Convert the ad format to our generation format
+      // Convert the ad format to our generation format using the mapping
       const adFormat = (ad.format || 'square') as AdFormat;
       const format = formatMapping[adFormat];
       
