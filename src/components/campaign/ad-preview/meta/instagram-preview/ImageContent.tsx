@@ -35,15 +35,17 @@ const ImageContent: React.FC<ImageContentProps> = ({
 
   // Reset error state and retry count when ad.imageUrl changes
   useEffect(() => {
-    setImageError(false);
-    setRetryCount(0);
-    
-    // Add cache-busting parameter to prevent stale cache issues
     if (ad.imageUrl) {
+      console.log("ImageContent: Setting new image URL", ad.imageUrl);
+      setImageError(false);
+      setRetryCount(0);
+      
+      // Add cache-busting parameter to prevent stale cache issues
       const cacheBuster = `?t=${new Date().getTime()}`;
       const newUrl = ad.imageUrl.includes('?') 
         ? `${ad.imageUrl}&cb=${cacheBuster}` 
         : `${ad.imageUrl}${cacheBuster}`;
+      
       setImgSrc(newUrl);
     } else {
       setImgSrc(null);
@@ -52,6 +54,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
 
   const handleGenerateClick = async () => {
     if (onGenerateImage) {
+      console.log("ImageContent: Triggering image generation");
       setImageError(false);
       await onGenerateImage();
     }
@@ -76,19 +79,14 @@ const ImageContent: React.FC<ImageContentProps> = ({
       // After retry attempts, show error state
       setImageError(true);
       
-      // Use an inline SVG fallback instead of an external placeholder
-      const fallbackColor = "#f0f0f0";
-      const textColor = "#666666";
-      const fallbackSvg = `
+      // Create a simple SVG fallback directly as data URL
+      const fallbackSvg = encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
-          <rect width="100" height="100" fill="${fallbackColor}"/>
-          <text x="50" y="50" font-family="Arial" font-size="8" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
+          <rect width="100" height="100" fill="#f0f0f0"/>
+          <text x="50" y="50" font-family="Arial" font-size="8" fill="#666666" text-anchor="middle" dominant-baseline="middle">Image Unavailable</text>
         </svg>
-      `;
-      const encodedSvg = encodeURIComponent(fallbackSvg);
-      e.currentTarget.src = `data:image/svg+xml,${encodedSvg}`;
-      
-      // Mark the image as failed for additional logic
+      `);
+      e.currentTarget.src = `data:image/svg+xml,${fallbackSvg}`;
       e.currentTarget.setAttribute('data-load-failed', 'true');
       
       console.log("All retry attempts failed for image:", ad.imageUrl);
@@ -125,7 +123,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
           src={imgSrc}
           alt="Instagram content"
           className="w-full h-full object-cover"
-          key={`ad-image-${imageKey}-${imgSrc}`}
+          key={`ad-image-${imageKey}-${retryCount}`}
           onError={handleImageError}
           loading="eager"
         />
@@ -161,7 +159,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
 
   // Show placeholder if no image is available
   return (
-    <div className={imageContainerClasses}>
+    <div className={imageContainerClasses} onClick={handleGenerateClick}>
       <ImagePlaceholder 
         onGenerateImage={onGenerateImage}
         triggerFileUpload={triggerFileUpload}

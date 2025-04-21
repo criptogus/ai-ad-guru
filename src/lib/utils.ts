@@ -1,86 +1,73 @@
-
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { GoogleAd, MetaAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const getDomain = (url: string): string => {
+export function formatDate(input: string | number): string {
+  const date = new Date(input)
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
+export function absoluteUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL}${path}`
+}
+
+export function getDomain(url: string): string {
   try {
-    const parsedUrl = new URL(url);
-    return parsedUrl.hostname.replace(/^www\./, '');
+    const urlObj = new URL(url);
+    return urlObj.hostname;
   } catch (e) {
     console.error("Invalid URL", url, e);
-    return '';
+    return url;
   }
+}
+
+/**
+ * Normalize text for Google Ads by ensuring proper spacing after periods
+ */
+export const normalizeGoogleAdText = (text: string): string => {
+  if (!text) return '';
+  // Replace a period followed directly by a character with a period, space, and that character
+  return text.replace(/\.(\S)/g, '. $1');
 };
 
 /**
- * Normalizes a GoogleAd object to ensure it has all required fields
+ * Normalize Google ad object to ensure proper spacing after periods
  */
-export function normalizeGoogleAd(ad: any): GoogleAd {
-  if (!ad) return {} as GoogleAd;
-  
-  // Ensure headlines and descriptions are always arrays
-  const headlines = Array.isArray(ad.headlines) ? ad.headlines : [];
-  const descriptions = Array.isArray(ad.descriptions) ? ad.descriptions : [];
-  
-  // Ensure siteLinks has the required format with 'link' property
-  const siteLinks = Array.isArray(ad.siteLinks) 
-    ? ad.siteLinks.map((link: any) => ({
-        title: link.title || '',
-        link: link.link || '#',
-        description: link.description
-      }))
-    : [];
-  
+export const normalizeGoogleAd = (ad: any): any => {
+  // Fix spacing after periods in all headlines and descriptions
+  const fixSpacing = (text: string) => normalizeGoogleAdText(text);
+
+  // Create new ad object with fixed text
   return {
-    id: ad.id,
-    headline1: ad.headline1 || '',
-    headline2: ad.headline2 || '',
-    headline3: ad.headline3 || '',
-    description1: ad.description1 || '',
-    description2: ad.description2 || '',
-    path1: ad.path1 || '',
-    path2: ad.path2 || '',
-    displayPath: ad.displayPath,
-    headlines: headlines,
-    descriptions: descriptions,
-    siteLinks: siteLinks
+    ...ad,
+    headline1: fixSpacing(ad.headline1),
+    headline2: fixSpacing(ad.headline2),
+    headline3: fixSpacing(ad.headline3),
+    description1: fixSpacing(ad.description1),
+    description2: fixSpacing(ad.description2),
+    headlines: ad.headlines?.map(fixSpacing) || [],
+    descriptions: ad.descriptions?.map(fixSpacing) || [],
   };
-}
+};
 
 /**
- * Normalizes a MicrosoftAd object to ensure it has all required fields
- * Microsoft ads use the same structure as Google Ads
+ * Normalize Meta ad object
  */
-export function normalizeMicrosoftAd(ad: any): MicrosoftAd {
-  return normalizeGoogleAd(ad) as MicrosoftAd;
-}
-
-/**
- * Normalizes a MetaAd object to ensure it has all required fields
- */
-export function normalizeMetaAd(ad: any): MetaAd {
-  if (!ad) return {} as MetaAd;
+export const normalizeMetaAd = (ad: any): any => {
+  if (!ad) return {};
   
-  // Normalize hashtags field - ensure it's always an array or string
-  let hashtags = ad.hashtags;
-  if (hashtags === undefined || hashtags === null) {
-    hashtags = [];
-  }
-  
+  // Ensure the ad has required properties
   return {
-    id: ad.id,
-    headline: ad.headline || '',
-    primaryText: ad.primaryText || '',
-    description: ad.description || '',
-    imagePrompt: ad.imagePrompt || '',
-    imageUrl: ad.imageUrl || '',
-    format: ad.format || 'feed',
-    hashtags: hashtags,
-    companyName: ad.companyName || ''
+    ...ad,
+    format: ad.format || "feed",
+    hashtags: ad.hashtags || [],
+    // Add other default properties as needed
   };
-}
+};

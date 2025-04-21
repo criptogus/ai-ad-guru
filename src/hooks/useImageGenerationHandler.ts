@@ -35,7 +35,7 @@ export const useImageGenerationHandler = ({
 
   // Helper to get a reliable fallback image URL
   const getFallbackImageUrl = (reason: string): string => {
-    // Use Via Placeholder as it's generally more reliable
+    // Use a placeholder image service as fallback
     return `https://via.placeholder.com/600x600/f8f9fa/dc3545?text=${encodeURIComponent(reason)}`;
   };
 
@@ -46,24 +46,24 @@ export const useImageGenerationHandler = ({
       // Extract prompt text
       const promptText = ad.imagePrompt || ad.description || "";
       if (!promptText.trim()) {
-        toast.error("Prompt de imagem ausente", {
-          description: "Por favor, forneça um prompt de imagem ou descrição para gerar a imagem"
+        toast.error("Missing image prompt", {
+          description: "Please provide an image prompt or description to generate the image"
         });
         return;
       }
       
       // Build a comprehensive prompt with context
-      const promptWithContext = `Create an Instagram ad for ${campaignData.name || 'a brand'}. ${promptText}`;
+      const promptWithContext = `Create an Instagram ad for ${campaignData.name || 'a brand'} that is high quality and visually stunning. ${promptText}`;
       
       // Add format context if it exists
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       
       // Include brand details and style preferences
-      const brandContext = `. Brand colors and style: ${campaignData.brandTone || 'professional'}`;
+      const brandContext = `. Brand colors and style: ${campaignData.brandTone || 'professional and modern'}`;
       
       const finalPrompt = promptWithContext + formatContext + brandContext;
       
-      console.log("Gerando imagem com prompt:", finalPrompt);
+      console.log("Generating image with prompt:", finalPrompt);
       
       // Pass the ad and campaignData as additionalInfo
       const result = await generateAdImage(finalPrompt, {
@@ -75,7 +75,7 @@ export const useImageGenerationHandler = ({
         adType: "social_media"
       });
       
-      console.log("Resultado da geração de imagem:", result);
+      console.log("Image generation result:", result);
       
       // Extract the image URL from the result, handling different return types
       let imageUrl: string | null = null;
@@ -83,10 +83,10 @@ export const useImageGenerationHandler = ({
       if (typeof result === 'string') {
         imageUrl = result;
       } else if (result && typeof result === 'object') {
-        imageUrl = result.imageUrl || null;
+        imageUrl = result.imageUrl || result.url || null;
       }
 
-      console.log("URL final da imagem:", imageUrl);
+      console.log("Final image URL:", imageUrl);
 
       // Check if the image URL is valid
       if (imageUrl && isValidImageUrl(imageUrl)) {
@@ -96,24 +96,24 @@ export const useImageGenerationHandler = ({
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
           
-          toast.success("Imagem do Instagram gerada com sucesso", {
-            description: "A imagem do seu anúncio foi atualizada"
+          toast.success("Instagram image generated successfully", {
+            description: "Your ad image has been updated"
           });
         } else if (linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
           
-          toast.success("Imagem do LinkedIn gerada com sucesso", {
-            description: "A imagem do seu anúncio foi atualizada"
+          toast.success("LinkedIn image generated successfully", {
+            description: "Your ad image has been updated"
           });
         }
       } else {
         // Log the issue for debugging
-        console.error("URL de imagem inválida ou ausente:", imageUrl);
+        console.error("Invalid or missing image URL:", imageUrl);
         
         // Use a fallback image
-        const fallbackUrl = getFallbackImageUrl("Imagem+Não+Gerada");
+        const fallbackUrl = getFallbackImageUrl("Image+Not+Generated");
         
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
@@ -125,15 +125,15 @@ export const useImageGenerationHandler = ({
           setLinkedInAds(updatedAds);
         }
         
-        toast.error("Falha ao gerar imagem", {
-          description: "O serviço de geração de imagem não retornou uma URL válida"
+        toast.error("Failed to generate image", {
+          description: "The image generation service did not return a valid URL"
         });
       }
     } catch (error) {
-      console.error("Erro ao gerar imagem:", error);
+      console.error("Error generating image:", error);
       
       // Use a fallback image in case of error
-      const fallbackUrl = getFallbackImageUrl("Erro+na+Geração");
+      const fallbackUrl = getFallbackImageUrl("Generation+Error");
       
       if (metaAds[index]) {
         const updatedAds = [...metaAds];
@@ -145,8 +145,8 @@ export const useImageGenerationHandler = ({
         setLinkedInAds(updatedAds);
       }
       
-      toast.error("Erro ao gerar imagem", {
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido"
+      toast.error("Error generating image", {
+        description: error instanceof Error ? error.message : "An unknown error occurred"
       });
     } finally {
       setLoadingImageIndex(null);
