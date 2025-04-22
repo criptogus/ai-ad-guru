@@ -13,6 +13,7 @@ export interface WebsiteAnalysisResult {
   brandTone?: string;
   mindTrigger?: string;
   objective?: string;
+  language?: string;
 }
 
 export interface PromptMessages {
