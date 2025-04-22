@@ -18,11 +18,27 @@ export const useGoogleAds = () => {
     try {
       console.log('Generating Google ads for:', campaignData.companyName);
 
-      const { data, error: apiError } = await supabase.functions.invoke('generate-ads', {
-        body: { 
-          platform: 'google',
-          campaignData 
+      // Create a properly structured request with all required fields
+      const requestBody = {
+        platform: 'google',
+        campaignData: {
+          ...campaignData,
+          // Add these fields for better prompt context
+          language: campaignData.language || 'portuguese', // Default to Portuguese
+          brandTone: campaignData.brandTone || 'professional',
+          callToAction: campaignData.callToAction || ['Saiba mais'],
+          keywords: campaignData.keywords || [],
+          // Ensure platform is properly set for filtering
+          platforms: ['google']
         },
+        // Specify low temperature for more consistent results
+        temperature: 0.3
+      };
+
+      console.log('Sending request to generate-ads function:', JSON.stringify(requestBody, null, 2));
+
+      const { data, error: apiError } = await supabase.functions.invoke('generate-ads', {
+        body: requestBody,
       });
 
       // Use unified error handling/toast
@@ -119,24 +135,27 @@ export const useGoogleAds = () => {
         return null;
       }
 
-      // Ensure all required fields are present and normalized
+      // Ensure all required fields are present and normalized with expanded aliases
       const normalizedAds = parsedAds.map((ad: any) => ({
-        headline1: ad.headline_1 || ad.headline1 || '',
-        headline2: ad.headline_2 || ad.headline2 || '',
-        headline3: ad.headline_3 || ad.headline3 || '',
-        description1: ad.description_1 || ad.description1 || '',
-        description2: ad.description_2 || ad.description2 || '',
-        displayPath: ad.display_url || ad.displayPath || 'example.com',
-        path1: ad.path1 || '',
-        path2: ad.path2 || '',
-        siteLinks: ad.siteLinks || [],
+        headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
+        headline2: ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '',
+        headline3: ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '',
+        description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '',
+        description2: ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '',
+        displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'example.com',
+        path1: ad.path1 || ad.path_1 || '',
+        path2: ad.path2 || ad.path_2 || '',
+        siteLinks: ad.siteLinks || ad.site_links || [],
       }));
 
       console.log('🧪 Normalized Google ads:', normalizedAds);
-      console.log('🧪 First ad sample:', normalizedAds[0]);
+      if (normalizedAds.length > 0) {
+        console.log('🧪 First ad sample:', normalizedAds[0]);
+      }
       
       setGoogleAds(normalizedAds);
 
+      // Avoid showing toast twice for empty ads
       if (!normalizedAds || normalizedAds.length === 0) {
         toast({
           title: "No Ads Generated",

@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
 import { getOpenAIClient } from "./openai.ts";
@@ -69,7 +68,7 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
         { role: "system", content: prompt.systemMessage },
         { role: "user", content: prompt.userMessage }
       ],
-      temperature: 0.7,
+      temperature: 0.3,
       max_tokens: 1000
     });
 

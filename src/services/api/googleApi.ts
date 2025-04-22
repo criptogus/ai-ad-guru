@@ -28,7 +28,8 @@ export const generateGoogleAds = async (
       body: { 
         platform: 'google',
         campaignData,
-        mindTrigger
+        mindTrigger,
+        temperature: 0.3 // Lower temperature for more consistent results
       },
     });
 
@@ -55,15 +56,15 @@ export const generateGoogleAds = async (
           if (Array.isArray(parsedData)) {
             // Ensure all required fields are present
             const validatedAds = parsedData.map((ad: any) => ({
-              headline1: ad.headline_1 || ad.headline1 || '',
-              headline2: ad.headline_2 || ad.headline2 || '',
-              headline3: ad.headline_3 || ad.headline3 || '',
-              description1: ad.description_1 || ad.description1 || '',
-              description2: ad.description_2 || ad.description2 || '',
-              displayPath: ad.display_url || ad.displayPath || 'example.com',
-              path1: ad.path1 || '',
-              path2: ad.path2 || '',
-              siteLinks: ad.siteLinks || [],
+              headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
+              headline2: ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '',
+              headline3: ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '',
+              description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '',
+              description2: ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '',
+              displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'example.com',
+              path1: ad.path1 || ad.path_1 || '',
+              path2: ad.path2 || ad.path_2 || '',
+              siteLinks: ad.siteLinks || ad.site_links || [],
             }));
             
             console.log('🧪 Validated Google ads:', validatedAds);
@@ -83,15 +84,15 @@ export const generateGoogleAds = async (
     
     // Ensure all required fields are present
     const validatedAds = data.data.map((ad: any) => ({
-      headline1: ad.headline_1 || ad.headline1 || '',
-      headline2: ad.headline_2 || ad.headline2 || '',
-      headline3: ad.headline_3 || ad.headline3 || '',
-      description1: ad.description_1 || ad.description1 || '',
-      description2: ad.description_2 || ad.description2 || '',
-      displayPath: ad.display_url || ad.displayPath || 'example.com',
-      path1: ad.path1 || '',
-      path2: ad.path2 || '',
-      siteLinks: ad.siteLinks || [],
+      headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
+      headline2: ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '',
+      headline3: ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '',
+      description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '',
+      description2: ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '',
+      displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'example.com',
+      path1: ad.path1 || ad.path_1 || '',
+      path2: ad.path2 || ad.path_2 || '',
+      siteLinks: ad.siteLinks || ad.site_links || [],
     }));
     
     console.log('🧪 Validated Google ads:', validatedAds);
