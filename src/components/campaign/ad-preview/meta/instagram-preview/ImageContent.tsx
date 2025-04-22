@@ -27,13 +27,15 @@ const ImageContent: React.FC<ImageContentProps> = ({
   
   // Log para debugging mais detalhado
   React.useEffect(() => {
-    console.log(`ImageContent: Anúncio [${imageKey}] recebido:`, JSON.stringify(ad, null, 2));
-    if (imageUrl) {
-      console.log(`ImageContent: URL da imagem disponível:`, imageUrl);
-    } else if (imagePrompt) {
-      console.log(`ImageContent: Prompt disponível, mas sem URL:`, imagePrompt);
-    }
-  }, [ad, imageKey, imageUrl, imagePrompt]);
+    console.log(`ImageContent [${imageKey}]: Estado atual do anúncio:`, {
+      temUrl: !!imageUrl,
+      temPrompt: !!imagePrompt,
+      imageUrl: imageUrl?.substring(0, 30) + "...", 
+      isLoading,
+      isUploading,
+      format
+    });
+  }, [ad, imageKey, imageUrl, imagePrompt, isLoading, isUploading]);
   
   // Constrói texto alternativo a partir dos dados do anúncio
   const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Imagem de Anúncio do Instagram";
@@ -44,8 +46,8 @@ const ImageContent: React.FC<ImageContentProps> = ({
   }
   
   // Imagem existe - verificação mais rigorosa da URL
-  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-    console.log(`ImageContent: Renderizando imagem com URL válida: ${imageUrl}`);
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '' && imageUrl.startsWith('http')) {
+    console.log(`ImageContent [${imageKey}]: Renderizando imagem com URL válida: ${imageUrl.substring(0, 30)}...`);
     return (
       <ImageDisplay
         imageUrl={imageUrl}
@@ -66,12 +68,12 @@ const ImageContent: React.FC<ImageContentProps> = ({
         return;
       }
       
-      console.log("Iniciando geração de imagem para anúncio:", imageKey);
+      console.log(`ImageContent [${imageKey}]: Iniciando geração de imagem`);
       console.log("Usando prompt:", imagePrompt);
       
       await onGenerateImage();
     } catch (error) {
-      console.error("Erro ao gerar imagem:", error);
+      console.error(`ImageContent [${imageKey}]: Erro ao gerar imagem:`, error);
       toast.error("Falha na geração da imagem", {
         description: error instanceof Error ? error.message : "Erro desconhecido"
       });

@@ -32,54 +32,53 @@ export const useImageGenerationActions = ({
       
       const imageUrl = await generateAdImage(ad.imagePrompt, {
         adType: "instagram",
-        adContext: ad
+        adContext: ad,
+        language: "portuguese", // Forçar idioma português
+        model: "dall-e-3" // Especificar modelo explicitamente
       });
       
-      if (imageUrl) {
-        console.log(`✅ Imagem gerada com sucesso para anúncio ${index}:`, imageUrl);
-        
-        // Atualizar o anúncio com a nova URL da imagem
-        setCampaignData((prev: any) => {
-          // Verificar qual array de anúncios atualizar
-          const newState = { ...prev };
-          
-          // Verificar se é um anúncio Meta ou LinkedIn
-          if (prev.metaAds && prev.metaAds.length > index) {
-            newState.metaAds = [...prev.metaAds];
-            newState.metaAds[index] = {
-              ...newState.metaAds[index],
-              imageUrl
-            };
-            console.log(`✅ URL de imagem atualizada em metaAds[${index}]:`, imageUrl);
-          } else if (prev.linkedInAds && prev.linkedInAds.length > 0) {
-            const linkedInIndex = prev.metaAds ? index - prev.metaAds.length : index;
-            if (linkedInIndex >= 0 && linkedInIndex < prev.linkedInAds.length) {
-              newState.linkedInAds = [...prev.linkedInAds];
-              newState.linkedInAds[linkedInIndex] = {
-                ...newState.linkedInAds[linkedInIndex],
-                imageUrl
-              };
-              console.log(`✅ URL de imagem atualizada em linkedInAds[${linkedInIndex}]:`, imageUrl);
-            }
-          }
-          
-          return newState;
-        });
-        
-        toast.success("Imagem gerada com sucesso", {
-          description: "A imagem do anúncio foi criada pela IA."
-        });
-      } else {
-        setError("Não foi possível gerar a imagem");
-        console.error(`Falha ao gerar imagem para anúncio ${index}: URL nula retornada`);
-        toast.error("Falha ao gerar imagem", {
-          description: "O serviço de IA não conseguiu criar a imagem."
-        });
+      if (!imageUrl) {
+        throw new Error("A função de geração de imagem não retornou uma URL");
       }
+      
+      console.log(`✅ Imagem gerada com sucesso para anúncio ${index}:`, imageUrl);
+      
+      // Atualizar o anúncio com a nova URL da imagem de forma mais segura
+      setCampaignData((prev: any) => {
+        // Criando cópia profunda para evitar mutações indesejadas
+        const newState = JSON.parse(JSON.stringify(prev));
+        
+        // Verificar se é um anúncio Meta 
+        if (prev.metaAds && prev.metaAds.length > index) {
+          console.log(`✅ Atualizando URL de imagem em metaAds[${index}]`);
+          newState.metaAds[index] = {
+            ...newState.metaAds[index],
+            imageUrl: imageUrl
+          };
+        } 
+        // Verificar se é um anúncio LinkedIn
+        else if (prev.linkedInAds && prev.linkedInAds.length > 0) {
+          const linkedInIndex = prev.metaAds ? index - prev.metaAds.length : index;
+          if (linkedInIndex >= 0 && linkedInIndex < prev.linkedInAds.length) {
+            console.log(`✅ Atualizando URL de imagem em linkedInAds[${linkedInIndex}]`);
+            newState.linkedInAds[linkedInIndex] = {
+              ...newState.linkedInAds[linkedInIndex],
+              imageUrl: imageUrl
+            };
+          }
+        }
+        
+        console.log("Estado atualizado:", JSON.stringify(newState.metaAds?.[index] || {}, null, 2));
+        return newState;
+      });
+      
+      toast.success("Imagem gerada com sucesso", {
+        description: "A imagem do anúncio foi criada pela IA."
+      });
     } catch (e) {
       const errorMsg = e instanceof Error ? e.message : "Erro desconhecido";
       setError(errorMsg);
-      console.error("Erro ao gerar imagem:", e);
+      console.error(`❌ Erro ao gerar imagem para anúncio ${index}:`, e);
       toast.error("Erro na geração de imagem", {
         description: errorMsg
       });

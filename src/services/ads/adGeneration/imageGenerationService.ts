@@ -14,6 +14,8 @@ interface ImageGenerationParams {
   targetAudience?: string;
   objective?: string;
   adType?: string;
+  language?: string;
+  model?: string;
   [key: string]: any;
 }
 
@@ -23,7 +25,7 @@ interface ImageGenerationParams {
  * @param max Tamanho máximo.
  */
 const truncate = (str: string, max = 100) =>
-  str.length > max ? str.substring(0, max) + "..." : str;
+  str && typeof str === 'string' ? (str.length > max ? str.substring(0, max) + "..." : str) : '[texto inválido]';
 
 /**
  * Gera uma imagem para anúncio com base em um prompt e contexto adicional.
@@ -35,17 +37,22 @@ export const generateAdImage = async (
 ): Promise<string | null> => {
   try {
     if (!prompt || prompt.trim().length < 10) {
-      throw new Error("Invalid image prompt: too short or missing");
+      console.error("❌ Prompt inválido ou muito curto:", prompt);
+      throw new Error("Prompt de imagem inválido: muito curto ou ausente");
     }
 
-    const format =
-      additionalInfo?.format ||
+    const format = additionalInfo?.format ||
       (additionalInfo?.adType === "instagram" ? "square" : "landscape");
     const adType = additionalInfo?.adType || "instagram";
+    const language = additionalInfo?.language || "portuguese"; // Forçar português por padrão
+
+    // Garante que o prompt está em português
+    const languagePrompt = language === "portuguese" && !prompt.toLowerCase().includes("português") ? 
+      `[GERAR EM PORTUGUÊS] ${prompt}` : prompt;
 
     // Prompt enriquecido e contextualizado
     const enhancedPrompt = `
-📌 Criação de Imagem para Anúncio ${adType.toUpperCase()}
+📌 Criação de Imagem para Anúncio ${adType.toUpperCase()} EM PORTUGUÊS
 
 Marca: ${additionalInfo?.companyName || 'empresa'}
 Setor: ${additionalInfo?.industry || 'setor não especificado'}
@@ -55,16 +62,17 @@ Tom de Voz: ${additionalInfo?.brandTone || 'profissional'}
 🎯 Objetivo: ${additionalInfo?.objective || 'conversão'}
 
 🧠 Instruções:
-- A imagem deve ser fotorrealista, sem texto.
+- A imagem deve ser fotorrealista, sem texto (NO TEXT!) e de alta qualidade.
 - Alta qualidade visual, iluminação profissional.
 - Fundo limpo e moderno.
 - Sem distorções ou marcas d'água.
+- IMPORTANTE: CRIAR SOMENTE EM PORTUGUÊS BRASILEIRO!
 
 📥 Prompt do usuário:
-${prompt}
+${languagePrompt}
 `;
 
-    console.log("🖼️ Prompt base (enriquecido):", truncate(enhancedPrompt));
+    console.log("🖼️ Enviando request para geração de imagem com prompt:", truncate(enhancedPrompt, 150));
 
     const requestBody = {
       prompt: enhancedPrompt,
@@ -72,6 +80,7 @@ ${prompt}
         ...additionalInfo,
         format,
         adType,
+        language: "portuguese", // Garantir idioma português
         industry: additionalInfo?.industry || '',
         brandName: additionalInfo?.companyName || '',
         companyDescription: additionalInfo?.companyDescription || '',
@@ -85,16 +94,17 @@ ${prompt}
     });
 
     if (error) {
-      console.error("🚨 Supabase error:", error);
+      console.error("🚨 Erro na função Supabase:", error);
       throw new Error(error.message || "Erro ao chamar a função de geração de imagem.");
     }
 
     if (!data?.success || typeof data.imageUrl !== 'string' || !data.imageUrl.startsWith('http')) {
-      console.warn("⚠️ Invalid image URL returned:", data?.imageUrl);
+      console.warn("⚠️ URL de imagem inválida retornada:", data?.imageUrl);
+      console.warn("Resposta completa:", JSON.stringify(data, null, 2));
       throw new Error(data?.error || "Imagem inválida recebida da IA.");
     }
 
-    console.log("✅ Imagem gerada com sucesso:", data.imageUrl);
+    console.log("✅ Imagem gerada com sucesso:", truncate(data.imageUrl, 50));
     return data.imageUrl;
   } catch (error) {
     console.error("🚨 Erro na geração de imagem:", error);
