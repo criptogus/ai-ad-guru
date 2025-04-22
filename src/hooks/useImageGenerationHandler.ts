@@ -50,16 +50,16 @@ export const useImageGenerationHandler = ({
       const format = formatMapping[adFormat];
       
       // Gather all relevant campaign context for image generation
-      const imageUrl = await generateAdImage({
-        prompt: ad.imagePrompt,
+      const additionalInfo = {
         platform,
         format,
-        industry: campaignData?.industry,
+        companyName: campaignData?.name || '',
         brandTone: campaignData?.brandTone || 'professional',
-        campaignObjective: campaignData?.objective,
-        targetAudience: campaignData?.targetAudience,
-        language: campaignData?.language || 'portuguese'
-      });
+        industry: campaignData?.industry || ''
+      };
+      
+      // Provide both the prompt and additionalInfo parameters
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
       if (imageUrl) {
         toast.success("Imagem gerada com sucesso!");

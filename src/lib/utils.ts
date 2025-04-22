@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -12,6 +13,24 @@ export function formatDate(input: Date | string): string {
     day: "numeric",
     year: "numeric",
   })
+}
+
+// Add the missing getDomain function
+export function getDomain(url: string): string {
+  if (!url) return "";
+  try {
+    // Add protocol if missing
+    if (!url.match(/^https?:\/\//i)) {
+      url = 'https://' + url;
+    }
+    
+    const domain = new URL(url).hostname;
+    return domain.replace(/^www\./i, '');
+  } catch (e) {
+    // If URL parsing fails, try to extract domain manually
+    const domainMatch = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/]+)/i);
+    return domainMatch ? domainMatch[1] : url;
+  }
 }
 
 // Utility function to convert Google Ad from API response format to app format

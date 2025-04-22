@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMapping, GenerationFormat } from "@/types/adFormats";
 
 export const generateAdImage = async (
-  imagePrompt: string,
+  imagePromptData: string | Record<string, any>,
   additionalInfo: { 
     platform: string; 
     format?: string;
@@ -15,7 +15,12 @@ export const generateAdImage = async (
   }
 ): Promise<string | null> => {
   try {
-    console.log('Generating image with prompt:', imagePrompt);
+    // Handle both string prompts and object inputs
+    const basePrompt = typeof imagePromptData === 'string' 
+      ? imagePromptData 
+      : imagePromptData.prompt || '';
+      
+    console.log('Generating image with prompt:', basePrompt);
     console.log('Additional info:', additionalInfo);
     
     // Map platform to known type
@@ -29,12 +34,15 @@ export const generateAdImage = async (
     
     // Build a detailed prompt that will generate a high-quality image
     const enhancedPrompt = buildImagePrompt({
-      basePrompt: imagePrompt,
-      platform,
-      format,
-      companyName: additionalInfo.companyName || '',
-      brandTone: additionalInfo.brandTone || 'professional',
-      industry: additionalInfo.industry || '',
+      brandName: additionalInfo.companyName || '',
+      productService: typeof imagePromptData === 'object' ? imagePromptData.product || '' : '',
+      campaignObjective: typeof imagePromptData === 'object' ? imagePromptData.objective || 'promote product' : 'promote product',
+      targetAudience: typeof imagePromptData === 'object' ? imagePromptData.targetAudience || 'general audience' : 'general audience',
+      tone: additionalInfo.brandTone || 'professional',
+      mentalTrigger: typeof imagePromptData === 'object' ? imagePromptData.mindTrigger || '' : '',
+      platform: platform as any,
+      format: format as any,
+      brandColors: ['#3B82F6', '#10B981']
     });
     
     console.log('Enhanced image prompt:', enhancedPrompt);

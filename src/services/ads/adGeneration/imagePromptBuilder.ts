@@ -11,7 +11,8 @@ interface ImagePromptContext {
   brandColors?: string[];
 }
 
-export const buildImageGenerationPrompt = ({
+// Renamed the function export to match the import in imageGenerationService.ts
+export const buildImagePrompt = ({
   brandName,
   productService,
   campaignObjective,
@@ -58,3 +59,6 @@ export const buildImageGenerationPrompt = ({
 - Should immediately convey the value and emotion of the product/service
 - Style inspiration: [Apple ads, Nike visuals, fintech dashboards, startup hero banners]`;
 };
+
+// Also export the original name for backward compatibility
+export const buildImageGenerationPrompt = buildImagePrompt;
