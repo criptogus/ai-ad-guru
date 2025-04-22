@@ -17,7 +17,7 @@ import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
+import { useImageGenerationHandler as useImageGenHandler } from "@/hooks/campaign/useImageGenerationHandler";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -81,13 +81,7 @@ const CreateCampaignPage: React.FC = () => {
   const { 
     handleGenerateImage, 
     loadingImageIndex 
-  } = useImageGenerationHandler({
-    metaAds,
-    linkedInAds,
-    setMetaAds,
-    setLinkedInAds,
-    campaignData
-  });
+  } = useImageGenHandler();
   
   const { createCampaign } = useCampaignCreation();
   
