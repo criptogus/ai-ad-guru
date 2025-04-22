@@ -1,5 +1,11 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { generateGoogleAds, generateMetaAds, generateLinkedInAds, generateMicrosoftAds } from "./adGenerators.ts";
+import {
+  generateGoogleAds,
+  generateMetaAds,
+  generateLinkedInAds,
+  generateMicrosoftAds
+} from "./adGenerators.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
 
 const corsHeaders = {
