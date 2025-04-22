@@ -17,3 +17,10 @@ export interface CampaignPromptData {
   // ✅ Added platforms property
   platforms?: string[];
 }
+
+// ✅ Re-adding PromptMessages interface
+export interface PromptMessages {
+  systemMessage: string;
+  userMessage: string;
+}
+
