@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { GoogleAd } from "./types"; 
-import { generateMicrosoftAds } from "@/services/ads/adGeneration/adGenerationService";
+import { generateMicrosoftAdsContent } from "@/services/ads/adGeneration/adGenerationService";
 import { normalizeGoogleAd } from "@/lib/utils";
 
 interface MicrosoftAdGenerationProps {
@@ -52,7 +52,7 @@ export const useMicrosoftAdGeneration = (props?: MicrosoftAdGenerationProps) => 
       };
       
       // Generate ads using the service
-      const microsoftAds = await generateMicrosoftAds(promptData, mindTrigger || data.mindTrigger);
+      const microsoftAds = await generateMicrosoftAdsContent(promptData, mindTrigger || data.mindTrigger);
       
       if (!microsoftAds || microsoftAds.length === 0) {
         throw new Error("No Microsoft Ads were generated");

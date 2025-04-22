@@ -4,4 +4,10 @@ export * from './google';
 export * from './meta';
 export * from './linkedin';
 export * from './microsoft';
-export * from './adGeneration';
+export { 
+  generateAds,
+  generateLinkedInAdsContent,
+  generateMicrosoftAdsContent
+} from './adGeneration';
+export * from './adGeneration/promptTemplates';
+export * from './adGeneration/imageGenerationService';

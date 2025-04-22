@@ -49,8 +49,8 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
   }
 };
 
-// Specific platform ad generation services
-export const generateLinkedInAds = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
+// Specific platform ad generation services - renamed to avoid conflicts
+export const generateLinkedInAdsContent = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
   try {
     console.log('Generating specific LinkedIn ads with:', { campaignData, mindTrigger });
     const promptData: CampaignPromptData = {
@@ -68,7 +68,7 @@ export const generateLinkedInAds = async (campaignData: any, mindTrigger?: strin
   }
 };
 
-export const generateMicrosoftAds = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
+export const generateMicrosoftAdsContent = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
   try {
     console.log('Generating specific Microsoft ads with:', { campaignData, mindTrigger });
     const promptData: CampaignPromptData = {

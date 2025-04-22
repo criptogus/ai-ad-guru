@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { MetaAd } from "./types";
-import { generateLinkedInAds } from "@/services/ads/adGeneration/adGenerationService";
+import { generateLinkedInAdsContent } from "@/services/ads/adGeneration/adGenerationService";
 import { normalizeMetaAd } from "@/lib/utils";
 
 interface LinkedInAdGenerationProps {
@@ -52,7 +52,7 @@ export const useLinkedInAdGeneration = (props?: LinkedInAdGenerationProps) => {
       };
       
       // Generate ads using the service
-      const linkedInAds = await generateLinkedInAds(promptData, mindTrigger || data.mindTrigger);
+      const linkedInAds = await generateLinkedInAdsContent(promptData, mindTrigger || data.mindTrigger);
       
       if (!linkedInAds || linkedInAds.length === 0) {
         throw new Error("No LinkedIn Ads were generated");
