@@ -53,3 +53,8 @@ export interface ImageGenerationParams {
   targetAudience?: string;
   language?: string;
 }
+
+export interface PromptMessages {
+  systemMessage: string;
+  userMessage: string;
+}

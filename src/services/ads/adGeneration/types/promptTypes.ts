@@ -14,3 +14,8 @@ export interface CampaignPromptData {
   differentials?: string[];
   [key: string]: any;
 }
+
+export interface PromptMessages {
+  systemMessage: string;
+  userMessage: string;
+}
