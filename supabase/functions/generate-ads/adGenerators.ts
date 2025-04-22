@@ -48,22 +48,22 @@ interface PromptMessages {
 }
 
 async function callOpenAI(prompt: PromptMessages, platform: string): Promise<string> {
-  // Get OpenAI API key within the function scope for better edge function compatibility
+  // Verifique a chave da OpenAI
   const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-  
+
   if (!OPENAI_API_KEY) {
-    console.error("ERROR: No OpenAI API key found. Please set OPENAI_API_KEY in your environment variables.");
-    throw new Error("OpenAI API key not configured. Please check your Supabase Edge Function secrets.");
+    throw new Error("❌ OPENAI_API_KEY is not defined in environment variables.");
   }
-  
+
   try {
-    console.log(`Sending prompt to OpenAI for ${platform} platform:`, 
-                prompt.systemMessage ? prompt.systemMessage.substring(0, 100) + "..." : "No system message",
-                prompt.userMessage ? prompt.userMessage.substring(0, 100) + "..." : "No user message");
-    
     const openai = getOpenAIClient();
+
+    console.log(`🔍 Sending prompt to OpenAI for platform [${platform}]`);
+    console.log("🧠 System message:\n", prompt.systemMessage.slice(0, 300));
+    console.log("🙋‍♂️ User message:\n", prompt.userMessage.slice(0, 500));
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: prompt.systemMessage },
         { role: "user", content: prompt.userMessage }
@@ -71,78 +71,19 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
       temperature: 0.7,
       max_tokens: 1000
     });
-    
-    // Safe access to response properties with optional chaining
+
     const content = response?.choices?.[0]?.message?.content;
     
     if (!content) {
-      console.error(`Empty response from OpenAI for ${platform}`);
-      throw new Error("OpenAI returned an empty response. Please try again.");
+      throw new Error("⚠️ No content returned from OpenAI response.");
     }
-    
-    console.log(`OpenAI response received for ${platform}, content length:`, content.length || 0);
-    console.log(`Response sample: ${content.substring(0, 150)}...`);
-    
-    // Attempt to parse and validate JSON response
-    try {
-      // Try to parse the JSON response
-      const parsed = JSON.parse(content);
-      
-      // Validate that we have an array for ad platforms
-      if (!Array.isArray(parsed)) {
-        console.log(`Response is not a valid array for ${platform}, attempting to extract JSON`);
-        
-        // Try to extract JSON from potential markdown code blocks
-        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-        if (jsonMatch && jsonMatch[1]) {
-          const extractedJson = jsonMatch[1].trim();
-          console.log(`Extracted JSON from code block: ${extractedJson.substring(0, 150)}...`);
-          
-          const extractedParsed = JSON.parse(extractedJson);
-          if (Array.isArray(extractedParsed)) {
-            console.log(`Successfully extracted array with ${extractedParsed.length} items`);
-            return JSON.stringify(extractedParsed);
-          }
-        }
-        
-        // If we can't extract valid JSON, throw error
-        console.error(`Failed to parse valid JSON array from response for ${platform}`);
-        throw new Error("OpenAI did not return a valid JSON array. Please try again.");
-      }
-      
-      console.log(`Successfully parsed JSON array with ${parsed.length} items for ${platform}`);
-      return JSON.stringify(parsed);
-    } catch (parseError) {
-      console.error(`Error parsing JSON from OpenAI response for ${platform}:`, parseError);
-      console.log(`Raw response: ${content}`);
-      
-      // Try to extract structured data from text if JSON parsing fails
-      if (platform === "google" || platform === "microsoft") {
-        const extractedAds = extractTextAdsFromResponse(content);
-        if (extractedAds.length > 0) {
-          console.log(`Extracted ${extractedAds.length} text ads from response`);
-          return JSON.stringify(extractedAds);
-        }
-      } else {
-        const extractedAds = extractSocialAdsFromResponse(content);
-        if (extractedAds.length > 0) {
-          console.log(`Extracted ${extractedAds.length} social ads from response`);
-          return JSON.stringify(extractedAds);
-        }
-      }
-      
-      // If extraction fails too, throw error
-      throw new Error(`Failed to parse OpenAI response as JSON or extract ad content for ${platform}`);
-    }
+
+    console.log(`✅ OpenAI response received (${content.length} characters)`);
+    return content;
+
   } catch (error) {
-    console.error(`Error calling OpenAI for ${platform}:`, error);
-    // Only use fallback in development environment if specified
-    if (Deno.env.get("USE_FALLBACKS") === "true") {
-      console.log(`Using fallback data for ${platform} due to OpenAI error`);
-      return JSON.stringify(getMockDataForPlatform(platform));
-    }
-    // Otherwise, throw the error to be handled by the caller
-    throw error;
+    console.error(`🚨 Error during OpenAI call for platform [${platform}]:`, error);
+    throw new Error("Failed to generate ads with OpenAI: " + (error instanceof Error ? error.message : String(error)));
   }
 }
 
@@ -239,46 +180,4 @@ function extractSocialAdsFromResponse(text: string): any[] {
   
   // If no ads found, return empty array (will be replaced with fallback)
   return ads;
-}
-
-// Helper function to get appropriate mock data based on platform
-function getMockDataForPlatform(platform: string): any[] {
-  console.log(`WARNING: Using mock data for ${platform} - this should only be used in development!`);
-  
-  if (platform === "google" || platform === "microsoft") {
-    return [
-      {
-        headline_1: "Drive Results with Us",
-        headline_2: "Professional Solutions",
-        headline_3: "Expert Service",
-        description_1: "We provide top-quality service that meets your needs.",
-        description_2: "Contact us today to learn more.",
-        display_url: "www.example.com/services"
-      },
-      {
-        headline_1: "Premium Solutions",
-        headline_2: "Exceptional Quality", 
-        headline_3: "Best Value",
-        description_1: "Find the perfect solution for your business needs.",
-        description_2: "Trusted by thousands of customers.",
-        display_url: "www.example.com/solutions"
-      }
-    ];
-  } else {
-    // Meta or LinkedIn ads
-    return [
-      {
-        headline: "Transform Your Experience",
-        primaryText: "Transform your experience with our innovative solutions. #innovation #quality",
-        description: "Discover what makes us different",
-        image_prompt: "Professional product display with elegant modern styling"
-      },
-      {
-        headline: "Quality You Can Trust",
-        primaryText: "Discover what makes us different. Quality you can trust. #trusted #reliable",
-        description: "Premium service for discerning customers",
-        image_prompt: "Lifestyle image showing product in use in a modern setting"
-      }
-    ];
-  }
 }
