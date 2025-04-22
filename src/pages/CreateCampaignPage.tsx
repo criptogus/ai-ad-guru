@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -78,6 +79,7 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
+  // Properly initialize the useImageGenerationHandler hook with required props
   const { 
     handleGenerateImage, 
     loadingImageIndex 
