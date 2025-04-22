@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -117,7 +116,6 @@ const CampaignContent: React.FC = () => {
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
   });
 
-  // Use the updated useImageGenerationHandler hook
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
 
   const {
@@ -153,15 +151,12 @@ const CampaignContent: React.FC = () => {
     }
   };
 
-  // Create a wrapper for handleGenerateImage that adapts to the expected signature
   const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
     if (!ad) return;
     
     try {
-      // Extract the proper prompt from the ad
       const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
       
-      // Call handleGenerateImage with the proper parameters
       const imageUrl = await handleGenerateImage(prompt, {
         index,
         ad,
@@ -171,7 +166,6 @@ const CampaignContent: React.FC = () => {
       });
       
       if (imageUrl) {
-        // Update the ad with the new image URL
         if (metaAds && index < metaAds.length) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
@@ -217,7 +211,8 @@ const CampaignContent: React.FC = () => {
     handleBack,
     handleNextWrapper,
     createCampaign,
-    cacheInfo
+    cacheInfo,
+    handleAdsGenerated
   });
 
   return (
