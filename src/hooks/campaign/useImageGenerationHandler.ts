@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { CampaignData } from "@/contexts/CampaignContext";
-import { toast } from "sonner";
+import { CampaignData } from "@/hooks/useCampaignState";
+import { useToast } from "@/hooks/use-toast";
 
 interface UseImageGenerationHandlerProps {
-  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | any>;
+  generateAdImage: (prompt: string, additionalInfo?: any) => Promise<string | null>;
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
@@ -22,66 +22,50 @@ export const useImageGenerationHandler = ({
   campaignData
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     try {
       setLoadingImageIndex(index);
-      toast.info("Generating image...", { duration: 3000 });
       
-      // Extract prompt text from the ad
-      const promptText = ad.imagePrompt || ad.description || ad.primaryText?.split('#')[0] || "";
-      if (!promptText.trim()) {
-        toast.error("No valid image prompt found");
-        throw new Error("No valid image prompt found");
-      }
+      // Create prompt with context
+      const promptWithContext = `${ad.imagePrompt || ad.description}. Brand: ${campaignData?.name || ''}, Industry: ${campaignData?.description || ''}`;
       
-      // Create a comprehensive prompt with context
-      const promptWithContext = `Create a high-quality Instagram ad image: ${promptText}. Brand: ${campaignData.name || 'Your Brand'}, Industry: ${campaignData.description || 'Business'}`;
-      
-      // Add format context if it exists
+      // Add format context if it exists, using optional chaining
       const formatContext = ad.format ? `. Format: ${ad.format}` : '';
       const finalPrompt = promptWithContext + formatContext;
       
-      console.log("Image generation starting with prompt:", finalPrompt);
-      
-      // Pass the ad and campaignData as additionalInfo
-      const result = await generateAdImage(finalPrompt, {
+      // Call the generateAdImage function with the prompt string
+      const imageUrl = await generateAdImage(finalPrompt, {
         ad,
         campaignData,
-        format: ad.format || 'feed',
-        adType: 'instagram'
+        index
       });
-      
-      // Extract the image URL from the result, handling different return types
-      let imageUrl: string | null = null;
-      
-      if (typeof result === 'string') {
-        imageUrl = result;
-      } else if (result && typeof result === 'object') {
-        imageUrl = result.imageUrl || null;
-      }
 
-      console.log("Image generation result:", imageUrl);
-      
-      // Update the ad array if we got a valid URL
       if (imageUrl) {
+        // Update the ad array based on which array it belongs to
         if (metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-          toast.success("Image generated successfully");
         } else if (linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
-          toast.success("Image generated successfully");
         }
-      } else {
-        toast.error("Failed to generate image");
+        
+        toast({
+          title: "Image Generated",
+          description: "Ad image successfully created"
+        });
       }
     } catch (error) {
-      console.error("Error generating image:", error);
-      toast.error("Error generating image");
+      console.error("Image generation error:", error);
+      toast({
+        title: "Image Generation Failed",
+        description: "Could not generate ad image",
+        variant: "destructive"
+      });
     } finally {
       setLoadingImageIndex(null);
     }

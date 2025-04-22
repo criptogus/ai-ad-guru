@@ -17,14 +17,7 @@ import { useAdGeneration as useGoogleAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
-
-// Mock implementation of useImageGenerationHandler if it doesn't exist
-const useImageGenerationHandler = () => {
-  return {
-    handleGenerateImage: async () => console.log("Generate image"),
-    loadingImageIndex: null
-  };
-};
+import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -53,7 +46,6 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   } = useCampaignState();
   
-  // Initialize the ad generation hooks
   const { 
     generateGoogleAds, 
     isGenerating: isGeneratingGoogleAds 
@@ -74,7 +66,6 @@ const CreateCampaignPage: React.FC = () => {
     isGenerating: isGeneratingLinkedInAds 
   } = useLinkedInAdGeneration();
   
-  // Initialize the ad update handlers
   const {
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
@@ -87,7 +78,14 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
+  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
+    generateAdImage: useImageGeneration, 
+    metaAds, 
+    linkedInAds, 
+    setMetaAds, 
+    setLinkedInAds, 
+    campaignData
+  });
   
   const { createCampaign } = useCampaignCreation();
   
@@ -124,11 +122,11 @@ const CreateCampaignPage: React.FC = () => {
         setCampaignData(prev => ({ 
           ...prev, 
           name: result.companyName ? `${result.companyName} Campaign` : 'New Campaign',
-          companyName: result.companyName || prev.name || 'New Company', // Set companyName from analysis
+          companyName: result.companyName || prev.name || 'New Company',
           description: result.companyDescription || '',
           keywords: result.keywords || [],
           targetAudience: result.targetAudience || '',
-          industry: result.industry || '', // Set industry from analysis
+          industry: result.industry || ''
         }));
         
         return result;
@@ -148,7 +146,6 @@ const CreateCampaignPage: React.FC = () => {
   const handleAdsGenerated = (generatedAds: any) => {
     if (!generatedAds) return;
 
-    // Update relevant ad states based on platforms
     if (generatedAds.google_ads) {
       setGoogleAds(generatedAds.google_ads);
     }
@@ -162,16 +159,13 @@ const CreateCampaignPage: React.FC = () => {
       setMicrosoftAds(generatedAds.microsoft_ads);
     }
 
-    // Move to next step after generation
     handleNext();
   };
 
-  // Create async wrapper functions for the ad generation hooks
   const handleGenerateGoogleAds = async (): Promise<void> => {
     try {
-      // Prepare the data expected by the ad generation function
       const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        companyName: campaignData.companyName || campaignData.name || 'Company',
         websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
         objective: campaignData.objective || 'awareness',
         targetAudience: campaignData.targetAudience || '',
@@ -181,7 +175,7 @@ const CreateCampaignPage: React.FC = () => {
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
         differentials: [],
-        keywords: campaignData.keywords || [] // Add keywords field which was missing
+        keywords: campaignData.keywords || []
       };
       
       console.log("Generating Google ads with data:", adGenerationData);
@@ -196,9 +190,8 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateMetaAds = async (): Promise<void> => {
     try {
-      // Prepare the data expected by the ad generation function
       const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        companyName: campaignData.companyName || campaignData.name || 'Company',
         websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
         objective: campaignData.objective || 'awareness',
         targetAudience: campaignData.targetAudience || '',
@@ -208,7 +201,7 @@ const CreateCampaignPage: React.FC = () => {
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
         differentials: [],
-        keywords: campaignData.keywords || [] // Add keywords field which was missing
+        keywords: campaignData.keywords || []
       };
       
       console.log("Generating Meta ads with data:", adGenerationData);
@@ -223,9 +216,8 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateMicrosoftAds = async (): Promise<void> => {
     try {
-      // Prepare the data expected by the ad generation function
       const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        companyName: campaignData.companyName || campaignData.name || 'Company',
         websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
         objective: campaignData.objective || 'awareness',
         targetAudience: campaignData.targetAudience || '',
@@ -235,7 +227,7 @@ const CreateCampaignPage: React.FC = () => {
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
         differentials: [],
-        keywords: campaignData.keywords || [] // Add keywords field which was missing
+        keywords: campaignData.keywords || []
       };
       
       console.log("Generating Microsoft ads with data:", adGenerationData);
@@ -250,9 +242,8 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateLinkedInAds = async (): Promise<void> => {
     try {
-      // Prepare the data expected by the ad generation function
       const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        companyName: campaignData.companyName || campaignData.name || 'Company',
         websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
         objective: campaignData.objective || 'awareness',
         targetAudience: campaignData.targetAudience || '',
@@ -262,7 +253,7 @@ const CreateCampaignPage: React.FC = () => {
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
         differentials: [],
-        keywords: campaignData.keywords || [] // Add keywords field which was missing
+        keywords: campaignData.keywords || []
       };
       
       console.log("Generating LinkedIn ads with data:", adGenerationData);
@@ -344,9 +335,8 @@ const CreateCampaignPage: React.FC = () => {
     cacheInfo
   });
 
-  // Insert AdGenerationStep at the appropriate step (after platform selection)
   const renderStepContent = () => {
-    if (currentStep === 4) {  // Adjust step number as needed
+    if (currentStep === 4) {
       return (
         <AdGenerationStep
           analysisResult={analysisResult}
