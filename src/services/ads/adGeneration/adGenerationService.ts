@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPromptData } from './types/promptTypes';
 import { GeneratedAdContent } from './types';
@@ -45,5 +46,42 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
   } catch (error) {
     console.error('Error in generateAds service:', error);
     throw error;
+  }
+};
+
+// Specific platform ad generation services
+export const generateLinkedInAds = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
+  try {
+    console.log('Generating specific LinkedIn ads with:', { campaignData, mindTrigger });
+    const promptData: CampaignPromptData = {
+      ...campaignData,
+      platforms: ['linkedin'],
+      mindTrigger,
+      mindTriggers: mindTrigger ? { linkedin: mindTrigger } : undefined
+    };
+    
+    const result = await generateAds(promptData);
+    return result?.linkedin_ads || null;
+  } catch (error) {
+    console.error('Error generating LinkedIn ads:', error);
+    return null;
+  }
+};
+
+export const generateMicrosoftAds = async (campaignData: any, mindTrigger?: string): Promise<any[] | null> => {
+  try {
+    console.log('Generating specific Microsoft ads with:', { campaignData, mindTrigger });
+    const promptData: CampaignPromptData = {
+      ...campaignData,
+      platforms: ['microsoft'],
+      mindTrigger,
+      mindTriggers: mindTrigger ? { microsoft: mindTrigger } : undefined
+    };
+    
+    const result = await generateAds(promptData);
+    return result?.microsoft_ads || null;
+  } catch (error) {
+    console.error('Error generating Microsoft ads:', error);
+    return null;
   }
 };

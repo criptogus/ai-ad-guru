@@ -1,6 +1,8 @@
 
 import { useGoogleAds } from './useGoogleAds';
 import { useMetaAds } from './useMetaAds';
+import { useLinkedInAdGeneration } from './useLinkedInAdGeneration';
+import { useMicrosoftAdGeneration } from './useMicrosoftAdGeneration';
 import { useGPT4oImageGeneration, UseGPT4oImageGenerationReturn } from './useGPT4oImageGeneration';
 import { useImageGeneration } from './useImageGeneration';
 
@@ -8,6 +10,8 @@ import { useImageGeneration } from './useImageGeneration';
 export const useAdGeneration = () => {
   const googleAdsHook = useGoogleAds();
   const metaAdsHook = useMetaAds();
+  const linkedInAdsHook = useLinkedInAdGeneration();
+  const microsoftAdsHook = useMicrosoftAdGeneration();
   const imageGenHook = useGPT4oImageGeneration();
   
   // Create an adapter for the generateAdImage function to ensure it has the right signature
@@ -15,26 +19,32 @@ export const useAdGeneration = () => {
     return imageGenHook.generateAdImage(prompt, additionalInfo);
   };
 
-  // Add implementations for LinkedIn and Microsoft ads
+  // Use proper implementation from each platform's hook
   const generateLinkedInAds = async (campaignData: any, mindTrigger?: string) => {
     console.log("LinkedIn ad generation requested", campaignData);
-    return metaAdsHook.generateMetaAds?.(campaignData) || null;
+    return linkedInAdsHook.generateLinkedInAds?.(campaignData, mindTrigger);
   };
   
   const generateMicrosoftAds = async (campaignData: any, mindTrigger?: string) => {
     console.log("Microsoft ad generation requested", campaignData);
-    return googleAdsHook.generateGoogleAds?.(campaignData) || null;
+    return microsoftAdsHook.generateMicrosoftAds?.(campaignData, mindTrigger);
   };
   
   return {
     ...googleAdsHook,
     ...metaAdsHook,
+    ...linkedInAdsHook,
+    ...microsoftAdsHook,
     generateAdImage,
     generateLinkedInAds,
     generateMicrosoftAds,
     // Ensure all properties exist by using the actual properties from the hooks
-    isGenerating: googleAdsHook.isGenerating || metaAdsHook.isGenerating || imageGenHook.isGenerating,
-    error: googleAdsHook.error || metaAdsHook.error || imageGenHook.error,
+    isGenerating: googleAdsHook.isGenerating || metaAdsHook.isGenerating || 
+                  linkedInAdsHook.isGenerating || microsoftAdsHook.isGenerating || 
+                  imageGenHook.isGenerating,
+    error: googleAdsHook.error || metaAdsHook.error || 
+           linkedInAdsHook.error || microsoftAdsHook.error || 
+           imageGenHook.error,
     // Explicitly add all necessary properties to prevent TypeScript errors
     googleAds: googleAdsHook.googleAds || [],
     metaAds: metaAdsHook.metaAds || [],

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { GoogleAd } from "./types"; 
-import { generateAds } from "@/services/ads/adGeneration/adGenerationService";
+import { generateMicrosoftAds } from "@/services/ads/adGeneration/adGenerationService";
 import { normalizeGoogleAd } from "@/lib/utils";
 
 interface MicrosoftAdGenerationProps {
@@ -27,7 +27,8 @@ export const useMicrosoftAdGeneration = (props?: MicrosoftAdGenerationProps) => 
       differentials?: string[];
       brandTone?: string;
       product?: string;
-    }
+    },
+    mindTrigger?: string
   ): Promise<GoogleAd[] | null> => {
     setIsGenerating(true);
     setError(null);
@@ -46,21 +47,14 @@ export const useMicrosoftAdGeneration = (props?: MicrosoftAdGenerationProps) => 
         differentials: data.differentials || [],
         product: data.product || '',
         industry: data.industry || '',
-        mindTrigger: data.mindTrigger || '',
+        mindTrigger: mindTrigger || data.mindTrigger || '',
         platforms: ['microsoft']
       };
       
       // Generate ads using the service
-      const result = await generateAds(promptData);
+      const microsoftAds = await generateMicrosoftAds(promptData, mindTrigger || data.mindTrigger);
       
-      if (!result) {
-        throw new Error("Failed to generate Microsoft Ads");
-      }
-      
-      // Extract Microsoft Ads from the response
-      const microsoftAds = result.microsoft_ads || [];
-      
-      if (microsoftAds.length === 0) {
+      if (!microsoftAds || microsoftAds.length === 0) {
         throw new Error("No Microsoft Ads were generated");
       }
       
