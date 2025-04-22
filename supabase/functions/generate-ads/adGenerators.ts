@@ -1,12 +1,18 @@
+
 import { WebsiteAnalysisResult } from "./types.ts";
 import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
 import { getOpenAIClient } from "./openai.ts";
 
 export async function generateGoogleAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
   console.log("Generating Google Ads with mind trigger:", mindTrigger || "None");
+  console.log("Campaign data language:", campaignData.language);
   
   // Apply mind trigger to enhance prompt and generation
   const prompt = createGoogleAdsPrompt(campaignData, mindTrigger);
+  
+  // Log the full prompt for debugging
+  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
+  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
   
   const response = await callOpenAI(prompt, "google");
   return response;
@@ -14,9 +20,14 @@ export async function generateGoogleAds(campaignData: WebsiteAnalysisResult, min
 
 export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
   console.log("Generating LinkedIn Ads with mind trigger:", mindTrigger || "None");
+  console.log("Campaign data language:", campaignData.language);
   
   // Apply mind trigger to enhance prompt and generation
   const prompt = createLinkedInAdsPrompt(campaignData, mindTrigger);
+  
+  // Log the full prompt for debugging
+  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
+  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
   
   const response = await callOpenAI(prompt, "linkedin");
   return response;
@@ -24,9 +35,14 @@ export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult, m
 
 export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
   console.log("Generating Microsoft Ads with mind trigger:", mindTrigger || "None");
+  console.log("Campaign data language:", campaignData.language);
   
   // Apply mind trigger to enhance prompt and generation
   const prompt = createMicrosoftAdsPrompt(campaignData, mindTrigger);
+  
+  // Log the full prompt for debugging
+  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
+  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
   
   const response = await callOpenAI(prompt, "microsoft");
   return response;
@@ -34,9 +50,14 @@ export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult, 
 
 export async function generateMetaAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
   console.log("Generating Meta Ads with mind trigger:", mindTrigger || "None");
+  console.log("Campaign data language:", campaignData.language);
   
   // Apply mind trigger to enhance prompt and generation
   const prompt = createMetaAdsPrompt(campaignData, mindTrigger);
+  
+  // Log the full prompt for debugging
+  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
+  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
   
   const response = await callOpenAI(prompt, "meta");
   return response;
@@ -48,7 +69,7 @@ interface PromptMessages {
 }
 
 async function callOpenAI(prompt: PromptMessages, platform: string): Promise<string> {
-  // Verifique a chave da OpenAI
+  // Verify the OpenAI API key
   const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
   if (!OPENAI_API_KEY) {
@@ -59,8 +80,10 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
     const openai = getOpenAIClient();
 
     console.log(`🔍 Sending prompt to OpenAI for platform [${platform}]`);
-    console.log("🧠 System message:\n", prompt.systemMessage.slice(0, 300));
-    console.log("🙋‍♂️ User message:\n", prompt.userMessage.slice(0, 500));
+    
+    // Log full prompts for debugging
+    console.log("🧠 Complete system message:", prompt.systemMessage);
+    console.log("🧠 Complete user message:", prompt.userMessage);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -79,6 +102,7 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
     }
 
     console.log(`✅ OpenAI response received (${content.length} characters)`);
+    console.log(`📝 Response sample: ${content.substring(0, 300)}...`);
     return content;
 
   } catch (error) {

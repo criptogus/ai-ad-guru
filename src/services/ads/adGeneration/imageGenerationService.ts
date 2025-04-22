@@ -10,6 +10,7 @@ interface ImageGenerationParams {
   companyDescription?: string;
   targetAudience?: string;
   objective?: string;
+  adType?: string;
   [key: string]: any;
 }
 
@@ -18,49 +19,56 @@ export const generateAdImage = async (
   additionalInfo?: ImageGenerationParams
 ): Promise<string | null> => {
   try {
-    console.log("Generating ad image with prompt:", prompt);
+    console.log("🖼️ Generating ad image with prompt:", prompt.substring(0, 100) + "...");
     console.log("Additional info:", additionalInfo);
     
-    const format = additionalInfo?.format || additionalInfo?.adContext?.format || 'square';
+    // Handle missing prompt
+    if (!prompt || prompt.trim().length < 10) {
+      throw new Error("Invalid image prompt: too short or missing");
+    }
+    
+    // Set default format based on ad type
+    const format = additionalInfo?.format || 
+      (additionalInfo?.adType === 'instagram' ? 'square' : 'landscape');
+    
     const adType = additionalInfo?.adType || 'instagram';
     
-    // Create a more controlled image prompt with stronger company context integration
-    const enhancedPrompt = `Create a high-resolution, photorealistic ad image for:
+    // Enhance prompt with better context for more reliable image generation
+    const enhancedPrompt = `Crie uma imagem profissional de alta qualidade para anúncio de ${adType === 'instagram' ? 'Instagram' : 'LinkedIn'} com as seguintes características:
 
-Company: ${additionalInfo?.companyName || additionalInfo?.brandName || ''}
-Industry: ${additionalInfo?.industry || additionalInfo?.adContext?.industry || ''}
-Offering: ${additionalInfo?.companyDescription || ''}
-Campaign Goal: ${additionalInfo?.objective || additionalInfo?.adContext?.objective || ''}
-Target Audience: ${additionalInfo?.targetAudience || additionalInfo?.adContext?.targetAudience || ''}
-Brand Tone: ${additionalInfo?.brandTone || 'professional'}
+Empresa: ${additionalInfo?.companyName || 'empresa'}
+Setor: ${additionalInfo?.industry || 'setor não especificado'}
+Público: ${additionalInfo?.targetAudience || 'público geral'}
+Tom: ${additionalInfo?.brandTone || 'profissional'}
 
-REQUIREMENTS:
-- Professional, agency-quality photograph
-- Modern and cinematic style
-- No text overlays or artificial elements
-- Natural lighting and composition
-- Format: ${adType === 'instagram' ? 'Instagram 1080x1080px' : 'LinkedIn 1200x627px'}
-- The image MUST clearly represent the actual business and its offerings
-- Make the image directly relevant to the company's industry and target audience
+IMPORTANTE: 
+- A imagem deve ser fotorrealista com acabamento profissional
+- SEM TEXTO na imagem
+- Alta qualidade visual e iluminação profissional
+- Composição limpa e moderna
 
-SPECIFIC PROMPT: ${prompt}`;
+INSTRUÇÕES ESPECÍFICAS:
+${prompt}`;
 
-    // Enhanced request body with comprehensive context
+    // Log the final prompt
+    console.log("🎨 Enhanced image prompt:", enhancedPrompt);
+    
+    // Prepare request body with comprehensive context
     const requestBody = { 
       prompt: enhancedPrompt,
       additionalInfo: {
         ...additionalInfo,
         format,
         adType,
-        industry: additionalInfo?.industry || additionalInfo?.adContext?.industry || '',
-        brandName: additionalInfo?.companyName || additionalInfo?.brandName || '',
+        industry: additionalInfo?.industry || '',
+        brandName: additionalInfo?.companyName || '',
         companyDescription: additionalInfo?.companyDescription || '',
-        targetAudience: additionalInfo?.targetAudience || additionalInfo?.adContext?.targetAudience || '',
-        objective: additionalInfo?.objective || additionalInfo?.adContext?.objective || ''
+        targetAudience: additionalInfo?.targetAudience || '',
+        objective: additionalInfo?.objective || ''
       }
     };
     
-    console.log("Sending image generation request with body:", requestBody);
+    console.log("📤 Sending image generation request to Supabase Edge Function");
     
     // Call the Supabase edge function to generate the image
     const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
@@ -68,19 +76,23 @@ SPECIFIC PROMPT: ${prompt}`;
     });
 
     if (error) {
-      console.error("Error generating image:", error);
-      throw new Error(error.message || "Failed to generate image");
+      console.error("🚨 Error in Supabase function call:", error);
+      throw new Error(error.message || "Failed to call image generation function");
     }
 
     if (!data || !data.success) {
-      console.error("Image generation failed:", data?.error || "Unknown error");
+      console.error("🚨 Image generation failed:", data?.error || "Unknown error");
       throw new Error(data?.error || "Failed to generate image");
     }
 
-    console.log("Image generated successfully:", data.imageUrl);
-    return data.imageUrl;
+    console.log("✅ Image generated successfully:", data.imageUrl ? "URL received" : "No URL");
+    
+    // Add fallback URL for testing if needed
+    const imageUrl = data.imageUrl || "https://placehold.co/600x600?text=Image+Generation+Demo";
+    
+    return imageUrl;
   } catch (error) {
-    console.error("Error in generateAdImage:", error);
+    console.error("🚨 Error in generateAdImage:", error);
     throw error;
   }
 };

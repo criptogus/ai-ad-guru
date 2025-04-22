@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { useToast } from "@/hooks/use-toast";
+import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
 
 interface UseImageGenerationHandlerProps {
   metaAds?: MetaAd[];
@@ -31,32 +32,56 @@ export const useImageGenerationHandler = (props?: UseImageGenerationHandlerProps
       if (isMetaAd) {
         // If adOrPrompt is a MetaAd object
         const ad = adOrPrompt as MetaAd;
-        prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
+        
+        // Make sure we have a valid image prompt
+        if (!ad.imagePrompt) {
+          console.error("No image prompt available for ad:", ad);
+          toast({
+            title: "Image Generation Failed",
+            description: "No image prompt available for this ad. Try regenerating the ad.",
+            variant: "destructive"
+          });
+          setLoadingImageIndex(null);
+          return null;
+        }
+        
+        prompt = ad.imagePrompt;
         additionalInfo = {
           index,
-          ad,
+          adType: "instagram",
+          companyName: props?.campaignData?.companyName || "",
+          industry: props?.campaignData?.industry || "",
+          targetAudience: props?.campaignData?.targetAudience || "",
+          brandTone: props?.campaignData?.brandTone || "professional",
           format: ad.format || 'square'
         };
+        
+        // Log for debugging
+        console.log(`🖼️ Generating Instagram Ad image for index [${index}]`);
+        console.log(`📝 Using prompt: ${prompt}`);
+        console.log(`📊 With additional context:`, additionalInfo);
       } else {
         // If adOrPrompt is a string
         prompt = adOrPrompt as string;
         additionalInfo = indexOrAdditionalInfo || {};
+        console.log(`🖼️ Generating image with direct prompt: ${prompt.substring(0, 100)}...`);
       }
       
-      // Log the image generation attempt
-      console.log(`Generating image with prompt: ${prompt}`);
-      console.log('Additional info:', JSON.stringify(additionalInfo, null, 2));
+      // Show generating toast
+      toast({
+        title: "Generating Image",
+        description: "Creating ad image using AI. This may take a moment...",
+      });
       
-      // This is a simplified implementation that returns the imageUrl directly
-      // In a real implementation, you would call a service to generate the image
+      // Call the image generation service
+      const imageUrl = await generateAdImage(prompt, additionalInfo);
+      console.log(`✅ Image generation result:`, imageUrl ? "Success" : "Failed");
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!imageUrl) {
+        throw new Error("Image generation service returned no image URL");
+      }
       
-      // For testing purposes, return a placeholder image URL
-      // In production, this would come from your image generation service
-      const imageUrl = "https://placehold.co/600x600/EEE/31343C?text=Generated+Image";
-      
+      // Update success toast
       toast({
         title: "Image Generated",
         description: "Ad image successfully created"
@@ -67,6 +92,7 @@ export const useImageGenerationHandler = (props?: UseImageGenerationHandlerProps
         const updatedAds = [...props.metaAds];
         updatedAds[index] = { ...updatedAds[index], imageUrl };
         props.setMetaAds(updatedAds);
+        console.log(`✅ Updated metaAds at index ${index} with new image URL`);
       } else if (isMetaAd && props?.linkedInAds && props?.setLinkedInAds && 
                 (props?.metaAds ? index >= props.metaAds.length : true)) {
         const linkedInIndex = props?.metaAds ? index - props.metaAds.length : index;
@@ -74,15 +100,16 @@ export const useImageGenerationHandler = (props?: UseImageGenerationHandlerProps
           const updatedAds = [...props.linkedInAds];
           updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
           props.setLinkedInAds(updatedAds);
+          console.log(`✅ Updated linkedInAds at index ${linkedInIndex} with new image URL`);
         }
       }
       
       return imageUrl;
     } catch (error) {
-      console.error("Image generation error:", error);
+      console.error("🚨 Image generation error:", error);
       toast({
         title: "Image Generation Failed",
-        description: "Could not generate ad image",
+        description: error instanceof Error ? error.message : "Could not generate ad image",
         variant: "destructive"
       });
       return null;
