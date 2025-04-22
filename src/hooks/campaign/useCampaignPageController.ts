@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -44,7 +43,7 @@ export const useCampaignPageController = () => {
     setIsCreating
   } = useAdGenerationState();
 
-  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration({});
+  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration();
   const { generateMetaAds, isGenerating: isGeneratingMetaAds } = useMetaAdGeneration();
   const { generateMicrosoftAds, isGenerating: isGeneratingMicrosoftAds } = useMicrosoftAdGeneration();
   const { generateLinkedInAds, isGenerating: isGeneratingLinkedInAds } = useLinkedInAdGeneration();
@@ -63,7 +62,6 @@ export const useCampaignPageController = () => {
 
   const { createCampaign } = useCampaignCreation();
 
-  // Fixed: Call useImageGenerationHandler without arguments
   const { 
     handleGenerateImage, 
     loadingImageIndex 
