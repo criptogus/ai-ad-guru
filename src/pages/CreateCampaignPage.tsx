@@ -69,7 +69,7 @@ const CreateCampaignPage: React.FC = () => {
 
   const { createCampaign } = useCampaignCreation();
 
-  // Create a handler for generating images - pass no args since it's been updated to work with optional props
+  // Create a handler for generating images - pass no args to use the updated hook
   const { 
     handleGenerateImage, 
     loadingImageIndex 
