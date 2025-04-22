@@ -10,6 +10,7 @@ export interface CampaignPromptData {
   mindTrigger?: string;
   language?: string;
   platforms?: string[];
+  companyDescription?: string;
 }
 
 export interface GeneratedAdContent {

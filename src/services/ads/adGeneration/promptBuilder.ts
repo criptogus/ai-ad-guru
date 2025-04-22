@@ -7,8 +7,9 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
     throw new Error('Missing required campaign data for prompt generation');
   }
 
-  // Core business info validation
-  if (!data.companyDescription?.trim()) {
+  // Core business info validation - use objective if companyDescription is missing
+  const businessDescription = data.companyDescription?.trim() || data.objective;
+  if (!businessDescription) {
     throw new Error('Business description is required for accurate ad generation');
   }
 
@@ -29,7 +30,7 @@ Do not invent or assume services that are not explicitly mentioned in the busine
 ### 🏢 Company Details:
 - Name: ${data.companyName}
 - Website: ${data.websiteUrl}
-- Business Description: ${data.companyDescription}
+- Business Description: ${businessDescription}
 - Key Differentiators: ${differentials}
 
 ### 🎯 Campaign Information:
@@ -104,4 +105,3 @@ Return ONLY the JSON, without any explanation or additional text.`;
     userMessage
   };
 };
-

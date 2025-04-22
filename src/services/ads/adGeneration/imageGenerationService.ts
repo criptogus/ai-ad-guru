@@ -7,6 +7,7 @@ interface ImageGenerationParams {
   industry?: string;
   format?: string;
   adContext?: any;
+  companyDescription?: string;
   [key: string]: any;
 }
 
@@ -28,6 +29,7 @@ Brand: ${additionalInfo?.companyName || additionalInfo?.brandName || ''}
 Industry: ${additionalInfo?.industry || additionalInfo?.adContext?.industry || ''}
 Context: ${additionalInfo?.adContext?.objective || ''}
 Target: ${additionalInfo?.adContext?.targetAudience || ''}
+Description: ${additionalInfo?.companyDescription || ''}
 
 Requirements:
 - Professional, agency-quality photograph
@@ -47,6 +49,7 @@ Base prompt: ${prompt}`;
         adType,
         industry: additionalInfo?.industry || additionalInfo?.adContext?.industry || '',
         brandName: additionalInfo?.companyName || additionalInfo?.brandName || '',
+        companyDescription: additionalInfo?.companyDescription || '',
       }
     };
     

@@ -11,6 +11,7 @@ export interface CampaignPromptData {
   industry?: string;
   differentials?: string[];
   platforms?: string[];
+  companyDescription?: string;
 }
 
 export interface PromptMessages {

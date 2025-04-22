@@ -36,7 +36,7 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
           value={analysisResult.businessDescription || analysisResult.companyDescription}
           onChange={(e) => {
             onTextChange('businessDescription' as keyof WebsiteAnalysisResult, e.target.value);
-            onTextChange('companyDescription', e.target.value);
+            onTextChange('companyDescription' as keyof WebsiteAnalysisResult, e.target.value);
           }}
           className="w-full resize-none"
           rows={3}
