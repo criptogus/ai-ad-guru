@@ -80,7 +80,16 @@ const CreateCampaignPage: React.FC = () => {
   });
   
   // Use the updated useImageGenerationHandler hook with no arguments
-  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
+  const { 
+    handleGenerateImage, 
+    loadingImageIndex 
+  } = useImageGenerationHandler({
+    metaAds,
+    linkedInAds,
+    setMetaAds,
+    setLinkedInAds,
+    campaignData
+  });
   
   const { createCampaign } = useCampaignCreation();
   
@@ -307,30 +316,8 @@ const CreateCampaignPage: React.FC = () => {
       // Extract the prompt and additional information from the ad
       const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
       
-      // Call handleGenerateImage with the extracted prompt and additional info
-      const imageUrl = await generateMetaAdImage(prompt, {
-        index,
-        ad,
-        companyName: campaignData.companyName,
-        format: ad.format || 'square',
-        industry: campaignData.industry || ''
-      });
-      
-      if (imageUrl) {
-        // Update the ad with the new image URL
-        if (metaAds && index < metaAds.length) {
-          const updatedAds = [...metaAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setMetaAds(updatedAds);
-        } else if (linkedInAds) {
-          const linkedInIndex = index - (metaAds?.length || 0);
-          if (linkedInIndex >= 0 && linkedInIndex < linkedInAds.length) {
-            const updatedAds = [...linkedInAds];
-            updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
-            setLinkedInAds(updatedAds);
-          }
-        }
-      }
+      // Call handleGenerateImage with the ad and index
+      await handleGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
       toast({
