@@ -1,5 +1,5 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { parseGoogleAds, parseMetaAds, parseLinkedInAds, parseMicrosoftAds } from "./adResponseParsers.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -66,8 +66,20 @@ serve(async (req) => {
     const content = openAIData.choices[0].message.content;
     console.log("Content preview:", content.substring(0, 200) + "...");
     
-    // Process the response based on the platform
-    const parsedAds = parseAdResponse(content, platform, campaignData);
+    // Parse the response based on the platform
+    let parsedAds;
+    
+    if (platform === 'google') {
+      parsedAds = parseGoogleAds(content);
+    } else if (platform === 'meta' || platform === 'instagram') {
+      parsedAds = parseMetaAds(content);
+    } else if (platform === 'linkedin') {
+      parsedAds = parseLinkedInAds(content);
+    } else if (platform === 'microsoft' || platform === 'bing') {
+      parsedAds = parseMicrosoftAds(content);
+    } else {
+      throw new Error(`Unsupported platform: ${platform}`);
+    }
     
     // Return the processed response
     return new Response(
@@ -361,7 +373,7 @@ function extractSearchAds(response: string, platform: string, campaignData: any)
       const h2Match = trimmed.match(/^-\s*H2:|^-\s*Headline 2:|^-\s*Title 2:/i);
       const h3Match = trimmed.match(/^-\s*H3:|^-\s*Headline 3:|^-\s*Title 3:/i);
       const d1Match = trimmed.match(/^-\s*D1:|^-\s*Desc 1:|^-\s*Description 1:/i);
-      const d2Match = trimmed.match(/^-\s*D2:|^-\s*Desc 2:|^-\s*Description 2:/i);
+      const d2Match = trimmed.match(/^-\s*D2:|^-\s*Description 2:/i);
       
       if (h1Match) {
         currentAd['headline1'] = trimmed.substring(h1Match[0].length).trim();
@@ -471,6 +483,7 @@ function extractSocialAds(response: string, platform: string, campaignData: any)
         if (inText && textContent) {
           currentAd['primaryText'] = textContent.trim();
           textContent = '';
+          inText = false;
         }
         inText = true;
         const textAfterLabel = trimmed.substring(trimmed.indexOf(':') + 1).trim();
