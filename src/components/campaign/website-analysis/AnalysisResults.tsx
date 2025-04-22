@@ -1,4 +1,3 @@
-
 import React from "react";
 import { WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   onNext,
   cacheInfo
 }) => {
-  // Helper functions to adapt to component-specific props
   const handleTargetAudienceChange = (value: string) => {
     onTextChange('targetAudience', value);
   };
@@ -58,7 +56,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
     }
   };
   
-  // Calculate days remaining in cache if fromCache is true
   const getDaysRemaining = () => {
     if (!cacheInfo?.fromCache || !cacheInfo.expiresAt) return null;
     
@@ -77,12 +74,15 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   
   const daysRemaining = getDaysRemaining();
 
-  // Convert callToAction to array if it's a string
-  const callToActionArray = Array.isArray(analysisResult.callToAction) 
-    ? analysisResult.callToAction 
-    : analysisResult.callToAction 
-      ? [analysisResult.callToAction as string] 
-      : [];
+  const ensureArray = (value: string | string[] | undefined): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  };
+
+  const uniqueSellingPointsArray = ensureArray(analysisResult.uniqueSellingPoints);
+
+  const callToActionArray = ensureArray(analysisResult.callToAction);
 
   return (
     <div className="space-y-6">
@@ -125,7 +125,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             />
             
             <UspEditor 
-              uniqueSellingPoints={analysisResult.uniqueSellingPoints || []}
+              uniqueSellingPoints={uniqueSellingPointsArray}
               onUspChange={handleUspChange}
             />
             

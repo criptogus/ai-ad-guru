@@ -8,10 +8,20 @@ interface AdCustomizationPanelProps {
   selectedTrigger: string;
 }
 
+// Helper function to ensure a value is an array
+const ensureArray = (value: string | string[] | undefined): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+};
+
 const AdCustomizationPanel: React.FC<AdCustomizationPanelProps> = ({
   analysisResult,
   selectedTrigger,
 }) => {
+  // Ensure uniqueSellingPoints is always an array
+  const sellingPoints = ensureArray(analysisResult.uniqueSellingPoints);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -35,9 +45,10 @@ const AdCustomizationPanel: React.FC<AdCustomizationPanelProps> = ({
             <div>
               <h3 className="font-medium mb-1">Key Selling Points</h3>
               <ul className="list-disc pl-4 text-muted-foreground">
-                {analysisResult.uniqueSellingPoints?.slice(0, 3).map((usp, index) => (
+                {sellingPoints.slice(0, 3).map((usp, index) => (
                   <li key={index} className="line-clamp-1">{usp}</li>
-                )) || "No selling points identified"}
+                ))}
+                {sellingPoints.length === 0 && "No selling points identified"}
               </ul>
             </div>
           </>

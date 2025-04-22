@@ -1,3 +1,4 @@
+
 /**
  * Website Analysis Hook and Types
  */
@@ -13,9 +14,9 @@ export interface WebsiteAnalysisResult {
   businessDescription?: string;
   targetAudience?: string;
   brandTone?: string;
-  uniqueSellingPoints?: string[] | string;
-  callToAction?: string[] | string;
-  keywords?: string[] | string;
+  uniqueSellingPoints?: string[];
+  callToAction?: string[];
+  keywords?: string[];
   websiteUrl: string;
   industry?: string;
   product?: string;
@@ -29,12 +30,21 @@ export interface AnalysisCacheStatus {
   cachedAt?: string;
 }
 
-export default function useWebsiteAnalysis() {
+// Add this new interface for cache information
+export interface AnalysisCache {
+  fromCache: boolean;
+  cachedAt?: string;
+  expiresAt?: string;
+}
+
+// Export the hook as default
+const useWebsiteAnalysis = () => {
   const { toast } = useToast();
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [analysisCacheStatus, setAnalysisCacheStatus] = useState<AnalysisCacheStatus>({ exists: false });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cacheInfo, setCacheInfo] = useState<AnalysisCache | null>(null);
   
   const clearError = () => setError(null);
   
@@ -62,6 +72,14 @@ export default function useWebsiteAnalysis() {
         exists: data?.exists || false,
         cachedAt: data?.cachedAt
       });
+      
+      if (data?.exists) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: data?.cachedAt,
+          expiresAt: data?.expiresAt
+        });
+      }
       
     } catch (err: any) {
       errorLogger.logError(err, 'getAnalysisCacheStatus');
@@ -107,8 +125,29 @@ export default function useWebsiteAnalysis() {
         return null;
       }
       
-      setAnalysisResult(data.data);
-      return data.data as WebsiteAnalysisResult;
+      // Check if this was from cache
+      if (data.fromCache) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: data.cachedAt,
+          expiresAt: data.expiresAt
+        });
+      } else {
+        setCacheInfo({
+          fromCache: false
+        });
+      }
+      
+      // Make sure all array fields are actually arrays
+      const processedData = {
+        ...data.data,
+        uniqueSellingPoints: ensureArray(data.data.uniqueSellingPoints),
+        keywords: ensureArray(data.data.keywords),
+        callToAction: ensureArray(data.data.callToAction)
+      };
+      
+      setAnalysisResult(processedData);
+      return processedData as WebsiteAnalysisResult;
       
     } catch (err: any) {
       errorLogger.logError(err, 'analyzeWebsite');
@@ -124,6 +163,13 @@ export default function useWebsiteAnalysis() {
     }
   }, [supabase, toast]);
   
+  // Helper function to ensure a value is an array
+  const ensureArray = (value: string | string[] | undefined): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  };
+  
   return {
     analysisResult,
     analysisCacheStatus,
@@ -131,6 +177,11 @@ export default function useWebsiteAnalysis() {
     error,
     analyzeWebsite,
     getAnalysisCacheStatus,
-    clearError
+    clearError,
+    cacheInfo,
+    setAnalysisResult
   };
 }
+
+// Export the hook as default
+export default useWebsiteAnalysis;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +64,13 @@ const CampaignDetailPage: React.FC = () => {
     return cta;
   };
 
+  // Helper function to format array for display
+  const formatArray = (arr: string[] | string | undefined): string => {
+    if (!arr) return "";
+    if (Array.isArray(arr)) return arr.join(", ");
+    return arr;
+  };
+
   return (
     <AppLayout activePage="campaigns">
       <div className="container py-6 space-y-6">
@@ -118,15 +124,15 @@ const CampaignDetailPage: React.FC = () => {
                 </div>
                 <div className="grid gap-4">
                   <Label>Keywords</Label>
-                  <Input value={websiteAnalysisData.keywords.join(", ")} readOnly />
+                  <Input value={formatArray(websiteAnalysisData.keywords)} readOnly />
                 </div>
                 <div className="grid gap-4">
                   <Label>Call to Action</Label>
-                  <Input value={formatCallToAction(websiteAnalysisData.callToAction)} readOnly />
+                  <Input value={formatArray(websiteAnalysisData.callToAction)} readOnly />
                 </div>
                 <div className="grid gap-4">
                   <Label>Unique Selling Points</Label>
-                  <Textarea value={websiteAnalysisData.uniqueSellingPoints.join(", ")} readOnly />
+                  <Textarea value={formatArray(websiteAnalysisData.uniqueSellingPoints)} readOnly />
                 </div>
               </>
             ) : (
