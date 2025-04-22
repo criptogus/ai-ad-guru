@@ -17,8 +17,7 @@ import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
-import { generateMetaAdImage } from "@/services/media/metaAdImageGenerator";
+import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -311,8 +310,6 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
     try {
-      const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
-      
       await handleGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
