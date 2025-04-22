@@ -181,7 +181,7 @@ export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mi
     },
     es: {
       name: "Español",
-      generic_terms: "servicios profesionales, resultados de calidad",
+      generic_terms: "servicios profesionales, resultados de qualidade",
       response_lang: "español"
     },
     en: {
@@ -255,7 +255,7 @@ export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTri
     },
     es: {
       name: "Español",
-      generic_terms: "servicios profesionales, resultados de qualidade",
+      generic_terms: "serviços profesionales, resultados de qualidade",
       response_lang: "español"
     },
     en: {

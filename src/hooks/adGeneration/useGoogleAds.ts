@@ -24,7 +24,7 @@ export const useGoogleAds = () => {
         campaignData: {
           ...campaignData,
           // Add these fields for better prompt context
-          language: campaignData.language || 'portuguese', // Default to Portuguese
+          language: campaignData.language || 'português', // Default to Portuguese
           brandTone: campaignData.brandTone || 'professional',
           callToAction: campaignData.callToAction || ['Saiba mais'],
           keywords: campaignData.keywords || [],

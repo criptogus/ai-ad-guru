@@ -22,10 +22,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       <img
         src={imageUrl}
         alt={altText}
-        className={`object-cover rounded-lg shadow w-full h-auto aspect-square max-h-96 border`}
-        style={{
-          aspectRatio: format === "story" ? "9/16" : "1/1"
-        }}
+        className={`object-cover rounded-lg shadow w-full h-auto ${format === "feed" ? "aspect-square" : "aspect-[9/16]"} max-h-96 border`}
       />
       {onGenerateImage && (
         <Button
