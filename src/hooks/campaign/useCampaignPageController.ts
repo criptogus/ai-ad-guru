@@ -68,13 +68,47 @@ export const useCampaignPageController = () => {
     loadingImageIndex 
   } = useImageGenerationHandler();
 
+  // Wrap createCampaign to match the expected signature
+  const handleCreateCampaign = async () => {
+    try {
+      const campaignParams = {
+        name: campaignData.name || 'New Campaign',
+        description: campaignData.description || '',
+        platforms: campaignData.platforms || [],
+        budget: campaignData.budget || 100,
+        budgetType: campaignData.budgetType || 'daily',
+        startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
+        endDate: campaignData.endDate,
+        targetAudience: campaignData.targetAudience || '',
+        objective: campaignData.objective || 'awareness',
+        googleAds,
+        metaAds,
+        microsoftAds,
+        linkedInAds,
+        targetUrl: campaignData.targetUrl || '',
+        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
+        mindTriggers: campaignData.mindTriggers || {}
+      };
+      
+      await createCampaign(campaignParams);
+      navigate('/campaigns');
+    } catch (error) {
+      console.error("Failed to create campaign:", error);
+      toast({
+        variant: "destructive",
+        title: "Campaign Creation Failed",
+        description: error instanceof Error ? error.message : "Failed to create campaign"
+      });
+    }
+  };
+
   const {
     handleAdsGenerated,
-    handleCreateCampaign,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
-    handleGenerateLinkedInAds
+    handleGenerateLinkedInAds,
+    isGenerating
   } = useAdGenerationHandlers({
     setGoogleAds,
     setMetaAds,
@@ -90,8 +124,8 @@ export const useCampaignPageController = () => {
     generateLinkedInAds
   });
 
-  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || 
-                      isGeneratingMicrosoftAds || isGeneratingLinkedInAds;
+  const isGeneratingAny = isGeneratingGoogleAds || isGeneratingMetaAds || 
+                      isGeneratingMicrosoftAds || isGeneratingLinkedInAds || isGenerating;
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -167,7 +201,7 @@ export const useCampaignPageController = () => {
     microsoftAds,
     linkedInAds,
     isAnalyzing,
-    isGenerating,
+    isGenerating: isGeneratingAny,
     loadingImageIndex,
     isCreating,
     handleWebsiteAnalysis,
@@ -201,7 +235,7 @@ export const useCampaignPageController = () => {
     microsoftAds,
     linkedInAds,
     isAnalyzing,
-    isGenerating,
+    isGenerating: isGeneratingAny,
     loadingImageIndex,
     isCreating
   };

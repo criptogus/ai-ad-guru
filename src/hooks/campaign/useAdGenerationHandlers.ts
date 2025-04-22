@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
@@ -10,7 +11,7 @@ interface UseAdGenerationHandlersProps {
   setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
   setLinkedInAds: React.Dispatch<React.SetStateAction<any[]>>;
   setMicrosoftAds: React.Dispatch<React.SetStateAction<any[]>>;
-  createCampaign: () => Promise<void>;
+  createCampaign: any;
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
   generateGoogleAds: (campaignData: any) => Promise<GoogleAd[] | null>;
   generateMetaAds: (campaignData: any) => Promise<MetaAd[] | null>;
@@ -60,22 +61,6 @@ export const useAdGenerationHandlers = ({
       title: "Ad Generation Complete",
       description: `Ads generated for ${Object.keys(adsData).length} platforms.`
     });
-  };
-
-  const handleCreateCampaign = async () => {
-    try {
-      setIsCreating(true);
-      await createCampaign();
-    } catch (error) {
-      console.error("Failed to create campaign:", error);
-      toast({
-        title: "Campaign Creation Failed",
-        description: error instanceof Error ? error.message : "Failed to create campaign",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
   };
 
   // Individual platform ad generation handlers
@@ -218,7 +203,6 @@ export const useAdGenerationHandlers = ({
 
   return {
     handleAdsGenerated,
-    handleCreateCampaign,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateLinkedInAds,

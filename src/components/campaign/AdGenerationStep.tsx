@@ -7,7 +7,6 @@ import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
 import { CampaignData } from '@/hooks/useCampaignState';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface AdGenerationStepProps {
   analysisResult: any;
