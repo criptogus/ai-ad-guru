@@ -46,6 +46,9 @@ const useWebsiteAnalysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [cacheInfo, setCacheInfo] = useState<AnalysisCache | null>(null);
   
+  // Let's alias isLoading as isAnalyzing for backward compatibility
+  const isAnalyzing = isLoading;
+  
   const clearError = () => setError(null);
   
   const getAnalysisCacheStatus = useCallback(async (url: string) => {
@@ -174,6 +177,7 @@ const useWebsiteAnalysis = () => {
     analysisResult,
     analysisCacheStatus,
     isLoading,
+    isAnalyzing, // Include isAnalyzing as an alias for isLoading
     error,
     analyzeWebsite,
     getAnalysisCacheStatus,
