@@ -20,6 +20,11 @@ export interface PromptMessages {
 }
 
 export interface GeneratedAdContent {
+  market_analysis?: {
+    industry: string;
+    main_service: string;
+    value_proposition: string;
+  };
   google_ads?: Array<{
     headline_1: string;
     headline_2: string;

@@ -10,19 +10,54 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export const generateAds = async (campaignData: CampaignPromptData): Promise<GeneratedAdContent | null> => {
   try {
-    // Build the prompt for OpenAI
+    // Validate required fields before proceeding
+    if (!campaignData.companyName || !campaignData.websiteUrl || !campaignData.objective || !campaignData.targetAudience) {
+      console.error("Missing required campaign data fields:", 
+        !campaignData.companyName ? "companyName" : "",
+        !campaignData.websiteUrl ? "websiteUrl" : "",
+        !campaignData.objective ? "objective" : "",
+        !campaignData.targetAudience ? "targetAudience" : ""
+      );
+      throw new Error('Missing required campaign data for ad generation');
+    }
+
+    // Ensure we have business description
+    if (!campaignData.companyDescription) {
+      console.warn("No companyDescription provided, using objective as fallback");
+      campaignData.companyDescription = campaignData.objective;
+    }
+    
+    // Build the prompt for OpenAI with enhanced context
     const { systemMessage, userMessage } = buildAdGenerationPrompt(campaignData);
     
-    console.log("Generating ads with system message:", systemMessage.substring(0, 100) + "...");
-    console.log("And user message:", userMessage.substring(0, 100) + "...");
+    console.log("Generating ads with system message:", systemMessage);
+    console.log("And user message (preview):", userMessage.substring(0, 300) + "...");
+    
+    // Log full context being sent to model for debugging
+    console.log("Ad generation context data:", {
+      companyName: campaignData.companyName,
+      websiteUrl: campaignData.websiteUrl,
+      objective: campaignData.objective,
+      targetAudience: campaignData.targetAudience,
+      companyDescription: campaignData.companyDescription,
+      industry: campaignData.industry || "Not specified",
+      brandTone: campaignData.brandTone || "professional",
+      mindTrigger: campaignData.mindTrigger || "Not specified",
+      language: campaignData.language || "english",
+      platforms: campaignData.platforms || ["google", "instagram"]
+    });
     
     // Call the Supabase edge function to generate ads
     const { data, error } = await supabase.functions.invoke("generate-ads", {
       body: {
         systemMessage,
         userMessage,
-        language: campaignData.language || "portuguese",
-        temperature: 0.7
+        language: campaignData.language || "english",
+        temperature: 0.7,
+        campaignData: {
+          ...campaignData,
+          industry: campaignData.industry || "Not specified"
+        }
       }
     });
     

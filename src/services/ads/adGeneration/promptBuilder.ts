@@ -21,51 +21,56 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
   
   // Build the system message with strict context enforcement
   const systemMessage = `You are a world-class advertising copywriter inside a premium AI marketing agency. 
-Your goal is to generate accurate, persuasive ad variations for digital platforms based only on the structured information provided. 
-Do not invent or assume services that are not explicitly mentioned in the business description.`;
+Your task is to create highly effective, contextually relevant advertisements STRICTLY based on the company information provided.
+You must NOT invent or assume services, features, or details that are not explicitly mentioned in the business description.
+Each ad must clearly reflect the company's actual offerings, target audience, and campaign objective.`;
 
-  // Build the user message with enhanced structure and validation
-  const userMessage = `Please read the full input, understand the market and offering, and generate ad variations using the correct tone, mental trigger, and language.
+  // Build the user message with enhanced structure and detailed context instructions
+  const userMessage = `IMPORTANT: First analyze the company context, then create ads that are 100% relevant to the specific business.
 
-### 🏢 Company Details:
+### 🏢 COMPANY CONTEXT ANALYSIS:
 - Name: ${data.companyName}
 - Website: ${data.websiteUrl}
 - Business Description: ${businessDescription}
 - Key Differentiators: ${differentials}
+- Industry: ${data.industry || 'Not specified'}
+- Product/Service Focus: ${data.product || 'General company offering'}
 
-### 🎯 Campaign Information:
+### 🎯 CAMPAIGN CONTEXT ANALYSIS:
 - Campaign Goal: ${data.objective}
 - Target Audience: ${data.targetAudience}
 - Brand Voice: ${data.brandTone || 'professional'}
 - Mental Trigger: ${data.mindTrigger || 'not specified'}
 - Language: ${language}
 
-### 📋 Format Requirements:
+### 📋 CONTENT REQUIREMENTS:
 1. Google/Bing Ads:
    - Headline 1 (max 30 chars)
    - Headline 2 (max 30 chars)
+   - Headline 3 (max 30 chars)
    - Description 1 (max 90 chars)
    - Description 2 (max 90 chars)
 
 2. Instagram/LinkedIn:
-   - Image prompt (no text overlay)
+   - Image prompt (no text overlay, photorealistic)
    - Caption text (2-3 lines)
    - Include relevant CTA
 
-### ⚠️ Important Rules:
-1. Use ONLY the information provided above
+### ⚠️ STRICT RULES:
+1. Use ONLY the information provided above - do not invent features or services
 2. Generate content ONLY in ${language}
-3. Never assume or add services not mentioned
-4. Follow platform-specific character limits
-5. For images: describe photorealistic scenes without text
-6. Match the specified brand voice and mental trigger
+3. Every ad must directly address the specific ${data.objective} campaign goal
+4. Ads must target ONLY the described audience: ${data.targetAudience}
+5. Match the specified brand voice: ${data.brandTone || 'professional'}
+6. Incorporate the mental trigger: ${data.mindTrigger || 'general persuasion'}
+7. For images: describe photorealistic scenes that represent the actual business
 
 ### 📦 Return JSON Structure:
 {
   "market_analysis": {
-    "industry": "identified market/industry",
-    "main_service": "core service offered",
-    "value_proposition": "unique benefits"
+    "industry": "identified market/industry based on provided info",
+    "main_service": "core service/product explicitly mentioned",
+    "value_proposition": "unique benefits explicitly mentioned"
   },
   "google_ads": [
     {
