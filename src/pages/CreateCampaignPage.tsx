@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useWebsiteAnalysis, WebsiteAnalysisResult, AnalysisCache } from "@/hooks/useWebsiteAnalysis";
-import { useCampaignCreation } from "@/hooks/useCampaignCreation";
+import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
 import { useCampaignState } from "@/hooks/useCampaignState";
-import { useGoogleAdGeneration } from "@/hooks/adGeneration/useGoogleAdGeneration";
-import { useMetaAdGeneration } from "@/hooks/adGeneration/useMetaAdGeneration";
-import { useMicrosoftAdGeneration } from "@/hooks/adGeneration/useMicrosoftAdGeneration";
-import { useLinkedInAdGeneration } from "@/hooks/adGeneration/useLinkedInAdGeneration";
-import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";
-import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
 import { Stepper } from "@/components/campaign/Stepper";
 import useCampaignStepRenderer from "@/hooks/useCampaignStepRenderer";
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 import { CampaignProvider } from "@/contexts/CampaignContext";
-import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
+import { AdGenerationStep } from "@/components/campaign/AdGenerationStep";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -91,8 +84,8 @@ const CreateCampaignPage: React.FC = () => {
     }
     handleNext();
   };
-  
-  const handleWebsiteAnalysis = async (url: string): Promise<WebsiteAnalysisResult | null> => {
+
+  const handleWebsiteAnalysis = async (url: string) => {
     setCampaignData(prev => ({ ...prev, targetUrl: url }));
     
     try {
@@ -122,221 +115,28 @@ const CreateCampaignPage: React.FC = () => {
       return null;
     }
   };
-  
-  const handleGenerateGoogleAds = async () => {
-    if (!analysisResult) return;
-    
-    try {
-      console.log("Generating Google Ads with data:", {
-        companyName: analysisResult.companyName,
-        companyDescription: analysisResult.companyDescription,
-        targetAudience: analysisResult.targetAudience,
-        keywords: analysisResult.keywords,
-        mindTrigger: campaignData.mindTriggers?.google || ''
-      });
-      
-      const newAds = await generateGoogleAds({
-        companyName: analysisResult.companyName || '',
-        companyDescription: analysisResult.companyDescription || '',
-        targetAudience: analysisResult.targetAudience || '',
-        keywords: analysisResult.keywords || [],
-        mindTrigger: campaignData.mindTriggers?.google || '',
-        industry: analysisResult.industry || ''
-      });
-      
-      if (newAds && newAds.length > 0) {
-        setGoogleAds(newAds);
-      }
-    } catch (error) {
-      console.error("Error generating Google Ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate Google Ads. Please try again."
-      });
+
+  const handleAdsGenerated = (generatedAds: any) => {
+    if (!generatedAds) return;
+
+    // Update relevant ad states based on platforms
+    if (generatedAds.google_ads) {
+      setGoogleAds(generatedAds.google_ads);
     }
-  };
-  
-  const handleGenerateMetaAds = async () => {
-    if (!analysisResult) return;
-    
-    try {
-      console.log("Generating Meta Ads with data:", {
-        companyName: analysisResult.companyName,
-        description: analysisResult.companyDescription,
-        targetAudience: analysisResult.targetAudience,
-        keywords: analysisResult.keywords,
-        mindTrigger: campaignData.mindTriggers?.meta || ''
-      });
-      
-      const newAds = await generateMetaAds({
-        companyName: analysisResult.companyName || '',
-        companyDescription: analysisResult.companyDescription || '',
-        targetAudience: analysisResult.targetAudience || '',
-        keywords: analysisResult.keywords || [],
-        mindTrigger: campaignData.mindTriggers?.meta || '',
-        industry: analysisResult.industry || ''
-      });
-      
-      if (newAds && newAds.length > 0) {
-        setMetaAds(newAds);
-      }
-    } catch (error) {
-      console.error("Error generating Meta Ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate Meta Ads. Please try again."
-      });
+    if (generatedAds.meta_ads) {
+      setMetaAds(generatedAds.meta_ads);
     }
-  };
-  
-  const handleGenerateMicrosoftAds = async () => {
-    if (!analysisResult) return;
-    
-    try {
-      console.log("Generating Microsoft Ads with data:", {
-        companyName: analysisResult.companyName,
-        description: analysisResult.companyDescription,
-        targetAudience: analysisResult.targetAudience,
-        keywords: analysisResult.keywords,
-        mindTrigger: campaignData.mindTriggers?.microsoft || ''
-      });
-      
-      const newAds = await generateMicrosoftAds({
-        companyName: analysisResult.companyName || '',
-        companyDescription: analysisResult.companyDescription || '',
-        targetAudience: analysisResult.targetAudience || '',
-        keywords: analysisResult.keywords || [],
-        mindTrigger: campaignData.mindTriggers?.microsoft || '',
-        industry: analysisResult.industry || ''
-      });
-      
-      if (newAds && newAds.length > 0) {
-        setMicrosoftAds(newAds);
-      }
-    } catch (error) {
-      console.error("Error generating Microsoft Ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate Microsoft Ads. Please try again."
-      });
+    if (generatedAds.linkedin_ads) {
+      setLinkedInAds(generatedAds.linkedin_ads);
     }
-  };
-  
-  const handleGenerateLinkedInAds = async () => {
-    if (!analysisResult) return;
-    
-    try {
-      console.log("Generating LinkedIn Ads with data:", {
-        companyName: analysisResult.companyName,
-        description: analysisResult.companyDescription,
-        targetAudience: analysisResult.targetAudience,
-        keywords: analysisResult.keywords,
-        mindTrigger: campaignData.mindTriggers?.linkedin || ''
-      });
-      
-      const newAds = await generateLinkedInAds({
-        companyName: analysisResult.companyName || '',
-        companyDescription: analysisResult.companyDescription || '',
-        targetAudience: analysisResult.targetAudience || '',
-        keywords: analysisResult.keywords || [],
-        mindTrigger: campaignData.mindTriggers?.linkedin || '',
-        industry: analysisResult.industry || ''
-      });
-      
-      if (newAds && newAds.length > 0) {
-        setLinkedInAds(newAds);
-      }
-    } catch (error) {
-      console.error("Error generating LinkedIn Ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate LinkedIn Ads. Please try again."
-      });
+    if (generatedAds.microsoft_ads) {
+      setMicrosoftAds(generatedAds.microsoft_ads);
     }
+
+    // Move to next step after generation
+    handleNext();
   };
-  
-  const handleUpdateGoogleAd = (index: number, updatedAd: any) => {
-    const updatedAds = [...googleAds];
-    updatedAds[index] = updatedAd;
-    setGoogleAds(updatedAds);
-  };
-  
-  const handleUpdateMetaAd = (index: number, updatedAd: any) => {
-    const updatedAds = [...metaAds];
-    updatedAds[index] = updatedAd;
-    setMetaAds(updatedAds);
-  };
-  
-  const handleUpdateMicrosoftAd = (index: number, updatedAd: any) => {
-    const updatedAds = [...microsoftAds];
-    updatedAds[index] = updatedAd;
-    setMicrosoftAds(updatedAds);
-  };
-  
-  const handleUpdateLinkedInAd = (index: number, updatedAd: any) => {
-    const updatedAds = [...linkedInAds];
-    updatedAds[index] = updatedAd;
-    setLinkedInAds(updatedAds);
-  };
-  
-  const handleCreateCampaign = async () => {
-    setIsCreating(true);
-    
-    try {
-      const campaignParams = {
-        name: campaignData.name || 'New Campaign',
-        description: campaignData.description || '',
-        targetUrl: campaignData.targetUrl,
-        platforms: campaignData.platforms || ['google'],
-        budget: campaignData.budget || 100,
-        budgetType: (campaignData.budgetType as 'daily' | 'lifetime') || 'daily',
-        startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
-        endDate: campaignData.endDate,
-        objective: campaignData.objective || 'awareness',
-        mindTriggers: campaignData.mindTriggers,
-        googleAds,
-        metaAds,
-        microsoftAds,
-        linkedInAds
-      };
-      
-      console.log("Creating campaign with params:", campaignParams);
-      const result = await createCampaign(campaignParams);
-      
-      if (result) {
-        toast({
-          title: "Campaign Created",
-          description: "Your campaign has been created successfully."
-        });
-        
-        navigate('/campaigns');
-      }
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      toast({
-        variant: "destructive",
-        title: "Creation Error",
-        description: "Failed to create campaign. Please try again."
-      });
-    } finally {
-      setIsCreating(false);
-    }
-  };
-  
-  const handleGenerateImageWrapper = async (index: number) => {
-    if (index < 0) return;
-    
-    if (metaAds && metaAds.length > index) {
-      await handleGenerateImage(metaAds[index], index);
-    } else if (linkedInAds && linkedInAds.length > index) {
-      await handleGenerateImage(linkedInAds[index], index);
-    }
-  };
-  
+
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -350,10 +150,10 @@ const CreateCampaignPage: React.FC = () => {
     loadingImageIndex,
     isCreating,
     handleWebsiteAnalysis,
-    handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateMicrosoftAds,
-    handleGenerateLinkedInAds,
+    handleGenerateGoogleAds: () => {},  // These will be handled by AdGenerationStep
+    handleGenerateMetaAds: () => {},
+    handleGenerateMicrosoftAds: () => {},
+    handleGenerateLinkedInAds: () => {},
     handleGenerateImage,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
@@ -365,6 +165,21 @@ const CreateCampaignPage: React.FC = () => {
     createCampaign: handleCreateCampaign,
     cacheInfo
   });
+
+  // Insert AdGenerationStep at the appropriate step (after platform selection)
+  const renderStepContent = () => {
+    if (currentStep === 4) {  // Adjust step number as needed
+      return (
+        <AdGenerationStep
+          analysisResult={analysisResult}
+          campaignData={campaignData}
+          onAdsGenerated={handleAdsGenerated}
+          platforms={campaignData.platforms || []}
+        />
+      );
+    }
+    return getStepContent();
+  };
 
   console.log("CreateCampaignPage rendering with step:", currentStep, "and campaign data:", campaignData);
 
@@ -380,7 +195,7 @@ const CreateCampaignPage: React.FC = () => {
           
           <Card>
             <CardContent className="p-0">
-              {getStepContent()}
+              {renderStepContent()}
             </CardContent>
           </Card>
         </div>
