@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 interface AdGenerationStepProps {
   analysisResult: any;
   campaignData: CampaignData;
-  onAdsGenerated: (ads: any) => void;
+  onAdsGenerated: (ads: Record<string, any[]>) => void;
   platforms: string[];
 }
 
@@ -32,9 +32,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       });
       return;
     }
-
     try {
-      const allPlatformAds: Record<string, any> = {};
+      const results: Record<string, any[]> = {};
 
       for (const platform of platforms) {
         const promptData: CampaignPromptData = {
@@ -52,50 +51,58 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           differentials: analysisResult?.uniqueSellingPoints || []
         };
 
-        console.log(`Generating ads for ${platform}:`, JSON.stringify(promptData, null, 2));
-
         toast({
           title: `Generating ${platform} ads`,
-          description: `Creating 5 ad variations (5 credits)`
+          description: `Creating 5 ad variations (5 credits).`
         });
 
+        console.log(`🧠 Sending prompt for ${platform}`, JSON.stringify(promptData, null, 2));
+
+        let ads;
         try {
-          const result = await generateCampaignAds(promptData);
-          if (result) {
-            allPlatformAds[platform] = result;
-            toast({
-              title: "Success",
-              description: `Generated ads for ${platform}`
-            });
-          }
+          ads = await generateCampaignAds(promptData);
         } catch (error) {
-          console.error(`Failed to generate ads for ${platform}:`, error);
+          console.error(`❌ Failed to generate ads for ${platform}:`, error);
           toast({
-            title: "Generation failed",
-            description: `Could not generate ads for ${platform}`,
-            variant: "destructive"
+            variant: "destructive",
+            title: `Ad generation failed for ${platform}`,
+            description: error instanceof Error ? error.message : "Something went wrong."
+          });
+          continue;
+        }
+
+        // Accepts array or object depending on returned structure
+        if (ads && (Array.isArray(ads) || typeof ads === "object")) {
+          results[platform] = ads;
+        } else {
+          toast({
+            variant: "destructive",
+            title: `No ads generated for ${platform}`,
+            description: "The response was empty or invalid."
           });
         }
       }
 
-      // Only proceed if we have some ads
-      if (Object.keys(allPlatformAds).length > 0) {
-        console.log("Generated ads for platforms:", Object.keys(allPlatformAds));
-        onAdsGenerated(allPlatformAds);
+      if (Object.keys(results).length > 0) {
+        console.log("✅ Final generated ads: ", results);
+        onAdsGenerated(results);
+        toast({
+          title: "Ad Variations Generated!",
+          description: `Created ads for: ${Object.keys(results).join(", ")}`
+        });
       } else {
         toast({
-          title: "No ads generated",
-          description: "Failed to generate ads for all selected platforms.",
-          variant: "destructive"
+          variant: "destructive",
+          title: "Ad Generation Failed",
+          description: "No ad variations could be generated. Please check your input."
         });
       }
-
-    } catch (error) {
-      console.error("Ad generation failed:", error);
+    } catch (error: any) {
+      console.error("❌ Failed to generate ads:", error);
       toast({
+        variant: "destructive",
         title: "Ad generation failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Try again.",
-        variant: "destructive"
+        description: error instanceof Error ? error.message : "Something went wrong. Try again."
       });
     }
   };
@@ -117,8 +124,14 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
                 <div className="mt-2 text-sm text-blue-700">
                   <p>Company: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
                   <p>Objective: {campaignData.objective || 'Not specified'}</p>
-                  <p>Platforms: {platforms.join(', ')}</p>
-                  <p>Mind Triggers: {platforms.map(p => `${p}: ${campaignData.mindTriggers?.[p] || 'None'}`).join(', ')}</p>
+                  <p>Platforms:</p>
+                  <ul className="list-disc ml-4 text-sm text-gray-700 dark:text-gray-300">
+                    {platforms.map((platform) => (
+                      <li key={platform}>
+                        <strong>{platform}:</strong> Mind Trigger: {campaignData.mindTriggers?.[platform] || 'None'}
+                      </li>
+                    ))}
+                  </ul>
                   <p>Target Audience: {campaignData.targetAudience || analysisResult?.targetAudience || 'Not specified'}</p>
                 </div>
               </div>
