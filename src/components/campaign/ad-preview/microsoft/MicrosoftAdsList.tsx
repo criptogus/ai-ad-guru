@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { MicrosoftAd } from "@/hooks/adGeneration/types";
 import MicrosoftAdCard from "./MicrosoftAdCard";
+import { extractDomain } from "@/lib/utils";
 
 interface MicrosoftAdsListProps {
   ads: MicrosoftAd[];
@@ -21,18 +22,7 @@ const MicrosoftAdsList: React.FC<MicrosoftAdsListProps> = ({
   onUpdateAd
 }) => {
   // Extract domain from website URL
-  const getDomain = (url: string) => {
-    try {
-      if (!url.startsWith('http')) {
-        url = 'https://' + url;
-      }
-      return new URL(url).hostname.replace('www.', '');
-    } catch (e) {
-      return url;
-    }
-  };
-
-  const domain = getDomain(websiteUrl);
+  const domain = extractDomain(websiteUrl);
 
   return (
     <div className="space-y-6">

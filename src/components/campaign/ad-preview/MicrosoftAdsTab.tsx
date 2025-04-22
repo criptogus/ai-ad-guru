@@ -8,7 +8,7 @@ import { useCampaign } from "@/contexts/CampaignContext";
 import { GoogleAd, MicrosoftAd } from "@/hooks/adGeneration/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MicrosoftAdCard } from "./microsoft";
-import { normalizeGoogleAd, getDomain } from "@/lib/utils";
+import { normalizeGoogleAd, extractDomain } from "@/lib/utils";
 
 interface MicrosoftAdsTabProps {
   microsoftAds: GoogleAd[];
@@ -29,7 +29,7 @@ const MicrosoftAdsTab: React.FC<MicrosoftAdsTabProps> = ({
 }) => {
   const { campaignData } = useCampaign();
   const websiteUrl = campaignData?.targetUrl || analysisResult?.websiteUrl || "example.com";
-  const domain = getDomain(websiteUrl);
+  const domain = extractDomain(websiteUrl);
 
   return (
     <div className="space-y-4">

@@ -7,6 +7,7 @@ import GoogleAdPreview from './google/GoogleAdPreview';
 import { InstagramPreview } from './meta';
 import LinkedInAdPreview from './linkedin/LinkedInAdPreview';
 import { MicrosoftAdPreview } from './microsoft';
+import { extractDomain } from '@/lib/utils';
 
 interface AdPreviewSwitcherProps {
   analysisResult?: WebsiteAnalysisResult;

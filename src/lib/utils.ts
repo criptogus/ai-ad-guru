@@ -75,6 +75,9 @@ export function extractDomain(url: string): string {
   }
 }
 
+// Alias for extractDomain for backward compatibility
+export const getDomain = extractDomain;
+
 // Generate initials from a name
 export function getInitials(name: string): string {
   if (!name) return '';
