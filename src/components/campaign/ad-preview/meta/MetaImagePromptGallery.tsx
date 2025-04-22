@@ -25,12 +25,15 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
   // If we're in template selection mode (with onSelectPrompt callback)
   if (onSelectPrompt) {
     const promptTemplates = [
-      "Professional product photo on white background",
-      "Happy customer using the product",
-      "Modern lifestyle image with product",
-      "Before and after transformation",
-      "Product in natural environment",
-      "Close-up detail of product features"
+      "Profissional usando nosso produto/serviço com expressão de satisfação",
+      "Imagem de antes e depois mostrando transformação",
+      "Cliente satisfeito em ambiente de trabalho moderno",
+      "Foto profissional do produto em fundo limpo",
+      "Equipe de profissionais trabalhando com nosso serviço",
+      "Pessoa mostrando resultado positivo usando nosso produto",
+      "Ambiente de trabalho moderno e produtivo",
+      "Profissional soridente demonstrando nosso serviço",
+      "Gráfico de crescimento ou resultados positivos"
     ];
 
     return (
@@ -57,7 +60,7 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
     <Card>
       <CardContent className="p-4 space-y-4">
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Image Prompt:</h3>
+          <h3 className="text-sm font-medium">Instruções para Imagem:</h3>
           <p className="text-sm text-muted-foreground">{ad.imagePrompt}</p>
         </div>
         
@@ -70,12 +73,12 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating Image...
+              Gerando Imagem...
             </>
           ) : (
             <>
               <ImageIcon className="mr-2 h-4 w-4" />
-              Generate Image
+              Gerar Imagem com DALL-E
             </>
           )}
         </Button>

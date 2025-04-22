@@ -23,3 +23,7 @@ verify_jwt = false
 
 [functions.generate-image-gpt4o]
 verify_jwt = false
+
+[functions.generate-premium-ads]
+verify_jwt = false
+

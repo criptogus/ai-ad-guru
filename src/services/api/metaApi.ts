@@ -19,29 +19,32 @@ export const generateMetaAds = async (
     console.log('Generating Meta ads for:', campaignData.companyName);
     console.log('Using mind trigger:', mindTrigger || 'None');
     
-    // Call the Supabase edge function to generate ads
-    const { data, error } = await supabase.functions.invoke('generate-ads', {
+    // Call the Supabase edge function to generate premium ads
+    const { data, error } = await supabase.functions.invoke('generate-premium-ads', {
       body: { 
         platform: 'meta',
         campaignData: {
           ...campaignData,
-          mindTrigger
-        }
+          mindTriggers: {
+            meta: mindTrigger
+          }
+        },
+        language: 'portuguese' // Default language, should be set based on user preference
       },
     });
 
     if (error) {
       console.error('Error generating Meta ads:', error);
-      toast.error('Failed to generate Meta ads', { 
-        description: error.message || 'Unknown error'
+      toast.error('Falha ao gerar anúncios Meta', { 
+        description: error.message || 'Erro desconhecido'
       });
       return null;
     }
 
     if (!data || !data.success) {
       console.error('Meta ads generation failed:', data?.error || 'Unknown error');
-      toast.error('Meta ads generation failed', { 
-        description: data?.error || 'Failed to generate ads content'
+      toast.error('Falha na geração de anúncios Meta', { 
+        description: data?.error || 'Não foi possível gerar o conteúdo dos anúncios'
       });
       return null;
     }
@@ -54,15 +57,15 @@ export const generateMetaAds = async (
       primaryText: ad.primaryText || ad.text || '',
       description: ad.description || '',
       imagePrompt: ad.imagePrompt || ad.image_prompt || '',
-      callToAction: ad.callToAction || 'Learn More',
+      callToAction: ad.callToAction || 'Saiba Mais',
       format: ad.format || 'feed'
     }));
     
     return metaAds;
   } catch (error) {
     console.error('Error in generateMetaAds:', error);
-    toast.error('Error generating Meta ads', {
-      description: error instanceof Error ? error.message : 'Unknown error occurred'
+    toast.error('Erro ao gerar anúncios Meta', {
+      description: error instanceof Error ? error.message : 'Ocorreu um erro desconhecido'
     });
     return null;
   }
