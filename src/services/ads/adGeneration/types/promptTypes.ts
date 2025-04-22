@@ -1,9 +1,4 @@
 
-export interface PromptMessages {
-  systemMessage: string;
-  userMessage: string;
-}
-
 export interface CampaignPromptData {
   companyName?: string;
   websiteUrl?: string;
@@ -19,4 +14,6 @@ export interface CampaignPromptData {
   keywords?: string[] | string;
   callToAction?: string[] | string;
   language?: string;
+  // ✅ Added platforms property
+  platforms?: string[];
 }
