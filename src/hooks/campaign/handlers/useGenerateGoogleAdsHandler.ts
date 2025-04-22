@@ -21,6 +21,7 @@ export const useGenerateGoogleAdsHandler = ({
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateGoogleAds = async () => {
+    // Validate required data before proceeding
     if (!analysisResult || !generateGoogleAds) {
       toast({
         variant: "destructive",
@@ -29,55 +30,58 @@ export const useGenerateGoogleAdsHandler = ({
       });
       return;
     }
-    
-    // Credit cost information
-    const creditCost = 5; // 5 credits for Google Ads
-    
+
+    // Define credit cost for Google Ads generation
+    const creditCost = 5;
+
     try {
       setIsGenerating(true);
-      
-      // Show credit usage notification before generation
+
+      // Inform user about credit usage
       toast({
-        title: "Credits Usage Information",
-        description: `Generating Google Ads will use ${creditCost} credits from your account.`,
+        title: "Credits Usage",
+        description: `This operation will use ${creditCost} credits.`,
       });
-      
-      // Generate ads
+
+      // Generate ads using website analysis
       const ads = await generateGoogleAds(analysisResult);
-      
-      // Log the response for debugging
-      console.log("🧪 Ads received from API:", ads);
-      
+      console.log("🧪 Ads received:", ads);
+
+      // Handle successful ad generation
       if (ads && ads.length > 0) {
-        // Log first ad for detailed debugging
         console.log("🧪 First ad sample:", ads[0]);
-        
         setGoogleAds(ads);
-        
-        // Deduct credits and notify
+
+        // Deduct credits if handler is provided
         if (onCreditDeduction) {
           onCreditDeduction(creditCost);
-          
-          toast({
-            title: "Google Ads Generated Successfully",
-            description: `Created ${ads.length} ad variations for ${creditCost} credits.`,
-          });
         }
+
+        // Notify user about successful generation
+        toast({
+          title: "Google Ads Generated",
+          description: `Successfully generated ${ads.length} ad(s) using ${creditCost} credits.`,
+        });
       } else {
+        // Handle case when no ads are generated
         toast({
           variant: "default",
           title: "No Ads Generated",
-          description: "No ads were generated. Try adjusting your campaign details.",
+          description: "Try changing your campaign input. No ads were returned.",
         });
       }
     } catch (error) {
-      console.error("Error generating Google ads:", error);
+      console.error("Error generating Google Ads:", error);
+      // Provide detailed error message
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: "Failed to generate Google ads. Please try again.",
+        description: error instanceof Error 
+          ? error.message 
+          : "Unknown error occurred during ad generation.",
       });
     } finally {
+      // Always reset generating state
       setIsGenerating(false);
     }
   };
