@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 
 interface PromptMessages {
@@ -12,9 +11,11 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
   const systemMessage = `
 Você é um redator publicitário sênior em uma agência global de marketing.
 Você cria anúncios altamente conversivos, SEM INVENTAR NENHUM CONTEXTO.
-Apenas use os dados que foram fornecidos abaixo. Se algo estiver ausente, ignore.
-A resposta deve estar COMPLETAMENTE em ${language}.
-Nunca misture idiomas. Nunca crie termos genéricos como "professional services" se isso não estiver nos dados.
+NUNCA invente informações não fornecidas.
+A resposta deve estar COMPLETAMENTE em ${language.toUpperCase()}.
+NUNCA misture idiomas, seja 100% fiel ao idioma escolhido.
+NÃO use termos genéricos como "professional services", "quality results" ou similares se isso NÃO estiver explicitamente nos dados enviados.
+Ignore campos em branco.
 `;
 
   const userMessage = `
@@ -35,7 +36,7 @@ Requisitos:
 - Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)
 - 2 descrições (máx 90 caracteres cada)
 - Um display_url baseado no site fornecido
-- NÃO incluir texto em inglês
+- NÃO incluir texto em outro idioma
 - NÃO criar dados fictícios
 
 Formato de resposta (JSON):

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { generateGoogleAds, generateMetaAds, generateLinkedInAds, generateMicrosoftAds } from "./adGenerators.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
@@ -7,6 +6,35 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
+
+// Função para detectar idioma pelo domínio da URL
+function detectLanguageFromUrl(url: string): string | null {
+  if (!url) return null;
+  const domain = url.toLowerCase();
+  if (domain.includes(".br")) return "Portuguese";
+  if (domain.includes(".es")) return "Spanish";
+  if (domain.includes(".fr")) return "French";
+  if (domain.includes(".de")) return "German";
+  if (domain.includes(".it")) return "Italian";
+  // Considera .com como inglês SE não for .com.br
+  if (domain.endsWith(".com")) return "English";
+  return null;
+}
+
+const languagePatterns = {
+  Portuguese: /[áàâãéêíóôõúçè]/i,
+  English: /\b(the|you|your|service|quality|contact)\b/i,
+  Spanish: /[áéíóúñ¿¡]/i,
+  French: /[éèêàçôœù]/i,
+  German: /[äöüß]/i,
+  Italian: /[àèéìíîòóùú]/i,
+};
+
+function isInCorrectLanguage(text: string, lang: string): boolean {
+  const pattern = languagePatterns[lang as keyof typeof languagePatterns];
+  if (!pattern) return true;
+  return pattern.test(text);
+}
 
 serve(async (req) => {
   // Handle preflight CORS
@@ -43,7 +71,7 @@ serve(async (req) => {
       industry: campaignData.industry || "",
       targetAudience: campaignData.targetAudience || "",
       brandTone: campaignData.brandTone || "professional",
-      language: campaignData.language || "Portuguese",
+      language: campaignData.language, // Não forçar
       companyDescription: campaignData.companyDescription || campaignData.description || "",
       businessDescription: campaignData.businessDescription || "",
       uniqueSellingPoints: campaignData.uniqueSellingPoints || campaignData.differentials || [],
@@ -51,11 +79,11 @@ serve(async (req) => {
       keywords: campaignData.keywords || []
     };
 
-    // Normalize language to prevent mixed languages
-    if (!normalizedData.language || normalizedData.language.toLowerCase().startsWith('en')) {
-      normalizedData.language = "Portuguese";
+    // Nova lógica: só cair no detectLanguage se não vier preenchido
+    if (!normalizedData.language) {
+      normalizedData.language = detectLanguageFromUrl(normalizedData.websiteUrl) || "Portuguese";
     }
-    
+
     console.log("Processing ad generation with normalized data:", JSON.stringify(normalizedData, null, 2));
     
     // Generate ads based on platform
@@ -112,23 +140,27 @@ serve(async (req) => {
         throw new Error(`Invalid response format: expected array but got ${typeof parsedAds}`);
       }
       
-      // Check for mixed language by looking at patterns in text fields
-      if (normalizedData.language.toLowerCase() === "portuguese") {
-        // Detect if the content has English text by checking for common English words
-        // and the absence of Portuguese accents in longer texts
-        const englishPattern = /\b(the|with|our|your|service|professional|quality)\b/i;
-        const portuguesePattern = /[áàâãéèêíìóòôõúùç]/i;
-        
+      // Checagem robusta: revalida todos os textos no idioma esperado
+      if (normalizedData.language) {
+        const lang = normalizedData.language.charAt(0).toUpperCase() + normalizedData.language.slice(1).toLowerCase();
         for (const ad of parsedAds) {
-          // Check key text fields
-          const textFields = platform === "google" || platform === "microsoft" ? 
-            [ad.headline_1, ad.headline_2, ad.headline_3, ad.description_1, ad.description_2] :
-            [ad.headline, ad.primaryText, ad.description];
-          
+          // Descobre campos do anúncio conforme tipo de plataforma
+          let textFields: string[] = [];
+          if (platform === "google" || platform === "microsoft") {
+            textFields = [
+              ad.headline_1, ad.headline_2, ad.headline_3, ad.description_1, ad.description_2
+            ];
+          } else {
+            textFields = [
+              ad.headline, ad.primaryText, ad.description
+            ];
+          }
           for (const text of textFields) {
-            if (text && text.length > 15 && englishPattern.test(text) && !portuguesePattern.test(text)) {
-              console.warn("Detected possible English text in ad:", text);
-              throw new Error(`Conteúdo em inglês detectado no anúncio. Os anúncios devem estar completamente em ${normalizedData.language}.`);
+            if (text && text.length > 10 && !isInCorrectLanguage(text, lang)) {
+              console.warn(`Idioma incompatível detectado em plataforma [${platform}]: "${text}"`);
+              throw new Error(
+                `Conteúdo fora do idioma selecionado (${lang}) detectado no anúncio. Corrija o briefing ou altere o idioma.`
+              );
             }
           }
         }
