@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { CampaignData } from "@/hooks/useCampaignState";
 import { useToast } from "@/hooks/use-toast";
 
 interface UseImageGenerationHandlerProps {
