@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
-import { toast } from 'sonner';
 
 export const useAdGenerationFlow = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -40,21 +39,12 @@ export const useAdGenerationFlow = () => {
 
       // Log the complete returned data
       console.log('Generated ad content:', JSON.stringify(result, null, 2));
-      
-      // Add credit usage information
-      toast({
-        title: "Ads Generated Successfully",
-        description: `5 credits were used to generate ads for ${data.platforms?.length || 1} platform(s)`
-      });
-      
+      // No toast here -- now handled at component level
+
       return result;
     } catch (error) {
       console.error('Error generating ads:', error);
-      toast({
-        variant: "destructive",
-        title: "Ad Generation Failed",
-        description: error instanceof Error ? error.message : 'Failed to generate ads'
-      });
+      // No toast here -- now handled at component level
       return null;
     } finally {
       setIsGenerating(false);

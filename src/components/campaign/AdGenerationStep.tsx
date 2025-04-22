@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
 import { CampaignData } from '@/hooks/useCampaignState';
-import { toast } from "sonner";
+import { useToast } from '@/hooks/use-toast';
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -22,44 +22,61 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   platforms
 }) => {
   const { generateCampaignAds, isGenerating } = useAdGenerationFlow();
+  const { toast } = useToast();
 
   const handleGenerateAds = async () => {
-    try {
-      // Create a comprehensive prompt data object with all available information
-      const promptData: CampaignPromptData = {
-        companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
-        websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
-        objective: campaignData.objective || 'awareness',
-        product: campaignData.product || '',
-        targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
-        brandTone: campaignData.brandTone || 'professional',
-        mindTrigger: campaignData.mindTriggers?.[platforms[0]], // Use first platform's trigger
-        language: campaignData.language || 'english',
-        industry: campaignData.industry || analysisResult?.industry || '',
-        platforms: platforms,
-        companyDescription: campaignData.description || analysisResult?.companyDescription || '',
-        differentials: analysisResult?.uniqueSellingPoints || []
-      };
-
-      console.log('Sending data to OpenAI for ad generation:', JSON.stringify(promptData, null, 2));
-      
-      toast.info("Generating ads...", {
-        description: "This may take up to 30 seconds"
+    if (!platforms || platforms.length === 0) {
+      toast({
+        description: "Please select at least one platform before generating ads."
       });
-      
-      const generatedAds = await generateCampaignAds(promptData);
-      
-      if (generatedAds) {
-        console.log('Successfully generated ads:', generatedAds);
-        toast.success("Ads generated successfully!");
-        onAdsGenerated(generatedAds);
-      } else {
-        toast.error("Failed to generate ads. Please try again.");
+      return;
+    }
+
+    try {
+      const allPlatformAds: Record<string, any> = {};
+
+      for (const platform of platforms) {
+        const promptData: CampaignPromptData = {
+          companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
+          websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
+          objective: campaignData.objective || 'awareness',
+          product: campaignData.product || '',
+          targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
+          brandTone: campaignData.brandTone || 'professional',
+          mindTrigger: campaignData.mindTriggers?.[platform] || '',
+          language: campaignData.language || 'english',
+          industry: campaignData.industry || analysisResult?.industry || '',
+          platforms: [platform],
+          companyDescription: campaignData.description || analysisResult?.companyDescription || '',
+          differentials: analysisResult?.uniqueSellingPoints || []
+        };
+
+        console.log(`Sending prompt for ${platform}:`, JSON.stringify(promptData, null, 2));
+
+        toast({
+          description: `Generating ads for ${platform}... (5 credits)`
+        });
+
+        const result = await generateCampaignAds(promptData);
+
+        if (result) {
+          allPlatformAds[platform] = result;
+          toast({
+            description: `Successfully generated ads for ${platform}!`
+          });
+        } else {
+          toast({
+            description: `Failed to generate ads for ${platform}.`
+          });
+        }
       }
+
+      onAdsGenerated(allPlatformAds);
+
     } catch (error) {
-      console.error('Error generating ads:', error);
-      toast.error("Error generating ads", {
-        description: error instanceof Error ? error.message : "An unexpected error occurred"
+      console.error("Ad generation failed:", error);
+      toast({
+        description: error instanceof Error ? error.message : "Something went wrong. Try again."
       });
     }
   };
@@ -70,10 +87,10 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Generate Ad Content</h3>
           <p className="text-muted-foreground">
-            We'll use AI to create compelling ad content based on your campaign details.
-            This will use 5 credits from your account.
+            We'll use AI to create 5 compelling ad variations for each selected platform based on your campaign details.
+            This will use 5 credits per platform from your account.
           </p>
-          
+
           <div className="rounded-md bg-blue-50 p-4 mb-4">
             <div className="flex">
               <div className="ml-3">
@@ -82,25 +99,25 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
                   <p>Company: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
                   <p>Objective: {campaignData.objective || 'Not specified'}</p>
                   <p>Platforms: {platforms.join(', ')}</p>
-                  <p>Mind Trigger: {campaignData.mindTriggers?.[platforms[0]] || 'None'}</p>
+                  <p>Mind Triggers: {platforms.map(p => `${p}: ${campaignData.mindTriggers?.[p] || 'None'}`).join(', ')}</p>
                   <p>Target Audience: {campaignData.targetAudience || analysisResult?.targetAudience || 'Not specified'}</p>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <Button 
             onClick={handleGenerateAds} 
-            disabled={isGenerating}
+            disabled={isGenerating || platforms.length === 0}
             className="w-full"
           >
             {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Ads (5 credits)...
+                Generating Ads...
               </>
             ) : (
-              'Generate Ad Content (5 credits)'
+              `Generate Ad Content (${platforms.length * 5} credits)`
             )}
           </Button>
         </div>
