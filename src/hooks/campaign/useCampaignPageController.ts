@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -94,18 +95,21 @@ export const useCampaignPageController = () => {
 
   const handleBack = () => {
     if (currentStep > 1) {
+      console.log(`Moving back from step ${currentStep} to step ${currentStep - 1}`);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleNext = () => {
     if (currentStep < 7) {
+      console.log(`Moving forward from step ${currentStep} to step ${currentStep + 1}`);
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleNextWrapper = (data?: any) => {
     if (data) {
+      console.log("Updating campaign data:", data);
       setCampaignData(prev => ({ ...prev, ...data }));
     }
     handleNext();

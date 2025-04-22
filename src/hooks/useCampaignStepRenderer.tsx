@@ -7,6 +7,7 @@ import PlatformSelectionStep from '@/components/campaign/PlatformSelectionStep';
 import { MindTriggerSelectionStep } from '@/components/campaign/mind-trigger/MindTriggerSelectionStep';
 import CampaignSetupStep from '@/components/campaign/CampaignSetupStep';
 import AdPreviewStep from '@/components/campaign/ad-preview/AdPreviewStep';
+import { AdGenerationStep } from '@/components/campaign/AdGenerationStep';
 // Import other steps as needed
 
 interface UseCampaignStepRendererProps {
@@ -113,6 +114,15 @@ const useCampaignStepRenderer = ({
         );
       case 5:
         return (
+          <AdGenerationStep
+            analysisResult={analysisResult}
+            campaignData={campaignData}
+            onAdsGenerated={handleAdsGenerated}
+            platforms={campaignData.platforms || []}
+          />
+        );
+      case 6:
+        return (
           <AdPreviewStep
             analysisResult={analysisResult}
             googleAds={googleAds}
@@ -135,7 +145,7 @@ const useCampaignStepRenderer = ({
             mindTriggers={campaignData.mindTriggers}
           />
         );
-      case 6:
+      case 7:
         return (
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Campaign Summary</h2>
