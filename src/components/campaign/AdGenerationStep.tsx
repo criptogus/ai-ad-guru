@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
+import { CampaignData } from '@/hooks/useCampaignState';
 
 interface AdGenerationStepProps {
   analysisResult: any;
-  campaignData: any;
+  campaignData: CampaignData;
   onAdsGenerated: (ads: any) => void;
   platforms: string[];
 }

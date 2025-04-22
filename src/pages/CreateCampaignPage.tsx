@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +19,7 @@ import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneratio
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
 
 // Mock implementation of useImageGenerationHandler if it doesn't exist
-const useImageGenerationHandler = (props: any) => {
+const useImageGenerationHandler = () => {
   return {
     handleGenerateImage: async () => console.log("Generate image"),
     loadingImageIndex: null
@@ -88,13 +87,7 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
-    metaAds,
-    linkedInAds,
-    setMetaAds,
-    setLinkedInAds,
-    campaignData
-  });
+  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
   
   const { createCampaign } = useCampaignCreation();
   
@@ -187,7 +180,8 @@ const CreateCampaignPage: React.FC = () => {
         language: campaignData.language || 'english',
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
-        differentials: [] // Add any differentials if available
+        differentials: [],
+        keywords: campaignData.keywords || [] // Add keywords field which was missing
       };
       
       console.log("Generating Google ads with data:", adGenerationData);
@@ -213,7 +207,8 @@ const CreateCampaignPage: React.FC = () => {
         language: campaignData.language || 'english',
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
-        differentials: [] // Add any differentials if available
+        differentials: [],
+        keywords: campaignData.keywords || [] // Add keywords field which was missing
       };
       
       console.log("Generating Meta ads with data:", adGenerationData);
@@ -239,7 +234,8 @@ const CreateCampaignPage: React.FC = () => {
         language: campaignData.language || 'english',
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
-        differentials: [] // Add any differentials if available
+        differentials: [],
+        keywords: campaignData.keywords || [] // Add keywords field which was missing
       };
       
       console.log("Generating Microsoft ads with data:", adGenerationData);
@@ -265,7 +261,8 @@ const CreateCampaignPage: React.FC = () => {
         language: campaignData.language || 'english',
         industry: campaignData.industry || '',
         companyDescription: campaignData.description || '',
-        differentials: [] // Add any differentials if available
+        differentials: [],
+        keywords: campaignData.keywords || [] // Add keywords field which was missing
       };
       
       console.log("Generating LinkedIn ads with data:", adGenerationData);
@@ -283,7 +280,6 @@ const CreateCampaignPage: React.FC = () => {
     try {
       const result = await createCampaign({
         name: campaignData.name,
-        companyName: campaignData.companyName || campaignData.name, // Include companyName
         description: campaignData.description,
         platforms: campaignData.platforms,
         budget: campaignData.budget,

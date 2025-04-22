@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 
 // Define a more comprehensive interface for campaign data
-interface CampaignData {
+export interface CampaignData {
   name: string;
   description: string;
   platforms: string[];
   mindTriggers: Record<string, string>;
   targetUrl?: string;
-  companyName?: string; // Add companyName field
+  companyName: string; // Make companyName required
   budget?: number;
   budgetType?: 'daily' | 'lifetime';
   startDate?: string;
@@ -21,9 +21,9 @@ interface CampaignData {
   country?: string;
   language?: string;
   optimizationFrequency?: string;
-  product?: string; // Add product field that might be used in ad generation
-  brandTone?: string; // Add brandTone field 
-  industry?: string; // Add industry field
+  product?: string;
+  brandTone?: string; 
+  industry?: string;
 }
 
 export const useCampaignState = () => {
