@@ -7,11 +7,16 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
     throw new Error('Missing required campaign data for prompt generation');
   }
 
-  // Ensure we have a language, defaulting to Portuguese
-  const language = data.language || 'portuguese';
+  // Core business info validation
+  if (!data.companyDescription?.trim()) {
+    throw new Error('Business description is required for accurate ad generation');
+  }
+
+  // Ensure we have a language, defaulting to English
+  const language = data.language || 'english';
   
   // Get formatted differentials
-  const differentials = data.differentials?.join(', ') || 'não especificado';
+  const differentials = data.differentials?.join(', ') || 'not specified';
   
   // Build the system message with strict context enforcement
   const systemMessage = `You are a world-class advertising copywriter inside a premium AI marketing agency. 
@@ -19,20 +24,19 @@ Your goal is to generate accurate, persuasive ad variations for digital platform
 Do not invent or assume services that are not explicitly mentioned in the business description.`;
 
   // Build the user message with enhanced structure and validation
-  const userMessage = `Please generate high-converting ad variations using only the information below. 
-Do not invent or assume any services not explicitly mentioned.
+  const userMessage = `Please read the full input, understand the market and offering, and generate ad variations using the correct tone, mental trigger, and language.
 
 ### 🏢 Company Details:
 - Name: ${data.companyName}
 - Website: ${data.websiteUrl}
-- Business Description: ${data.objective}
+- Business Description: ${data.companyDescription}
 - Key Differentiators: ${differentials}
 
 ### 🎯 Campaign Information:
 - Campaign Goal: ${data.objective}
 - Target Audience: ${data.targetAudience}
 - Brand Voice: ${data.brandTone || 'professional'}
-- Mental Trigger: ${data.mindTrigger || 'não especificado'}
+- Mental Trigger: ${data.mindTrigger || 'not specified'}
 - Language: ${language}
 
 ### 📋 Format Requirements:
@@ -100,3 +104,4 @@ Return ONLY the JSON, without any explanation or additional text.`;
     userMessage
   };
 };
+
