@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
@@ -16,6 +16,7 @@ interface AdPreviewSwitcherProps {
   linkedInAd?: MetaAd;
   isLoading?: boolean;
   onGenerateImage?: () => Promise<void>;
+  selectedPlatforms?: string[];
 }
 
 const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
@@ -25,9 +26,46 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
   microsoftAd,
   linkedInAd,
   isLoading = false,
-  onGenerateImage
+  onGenerateImage,
+  selectedPlatforms = []
 }) => {
-  const [activeTab, setActiveTab] = useState<string>('google');
+  // Find the first available platform to use as default
+  const getDefaultPlatform = (): string => {
+    if (googleAd && (selectedPlatforms.includes('google') || selectedPlatforms.length === 0)) return 'google';
+    if (metaAd && (selectedPlatforms.includes('meta') || selectedPlatforms.length === 0)) return 'instagram';
+    if (linkedInAd && (selectedPlatforms.includes('linkedin') || selectedPlatforms.length === 0)) return 'linkedin';
+    if (microsoftAd && (selectedPlatforms.includes('microsoft') || selectedPlatforms.length === 0)) return 'microsoft';
+    return 'google'; // Default fallback
+  };
+  
+  const [activeTab, setActiveTab] = useState<string>(getDefaultPlatform());
+  
+  // Update active tab if the current one becomes unavailable
+  useEffect(() => {
+    const isCurrentTabAvailable = 
+      (activeTab === 'google' && googleAd && isPlatformSelected('google')) ||
+      (activeTab === 'instagram' && metaAd && isPlatformSelected('meta')) ||
+      (activeTab === 'linkedin' && linkedInAd && isPlatformSelected('linkedin')) ||
+      (activeTab === 'microsoft' && microsoftAd && isPlatformSelected('microsoft'));
+    
+    if (!isCurrentTabAvailable) {
+      setActiveTab(getDefaultPlatform());
+    }
+  }, [googleAd, metaAd, linkedInAd, microsoftAd, selectedPlatforms]);
+  
+  // Check if a platform is selected or if no platforms are specified (backward compatibility)
+  const isPlatformSelected = (platform: string): boolean => {
+    // If no platforms are specified, show all (for backward compatibility)
+    if (selectedPlatforms.length === 0) return true;
+    
+    // Map the UI platform names to the platform IDs used in the selection
+    if (platform === 'google') return selectedPlatforms.includes('google');
+    if (platform === 'instagram') return selectedPlatforms.includes('meta');
+    if (platform === 'linkedin') return selectedPlatforms.includes('linkedin');
+    if (platform === 'microsoft') return selectedPlatforms.includes('microsoft');
+    
+    return false;
+  };
   
   // Get domain from website URL
   const getDomain = (url?: string) => {
@@ -50,16 +88,28 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
   const domain = getDomain(analysisResult?.websiteUrl);
   const companyName = analysisResult?.companyName || "Your Company";
   
+  // Get available platforms based on data and selection
+  const availablePlatforms = [
+    { id: 'google', label: 'Google', available: !!googleAd && isPlatformSelected('google') },
+    { id: 'instagram', label: 'Instagram', available: !!metaAd && isPlatformSelected('meta') },
+    { id: 'linkedin', label: 'LinkedIn', available: !!linkedInAd && isPlatformSelected('linkedin') },
+    { id: 'microsoft', label: 'Microsoft', available: !!microsoftAd && isPlatformSelected('microsoft') }
+  ].filter(platform => platform.available);
+  
+  // If no platforms are available, show a message
+  if (availablePlatforms.length === 0) {
+    return <div className="text-center p-4 text-muted-foreground">No ad platforms selected or no ad data available.</div>;
+  }
+  
   return (
     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-4 mb-4">
-        {googleAd && <TabsTrigger value="google">Google</TabsTrigger>}
-        {metaAd && <TabsTrigger value="instagram">Instagram</TabsTrigger>}
-        {linkedInAd && <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>}
-        {microsoftAd && <TabsTrigger value="microsoft">Microsoft</TabsTrigger>}
+      <TabsList className={`grid grid-cols-${availablePlatforms.length} mb-4`}>
+        {availablePlatforms.map(platform => (
+          <TabsTrigger key={platform.id} value={platform.id}>{platform.label}</TabsTrigger>
+        ))}
       </TabsList>
       
-      {googleAd && (
+      {googleAd && isPlatformSelected('google') && (
         <TabsContent value="google" className="flex justify-center">
           <div className="max-w-lg">
             <GoogleAdPreview 
@@ -70,7 +120,7 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
         </TabsContent>
       )}
       
-      {metaAd && (
+      {metaAd && isPlatformSelected('meta') && (
         <TabsContent value="instagram" className="flex justify-center">
           <InstagramPreview 
             ad={metaAd}
@@ -80,7 +130,7 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
         </TabsContent>
       )}
       
-      {linkedInAd && (
+      {linkedInAd && isPlatformSelected('linkedin') && (
         <TabsContent value="linkedin" className="flex justify-center">
           <LinkedInAdPreview 
             ad={linkedInAd}
@@ -89,7 +139,7 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
         </TabsContent>
       )}
       
-      {microsoftAd && (
+      {microsoftAd && isPlatformSelected('microsoft') && (
         <TabsContent value="microsoft" className="flex justify-center">
           <div className="max-w-lg">
             <MicrosoftAdPreview 
