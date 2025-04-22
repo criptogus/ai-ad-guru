@@ -4,18 +4,15 @@ import { MetaAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { toast } from 'sonner';
 
-/**
- * Valida e garante que o texto termina com a pontuação adequada
- */
 function ensureCompleteText(text: string): string {
   if (!text) return '';
   const trimmed = text.trim();
   return /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + '.';
 }
 
-/**
- * Gera sugestões de anúncios Instagram/Meta a partir da análise do site
- */
+// New utility to detect non-Portuguese text
+const hasEnglishText = (text: string) => /\b(the|your|quality|service)\b/i.test(text);
+
 export const generateMetaAds = async (
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
@@ -23,14 +20,14 @@ export const generateMetaAds = async (
   try {
     console.log('Generating Meta ads for:', campaignData.companyName);
     console.log('Using mind trigger:', mindTrigger || 'None');
+    console.log('Campaign language:', campaignData.language || 'português');
 
-    // Refatorado: Inclui sempre a linguagem no campaignData
     const { data, error } = await supabase.functions.invoke('generate-premium-ads', {
       body: {
         platform: 'meta',
         campaignData: {
           ...campaignData,
-          language: campaignData.language || 'portuguese',
+          language: campaignData.language || 'português',
           mindTriggers: {
             meta: mindTrigger
           }
@@ -54,7 +51,6 @@ export const generateMetaAds = async (
       return null;
     }
 
-    // NOVO: Validação do formato do retorno
     if (!Array.isArray(data.data)) {
       console.error('Resposta inválida da IA:', data.data);
       toast.error('Erro de formato', {
@@ -63,16 +59,38 @@ export const generateMetaAds = async (
       return null;
     }
 
-    // Map estrutura normalizada + melhor fallback de prompt (nullish coalescing)
-    const metaAds = data.data.map((ad: any) => ({
-      headline: ensureCompleteText(ad.headline || ''),
-      primaryText: ensureCompleteText(ad.primaryText || ad.text || ''),
-      description: ensureCompleteText(ad.description || ''),
-      imagePrompt: ad.imagePrompt ?? ad.image_prompt ?? '',
-      callToAction: ad.callToAction ?? 'Saiba Mais',
-      format: ad.format ?? 'feed',
-      isComplete: true // Marcação
-    }));
+    // Enhanced validation to ensure ad completeness
+    if (!data.data.every((ad: any) => ad.headline && (ad.primaryText || ad.text) && ad.imagePrompt)) {
+      console.warn("Alguns anúncios gerados estão incompletos:", data.data);
+      toast.warning("Atenção: Alguns anúncios podem estar incompletos", {
+        description: "Revise os campos dos anúncios antes de publicar."
+      });
+    }
+
+    const metaAds = data.data.map((ad: any) => {
+      const metaAd = {
+        headline: ensureCompleteText(ad.headline || ''),
+        primaryText: ensureCompleteText(ad.primaryText || ad.text || ''),
+        description: ensureCompleteText(ad.description || ''),
+        imagePrompt: ad.imagePrompt ?? ad.image_prompt ?? '[FALHA AO GERAR PROMPT DE IMAGEM]',
+        callToAction: ad.callToAction ?? 'Saiba Mais',
+        format: ad.format ?? 'feed',
+        isComplete: true,
+        imageUrl: ad.imageUrl || '', // Adiciona suporte para URL da imagem
+      };
+
+      // Validate language consistency
+      if (campaignData.language?.toLowerCase() === 'português') {
+        if ([metaAd.headline, metaAd.primaryText, metaAd.description].some(hasEnglishText)) {
+          console.warn('Anúncio com conteúdo em inglês detectado:', metaAd);
+          toast.warning('Conteúdo em inglês detectado', {
+            description: 'Alguns textos dos anúncios podem não estar em português.'
+          });
+        }
+      }
+
+      return metaAd;
+    });
 
     console.log('Meta ads generated successfully:', metaAds);
     return metaAds;
