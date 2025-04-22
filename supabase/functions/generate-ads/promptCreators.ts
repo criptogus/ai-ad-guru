@@ -7,152 +7,191 @@ interface PromptMessages {
 }
 
 export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const systemMessage = "You are a professional advertising copywriter specializing in creating engaging Google Ads that drive conversions and follow platform guidelines.";
-  
-  // Build a comprehensive user prompt with all the website analysis data
+  const language = campaignData.language || "Portuguese";
+
+  const systemMessage = `
+Você é um redator publicitário sênior em uma agência global de marketing.
+Você cria anúncios altamente conversivos, SEM INVENTAR NENHUM CONTEXTO.
+Apenas use os dados que foram fornecidos abaixo. Se algo estiver ausente, ignore.
+A resposta deve estar COMPLETAMENTE em ${language}.
+Nunca misture idiomas. Nunca crie termos genéricos como "professional services" se isso não estiver nos dados.
+`;
+
   const userMessage = `
-Create 5 different Google Search Ads based on the following information:
+Crie 5 anúncios de texto para Google Ads usando exclusivamente os dados abaixo:
 
-Company: ${campaignData.companyName || "Not provided"}
-Website: ${campaignData.websiteUrl || "Not provided"}
-Product/Service: ${campaignData.product || "Not provided"}
-Industry: ${campaignData.industry || "Not provided"}
-Target Audience: ${campaignData.targetAudience || "Not provided"}
-Campaign Objective: ${campaignData.objective || "Not provided"}
-Tone of Voice: ${campaignData.brandTone || "Not provided"}
-Psychological Trigger: ${mindTrigger || "Not provided"}
-Unique Selling Points: ${Array.isArray(campaignData.differentials) ? campaignData.differentials.join(", ") : (campaignData.differentials || "Not provided")}
-Company Description: ${campaignData.companyDescription || "Not provided"}
-Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(", ") : (campaignData.keywords || "Not provided")}
-Call to Action: ${Array.isArray(campaignData.callToAction) ? campaignData.callToAction[0] : (campaignData.callToAction || "Not provided")}
+- Empresa: ${campaignData.companyName}
+- Website: ${campaignData.websiteUrl}
+- Produto ou serviço: ${campaignData.product}
+- Objetivo: ${campaignData.objective}
+- Público-alvo: ${campaignData.targetAudience}
+- Tom de voz: ${campaignData.brandTone}
+- Gatilho mental: ${mindTrigger || 'nenhum'}
+- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || '')}
+- Palavras-chave: ${(Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || '')}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || ''}
 
-Each Google Ad should include:
-- 3 headlines (maximum 30 characters each)
-- 2 descriptions (maximum 90 characters each)
-- A display URL
+Requisitos:
+- Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)
+- 2 descrições (máx 90 caracteres cada)
+- Um display_url baseado no site fornecido
+- NÃO incluir texto em inglês
+- NÃO criar dados fictícios
 
-Format your response as a JSON array with 5 objects. Each object should have these properties:
-- headline_1 (string, max 30 chars)
-- headline_2 (string, max 30 chars)
-- headline_3 (string, max 30 chars)
-- description_1 (string, max 90 chars)
-- description_2 (string, max 90 chars)
-- display_url (string)
-
-Ensure all ads are compelling, follow character limits exactly, and incorporate the psychological trigger.
-`.trim();
+Formato de resposta (JSON):
+[
+  {
+    "headline_1": "...",
+    "headline_2": "...",
+    "headline_3": "...",
+    "description_1": "...",
+    "description_2": "...",
+    "display_url": "www.exemplo.com"
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
 
 export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const systemMessage = "You are a professional B2B advertising copywriter specializing in creating engaging LinkedIn Ads that drive conversions and establish professional credibility.";
-  
+  const language = campaignData.language || "Portuguese";
+
+  const systemMessage = `
+Você é um redator publicitário sênior em uma agência global de marketing.
+Você cria anúncios altamente conversivos para LinkedIn, SEM INVENTAR NENHUM CONTEXTO.
+Apenas use os dados que foram fornecidos abaixo. Se algo estiver ausente, ignore.
+A resposta deve estar COMPLETAMENTE em ${language}.
+Nunca misture idiomas. Nunca crie termos genéricos como "professional services" se isso não estiver nos dados.
+`;
+
   const userMessage = `
-Create 5 different LinkedIn Ads based on the following information:
+Crie 5 anúncios para LinkedIn usando exclusivamente os dados abaixo:
 
-Company: ${campaignData.companyName || "Not provided"}
-Website: ${campaignData.websiteUrl || "Not provided"}
-Product/Service: ${campaignData.product || "Not provided"}
-Industry: ${campaignData.industry || "Not provided"}
-Target Audience: ${campaignData.targetAudience || "Not provided"}
-Campaign Objective: ${campaignData.objective || "Not provided"}
-Tone of Voice: ${campaignData.brandTone || "Not provided"}
-Psychological Trigger: ${mindTrigger || "Not provided"}
-Unique Selling Points: ${Array.isArray(campaignData.differentials) ? campaignData.differentials.join(", ") : (campaignData.differentials || "Not provided")}
-Company Description: ${campaignData.companyDescription || "Not provided"}
-Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(", ") : (campaignData.keywords || "Not provided")}
-Call to Action: ${Array.isArray(campaignData.callToAction) ? campaignData.callToAction[0] : (campaignData.callToAction || "Not provided")}
+- Empresa: ${campaignData.companyName}
+- Website: ${campaignData.websiteUrl}
+- Produto ou serviço: ${campaignData.product}
+- Objetivo: ${campaignData.objective}
+- Público-alvo: ${campaignData.targetAudience}
+- Tom de voz: ${campaignData.brandTone}
+- Gatilho mental: ${mindTrigger || 'nenhum'}
+- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || '')}
+- Palavras-chave: ${(Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || '')}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || ''}
 
-Each LinkedIn Ad should include:
-- A compelling headline
-- Primary text (the main content)
-- A description (supporting context)
-- An image prompt (description for a visual)
+Requisitos:
+- Cada anúncio deve ter um título atraente
+- Texto principal profissional e persuasivo
+- Descrição complementar
+- Sugestão de imagem (sem texto sobreposto)
+- NÃO incluir texto em inglês
+- NÃO criar dados fictícios
 
-Format your response as a JSON array with 5 objects. Each object should have these properties:
-- headline (string)
-- primaryText (string)
-- description (string)
-- image_prompt (string)
-
-Ensure all ads are professional, business-oriented, and incorporate the psychological trigger effectively.
-`.trim();
+Formato de resposta (JSON):
+[
+  {
+    "headline": "...",
+    "primaryText": "...",
+    "description": "...",
+    "image_prompt": "..."
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
 
 export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const systemMessage = "You are a professional advertising copywriter specializing in creating engaging Microsoft/Bing Ads that drive conversions and follow platform guidelines.";
-  
+  const language = campaignData.language || "Portuguese";
+
+  const systemMessage = `
+Você é um redator publicitário sênior em uma agência global de marketing.
+Você cria anúncios altamente conversivos para Microsoft/Bing Ads, SEM INVENTAR NENHUM CONTEXTO.
+Apenas use os dados que foram fornecidos abaixo. Se algo estiver ausente, ignore.
+A resposta deve estar COMPLETAMENTE em ${language}.
+Nunca misture idiomas. Nunca crie termos genéricos como "professional services" se isso não estiver nos dados.
+`;
+
   const userMessage = `
-Create 5 different Microsoft/Bing Ads based on the following information:
+Crie 5 anúncios de texto para Microsoft/Bing Ads usando exclusivamente os dados abaixo:
 
-Company: ${campaignData.companyName || "Not provided"}
-Website: ${campaignData.websiteUrl || "Not provided"}
-Product/Service: ${campaignData.product || "Not provided"}
-Industry: ${campaignData.industry || "Not provided"}
-Target Audience: ${campaignData.targetAudience || "Not provided"}
-Campaign Objective: ${campaignData.objective || "Not provided"}
-Tone of Voice: ${campaignData.brandTone || "Not provided"}
-Psychological Trigger: ${mindTrigger || "Not provided"}
-Unique Selling Points: ${Array.isArray(campaignData.differentials) ? campaignData.differentials.join(", ") : (campaignData.differentials || "Not provided")}
-Company Description: ${campaignData.companyDescription || "Not provided"}
-Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(", ") : (campaignData.keywords || "Not provided")}
-Call to Action: ${Array.isArray(campaignData.callToAction) ? campaignData.callToAction[0] : (campaignData.callToAction || "Not provided")}
+- Empresa: ${campaignData.companyName}
+- Website: ${campaignData.websiteUrl}
+- Produto ou serviço: ${campaignData.product}
+- Objetivo: ${campaignData.objective}
+- Público-alvo: ${campaignData.targetAudience}
+- Tom de voz: ${campaignData.brandTone}
+- Gatilho mental: ${mindTrigger || 'nenhum'}
+- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || '')}
+- Palavras-chave: ${(Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || '')}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || ''}
 
-Each Microsoft/Bing Ad should include:
-- 3 headlines (maximum 30 characters each)
-- 2 descriptions (maximum 90 characters each)
-- A display URL
+Requisitos:
+- Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)
+- 2 descrições (máx 90 caracteres cada)
+- Um display_url baseado no site fornecido
+- NÃO incluir texto em inglês
+- NÃO criar dados fictícios
 
-Format your response as a JSON array with 5 objects. Each object should have these properties:
-- headline_1 (string, max 30 chars)
-- headline_2 (string, max 30 chars)
-- headline_3 (string, max 30 chars)
-- description_1 (string, max 90 chars)
-- description_2 (string, max 90 chars)
-- display_url (string)
-
-Ensure all ads are compelling, follow character limits exactly, and incorporate the psychological trigger.
-`.trim();
+Formato de resposta (JSON):
+[
+  {
+    "headline_1": "...",
+    "headline_2": "...",
+    "headline_3": "...",
+    "description_1": "...",
+    "description_2": "...",
+    "display_url": "www.exemplo.com"
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
 
 export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const systemMessage = "You are a professional social media advertising copywriter specializing in creating engaging Instagram/Meta Ads that drive engagement and conversions.";
-  
+  const language = campaignData.language || "Portuguese";
+
+  const systemMessage = `
+Você é um redator publicitário sênior em uma agência global de marketing.
+Você cria anúncios altamente conversivos para Instagram/Meta, SEM INVENTAR NENHUM CONTEXTO.
+Apenas use os dados que foram fornecidos abaixo. Se algo estiver ausente, ignore.
+A resposta deve estar COMPLETAMENTE em ${language}.
+Nunca misture idiomas. Nunca crie termos genéricos como "professional services" se isso não estiver nos dados.
+`;
+
   const userMessage = `
-Create 5 different Instagram/Meta Ads based on the following information:
+Crie 5 anúncios para Instagram/Meta usando exclusivamente os dados abaixo:
 
-Company: ${campaignData.companyName || "Not provided"}
-Website: ${campaignData.websiteUrl || "Not provided"}
-Product/Service: ${campaignData.product || "Not provided"}
-Industry: ${campaignData.industry || "Not provided"}
-Target Audience: ${campaignData.targetAudience || "Not provided"}
-Campaign Objective: ${campaignData.objective || "Not provided"}
-Tone of Voice: ${campaignData.brandTone || "Not provided"}
-Psychological Trigger: ${mindTrigger || "Not provided"}
-Unique Selling Points: ${Array.isArray(campaignData.differentials) ? campaignData.differentials.join(", ") : (campaignData.differentials || "Not provided")}
-Company Description: ${campaignData.companyDescription || "Not provided"}
-Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(", ") : (campaignData.keywords || "Not provided")}
-Call to Action: ${Array.isArray(campaignData.callToAction) ? campaignData.callToAction[0] : (campaignData.callToAction || "Not provided")}
+- Empresa: ${campaignData.companyName}
+- Website: ${campaignData.websiteUrl}
+- Produto ou serviço: ${campaignData.product}
+- Objetivo: ${campaignData.objective}
+- Público-alvo: ${campaignData.targetAudience}
+- Tom de voz: ${campaignData.brandTone}
+- Gatilho mental: ${mindTrigger || 'nenhum'}
+- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || '')}
+- Palavras-chave: ${(Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || '')}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || ''}
 
-Each Instagram/Meta Ad should include:
-- A compelling headline
-- Primary text (the main content/caption)
-- A description (supporting context)
-- An image prompt (description for a visual without text overlay)
+Requisitos:
+- Cada anúncio deve ter um título atraente
+- Texto principal (legenda) envolvente
+- Descrição de suporte
+- Sugestão de imagem (sem texto sobreposto)
+- NÃO incluir texto em inglês
+- NÃO criar dados fictícios
 
-Format your response as a JSON array with 5 objects. Each object should have these properties:
-- headline (string)
-- primaryText (string)
-- description (string)
-- image_prompt (string)
-
-Ensure all ads are engaging, social-media friendly, and incorporate the psychological trigger effectively.
-`.trim();
+Formato de resposta (JSON):
+[
+  {
+    "headline": "...",
+    "primaryText": "...",
+    "description": "...",
+    "image_prompt": "..."
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
