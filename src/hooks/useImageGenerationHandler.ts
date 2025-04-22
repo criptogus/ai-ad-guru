@@ -3,6 +3,7 @@ import { useState } from "react";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
 import { formatMapping, AdFormat } from "@/types/adFormats";
+import { AdPlatform } from "@/services/ads/adGeneration/types";
 import { toast } from "sonner";
 
 interface UseImageGenerationHandlerProps {
@@ -24,42 +25,26 @@ export const useImageGenerationHandler = ({
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (!ad.imagePrompt) {
-      toast.error("Descrição da imagem ausente", {
-        description: "Não foi possível gerar a imagem sem uma descrição"
-      });
+      toast.error("Descrição da imagem ausente");
       return;
     }
     
     setLoadingImageIndex(index);
     
     try {
-      console.log("Starting image generation for ad:", JSON.stringify(ad, null, 2));
-      console.log("Using image prompt:", ad.imagePrompt);
-      console.log("With campaign context:", JSON.stringify({
-        industry: campaignData?.industry,
-        brandTone: campaignData?.brandTone,
-        objective: campaignData?.objective,
-        targetAudience: campaignData?.targetAudience,
-        language: campaignData?.language
-      }, null, 2));
+      const platform: AdPlatform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
-      const platform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
-      
-      // Convert the ad format to our generation format using the mapping
+      // Convert the ad format to our generation format
       const adFormat = (ad.format || 'square') as AdFormat;
       const format = formatMapping[adFormat];
       
-      // Gather all relevant campaign context for image generation
-      const additionalInfo = {
+      const imageUrl = await generateAdImage(ad.imagePrompt, {
         platform,
         format,
         companyName: campaignData?.name || '',
         brandTone: campaignData?.brandTone || 'professional',
         industry: campaignData?.industry || ''
-      };
-      
-      // Provide both the prompt and additionalInfo parameters
-      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
+      });
       
       if (imageUrl) {
         toast.success("Imagem gerada com sucesso!");
@@ -68,15 +53,11 @@ export const useImageGenerationHandler = ({
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setMetaAds(updatedAds);
-          console.log("Meta ad updated with new image:", imageUrl);
         } else if (platform === 'linkedin' && linkedInAds[index]) {
           const updatedAds = [...linkedInAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
-          console.log("LinkedIn ad updated with new image:", imageUrl);
         }
-      } else {
-        throw new Error("Não foi possível gerar a imagem");
       }
     } catch (error) {
       console.error("Error generating image:", error);

@@ -1,4 +1,3 @@
-
 export interface CampaignPromptData {
   companyName: string;
   websiteUrl: string;
@@ -37,4 +36,15 @@ export interface GeneratedAdContent {
     headline_2: string;
     description: string;
   }>;
+}
+
+export type AdPlatform = 'meta' | 'instagram' | 'facebook' | 'linkedin' | 'google';
+
+export interface ImageGenerationParams {
+  platform: AdPlatform;
+  format?: string;
+  prompt: string;
+  companyName: string;
+  brandTone?: string;
+  industry?: string;
 }

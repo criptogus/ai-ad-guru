@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Image, RotateCw, Edit, Eye } from "lucide-react";
@@ -81,9 +80,11 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
 
       {/* Display the image prompt if available */}
       {ad.imagePrompt && (
-        <div className="text-xs text-muted-foreground">
-          <span className="font-medium">Image prompt:</span> {ad.imagePrompt}
-        </div>
+        <MetaImagePromptGallery 
+          ad={ad}
+          loading={isLoading}
+          onGenerateImage={onGenerateImage}
+        />
       )}
 
       {/* Image Template Gallery Section - Horizontal */}
