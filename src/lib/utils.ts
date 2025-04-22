@@ -1,11 +1,24 @@
-
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 
 // Utility function to merge Tailwind classes
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// Utility function to extract domain from a URL
+export function getDomain(url: string): string {
+  try {
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname.replace('www.', '');
+  } catch (e) {
+    // Fallback if URL parsing fails
+    return url || 'example.com';
+  }
 }
 
 // Normalize Google Ad data from API response to our internal format
