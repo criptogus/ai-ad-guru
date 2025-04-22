@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
 import { Button } from '@/components/ui/button';
 import { Check, Edit, Smartphone, Tablet } from 'lucide-react';
+import { GoogleAd, MetaAd } from '@/hooks/adGeneration';
+import { useToast } from '@/hooks/use-toast';
 import GoogleAdPreview from '../ad-preview/google/GoogleAdPreview';
 import { InstagramPreview } from '../ad-preview/meta';
 import { MicrosoftAdPreview } from '../ad-preview/microsoft';
 import LinkedInAdPreview from '../ad-preview/linkedin/LinkedInAdPreview';
-import { useToast } from '@/hooks/use-toast';
 
 interface AdPreviewTabProps {
   selectedPlatforms: string[];
@@ -307,7 +308,7 @@ const AdPreviewTab: React.FC<AdPreviewTabProps> = ({
                         <CardContent className="p-6 text-center">
                           <p className="text-muted-foreground">No LinkedIn Ads generated yet.</p>
                         </CardContent>
-                      Card>
+                      </Card>
                     )}
                   </>
                 )}
