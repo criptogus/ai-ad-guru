@@ -14,90 +14,78 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
   const differentials = data.differentials?.join(', ') || 'não especificado';
   
   // Build the system message for the AI
-  const systemMessage = `You are a world-class marketing strategist inside an award-winning ad agency.`;
+  const systemMessage = `Você é um redator e designer de anúncios de uma agência premiada, especialista em criar campanhas com alta conversão. 
+Sua missão é criar textos e imagens para anúncios em Google Ads, Instagram, LinkedIn e Microsoft Ads com base no contexto fornecido, 
+garantindo relevância, originalidade, coerência e persuasão. Você sempre respeita o idioma da campanha (${language}) 
+e os formatos exigidos por cada plataforma.`;
 
-  // Build the user message with all campaign details in a structured way
-  const userMessage = `You will receive the full company context including website, business description, campaign goal, target audience, tone of voice, selected mental trigger, preferred language, and selected ad platforms. Based on this data, first identify clearly and concisely:
+  // Build the user message with all campaign details
+  const userMessage = `Use os dados abaixo para gerar os anúncios:
 
-1. The company's market/industry
-2. Main product or service offered
-3. Unique value proposition
+### 📌 Empresa
+- Nome: ${data.companyName}
+- Site: ${data.websiteUrl}
 
-Then, using that understanding, generate 5 high-converting ad variations for each of the following platforms selected:
+### 🎯 Campanha
+- Objetivo da campanha: ${data.objective}
+- Produto/serviço promovido: ${data.product || data.objective}
+- Público-alvo: ${data.targetAudience}
+- Tom de voz: ${data.brandTone || 'profissional'}
+- Diferenciais da empresa: ${differentials}
+- Gatilho mental principal: ${data.mindTrigger || ''}
+- Idioma da campanha: ${language}
 
-- Google Ads (Search Text Format)
-- Instagram Ads (Post Text + Image Prompt)
-- LinkedIn Ads (Post Text + Image Prompt)
-- Microsoft Bing Ads (Search Text Format)
+### 🧠 Regras para geração:
+1. Utilize APENAS o idioma ${language} em TODOS os textos, sem exceção.
+2. Use linguagem adaptada ao público e tom de voz da marca.
+3. Para cada plataforma, siga as práticas recomendadas de copywriting.
+4. Gere variações realistas e otimizadas para conversão.
+5. Crie prompts de imagem (sem texto sobreposto) para Instagram e LinkedIn, com estilo fotográfico premium e contexto visual alinhado à campanha.
 
-⚠️ For Instagram and LinkedIn image generation:
-- Do not include any text on the image
-- Image should be photorealistic, emotionally resonant, agency-quality
-- The style should match the platform's advertising standards
-- No watermarks or artificial distortions
-
-✅ Ensure the copy is emotionally engaging and uses modern growth marketing techniques
-✅ Use the selected mental trigger (e.g. scarcity, curiosity, authority)
-✅ Return the output in the same language provided by the user (${language})
-
----
-
-Company Information:
-- Website URL: ${data.websiteUrl}
-- Business Description: ${data.product || data.objective}
-- Campaign Goal: ${data.objective}
-- Target Audience: ${data.targetAudience}
-- Tone of Voice: ${data.brandTone || 'profissional'}
-- Mental Trigger: ${data.mindTrigger || 'escassez'}
-- Language: ${language}
-- Selected Platforms: ${data.platforms?.join(', ') || 'google, meta, linkedin, microsoft'}
-- Unique Selling Points: ${differentials}
-
----
-
-Please output the result in a clear JSON structure separating each ad variation under its respective platform with the following structure:
-
+### 📦 Estrutura de saída esperada (JSON):
 {
-  "market": "Industry/market description",
-  "product": "Main product or service",
-  "differentiator": "Unique value proposition",
   "google_ads": [
-    { 
-      "headline1": "Main headline", 
-      "headline2": "Secondary headline", 
-      "headline3": "Additional headline", 
-      "description1": "Main description text", 
-      "description2": "Additional description"
-    },
-    // 4 more variations...
+    {
+      "headline_1": "",
+      "headline_2": "",
+      "headline_3": "",
+      "description_1": "",
+      "description_2": "",
+      "display_url": ""
+    }
   ],
   "instagram_ads": [
     {
-      "text": "Instagram caption with hashtags",
-      "image_prompt": "Detailed description for image generation without text on image"
-    },
-    // 4 more variations...
+      "text": "",
+      "image_prompt": ""
+    }
   ],
   "linkedin_ads": [
     {
-      "text": "LinkedIn post text",
-      "image_prompt": "Detailed description for image generation without text on image"
-    },
-    // 4 more variations...
+      "text": "",
+      "image_prompt": ""
+    }
   ],
-  "bing_ads": [
+  "microsoft_ads": [
     {
-      "headline1": "Main headline",
-      "headline2": "Secondary headline",
-      "headline3": "Additional headline",
-      "description1": "Main description text",
-      "description2": "Additional description"
-    },
-    // 4 more variations...
+      "headline_1": "",
+      "headline_2": "",
+      "description": "",
+      "display_url": ""
+    }
   ]
 }
 
-Only generate content for platforms listed in the Selected Platforms field. Return valid JSON structure only.`;
+### 📌 Observações importantes:
+- TODOS os textos devem estar em ${language} e NUNCA em outro idioma.
+- Os textos devem parecer escritos por humanos com domínio em marketing.
+- Os prompts de imagem devem descrever visualmente a campanha (produto, persona, emoção, estética), sem mencionar marcas genéricas ou escrever texto na imagem.
+- Os prompts de imagem devem ser detalhados, específicos para ${data.companyName} e contextualmente relevantes ao negócio.
+- Gere resultados como se fossem criados por uma agência sênior de Nova York ou Londres.
+- NUNCA use palavras em inglês se o idioma for português, nem português se o idioma for inglês.
+- NUNCA use texto genérico ou óbvio como "Your Company" ou "Sua Empresa".
+
+Retorne apenas o JSON, sem explicações adicionais.`;
 
   return {
     systemMessage,

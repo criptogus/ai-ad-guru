@@ -31,10 +31,10 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
 }) => {
   // Find the first available platform to use as default
   const getDefaultPlatform = (): string => {
-    if (googleAd && isPlatformSelected('google')) return 'google';
-    if (metaAd && isPlatformSelected('meta')) return 'instagram';
-    if (linkedInAd && isPlatformSelected('linkedin')) return 'linkedin';
-    if (microsoftAd && isPlatformSelected('microsoft')) return 'microsoft';
+    if (googleAd && (selectedPlatforms.includes('google') || selectedPlatforms.length === 0)) return 'google';
+    if (metaAd && (selectedPlatforms.includes('meta') || selectedPlatforms.length === 0)) return 'instagram';
+    if (linkedInAd && (selectedPlatforms.includes('linkedin') || selectedPlatforms.length === 0)) return 'linkedin';
+    if (microsoftAd && (selectedPlatforms.includes('microsoft') || selectedPlatforms.length === 0)) return 'microsoft';
     return 'google'; // Default fallback
   };
   
@@ -53,16 +53,16 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
     }
   }, [googleAd, metaAd, linkedInAd, microsoftAd, selectedPlatforms]);
   
-  // Check if a platform is selected - THIS IS THE KEY FUNCTION TO FIX THE BUG
+  // Check if a platform is selected or if no platforms are specified (backward compatibility)
   const isPlatformSelected = (platform: string): boolean => {
     // If no platforms are specified, show all (for backward compatibility)
-    if (!selectedPlatforms || selectedPlatforms.length === 0) return true;
+    if (selectedPlatforms.length === 0) return true;
     
     // Map the UI platform names to the platform IDs used in the selection
     if (platform === 'google') return selectedPlatforms.includes('google');
-    if (platform === 'instagram' || platform === 'meta') return selectedPlatforms.includes('meta');
+    if (platform === 'instagram') return selectedPlatforms.includes('meta');
     if (platform === 'linkedin') return selectedPlatforms.includes('linkedin');
-    if (platform === 'microsoft' || platform === 'bing') return selectedPlatforms.includes('microsoft');
+    if (platform === 'microsoft') return selectedPlatforms.includes('microsoft');
     
     return false;
   };
@@ -103,7 +103,7 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
   
   return (
     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${availablePlatforms.length}, 1fr)` }}>
+      <TabsList className={`grid grid-cols-${availablePlatforms.length} mb-4`}>
         {availablePlatforms.map(platform => (
           <TabsTrigger key={platform.id} value={platform.id}>{platform.label}</TabsTrigger>
         ))}
