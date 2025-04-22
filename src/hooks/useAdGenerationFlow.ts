@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
 import { GeneratedAdContent } from '@/services/ads/adGeneration/types';
+import { sanitizePromptData } from '@/services/ads/adGeneration/sanitizePromptData';
 
 export const useAdGenerationFlow = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -19,29 +19,8 @@ export const useAdGenerationFlow = () => {
       console.log('Generating ads with data:', JSON.stringify(data, null, 2));
       setIsGenerating(true);
 
-      // Create a cleaned and structured version of the prompt data
-      // This is critical to ensure the correct format for the unified prompt builder
-      const promptData: CampaignPromptData = {
-        companyName: data.companyName,
-        websiteUrl: data.websiteUrl || '',
-        objective: data.objective || 'awareness',
-        product: data.product || '',
-        targetAudience: data.targetAudience || '',
-        brandTone: data.brandTone || 'professional',
-        // Ensure we have both formats of mind triggers (object and single string)
-        mindTrigger: data.mindTrigger || '',
-        mindTriggers: data.mindTriggers || {},
-        language: data.language || 'english',
-        industry: data.industry || '',
-        platforms: data.platforms || ['google', 'meta'],
-        companyDescription: data.companyDescription || '',
-        differentials: Array.isArray(data.differentials) ? data.differentials : 
-                       (typeof data.differentials === 'string' ? [data.differentials] : []),
-        keywords: Array.isArray(data.keywords) ? data.keywords : 
-                 (typeof data.keywords === 'string' ? [data.keywords] : []),
-        callToAction: Array.isArray(data.callToAction) ? data.callToAction[0] : 
-                     (typeof data.callToAction === 'string' ? data.callToAction : 'Learn More')
-      };
+      // 🔒 Sanitize campaign data before prompt
+      const promptData: CampaignPromptData = sanitizePromptData(data);
 
       const result = await generateAds(promptData);
 
