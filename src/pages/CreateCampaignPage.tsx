@@ -79,7 +79,6 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  // Use the updated useImageGenerationHandler hook with no arguments
   const { 
     handleGenerateImage, 
     loadingImageIndex 
@@ -310,13 +309,10 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
 
-  // Create a wrapper for handleGenerateImage to make it compatible with the expected signature
   const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
     try {
-      // Extract the prompt and additional information from the ad
       const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
       
-      // Call handleGenerateImage with the ad and index
       await handleGenerateImage(ad, index);
     } catch (error) {
       console.error("Error generating image:", error);
