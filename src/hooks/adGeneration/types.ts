@@ -25,7 +25,7 @@ export interface MetaAd {
   description: string;
   imagePrompt: string;
   imageUrl?: string;
-  format?: 'feed' | 'story' | 'reel';
+  format?: 'feed' | 'story' | 'reel' | 'square'; // Added 'square' to valid formats
   hashtags?: string[] | string;
   callToAction?: string;
 }

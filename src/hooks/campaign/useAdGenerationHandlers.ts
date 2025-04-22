@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
+import { normalizeGoogleAd, normalizeMetaAd } from '@/lib/utils';
 
 interface UseAdGenerationHandlersProps {
   analysisResult: WebsiteAnalysisResult | null;
@@ -62,7 +63,7 @@ export const useAdGenerationHandlers = ({
       primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
       description: `Quality services tailored to your needs. Contact us today to learn more.`,
       imagePrompt: `Professional business image for ${companyName}, showing ${campaignData.industry || 'professional'} environment`,
-      format: 'square'
+      format: 'feed' // Changed from 'square' to 'feed' to match the MetaAd type
     }));
   };
 
@@ -124,7 +125,9 @@ export const useAdGenerationHandlers = ({
         });
       }
       
-      setGoogleAds(ads);
+      // Make sure the format is correct by mapping through normalizeGoogleAd
+      const normalizedAds = Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
+      setGoogleAds(normalizedAds);
     } catch (error) {
       console.error("Failed to generate Google Ads:", error);
       // Use fallback on error
@@ -172,7 +175,9 @@ export const useAdGenerationHandlers = ({
         });
       }
       
-      setMetaAds(ads);
+      // Make sure the format is correct by mapping through normalizeMetaAd
+      const normalizedAds = Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
+      setMetaAds(normalizedAds);
     } catch (error) {
       console.error("Failed to generate Instagram Ads:", error);
       // Use fallback on error
@@ -220,7 +225,9 @@ export const useAdGenerationHandlers = ({
         });
       }
       
-      setLinkedInAds(ads);
+      // Make sure the format is correct by mapping through normalizeMetaAd
+      const normalizedAds = Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
+      setLinkedInAds(normalizedAds);
     } catch (error) {
       console.error("Failed to generate LinkedIn Ads:", error);
       // Use fallback on error
@@ -268,7 +275,9 @@ export const useAdGenerationHandlers = ({
         });
       }
       
-      setMicrosoftAds(ads);
+      // Make sure the format is correct by mapping through normalizeGoogleAd
+      const normalizedAds = Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
+      setMicrosoftAds(normalizedAds);
     } catch (error) {
       console.error("Failed to generate Microsoft Ads:", error);
       // Use fallback on error

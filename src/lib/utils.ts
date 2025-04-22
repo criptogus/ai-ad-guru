@@ -1,7 +1,7 @@
 
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { GoogleAd } from "@/hooks/adGeneration/types";
+import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -36,5 +36,20 @@ export function normalizeGoogleAd(ad: any): GoogleAd {
     // Add headlines and descriptions arrays if they don't exist
     headlines: ad.headlines || [ad.headline1 || ad.headline_1 || '', ad.headline2 || ad.headline_2 || '', ad.headline3 || ad.headline_3 || ''],
     descriptions: ad.descriptions || [ad.description1 || ad.description_1 || '', ad.description2 || ad.description_2 || '']
+  };
+}
+
+// Function to normalize Meta Ad data format
+export function normalizeMetaAd(ad: any): MetaAd {
+  // Handle mismatch between API response format and our interface
+  return {
+    headline: ad.headline || ad.title || (ad.text ? ad.text.split('\n')[0] : '') || '',
+    primaryText: ad.primaryText || ad.text || ad.primary_text || '',
+    description: ad.description || '',
+    imagePrompt: ad.imagePrompt || ad.image_prompt || `Professional ad image for ${ad.headline || ''}`,
+    imageUrl: ad.imageUrl || ad.image_url || null,
+    format: ad.format || 'feed', // Default to 'feed' format
+    hashtags: ad.hashtags || [],
+    callToAction: ad.callToAction || ad.call_to_action || 'Learn More'
   };
 }
