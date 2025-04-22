@@ -7,14 +7,17 @@ interface InstagramPreviewHeaderProps {
 
 const InstagramPreviewHeader: React.FC<InstagramPreviewHeaderProps> = ({ companyName }) => {
   return (
-    <div className="flex items-center justify-between p-3 border-b dark:border-gray-700">
-      <div className="flex items-center">
-        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs overflow-hidden">
-          {companyName.slice(0, 1).toUpperCase()}
-        </div>
-        <div className="font-semibold ml-2">{companyName}</div>
+    <div className="p-3 flex items-center border-b">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex-shrink-0" />
+      <div className="ml-2 flex-grow">
+        <div className="text-sm font-medium">{companyName}</div>
+        <div className="text-xs text-gray-500">Sponsored</div>
       </div>
-      <div className="text-gray-600">...</div>
+      <div className="text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+        </svg>
+      </div>
     </div>
   );
 };

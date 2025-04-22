@@ -1,16 +1,14 @@
 
-import { useState } from "react";
-import { MetaAd } from "@/hooks/adGeneration/types";
-import { generateAdImage } from "@/services/ads/adGeneration/imageGenerationService";
-import { formatMapping, AdFormat } from "@/types/adFormats";
-import { AdPlatform } from "@/services/ads/adGeneration/types";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { MetaAd } from '@/hooks/adGeneration';
+import { generateAdImage } from '@/services/ads/adGeneration/imageGenerationService';
+import { useToast } from '@/components/ui/use-toast';
 
 interface UseImageGenerationHandlerProps {
   metaAds: MetaAd[];
   linkedInAds: MetaAd[];
-  setMetaAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
-  setLinkedInAds: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  setMetaAds: (ads: MetaAd[]) => void;
+  setLinkedInAds: (ads: MetaAd[]) => void;
   campaignData: any;
 }
 
@@ -22,60 +20,58 @@ export const useImageGenerationHandler = ({
   campaignData
 }: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
-  const handleGenerateImage = async (ad: MetaAd, index: number) => {
+  const handleGenerateImage = async (ad: MetaAd, index: number): Promise<void> => {
     if (!ad.imagePrompt) {
-      toast.error("Image prompt is missing", {
-        description: "Please provide a description for the image you want to generate"
+      toast({
+        title: "Missing image prompt",
+        description: "The ad doesn't have an image prompt to generate an image.",
+        variant: "destructive"
       });
       return;
     }
-    
-    setLoadingImageIndex(index);
-    
+
     try {
-      // Determine which platform we're generating for
-      const platform: AdPlatform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
+      setLoadingImageIndex(index);
       
-      // Convert the ad format to our generation format
-      const adFormat = (ad.format || 'square') as AdFormat;
-      const format = formatMapping[adFormat] || 'square';
+      const companyName = campaignData.name || '';
+      const additionalInfo = {
+        companyName,
+        brandTone: campaignData.brandTone || 'professional',
+        industry: campaignData.industry || ''
+      };
       
-      // Add campaign context to the prompt for better results
-      const enhancedPrompt = `${ad.imagePrompt}
-Brand: ${campaignData?.name || campaignData?.companyName || ''}
-Industry: ${campaignData?.industry || ''}
-Target audience: ${campaignData?.targetAudience || ''}`;
+      console.log(`Generating image for ad ${index} with prompt: ${ad.imagePrompt}`);
+      const imageUrl = await generateAdImage(ad.imagePrompt, additionalInfo);
       
-      // Generate the image
-      const imageUrl = await generateAdImage(enhancedPrompt, {
-        platform,
-        format,
-        companyName: campaignData?.name || campaignData?.companyName || '',
-        brandTone: campaignData?.brandTone || 'professional',
-        industry: campaignData?.industry || ''
-      });
-      
-      if (imageUrl) {
-        toast.success("Image generated successfully");
-        
-        // Update the appropriate ad array
-        if (platform === 'meta' && metaAds[index]) {
-          const updatedAds = [...metaAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setMetaAds(updatedAds);
-        } else if (platform === 'linkedin' && linkedInAds[index]) {
-          const updatedAds = [...linkedInAds];
-          updatedAds[index] = { ...updatedAds[index], imageUrl };
-          setLinkedInAds(updatedAds);
-        }
-      } else {
-        throw new Error("Failed to generate image: No image URL returned");
+      if (!imageUrl) {
+        throw new Error("Failed to generate image");
       }
+      
+      // Update the correct ad list based on which one contains this ad
+      if (index < metaAds.length) {
+        const updatedAds = [...metaAds];
+        updatedAds[index] = { ...updatedAds[index], imageUrl };
+        setMetaAds(updatedAds);
+      } else if (index < (metaAds.length + linkedInAds.length)) {
+        // Adjust index for linkedInAds array
+        const linkedInIndex = index - metaAds.length;
+        const updatedAds = [...linkedInAds];
+        updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
+        setLinkedInAds(updatedAds);
+      }
+      
+      toast({
+        title: "Image generated",
+        description: "The ad image has been generated successfully."
+      });
     } catch (error) {
       console.error("Error generating image:", error);
-      toast.error("Failed to generate image", {
-        description: error instanceof Error ? error.message : "Unknown error occurred"
+      toast({
+        title: "Image generation failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
       });
     } finally {
       setLoadingImageIndex(null);
