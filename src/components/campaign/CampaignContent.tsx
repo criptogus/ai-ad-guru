@@ -36,6 +36,8 @@ const CampaignContent: React.FC = () => {
     setAudienceAnalysisResult
   } = useCampaign();
 
+  const [isCreating, setIsCreating] = useState(false);
+
   useEffect(() => {
     console.log("CampaignContent: Current step is", currentStep);
     console.log("CampaignContent: Campaign data", campaignData);
@@ -74,7 +76,7 @@ const CampaignContent: React.FC = () => {
   );
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const { createCampaign, isCreating } = useCampaignCreation(
+  const { createCampaign, isCreating: isCreatingCampaign } = useCampaignCreation(
     user,
     campaignData,
     googleAds,
@@ -94,6 +96,8 @@ const CampaignContent: React.FC = () => {
   });
 
   const {
+    handleAdsGenerated,
+    handleCreateCampaign,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateLinkedInAds,
@@ -105,6 +109,8 @@ const CampaignContent: React.FC = () => {
     setMetaAds,
     setLinkedInAds,
     setMicrosoftAds,
+    createCampaign,
+    setIsCreating,
     generateGoogleAds: wrappedGenerateGoogleAds,
     generateMetaAds: wrappedGenerateMetaAds,
     generateLinkedInAds: wrappedGenerateLinkedInAds,
@@ -196,7 +202,7 @@ const CampaignContent: React.FC = () => {
     isAnalyzing,
     isGenerating,
     loadingImageIndex,
-    isCreating,
+    isCreating: isCreating || isCreatingCampaign,
     handleWebsiteAnalysis,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,

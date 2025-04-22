@@ -69,17 +69,11 @@ const CreateCampaignPage: React.FC = () => {
 
   const { createCampaign } = useCampaignCreation();
 
-  // Create a handler for generating images
+  // Create a handler for generating images - pass no args since it's been updated to work with optional props
   const { 
     handleGenerateImage, 
     loadingImageIndex 
-  } = useImageGenerationHandler({
-    metaAds,
-    linkedInAds,
-    setMetaAds,
-    setLinkedInAds,
-    campaignData
-  });
+  } = useImageGenerationHandler();
 
   // Add ad generation handlers
   const {

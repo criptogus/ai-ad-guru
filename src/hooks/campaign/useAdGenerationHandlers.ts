@@ -8,11 +8,11 @@ import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 export interface UseAdGenerationHandlersProps {
   setGoogleAds: (ads: GoogleAd[]) => void;
   setMetaAds: (ads: MetaAd[]) => void;
-  setMicrosoftAds: (ads: GoogleAd[]) => void;
-  setLinkedInAds: (ads: MetaAd[]) => void;
+  setMicrosoftAds?: (ads: GoogleAd[]) => void;
+  setLinkedInAds?: (ads: MetaAd[]) => void;
   campaignData: any;
-  createCampaign: any;
-  setIsCreating: (isCreating: boolean) => void;
+  createCampaign?: any;
+  setIsCreating?: (isCreating: boolean) => void;
   analysisResult?: WebsiteAnalysisResult | null;
   generateGoogleAds?: (analysisResult: any) => Promise<GoogleAd[] | null>;
   generateMetaAds?: (analysisResult: any) => Promise<MetaAd[] | null>;
@@ -46,24 +46,29 @@ export const useAdGenerationHandlers = ({
     if (generatedAds.meta_ads) {
       setMetaAds(generatedAds.meta_ads);
     }
-    if (generatedAds.linkedin_ads) {
+    if (generatedAds.linkedin_ads && setLinkedInAds) {
       setLinkedInAds(generatedAds.linkedin_ads);
     }
-    if (generatedAds.microsoft_ads) {
+    if (generatedAds.microsoft_ads && setMicrosoftAds) {
       setMicrosoftAds(generatedAds.microsoft_ads);
     }
   };
 
   const handleCreateCampaign = async (): Promise<void> => {
-    setIsCreating(true);
+    if (setIsCreating) {
+      setIsCreating(true);
+    }
+    
     try {
-      const result = await createCampaign();
-      if (result) {
-        toast({
-          title: "Campaign Created",
-          description: "Your campaign has been created successfully."
-        });
-        navigate('/campaigns');
+      if (createCampaign) {
+        const result = await createCampaign();
+        if (result) {
+          toast({
+            title: "Campaign Created",
+            description: "Your campaign has been created successfully."
+          });
+          navigate('/campaigns');
+        }
       }
     } catch (error) {
       console.error("Error creating campaign:", error);
@@ -73,7 +78,9 @@ export const useAdGenerationHandlers = ({
         description: "Failed to create the campaign. Please try again."
       });
     } finally {
-      setIsCreating(false);
+      if (setIsCreating) {
+        setIsCreating(false);
+      }
     }
   };
 
@@ -137,7 +144,7 @@ export const useAdGenerationHandlers = ({
   };
 
   const handleGenerateMicrosoftAds = async () => {
-    if (!analysisResult || !generateMicrosoftAds) {
+    if (!analysisResult || !generateMicrosoftAds || !setMicrosoftAds) {
       toast({
         variant: "destructive",
         title: "Missing Data",
@@ -166,7 +173,7 @@ export const useAdGenerationHandlers = ({
   };
 
   const handleGenerateLinkedInAds = async () => {
-    if (!analysisResult || !generateLinkedInAds) {
+    if (!analysisResult || !generateLinkedInAds || !setLinkedInAds) {
       toast({
         variant: "destructive",
         title: "Missing Data",
