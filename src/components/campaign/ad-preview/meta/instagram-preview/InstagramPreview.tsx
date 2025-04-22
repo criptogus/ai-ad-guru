@@ -10,8 +10,10 @@ interface InstagramPreviewProps {
   className?: string;
   index?: number;
   loadingImageIndex?: number | null;
-  onGenerateImage?: () => void;
+  onGenerateImage?: () => void | Promise<void>;
+  onUpdateAd?: (updatedAd: MetaAd) => void;
   viewMode?: "feed" | "story" | "reel";
+  isLoading?: boolean;
 }
 
 export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
@@ -21,7 +23,9 @@ export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   index = 0,
   loadingImageIndex = null,
   onGenerateImage,
+  onUpdateAd,
   viewMode = "feed",
+  isLoading = false
 }) => {
   const [imageLoading, setImageLoading] = React.useState(true);
   const [imageError, setImageError] = React.useState(false);

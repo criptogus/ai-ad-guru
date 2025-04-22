@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetaAd } from "@/hooks/adGeneration";
@@ -101,6 +100,7 @@ const InstagramAdsPreview: React.FC<InstagramAdsPreviewProps> = ({
                 onGenerateImage={() => handleGenerateImage(ad, index)}
                 onUpdateAd={(updatedAd) => onUpdateAd && onUpdateAd(index, updatedAd)}
                 viewMode={viewMode}
+                isLoading={loadingImageIndex === index}
               />
             </div>
           ))}

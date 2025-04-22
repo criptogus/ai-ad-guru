@@ -75,6 +75,7 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
           onGenerateImage={onGenerateImage}
           onUpdateAd={onUpdateAd}
           viewMode={currentViewMode}
+          isLoading={isLoading}
         />
       </div>
 
