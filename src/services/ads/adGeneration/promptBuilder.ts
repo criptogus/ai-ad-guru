@@ -13,45 +13,55 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
   // Get formatted differentials
   const differentials = data.differentials?.join(', ') || 'não especificado';
   
-  // Build the system message for the AI
-  const systemMessage = `Você é um redator e designer de anúncios de uma agência premiada, especialista em criar campanhas com alta conversão. 
-Sua missão é criar textos e imagens para anúncios em Google Ads, Instagram, LinkedIn e Microsoft Ads com base no contexto fornecido, 
-garantindo relevância, originalidade, coerência e persuasão. Você sempre respeita o idioma da campanha (${language}) 
-e os formatos exigidos por cada plataforma.`;
+  // Build the system message for the AI with enhanced agency context
+  const systemMessage = `You are a world-class marketing strategist inside an award-winning ad agency, 
+specializing in creating high-converting, emotionally resonant ad campaigns across multiple platforms. 
+Your expertise lies in understanding markets deeply and crafting compelling messages that drive results.`;
 
-  // Build the user message with all campaign details
-  const userMessage = `Use os dados abaixo para gerar os anúncios:
+  // Build the user message with structured analysis and requirements
+  const userMessage = `Analyze the following company data and create highly effective ad campaigns:
 
-### 📌 Empresa
-- Nome: ${data.companyName}
-- Site: ${data.websiteUrl}
+### 📌 Company Analysis Required:
+1. Market/Industry Identification
+2. Main Product/Service Definition
+3. Unique Value Proposition
 
-### 🎯 Campanha
-- Objetivo da campanha: ${data.objective}
-- Produto/serviço promovido: ${data.product || data.objective}
-- Público-alvo: ${data.targetAudience}
-- Tom de voz: ${data.brandTone || 'profissional'}
-- Diferenciais da empresa: ${differentials}
-- Gatilho mental principal: ${data.mindTrigger || ''}
-- Idioma da campanha: ${language}
+### 📊 Company Information:
+- Company: ${data.companyName}
+- Website: ${data.websiteUrl}
+- Description: ${data.companyDescription || data.objective}
+- Campaign Goal: ${data.objective}
+- Target Audience: ${data.targetAudience}
+- Brand Voice: ${data.brandTone || 'professional'}
+- Key Differentiators: ${differentials}
+- Mental Trigger: ${data.mindTrigger || 'não especificado'}
+- Campaign Language: ${language}
 
-### 🧠 Regras para geração:
-1. Utilize APENAS o idioma ${language} em TODOS os textos, sem exceção.
-2. Use linguagem adaptada ao público e tom de voz da marca.
-3. Para cada plataforma, siga as práticas recomendadas de copywriting.
-4. Gere variações realistas e otimizadas para conversão.
-5. Crie prompts de imagem (sem texto sobreposto) para Instagram e LinkedIn, com estilo fotográfico premium e contexto visual alinhado à campanha.
+### 🎯 Ad Generation Requirements:
+1. Generate ads ONLY in ${language}
+2. Focus on emotional engagement and modern growth marketing techniques
+3. Incorporate the specified mental trigger naturally
+4. Follow platform-specific best practices
+5. For image-based ads (Instagram/LinkedIn):
+   - No text overlays on images
+   - Photorealistic, emotionally resonant quality
+   - Professional agency-grade visuals
+   - No watermarks or artificial elements
 
-### 📦 Estrutura de saída esperada (JSON):
+### 📦 Return JSON Structure:
 {
+  "market_analysis": {
+    "industry": "identified market/industry",
+    "main_product": "core product/service offered",
+    "value_proposition": "unique selling points"
+  },
   "google_ads": [
     {
       "headline_1": "",
       "headline_2": "",
       "headline_3": "",
       "description_1": "",
-      "description_2": "",
-      "display_url": ""
+      "description_2": ""
     }
   ],
   "instagram_ads": [
@@ -76,19 +86,11 @@ e os formatos exigidos por cada plataforma.`;
   ]
 }
 
-### 📌 Observações importantes:
-- TODOS os textos devem estar em ${language} e NUNCA em outro idioma.
-- Os textos devem parecer escritos por humanos com domínio em marketing.
-- Os prompts de imagem devem descrever visualmente a campanha (produto, persona, emoção, estética), sem mencionar marcas genéricas ou escrever texto na imagem.
-- Os prompts de imagem devem ser detalhados, específicos para ${data.companyName} e contextualmente relevantes ao negócio.
-- Gere resultados como se fossem criados por uma agência sênior de Nova York ou Londres.
-- NUNCA use palavras em inglês se o idioma for português, nem português se o idioma for inglês.
-- NUNCA use texto genérico ou óbvio como "Your Company" ou "Sua Empresa".
-
-Retorne apenas o JSON, sem explicações adicionais.`;
+Return ONLY the JSON, without any explanation or additional text.`;
 
   return {
     systemMessage,
     userMessage
   };
 };
+
