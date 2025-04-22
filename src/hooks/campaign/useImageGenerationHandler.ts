@@ -8,17 +8,36 @@ export const useImageGenerationHandler = () => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const handleGenerateImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
+  const handleGenerateImage = async (adOrPrompt: MetaAd | string, indexOrAdditionalInfo?: number | any): Promise<string | null> => {
     try {
-      const index = additionalInfo?.index || 0;
+      // Determine if we're dealing with a MetaAd object or a string prompt
+      const isMetaAd = typeof adOrPrompt !== 'string';
+      
+      // Set loading state
+      const index = isMetaAd ? (indexOrAdditionalInfo as number) : (indexOrAdditionalInfo?.index || 0);
       setLoadingImageIndex(index);
       
-      // Create prompt with context
-      const ad = additionalInfo?.ad;
-      const campaignData = additionalInfo?.campaignData;
+      // Extract prompt and additional info
+      let prompt: string;
+      let additionalInfo: any = {};
+      
+      if (isMetaAd) {
+        // If adOrPrompt is a MetaAd object
+        const ad = adOrPrompt as MetaAd;
+        prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
+        additionalInfo = {
+          index,
+          ad,
+          format: ad.format || 'square'
+        };
+      } else {
+        // If adOrPrompt is a string
+        prompt = adOrPrompt as string;
+        additionalInfo = indexOrAdditionalInfo || {};
+      }
       
       // Log the image generation attempt
-      console.log(`Generating image for ad with prompt: ${prompt}`);
+      console.log(`Generating image with prompt: ${prompt}`);
       console.log('Additional info:', JSON.stringify(additionalInfo, null, 2));
       
       // This is a simplified implementation that returns the imageUrl directly

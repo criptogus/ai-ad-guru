@@ -2,8 +2,16 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateMetaAdImage, MetaAdImageParams, GeneratedMetaAdImage } from '@/services/media/metaAdImageGenerator';
+import { generateMetaAdImage, MetaAdImageParams } from '@/services/media/metaAdImageGenerator';
 import { storeAIResult } from '@/services/ai/aiResultsStorage';
+
+export interface GeneratedMetaAdImage {
+  url: string;
+  prompt: string;
+  originalPrompt: string;
+  format: string;
+  timestamp: string;
+}
 
 export interface UseMetaAdImageGenerationResult {
   generateImage: (params: Omit<MetaAdImageParams, 'userId'>) => Promise<GeneratedMetaAdImage | null>;
@@ -59,11 +67,25 @@ export const useMetaAdImageGeneration = (): UseMetaAdImageGenerationResult => {
       });
       
       // Generate the image
-      const result = await generateMetaAdImage(fullParams);
+      const imageUrl = await generateMetaAdImage(fullParams.basePrompt, {
+        format: fullParams.format,
+        style: fullParams.style,
+        industry: fullParams.industry,
+        brandName: fullParams.brandName
+      });
       
-      if (!result) {
+      if (!imageUrl) {
         throw new Error("Failed to generate image");
       }
+      
+      // Create a result object
+      const result: GeneratedMetaAdImage = {
+        url: imageUrl,
+        prompt: fullParams.basePrompt,
+        originalPrompt: fullParams.basePrompt,
+        format: fullParams.format || 'square',
+        timestamp: new Date().toISOString()
+      };
       
       // Update state with the generated image
       setLastGenerated(result);

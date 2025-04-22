@@ -18,6 +18,7 @@ import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
+import { MetaAd } from "@/hooks/adGeneration/types";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -78,7 +79,7 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  // Now using the updated hook with the correct interface
+  // Use the updated useImageGenerationHandler hook
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
   
   const { createCampaign } = useCampaignCreation();
@@ -300,6 +301,46 @@ const CreateCampaignPage: React.FC = () => {
     }
   };
 
+  // Create a wrapper for handleGenerateImage to make it compatible with the expected signature
+  const handleGenerateImageWrapper = async (ad: MetaAd, index: number) => {
+    try {
+      // Extract the prompt and additional information from the ad
+      const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
+      
+      // Call handleGenerateImage with the extracted prompt and additional info
+      const imageUrl = await handleGenerateImage(prompt, {
+        index,
+        ad,
+        companyName: campaignData.companyName,
+        format: ad.format || 'square',
+        industry: campaignData.industry || ''
+      });
+      
+      if (imageUrl) {
+        // Update the ad with the new image URL
+        if (metaAds && index < metaAds.length) {
+          const updatedAds = [...metaAds];
+          updatedAds[index] = { ...updatedAds[index], imageUrl };
+          setMetaAds(updatedAds);
+        } else if (linkedInAds) {
+          const linkedInIndex = index - (metaAds?.length || 0);
+          if (linkedInIndex >= 0 && linkedInIndex < linkedInAds.length) {
+            const updatedAds = [...linkedInAds];
+            updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
+            setLinkedInAds(updatedAds);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        variant: "destructive",
+        title: "Image Generation Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+    }
+  };
+
   const { getStepContent } = useCampaignStepRenderer({
     currentStep,
     analysisResult,
@@ -317,7 +358,7 @@ const CreateCampaignPage: React.FC = () => {
     handleGenerateMetaAds,
     handleGenerateMicrosoftAds,
     handleGenerateLinkedInAds,
-    handleGenerateImage,
+    handleGenerateImage: handleGenerateImageWrapper,
     handleUpdateGoogleAd,
     handleUpdateMetaAd,
     handleUpdateMicrosoftAd,
