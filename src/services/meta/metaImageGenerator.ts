@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export interface GenerateImageParams {
   prompt: string;
@@ -57,11 +56,14 @@ export const generateMetaAdImage = async (params: GenerateImageParams): Promise<
       });
       
       if (error) {
+        console.error("Edge function error:", error);
         throw new Error(`Edge function error: ${error.message}`);
       }
       
-      if (!data.success) {
-        throw new Error(data.error || "Image generation failed");
+      console.log("Image generation response:", data);
+      
+      if (!data || !data.success) {
+        throw new Error(data?.error || "Image generation failed");
       }
       
       return {
@@ -71,7 +73,7 @@ export const generateMetaAdImage = async (params: GenerateImageParams): Promise<
       };
     } catch (error) {
       console.error(`Image generation attempt ${retries + 1} failed:`, error);
-      lastError = error;
+      lastError = error as Error;
       retries++;
       
       // Wait before retrying

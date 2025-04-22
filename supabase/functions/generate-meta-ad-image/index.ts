@@ -15,9 +15,18 @@ serve(async (req) => {
 
   try {
     // Get request data
-    const { prompt, format, userId, language = 'portuguese' } = await req.json();
+    const requestData = await req.json();
+    const { prompt, format, userId, language = 'portuguese' } = requestData;
+    
+    console.log("Request data:", {
+      promptLength: prompt ? prompt.length : 0,
+      format, 
+      userId: userId ? "Present" : "Not provided",
+      language
+    });
     
     if (!prompt) {
+      console.error("Missing prompt in request");
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -28,11 +37,11 @@ serve(async (req) => {
     }
     
     console.log(`Generating Meta ad image with prompt: ${prompt.substring(0, 100)}...`);
-    console.log(`Format: ${format || 'default'}, User ID: ${userId || 'anonymous'}, Language: ${language}`);
     
     // Initialize OpenAI API
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not set");
       throw new Error("OPENAI_API_KEY is not set");
     }
     
@@ -52,7 +61,10 @@ serve(async (req) => {
       size = "1024x1792"; // Story format (similar to portrait)
     }
     
+    console.log("Using format:", format, "Size:", size);
+    
     // Call OpenAI API to generate image
+    console.log("Calling OpenAI API...");
     const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
@@ -69,6 +81,8 @@ serve(async (req) => {
       })
     });
     
+    console.log("OpenAI API response status:", response.status);
+    
     if (!response.ok) {
       const error = await response.json();
       console.error("OpenAI API error:", error);
@@ -76,9 +90,17 @@ serve(async (req) => {
     }
     
     const data = await response.json();
+    console.log("OpenAI response data:", {
+      dataReceived: !!data,
+      hasData: !!data.data,
+      firstItem: !!data.data?.[0],
+      hasUrl: !!data.data?.[0]?.url
+    });
+    
     const imageUrl = data.data[0]?.url;
     
     if (!imageUrl) {
+      console.error("No image URL returned from OpenAI");
       throw new Error("No image URL returned from OpenAI");
     }
     
@@ -87,14 +109,23 @@ serve(async (req) => {
     // Save the generated image to Supabase Storage
     try {
       // Fetch the image
+      console.log("Fetching image from OpenAI URL...");
       const imageResponse = await fetch(imageUrl);
+      
+      if (!imageResponse.ok) {
+        console.error("Failed to fetch image from OpenAI:", imageResponse.status);
+        throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
+      }
+      
       const imageBlob = await imageResponse.blob();
+      console.log("Image blob size:", imageBlob.size);
       
       // Initialize Supabase client
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
       const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       
       if (!supabaseUrl || !supabaseServiceKey) {
+        console.error("Supabase environment variables not set");
         throw new Error("Supabase environment variables not set");
       }
       
@@ -107,26 +138,27 @@ serve(async (req) => {
       
       // Make sure the bucket exists
       const bucketName = "meta-ad-images";
+      console.log("Checking bucket:", bucketName);
+      
       const { error: bucketError } = await supabase.storage.getBucket(bucketName);
       
       if (bucketError && bucketError.message.includes("not found")) {
+        console.log("Bucket does not exist, creating bucket:", bucketName);
         const { error: createError } = await supabase.storage.createBucket(bucketName, {
           public: true,
           fileSizeLimit: 10485760 // 10MB
         });
         
         if (createError) {
+          console.error("Failed to create bucket:", createError);
           throw new Error(`Failed to create bucket: ${createError.message}`);
         }
         
-        // Set policy to allow public access
-        const { error: policyError } = await supabase.storage.from(bucketName).createSignedUrl('dummy.txt', 60);
-        if (policyError && !policyError.message.includes("not found")) {
-          console.warn("Error setting bucket policy:", policyError);
-        }
+        console.log("Bucket created successfully");
       }
       
       // Upload the image
+      console.log("Uploading image to Supabase storage...");
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(filename, imageBlob, {
@@ -135,8 +167,11 @@ serve(async (req) => {
         });
       
       if (uploadError) {
+        console.error("Failed to upload image:", uploadError);
         throw new Error(`Failed to upload image: ${uploadError.message}`);
       }
+      
+      console.log("Image uploaded successfully:", uploadData?.path);
       
       // Get the public URL
       const { data: publicUrlData } = await supabase.storage
@@ -149,6 +184,7 @@ serve(async (req) => {
       
       // If a user ID was provided, save the image reference in the database
       if (userId) {
+        console.log("Saving image reference to database for user:", userId);
         const { error: dbError } = await supabase
           .from('generated_images')
           .insert({
@@ -161,6 +197,8 @@ serve(async (req) => {
         
         if (dbError) {
           console.error("Error saving image reference to database:", dbError);
+        } else {
+          console.log("Image reference saved to database");
         }
       }
       
@@ -193,7 +231,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error generating image:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message || "An unknown error occurred" }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "An unknown error occurred" 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

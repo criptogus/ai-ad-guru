@@ -4,6 +4,7 @@ import { MetaAd } from "@/hooks/adGeneration";
 import ImageLoader from "./ImageLoader";
 import ImageDisplay from "./ImageDisplay";
 import ImagePlaceholder from "./ImagePlaceholder";
+import { toast } from "sonner";
 
 interface ImageContentProps {
   ad: MetaAd;
@@ -23,6 +24,15 @@ const ImageContent: React.FC<ImageContentProps> = ({
   onGenerateImage = async () => {},
 }) => {
   const { imageUrl, imagePrompt } = ad;
+  
+  // Log for debugging
+  React.useEffect(() => {
+    if (imageUrl) {
+      console.log(`ImageContent: Image URL available for ad ${imageKey}:`, imageUrl);
+    } else if (imagePrompt) {
+      console.log(`ImageContent: No image URL, but prompt available for ad ${imageKey}`);
+    }
+  }, [imageUrl, imagePrompt, imageKey]);
   
   // Construct alt text from ad data
   const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Instagram Ad Image";
@@ -45,12 +55,28 @@ const ImageContent: React.FC<ImageContentProps> = ({
     );
   }
   
+  const handleGenerateClick = async () => {
+    try {
+      if (!imagePrompt) {
+        toast.error("Não foi possível gerar imagem", {
+          description: "Este anúncio não tem um prompt de imagem definido"
+        });
+        return;
+      }
+      
+      console.log("Iniciando geração de imagem para anúncio:", imageKey);
+      await onGenerateImage();
+    } catch (error) {
+      console.error("Erro ao gerar imagem:", error);
+    }
+  };
+  
   // No image yet
   return (
     <ImagePlaceholder
       hasPrompt={!!imagePrompt}
-      onGenerateImage={onGenerateImage}
-      text={imagePrompt ? "Generate image" : "No image prompt available"}
+      onGenerateImage={handleGenerateClick}
+      text={imagePrompt ? "Gerar imagem" : "Não há prompt de imagem disponível"}
     />
   );
 };
