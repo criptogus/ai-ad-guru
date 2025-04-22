@@ -26,9 +26,24 @@ export const useGoogleAds = () => {
       });
 
       // Use unified error handling/toast
-      if (apiError || !data?.success) {
-        const message = apiError?.message || data?.error || "Failed to generate Google ads";
-        console.error("Error generating Google ads:", message);
+      if (apiError) {
+        const message = apiError.message || "Failed to call generate-ads function";
+        console.error("API Error generating Google ads:", apiError);
+        setError(message);
+
+        toast({
+          title: "API Error",
+          description: message,
+          variant: "destructive",
+        });
+
+        setIsGenerating(false);
+        return null;
+      }
+
+      if (!data?.success) {
+        const message = data?.error || "Failed to generate Google ads";
+        console.error("Function Error:", message);
         setError(message);
 
         toast({
@@ -37,6 +52,7 @@ export const useGoogleAds = () => {
           variant: "destructive",
         });
 
+        setIsGenerating(false);
         return null;
       }
 
@@ -143,7 +159,7 @@ export const useGoogleAds = () => {
       setError(error instanceof Error ? error.message : "Unknown error");
       toast({
         title: "Generation Failed",
-        description: "An unexpected error occurred",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       });
       setIsGenerating(false);

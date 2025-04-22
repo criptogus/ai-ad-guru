@@ -39,6 +39,22 @@ serve(async (req) => {
     console.log("Generating ads for platform:", platform || platforms);
     console.log("Campaign data:", JSON.stringify(campaignData, null, 2));
     
+    // Check API key first to fail fast if missing
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      console.error("ERROR: OpenAI API key not configured in Supabase secrets");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "OpenAI API key not configured. Please configure the OPENAI_API_KEY secret in your Supabase project.",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    
     // If we have systemMessage and userMessage, use the prompt-based generation
     if (systemMessage && userMessage) {
       // Handle the OpenAI prompt-based generation
@@ -67,47 +83,80 @@ serve(async (req) => {
     let result;
     
     // Generate ads based on the platform
-    switch (platform) {
-      case "google":
-        try {
+    try {
+      switch (platform) {
+        case "google":
           result = await generateGoogleAds(campaignData, mindTrigger || campaignData.mindTrigger);
-        } catch (error) {
-          console.error("Error generating Google ads, using fallback:", error);
-          result = JSON.stringify(generateFallbackGoogleAds(campaignData));
-        }
-        break;
-      case "linkedin":
-        try {
+          break;
+        case "linkedin":
           result = await generateLinkedInAds(campaignData, mindTrigger || campaignData.mindTrigger);
-        } catch (error) {
-          console.error("Error generating LinkedIn ads, using fallback:", error);
-          result = JSON.stringify(generateFallbackLinkedInAds(campaignData));
-        }
-        break;
-      case "microsoft":
-        try {
+          break;
+        case "microsoft":
           result = await generateMicrosoftAds(campaignData, mindTrigger || campaignData.mindTrigger);
-        } catch (error) {
-          console.error("Error generating Microsoft ads, using fallback:", error);
-          result = JSON.stringify(generateFallbackMicrosoftAds(campaignData));
-        }
-        break;
-      case "meta":
-        try {
+          break;
+        case "meta":
           result = await generateMetaAds(campaignData, mindTrigger || campaignData.mindTrigger);
-        } catch (error) {
-          console.error("Error generating Meta ads, using fallback:", error);
-          result = JSON.stringify(generateFallbackMetaAds(campaignData));
+          break;
+        default:
+          throw new Error(`Unsupported platform: ${platform}`);
+      }
+      
+      // Parse the result to validate it's good JSON before returning
+      const parsedResult = JSON.parse(result);
+      console.log(`Successfully generated ${parsedResult.length} ads for ${platform}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, data: parsedResult }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (error) {
+      console.error(`Error generating ads for ${platform}:`, error);
+      
+      // Only use fallbacks if specifically requested or in development
+      if (Deno.env.get("USE_FALLBACKS") === "true") {
+        console.log(`Using fallback for ${platform} due to error`);
+        let fallbackData;
+        
+        switch (platform) {
+          case "google":
+            fallbackData = generateFallbackGoogleAds(campaignData);
+            break;
+          case "linkedin":
+            fallbackData = generateFallbackLinkedInAds(campaignData);
+            break;
+          case "microsoft":
+            fallbackData = generateFallbackMicrosoftAds(campaignData);
+            break;
+          case "meta":
+            fallbackData = generateFallbackMetaAds(campaignData);
+            break;
+          default:
+            throw new Error(`Unsupported platform: ${platform}`);
         }
-        break;
-      default:
-        throw new Error(`Unsupported platform: ${platform}`);
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            data: fallbackData,
+            warning: "Using fallback data due to OpenAI error. This is not production-ready content."
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
+        // Return a proper error response
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: error.message || "An unexpected error occurred",
+            hint: "Check your OpenAI API key configuration and edge function logs"
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
-    
-    return new Response(
-      JSON.stringify({ success: true, data: JSON.parse(result) }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
   } catch (error) {
     console.error("Error in generate-ads function:", error);
     

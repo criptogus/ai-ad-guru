@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
 import { getOpenAIClient } from "./openai.ts";
@@ -53,8 +52,8 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
   const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
   
   if (!OPENAI_API_KEY) {
-    console.log("No OpenAI API key found, returning mock data for platform:", platform);
-    return JSON.stringify(getMockDataForPlatform(platform));
+    console.error("ERROR: No OpenAI API key found. Please set OPENAI_API_KEY in your environment variables.");
+    throw new Error("OpenAI API key not configured. Please check your Supabase Edge Function secrets.");
   }
   
   try {
@@ -77,8 +76,8 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
     const content = response?.choices?.[0]?.message?.content;
     
     if (!content) {
-      console.log(`Empty response from OpenAI for ${platform}, using fallback`);
-      return JSON.stringify(getMockDataForPlatform(platform));
+      console.error(`Empty response from OpenAI for ${platform}`);
+      throw new Error("OpenAI returned an empty response. Please try again.");
     }
     
     console.log(`OpenAI response received for ${platform}, content length:`, content.length || 0);
@@ -106,9 +105,9 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
           }
         }
         
-        // If we can't extract valid JSON, return fallback
-        console.log(`Failed to parse valid JSON array from response, using fallback for ${platform}`);
-        return JSON.stringify(getMockDataForPlatform(platform));
+        // If we can't extract valid JSON, throw error
+        console.error(`Failed to parse valid JSON array from response for ${platform}`);
+        throw new Error("OpenAI did not return a valid JSON array. Please try again.");
       }
       
       console.log(`Successfully parsed JSON array with ${parsed.length} items for ${platform}`);
@@ -132,13 +131,18 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
         }
       }
       
-      // Return fallback data when all extraction attempts fail
-      return JSON.stringify(getMockDataForPlatform(platform));
+      // If extraction fails too, throw error
+      throw new Error(`Failed to parse OpenAI response as JSON or extract ad content for ${platform}`);
     }
   } catch (error) {
     console.error(`Error calling OpenAI for ${platform}:`, error);
-    // Return mock data specific to the platform when OpenAI fails
-    return JSON.stringify(getMockDataForPlatform(platform));
+    // Only use fallback in development environment if specified
+    if (Deno.env.get("USE_FALLBACKS") === "true") {
+      console.log(`Using fallback data for ${platform} due to OpenAI error`);
+      return JSON.stringify(getMockDataForPlatform(platform));
+    }
+    // Otherwise, throw the error to be handled by the caller
+    throw error;
   }
 }
 
@@ -239,6 +243,8 @@ function extractSocialAdsFromResponse(text: string): any[] {
 
 // Helper function to get appropriate mock data based on platform
 function getMockDataForPlatform(platform: string): any[] {
+  console.log(`WARNING: Using mock data for ${platform} - this should only be used in development!`);
+  
   if (platform === "google" || platform === "microsoft") {
     return [
       {
