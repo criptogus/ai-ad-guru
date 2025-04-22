@@ -7,6 +7,7 @@ import {
   generateMicrosoftAds
 } from "./adGenerators.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
+import { getSimplifiedLanguageCode } from "./responseValidators.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,27 +18,30 @@ const corsHeaders = {
 function detectLanguageFromUrl(url: string): string | null {
   if (!url) return null;
   const domain = url.toLowerCase();
-  if (domain.includes(".br")) return "Portuguese";
-  if (domain.includes(".es")) return "Spanish";
-  if (domain.includes(".fr")) return "French";
-  if (domain.includes(".de")) return "German";
-  if (domain.includes(".it")) return "Italian";
+  if (domain.includes(".br")) return "pt";
+  if (domain.includes(".es")) return "es";
+  if (domain.includes(".fr")) return "fr";
+  if (domain.includes(".de")) return "de";
+  if (domain.includes(".it")) return "it";
   // Considera .com como inglês SE não for .com.br
-  if (domain.endsWith(".com")) return "English";
+  if (domain.endsWith(".com") && !domain.endsWith(".com.br")) return "en";
   return null;
 }
 
-const languagePatterns = {
-  Portuguese: /[áàâãéêíóôõúçè]/i,
-  English: /\b(the|you|your|service|quality|contact)\b/i,
-  Spanish: /[áéíóúñ¿¡]/i,
-  French: /[éèêàçôœù]/i,
-  German: /[äöüß]/i,
-  Italian: /[àèéìíîòóùú]/i,
-};
-
+// Check if text belongs to detected language using common patterns
 function isInCorrectLanguage(text: string, lang: string): boolean {
-  const pattern = languagePatterns[lang as keyof typeof languagePatterns];
+  if (!text || !lang) return true;
+  
+  const patternMap: Record<string, RegExp> = {
+    pt: /[áàâãéêíóôõúçè]/i,
+    en: /\b(the|you|your|service|quality|contact)\b/i,
+    es: /[áéíóúñ¿¡]/i,
+    fr: /[éèêàçôœù]/i,
+    de: /[äöüß]/i,
+    it: /[àèéìíîòóùú]/i,
+  };
+  
+  const pattern = patternMap[lang];
   if (!pattern) return true;
   return pattern.test(text);
 }
@@ -51,8 +55,8 @@ serve(async (req) => {
   }
 
   try {
-    const { platform, campaignData, mindTrigger } = await req.json();
-    console.log("Generate Ads Function called with:", { platform, mindTrigger });
+    const { platform, campaignData, mindTrigger, temperature = 0.7 } = await req.json();
+    console.log("Generate Ads Function called with:", { platform, mindTrigger, temperature });
 
     // Ensure we have required data
     if (!campaignData || !campaignData.companyName) {
@@ -71,13 +75,13 @@ serve(async (req) => {
     // Normalize required fields for prompt creation
     const normalizedData: WebsiteAnalysisResult = {
       companyName: campaignData.companyName,
-      websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || `exemplo.com.br`,
+      websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || "exemplo.com.br",
       objective: campaignData.objective || "awareness",
       product: campaignData.product || "",
       industry: campaignData.industry || "",
       targetAudience: campaignData.targetAudience || "",
       brandTone: campaignData.brandTone || "professional",
-      language: campaignData.language, // Não forçar
+      language: campaignData.language || "", // Não forçar
       companyDescription: campaignData.companyDescription || campaignData.description || "",
       businessDescription: campaignData.businessDescription || "",
       uniqueSellingPoints: campaignData.uniqueSellingPoints || campaignData.differentials || [],
@@ -85,10 +89,17 @@ serve(async (req) => {
       keywords: campaignData.keywords || []
     };
 
-    // Nova lógica: só cair no detectLanguage se não vier preenchido
+    // Language detection logic
+    // Se não houver idioma definido, detecta do domínio
     if (!normalizedData.language) {
-      normalizedData.language = detectLanguageFromUrl(normalizedData.websiteUrl) || "Portuguese";
+      const detectedLanguage = detectLanguageFromUrl(normalizedData.websiteUrl);
+      normalizedData.language = detectedLanguage || "pt"; // Default para português se não detectar
+      console.log(`Detected language from URL: ${normalizedData.language}`);
     }
+    
+    // Simplificar o código de idioma para processamento
+    const simplifiedLangCode = getSimplifiedLanguageCode(normalizedData.language);
+    console.log(`Using simplified language code: ${simplifiedLangCode}`);
 
     console.log("Processing ad generation with normalized data:", JSON.stringify(normalizedData, null, 2));
     
@@ -96,112 +107,62 @@ serve(async (req) => {
     let adsJson;
     let platformName;
     
-    switch (platform) {
-      case "google":
-        adsJson = await generateGoogleAds(normalizedData, mindTrigger);
-        platformName = "Google Ads";
-        break;
-      case "meta":
-      case "instagram":
-        adsJson = await generateMetaAds(normalizedData, mindTrigger);
-        platformName = "Meta/Instagram Ads";
-        break;
-      case "linkedin":
-        adsJson = await generateLinkedInAds(normalizedData, mindTrigger);
-        platformName = "LinkedIn Ads";
-        break;
-      case "microsoft":
-        adsJson = await generateMicrosoftAds(normalizedData, mindTrigger);
-        platformName = "Microsoft Ads";
-        break;
-      default:
-        // Default to Google Ads if platform is not specified
-        adsJson = await generateGoogleAds(normalizedData, mindTrigger);
-        platformName = "Google Ads";
-    }
-    
-    console.log(`Generated ${platformName} content of ${adsJson?.length || 0} characters`);
-    
     try {
-      // Try to parse the response as JSON
-      let parsedAds;
-      
-      try {
-        parsedAds = JSON.parse(adsJson);
-        console.log(`Successfully parsed JSON response for ${platformName}`);
-      } catch (parseError) {
-        console.error(`Error parsing ${platformName} response as JSON:`, parseError);
-        console.log("Raw response:", adsJson);
-        
-        // If parsing fails, try to extract structured data using regex patterns
-        if (platform === "google" || platform === "microsoft") {
-          throw new Error(`Invalid JSON response from AI for ${platformName}. Response must be in the specified JSON format.`);
-        } else if (platform === "meta" || platform === "linkedin" || platform === "instagram") {
-          throw new Error(`Invalid JSON response from AI for ${platformName}. Response must be in the specified JSON format.`);
-        }
+      switch (platform) {
+        case "google":
+          adsJson = await generateGoogleAds(normalizedData, mindTrigger);
+          platformName = "Google Ads";
+          break;
+        case "meta":
+        case "instagram":
+          adsJson = await generateMetaAds(normalizedData, mindTrigger);
+          platformName = "Meta/Instagram Ads";
+          break;
+        case "linkedin":
+          adsJson = await generateLinkedInAds(normalizedData, mindTrigger);
+          platformName = "LinkedIn Ads";
+          break;
+        case "microsoft":
+        case "bing":
+          adsJson = await generateMicrosoftAds(normalizedData, mindTrigger);
+          platformName = "Microsoft/Bing Ads";
+          break;
+        default:
+          throw new Error(`Unsupported platform: ${platform}`);
       }
       
-      // Validate that we got a proper array with the expected fields
-      if (!Array.isArray(parsedAds)) {
-        throw new Error(`Invalid response format: expected array but got ${typeof parsedAds}`);
+      // Verificar se temos anúncios válidos
+      if (!adsJson || !Array.isArray(adsJson) || adsJson.length === 0) {
+        throw new Error(`No valid ads generated for platform: ${platform}`);
       }
       
-      // Checagem robusta: revalida todos os textos no idioma esperado
-      if (normalizedData.language) {
-        const lang = normalizedData.language.charAt(0).toUpperCase() + normalizedData.language.slice(1).toLowerCase();
-        for (const ad of parsedAds) {
-          // Descobre campos do anúncio conforme tipo de plataforma
-          let textFields: string[] = [];
-          if (platform === "google" || platform === "microsoft") {
-            textFields = [
-              ad.headline_1, ad.headline_2, ad.headline_3, ad.description_1, ad.description_2
-            ];
-          } else {
-            textFields = [
-              ad.headline, ad.primaryText, ad.description
-            ];
-          }
-          for (const text of textFields) {
-            if (text && text.length > 10 && !isInCorrectLanguage(text, lang)) {
-              console.warn(`Idioma incompatível detectado em plataforma [${platform}]: "${text}"`);
-              throw new Error(
-                `Conteúdo fora do idioma selecionado (${lang}) detectado no anúncio. Corrija o briefing ou altere o idioma.`
-              );
-            }
-          }
-        }
-      }
+      console.log(`Successfully generated ${adsJson.length} ads for ${platformName}`);
       
-      // All validations passed, return the successful response
       return new Response(
-        JSON.stringify({
-          success: true,
-          data: parsedAds,
-          platform
-        }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        JSON.stringify({ success: true, data: adsJson }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-    } catch (responseError) {
-      console.error(`Error processing ${platformName} response:`, responseError);
+    } catch (error) {
+      console.error(`Error generating ads for ${platform}:`, error);
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: responseError.message || `Failed to process ${platformName} response`
+          error: error.message || `Failed to generate ads for ${platform}` 
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 422
+          status: 500
         }
       );
     }
   } catch (error) {
-    console.error("Error generating ads:", error);
+    console.error("Error in generate-ads function:", error);
+    
     return new Response(
       JSON.stringify({ 
-        success: false,
-        error: error.message || "An unexpected error occurred"
+        success: false, 
+        error: error.message || "An unknown error occurred" 
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },

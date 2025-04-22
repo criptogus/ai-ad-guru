@@ -7,100 +7,126 @@ import { GoogleAd, MetaAd, LinkedInAd, MicrosoftAd } from "./types.ts";
  */
 export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult): GoogleAd[] {
   const { companyName, businessDescription, callToAction, keywords } = campaignData;
-  const shortDescription = businessDescription.substring(0, 80);
-  const cta = Array.isArray(callToAction) ? callToAction[0] : callToAction;
-  const keywordText = Array.isArray(keywords) ? keywords.slice(0, 3).join(", ") : keywords;
+  const shortDescription = businessDescription?.substring(0, 80) || "";
+  const cta = Array.isArray(callToAction) ? callToAction[0] : callToAction || "Entre em contato";
+  const keywordText = Array.isArray(keywords) && keywords.length > 0 ? keywords.slice(0, 3).join(", ") : "";
+  const companyDesc = businessDescription || companyName;
+  
+  // Avoid using generic terms by using campaign-specific information
+  const headline1Options = [
+    `${companyName}`,
+    `Conheça ${companyName}`,
+    `${companyName} - Especialista`,
+    `${companyName} - Líder`,
+    `Descubra ${companyName}`
+  ];
+  
+  const headline2Options = [
+    keywordText ? `${keywordText}` : "Inovação",
+    "Resultados Comprovados",
+    "Transformação de Negócios",
+    "Soluções Personalizadas",
+    "Resultados Garantidos"
+  ];
+  
+  const headline3Options = [
+    "Fale Conosco Hoje",
+    "Agende Agora",
+    "Saiba Mais",
+    "Visite Nosso Site",
+    "Solicite Proposta"
+  ];
 
   return [
     {
-      headline1: `${companyName} - Professional Services`,
-      headline2: "Quality Solutions",
-      headline3: "Contact Us Today",
-      description1: shortDescription || `Professional services by ${companyName}.`,
-      description2: cta || "Get in touch now!",
+      headline1: headline1Options[0],
+      headline2: headline2Options[0],
+      headline3: headline3Options[0],
+      description1: shortDescription || `${companyName} oferece ${keywordText || "soluções"}. ${cta}`,
+      description2: `Descubra como podemos transformar seu negócio com nossa abordagem única.`,
       headlines: [
-        `${companyName} - Professional Services`,
-        "Quality Solutions",
-        "Contact Us Today"
+        headline1Options[0],
+        headline2Options[0],
+        headline3Options[0]
       ],
       descriptions: [
-        shortDescription || `Professional services by ${companyName}.`,
-        cta || "Get in touch now!"
+        shortDescription || `${companyName} oferece ${keywordText || "soluções"}. ${cta}`,
+        `Descubra como podemos transformar seu negócio com nossa abordagem única.`
       ],
-      path1: "services",
-      path2: "professional"
+      path1: "soluções",
+      path2: "inovação"
     },
     {
-      headline1: `${companyName} | ${keywordText}`,
-      headline2: "Expert Solutions",
-      headline3: "Learn More",
-      description1: shortDescription || `${companyName} offers professional services.`,
-      description2: cta || "Contact us for details!",
+      headline1: headline1Options[1],
+      headline2: headline2Options[1],
+      headline3: headline3Options[1],
+      description1: shortDescription || `${companyDesc}. Transforme seu negócio hoje.`,
+      description2: `Entre em contato para descobrir como podemos ajudar a alcançar seus objetivos.`,
       headlines: [
-        `${companyName} | ${keywordText}`,
-        "Expert Solutions",
-        "Learn More"
+        headline1Options[1],
+        headline2Options[1],
+        headline3Options[1]
       ],
       descriptions: [
-        shortDescription || `${companyName} offers professional services.`,
-        cta || "Contact us for details!"
+        shortDescription || `${companyDesc}. Transforme seu negócio hoje.`,
+        `Entre em contato para descobrir como podemos ajudar a alcançar seus objetivos.`
       ],
-      path1: "solutions",
-      path2: "expert"
+      path1: "transformação",
+      path2: "negócios"
     },
     {
-      headline1: `Discover ${companyName}`,
-      headline2: "Premium Services",
-      headline3: "Results Guaranteed",
-      description1: shortDescription || `Experience the difference with ${companyName}.`,
-      description2: cta || "Reach out today!",
+      headline1: headline1Options[2],
+      headline2: headline2Options[2],
+      headline3: headline3Options[2],
+      description1: shortDescription || `Experiência comprovada em ${keywordText || "transformação"}. ${cta}`,
+      description2: `Junte-se a empresas de sucesso que confiam em nossa expertise.`,
       headlines: [
-        `Discover ${companyName}`,
-        "Premium Services",
-        "Results Guaranteed"
+        headline1Options[2],
+        headline2Options[2],
+        headline3Options[2]
       ],
       descriptions: [
-        shortDescription || `Experience the difference with ${companyName}.`,
-        cta || "Reach out today!"
+        shortDescription || `Experiência comprovada em ${keywordText || "transformação"}. ${cta}`,
+        `Junte-se a empresas de sucesso que confiam em nossa expertise.`
       ],
-      path1: "discover",
-      path2: "premium"
+      path1: "resultados",
+      path2: "garantidos"
     },
     {
-      headline1: `${companyName} - Top Rated`,
-      headline2: "Trusted by Clients",
-      headline3: "Free Consultation",
-      description1: shortDescription || `Join our satisfied customers at ${companyName}.`,
-      description2: cta || "Schedule a call now!",
+      headline1: headline1Options[3],
+      headline2: headline2Options[3],
+      headline3: headline3Options[3],
+      description1: shortDescription || `${companyName} é referência em ${keywordText || "inovação"}.`,
+      description2: `${cta}. Descubra o que podemos fazer por sua empresa.`,
       headlines: [
-        `${companyName} - Top Rated`,
-        "Trusted by Clients",
-        "Free Consultation"
+        headline1Options[3],
+        headline2Options[3],
+        headline3Options[3]
       ],
       descriptions: [
-        shortDescription || `Join our satisfied customers at ${companyName}.`,
-        cta || "Schedule a call now!"
+        shortDescription || `${companyName} é referência em ${keywordText || "inovação"}.`,
+        `${cta}. Descubra o que podemos fazer por sua empresa.`
       ],
-      path1: "consultation",
-      path2: "trusted"
+      path1: "especialistas",
+      path2: "referência"
     },
     {
-      headline1: `${companyName} Solutions`,
-      headline2: "Professional Team",
-      headline3: "Start Today",
-      description1: shortDescription || `${companyName} delivers excellence in every project.`,
-      description2: cta || "Get started now!",
+      headline1: headline1Options[4],
+      headline2: headline2Options[4],
+      headline3: headline3Options[4],
+      description1: shortDescription || `${companyDesc}. Resultados comprovados.`,
+      description2: `${cta}. Estamos prontos para transformar sua visão em realidade.`,
       headlines: [
-        `${companyName} Solutions`,
-        "Professional Team",
-        "Start Today"
+        headline1Options[4],
+        headline2Options[4],
+        headline3Options[4]
       ],
       descriptions: [
-        shortDescription || `${companyName} delivers excellence in every project.`,
-        cta || "Get started now!"
+        shortDescription || `${companyDesc}. Resultados comprovados.`,
+        `${cta}. Estamos prontos para transformar sua visão em realidade.`
       ],
-      path1: "solutions",
-      path2: "professional"
+      path1: "transformação",
+      path2: "sucesso"
     }
   ];
 }
@@ -109,33 +135,35 @@ export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult): 
  * Generate fallback Meta/Instagram ads when the OpenAI call fails
  */
 export function generateFallbackMetaAds(campaignData: WebsiteAnalysisResult): MetaAd[] {
-  const { companyName, businessDescription, callToAction, uniqueSellingPoints } = campaignData;
-  const shortDescription = businessDescription.substring(0, 100);
-  const cta = Array.isArray(callToAction) ? callToAction[0] : callToAction;
+  const { companyName, businessDescription, callToAction, uniqueSellingPoints, keywords } = campaignData;
+  const shortDescription = businessDescription?.substring(0, 100) || "";
+  const cta = Array.isArray(callToAction) ? callToAction[0] : callToAction || "Saiba mais";
   const sellingPoint = Array.isArray(uniqueSellingPoints) && uniqueSellingPoints.length > 0 
     ? uniqueSellingPoints[0] 
-    : `Quality service by ${companyName}`;
+    : "";
+  const keywordText = Array.isArray(keywords) && keywords.length > 0 ? keywords[0] : "inovação";
 
   return [
     {
-      headline: `Transform with ${companyName}`,
-      primaryText: shortDescription || `Discover how ${companyName} can help you achieve more.`,
-      description: cta || "Learn More",
-      imagePrompt: `Professional photo representing ${companyName}'s services`,
+      headline: `Transforme com ${companyName}`,
+      primaryText: shortDescription || `Descubra como ${companyName} pode ajudar você a alcançar resultados extraordinários com ${keywordText}.`,
+      description: cta,
+      imagePrompt: `Foto profissional representando ${companyName} e ${keywordText}, com elementos visuais que transmitem inovação e transformação de negócios, em ambiente corporativo moderno, iluminação profissional.`,
       format: "feed"
     },
     {
-      headline: `Experience ${companyName}`,
-      primaryText: `${sellingPoint}. ${shortDescription || `At ${companyName}, we deliver exceptional results.`}`,
-      description: cta || "Discover More",
-      imagePrompt: `Creative branded image for ${companyName}`,
+      headline: `Experiência ${companyName}`,
+      primaryText: sellingPoint ? `${sellingPoint}. ${shortDescription || `Com ${companyName}, entregamos resultados excepcionais em ${keywordText}.`}` : 
+        `${shortDescription || `Com ${companyName}, entregamos resultados excepcionais em ${keywordText}.`}`,
+      description: cta,
+      imagePrompt: `Imagem profissional e criativa para ${companyName} mostrando resultados transformadores em ambiente de negócios, com pessoas em reunião produtiva, elementos que representam ${keywordText}.`,
       format: "feed"
     },
     {
-      headline: `${companyName} - Your Solution`,
-      primaryText: shortDescription || `Looking for the best? ${companyName} delivers results that exceed expectations.`,
-      description: cta || "Contact Now",
-      imagePrompt: `Professional ${companyName} service image`,
+      headline: `${companyName} - Sua Solução`,
+      primaryText: shortDescription || `Procurando o melhor em ${keywordText}? ${companyName} entrega resultados que superam expectativas.`,
+      description: cta,
+      imagePrompt: `Fotografia profissional mostrando os serviços de ${companyName} em ação, com elementos que representam ${keywordText} e transformação de negócios, estilo visual moderno e profissional.`,
       format: "feed"
     }
   ];
@@ -145,14 +173,43 @@ export function generateFallbackMetaAds(campaignData: WebsiteAnalysisResult): Me
  * Generate fallback LinkedIn ads when the OpenAI call fails
  */
 export function generateFallbackLinkedInAds(campaignData: WebsiteAnalysisResult): LinkedInAd[] {
-  // Since we're using Meta format for LinkedIn, convert the Meta ads
-  return generateFallbackMetaAds(campaignData) as unknown as LinkedInAd[];
+  const { companyName, businessDescription, callToAction, uniqueSellingPoints, keywords } = campaignData;
+  const shortDescription = businessDescription?.substring(0, 100) || "";
+  const cta = Array.isArray(callToAction) ? callToAction[0] : callToAction || "Saiba mais";
+  const sellingPoint = Array.isArray(uniqueSellingPoints) && uniqueSellingPoints.length > 0 
+    ? uniqueSellingPoints[0] 
+    : "";
+  const keywordText = Array.isArray(keywords) && keywords.length > 0 ? keywords[0] : "inovação";
+
+  return [
+    {
+      headline: `Impulsione Resultados com ${companyName}`,
+      primaryText: shortDescription || `Para empresas que buscam liderança em ${keywordText}, ${companyName} oferece soluções que transformam desafios em oportunidades. ${sellingPoint ? `\n\n${sellingPoint}` : ""}`,
+      description: cta,
+      imagePrompt: `Imagem profissional corporativa mostrando ambiente de negócios com executivos discutindo estratégias, elementos que representam ${keywordText} e crescimento empresarial, estilo LinkedIn, profissional e confiável.`,
+      format: "single-image"
+    },
+    {
+      headline: `${companyName} | Expertise em ${keywordText}`,
+      primaryText: sellingPoint ? `${sellingPoint}. ${shortDescription || `${companyName} ajuda empresas a alcançarem novos patamares através de soluções inovadoras em ${keywordText}.`}` : 
+        `${shortDescription || `${companyName} ajuda empresas a alcançarem novos patamares através de soluções inovadoras em ${keywordText}.`}`,
+      description: cta,
+      imagePrompt: `Foto corporativa profissional representando liderança e excelência nos negócios, com elementos que transmitem ${keywordText} e transformação, visual adequado para LinkedIn, perfil corporativo B2B.`,
+      format: "single-image"
+    },
+    {
+      headline: `Potencialize seu Negócio com ${companyName}`,
+      primaryText: shortDescription || `Empresas líderes confiam em ${companyName} para impulsionar resultados através de estratégias inovadoras em ${keywordText}.`,
+      description: cta,
+      imagePrompt: `Imagem corporativa profissional mostrando ambiente de trabalho produtivo com equipe engajada, elementos que representam ${keywordText} e transformação empresarial, estética formal para LinkedIn.`,
+      format: "single-image"
+    }
+  ];
 }
 
 /**
  * Generate fallback Microsoft ads when the OpenAI call fails
  */
 export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult): MicrosoftAd[] {
-  // For Microsoft ads, we can use the Google ad format
   return generateFallbackGoogleAds(campaignData) as unknown as MicrosoftAd[];
 }

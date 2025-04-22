@@ -1,214 +1,420 @@
+
+import { createGoogleAdsPrompt, createMetaAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt } from "./promptCreators.ts";
 import { WebsiteAnalysisResult } from "./types.ts";
-import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
-import { getOpenAIClient } from "./openai.ts";
+import { validateGoogleAdsResponse, validateSocialAdsResponse, getSimplifiedLanguageCode } from "./responseValidators.ts";
+import { generateFallbackGoogleAds, generateFallbackMetaAds, generateFallbackLinkedInAds, generateFallbackMicrosoftAds } from "./fallbacks/index.ts";
 
-export async function generateGoogleAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
-  console.log("Generating Google Ads with mind trigger:", mindTrigger || "None");
-  console.log("Campaign data language:", campaignData.language);
-  
-  // Apply mind trigger to enhance prompt and generation
-  const prompt = createGoogleAdsPrompt(campaignData, mindTrigger);
-  
-  // Log the full prompt for debugging
-  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
-  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
-  
-  const response = await callOpenAI(prompt, "google");
-  return response;
-}
+// Configuração do cliente OpenAI
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
-export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
-  console.log("Generating LinkedIn Ads with mind trigger:", mindTrigger || "None");
-  console.log("Campaign data language:", campaignData.language);
-  
-  // Apply mind trigger to enhance prompt and generation
-  const prompt = createLinkedInAdsPrompt(campaignData, mindTrigger);
-  
-  // Log the full prompt for debugging
-  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
-  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
-  
-  const response = await callOpenAI(prompt, "linkedin");
-  return response;
-}
-
-export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
-  console.log("Generating Microsoft Ads with mind trigger:", mindTrigger || "None");
-  console.log("Campaign data language:", campaignData.language);
-  
-  // Apply mind trigger to enhance prompt and generation
-  const prompt = createMicrosoftAdsPrompt(campaignData, mindTrigger);
-  
-  // Log the full prompt for debugging
-  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
-  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
-  
-  const response = await callOpenAI(prompt, "microsoft");
-  return response;
-}
-
-export async function generateMetaAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string): Promise<string> {
-  console.log("Generating Meta Ads with mind trigger:", mindTrigger || "None");
-  console.log("Campaign data language:", campaignData.language);
-  
-  // Apply mind trigger to enhance prompt and generation
-  const prompt = createMetaAdsPrompt(campaignData, mindTrigger);
-  
-  // Log the full prompt for debugging
-  console.log("🧠 System message preview:", prompt.systemMessage.slice(0, 200));
-  console.log("🧠 User message preview:", prompt.userMessage.slice(0, 200));
-  
-  const response = await callOpenAI(prompt, "meta");
-  return response;
-}
-
-interface PromptMessages {
-  systemMessage: string;
-  userMessage: string;
-}
-
-async function callOpenAI(prompt: PromptMessages, platform: string): Promise<any> {
-  // Verify the OpenAI API key
-  let OPENAI_API_KEY: string | undefined;
-
-  try {
-    OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-  } catch (e) {
-    console.error("❌ Erro ao acessar OPENAI_API_KEY com Deno.env.get():", e);
-  }
-
+// Função para chamar a API do OpenAI
+async function callOpenAI(prompt: { systemMessage: string; userMessage: string }, temperature: number = 0.7) {
   if (!OPENAI_API_KEY) {
-    throw new Error("❌ OPENAI_API_KEY is not defined in environment variables.");
+    throw new Error("OPENAI_API_KEY is required but not set in environment");
   }
 
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+  
   try {
-    const openai = getOpenAIClient();
-
-    console.log(`🔍 Sending prompt to OpenAI for platform [${platform}]`);
-    // Log full prompts for debugging
-    console.log("🧠 Complete system message:", prompt.systemMessage);
-    console.log("🧠 Complete user message:", prompt.userMessage);
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: prompt.systemMessage },
-        { role: "user", content: prompt.userMessage }
-      ],
-      temperature: 0.7,
-      max_tokens: 1200,
-      response_format: "json"
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o", // Usando GPT-4o para melhor qualidade e suporte ao response_format
+        messages: [
+          { role: "system", content: prompt.systemMessage },
+          { role: "user", content: prompt.userMessage }
+        ],
+        temperature: temperature,
+        max_tokens: 1200,
+        response_format: { type: "json_object" }
+      })
     });
 
-    const content = response?.choices?.[0]?.message?.content;
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error calling OpenAI API:", error);
+      throw new Error(`OpenAI API error: ${error.error?.message || "Unknown error"}`);
+    }
 
-    // Já tenta parsear aqui a resposta como JSON, senão lança erro claro
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+
     try {
       const parsed = JSON.parse(content);
-      console.log("✅ OpenAI respondeu JSON válido!");
       return parsed;
     } catch (e) {
-      console.error("❌ Resposta do OpenAI não é um JSON válido:", content);
-      throw new Error("A resposta do modelo não está em JSON. Verifique se o prompt está pedindo o formato corretamente e se o modelo suporta isso.");
+      console.error("❌ Não foi possível fazer parse da resposta JSON:", content);
+      console.error("Erro:", e);
+      throw new Error("A resposta do OpenAI não está em formato JSON válido. Verifique o prompt ou tente novamente.");
     }
-
   } catch (error) {
-    console.error(`🚨 Error during OpenAI call for platform [${platform}]:`, error);
-    throw new Error("Failed to generate ads with OpenAI: " + (error instanceof Error ? error.message : String(error)));
+    console.error("Error in OpenAI request:", error);
+    throw error;
   }
 }
 
-// Helper function to extract text ads from non-JSON response
-function extractTextAdsFromResponse(text: string): any[] {
-  const ads = [];
-  
-  // Look for sections labeled as ad variations
-  const adSections = text.split(/Ad\s+\d+:|Variation\s+\d+:|Google\s+Ad\s+\d+:|Microsoft\s+Ad\s+\d+:/i);
-  
-  for (let section of adSections) {
-    section = section.trim();
-    if (!section) continue;
+/**
+ * Função para gerar anúncios do Google com base na análise do website
+ */
+export async function generateGoogleAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string) {
+  try {
+    console.log("Gerando anúncios para o Google Ads...");
     
-    // Try to extract ad components using regex patterns
-    const headline1Match = section.match(/Headline 1:?\s*(.*?)(?:\n|$)/i) || 
-                          section.match(/Title 1:?\s*(.*?)(?:\n|$)/i) ||
-                          section.match(/H1:?\s*(.*?)(?:\n|$)/i);
-                          
-    const headline2Match = section.match(/Headline 2:?\s*(.*?)(?:\n|$)/i) || 
-                          section.match(/Title 2:?\s*(.*?)(?:\n|$)/i) ||
-                          section.match(/H2:?\s*(.*?)(?:\n|$)/i);
-                          
-    const headline3Match = section.match(/Headline 3:?\s*(.*?)(?:\n|$)/i) || 
-                          section.match(/Title 3:?\s*(.*?)(?:\n|$)/i) ||
-                          section.match(/H3:?\s*(.*?)(?:\n|$)/i);
-                          
-    const desc1Match = section.match(/Description 1:?\s*(.*?)(?:\n|$)/i) ||
-                       section.match(/Description:?\s*(.*?)(?:\n|$)/i) ||
-                       section.match(/Desc 1:?\s*(.*?)(?:\n|$)/i) ||
-                       section.match(/D1:?\s*(.*?)(?:\n|$)/i);
-                       
-    const desc2Match = section.match(/Description 2:?\s*(.*?)(?:\n|$)/i) ||
-                       section.match(/Desc 2:?\s*(.*?)(?:\n|$)/i) ||
-                       section.match(/D2:?\s*(.*?)(?:\n|$)/i);
-                       
-    const displayUrlMatch = section.match(/Display URL:?\s*(.*?)(?:\n|$)/i) ||
-                           section.match(/URL:?\s*(.*?)(?:\n|$)/i);
-    
-    // Only add if we found at least some headline data
-    if (headline1Match || headline2Match || headline3Match) {
-      ads.push({
-        headline_1: headline1Match ? headline1Match[1].trim() : "Professional Service",
-        headline_2: headline2Match ? headline2Match[1].trim() : "Quality Results",
-        headline_3: headline3Match ? headline3Match[1].trim() : "Contact Today",
-        description_1: desc1Match ? desc1Match[1].trim() : "We provide excellent service that meets your needs.",
-        description_2: desc2Match ? desc2Match[1].trim() : "Contact us today to learn more.",
-        display_url: displayUrlMatch ? displayUrlMatch[1].trim() : "example.com"
-      });
+    // Validar dados mínimos necessários
+    if (!campaignData.companyName) {
+      throw new Error("O nome da empresa é obrigatório para gerar anúncios");
     }
+    
+    // Criação do prompt
+    const prompt = createGoogleAdsPrompt(campaignData, mindTrigger);
+    console.log("Prompt do sistema criado para Google Ads");
+    
+    // Chamada à API do OpenAI
+    try {
+      const adsResponse = await callOpenAI(prompt, 0.5);
+      
+      // Validar a resposta
+      let ads = Array.isArray(adsResponse) ? adsResponse : [];
+      
+      // Se a resposta for um objeto com uma propriedade Array, tentar extrair
+      if (!Array.isArray(adsResponse) && typeof adsResponse === 'object') {
+        const possibleArrayKeys = Object.keys(adsResponse).filter(key => 
+          Array.isArray(adsResponse[key]) && 
+          adsResponse[key].length > 0 &&
+          (key.includes('ad') || key.includes('google') || key.includes('result'))
+        );
+        
+        if (possibleArrayKeys.length > 0) {
+          ads = adsResponse[possibleArrayKeys[0]];
+          console.log(`Extraído anúncios da propriedade: ${possibleArrayKeys[0]}`);
+        }
+      }
+      
+      if (!ads || ads.length === 0) {
+        console.log("⚠️ Nenhum anúncio válido retornado pelo OpenAI, usando fallbacks");
+        return generateFallbackGoogleAds(campaignData);
+      }
+      
+      // Validar e substituir termos genéricos
+      const langCode = getSimplifiedLanguageCode(campaignData.language || 'pt');
+      const validatedAds = validateGoogleAdsResponse(ads, langCode, campaignData);
+      
+      // Substituir anúncios com termos genéricos por fallbacks
+      const finalAds = [];
+      const fallbackAds = generateFallbackGoogleAds(campaignData);
+      let fallbackIndex = 0;
+      
+      for (const ad of validatedAds) {
+        if (ad._containsGenericTerms) {
+          // Usar um anúncio fallback
+          if (fallbackIndex < fallbackAds.length) {
+            finalAds.push(fallbackAds[fallbackIndex]);
+            fallbackIndex++;
+          }
+        } else {
+          // Manter o anúncio original em formato padronizado
+          finalAds.push({
+            headline1: ad.headline_1 || ad.headline1 || '',
+            headline2: ad.headline_2 || ad.headline2 || '',
+            headline3: ad.headline_3 || ad.headline3 || '',
+            description1: ad.description_1 || ad.description1 || '',
+            description2: ad.description_2 || ad.description2 || '',
+            displayPath: ad.display_url || ad.displayPath || ad.displayUrl || campaignData.websiteUrl,
+            path1: ad.path1 || '',
+            path2: ad.path2 || ''
+          });
+        }
+      }
+      
+      // Garantir que temos pelo menos 3 anúncios
+      while (finalAds.length < 3 && fallbackIndex < fallbackAds.length) {
+        finalAds.push(fallbackAds[fallbackIndex]);
+        fallbackIndex++;
+      }
+      
+      return finalAds;
+    } catch (openAIError) {
+      console.error("Erro ao chamar OpenAI:", openAIError);
+      // Em caso de erro na API, usar fallbacks
+      return generateFallbackGoogleAds(campaignData);
+    }
+  } catch (error) {
+    console.error("Erro ao gerar anúncios do Google:", error);
+    // Em caso de erro geral, usar fallbacks
+    return generateFallbackGoogleAds(campaignData);
   }
-  
-  // If no ads found, return empty array (will be replaced with fallback)
-  return ads;
 }
 
-// Helper function to extract social media ads from non-JSON response
-function extractSocialAdsFromResponse(text: string): any[] {
-  const ads = [];
-  
-  // Look for sections labeled as ad variations
-  const adSections = text.split(/Ad\s+\d+:|Variation\s+\d+:|Meta\s+Ad\s+\d+:|Instagram\s+Ad\s+\d+:|LinkedIn\s+Ad\s+\d+:/i);
-  
-  for (let section of adSections) {
-    section = section.trim();
-    if (!section) continue;
+/**
+ * Função para gerar anúncios do Instagram/Meta com base na análise do website
+ */
+export async function generateMetaAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string) {
+  try {
+    console.log("Gerando anúncios para o Meta/Instagram...");
     
-    // Try to extract ad components using regex patterns
-    const headlineMatch = section.match(/Headline:?\s*(.*?)(?:\n|$)/i) || 
-                         section.match(/Title:?\s*(.*?)(?:\n|$)/i);
-                         
-    const primaryTextMatch = section.match(/Primary Text:?\s*(.*?)(?:\n|$)/i) || 
-                            section.match(/Caption:?\s*(.*?)(?:\n|$)/i) ||
-                            section.match(/Text:?\s*(.*?)(?:\n|$)/i) ||
-                            section.match(/Copy:?\s*(.*?)(?:\n|$)/i);
-                            
-    const descMatch = section.match(/Description:?\s*(.*?)(?:\n|$)/i) ||
-                     section.match(/Additional Text:?\s*(.*?)(?:\n|$)/i);
-                     
-    const imagePromptMatch = section.match(/Image Prompt:?\s*(.*?)(?:\n|$)/i) ||
-                             section.match(/Image:?\s*(.*?)(?:\n|$)/i) ||
-                             section.match(/Visual:?\s*(.*?)(?:\n|$)/i);
-    
-    // Only add if we found at least some headline or text data
-    if (headlineMatch || primaryTextMatch) {
-      ads.push({
-        headline: headlineMatch ? headlineMatch[1].trim() : "Professional Service",
-        primaryText: primaryTextMatch ? primaryTextMatch[1].trim() : "Discover our premium service designed to meet your needs.",
-        description: descMatch ? descMatch[1].trim() : "Learn more about our services",
-        image_prompt: imagePromptMatch ? imagePromptMatch[1].trim() : "Professional image representing quality service"
-      });
+    // Validar dados mínimos necessários
+    if (!campaignData.companyName) {
+      throw new Error("O nome da empresa é obrigatório para gerar anúncios");
     }
+    
+    // Criação do prompt
+    const prompt = createMetaAdsPrompt(campaignData, mindTrigger);
+    console.log("Prompt do sistema criado para Meta Ads");
+    
+    // Chamada à API do OpenAI
+    try {
+      const adsResponse = await callOpenAI(prompt, 0.6);
+      
+      // Validar a resposta
+      let ads = Array.isArray(adsResponse) ? adsResponse : [];
+      
+      // Se a resposta for um objeto com uma propriedade Array, tentar extrair
+      if (!Array.isArray(adsResponse) && typeof adsResponse === 'object') {
+        const possibleArrayKeys = Object.keys(adsResponse).filter(key => 
+          Array.isArray(adsResponse[key]) && 
+          adsResponse[key].length > 0 &&
+          (key.includes('ad') || key.includes('meta') || key.includes('instagram') || key.includes('result'))
+        );
+        
+        if (possibleArrayKeys.length > 0) {
+          ads = adsResponse[possibleArrayKeys[0]];
+          console.log(`Extraído anúncios da propriedade: ${possibleArrayKeys[0]}`);
+        }
+      }
+      
+      if (!ads || ads.length === 0) {
+        console.log("⚠️ Nenhum anúncio válido retornado pelo OpenAI, usando fallbacks");
+        return generateFallbackMetaAds(campaignData);
+      }
+      
+      // Validar e substituir termos genéricos
+      const langCode = getSimplifiedLanguageCode(campaignData.language || 'pt');
+      const validatedAds = validateSocialAdsResponse(ads, langCode, campaignData);
+      
+      // Substituir anúncios com termos genéricos por fallbacks
+      const finalAds = [];
+      const fallbackAds = generateFallbackMetaAds(campaignData);
+      let fallbackIndex = 0;
+      
+      for (const ad of validatedAds) {
+        if (ad._containsGenericTerms) {
+          // Usar um anúncio fallback
+          if (fallbackIndex < fallbackAds.length) {
+            finalAds.push(fallbackAds[fallbackIndex]);
+            fallbackIndex++;
+          }
+        } else {
+          // Manter o anúncio original em formato padronizado
+          finalAds.push({
+            headline: ad.headline || '',
+            primaryText: ad.primaryText || ad.text || '',
+            description: ad.description || '',
+            imagePrompt: ad.image_prompt || ad.imagePrompt || '',
+            format: ad.format || 'feed'
+          });
+        }
+      }
+      
+      // Garantir que temos pelo menos 3 anúncios
+      while (finalAds.length < 3 && fallbackIndex < fallbackAds.length) {
+        finalAds.push(fallbackAds[fallbackIndex]);
+        fallbackIndex++;
+      }
+      
+      return finalAds;
+    } catch (openAIError) {
+      console.error("Erro ao chamar OpenAI:", openAIError);
+      // Em caso de erro na API, usar fallbacks
+      return generateFallbackMetaAds(campaignData);
+    }
+  } catch (error) {
+    console.error("Erro ao gerar anúncios do Meta/Instagram:", error);
+    // Em caso de erro geral, usar fallbacks
+    return generateFallbackMetaAds(campaignData);
   }
-  
-  // If no ads found, return empty array (will be replaced with fallback)
-  return ads;
+}
+
+/**
+ * Função para gerar anúncios do LinkedIn com base na análise do website
+ */
+export async function generateLinkedInAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string) {
+  try {
+    console.log("Gerando anúncios para o LinkedIn...");
+    
+    // Validar dados mínimos necessários
+    if (!campaignData.companyName) {
+      throw new Error("O nome da empresa é obrigatório para gerar anúncios");
+    }
+    
+    // Criação do prompt
+    const prompt = createLinkedInAdsPrompt(campaignData, mindTrigger);
+    console.log("Prompt do sistema criado para LinkedIn Ads");
+    
+    // Chamada à API do OpenAI
+    try {
+      const adsResponse = await callOpenAI(prompt, 0.6);
+      
+      // Validar a resposta
+      let ads = Array.isArray(adsResponse) ? adsResponse : [];
+      
+      // Se a resposta for um objeto com uma propriedade Array, tentar extrair
+      if (!Array.isArray(adsResponse) && typeof adsResponse === 'object') {
+        const possibleArrayKeys = Object.keys(adsResponse).filter(key => 
+          Array.isArray(adsResponse[key]) && 
+          adsResponse[key].length > 0 &&
+          (key.includes('ad') || key.includes('linkedin') || key.includes('result'))
+        );
+        
+        if (possibleArrayKeys.length > 0) {
+          ads = adsResponse[possibleArrayKeys[0]];
+          console.log(`Extraído anúncios da propriedade: ${possibleArrayKeys[0]}`);
+        }
+      }
+      
+      if (!ads || ads.length === 0) {
+        console.log("⚠️ Nenhum anúncio válido retornado pelo OpenAI, usando fallbacks");
+        return generateFallbackLinkedInAds(campaignData);
+      }
+      
+      // Validar e substituir termos genéricos
+      const langCode = getSimplifiedLanguageCode(campaignData.language || 'pt');
+      const validatedAds = validateSocialAdsResponse(ads, langCode, campaignData);
+      
+      // Substituir anúncios com termos genéricos por fallbacks
+      const finalAds = [];
+      const fallbackAds = generateFallbackLinkedInAds(campaignData);
+      let fallbackIndex = 0;
+      
+      for (const ad of validatedAds) {
+        if (ad._containsGenericTerms) {
+          // Usar um anúncio fallback
+          if (fallbackIndex < fallbackAds.length) {
+            finalAds.push(fallbackAds[fallbackIndex]);
+            fallbackIndex++;
+          }
+        } else {
+          // Manter o anúncio original em formato padronizado
+          finalAds.push({
+            headline: ad.headline || '',
+            primaryText: ad.primaryText || ad.text || '',
+            description: ad.description || '',
+            imagePrompt: ad.image_prompt || ad.imagePrompt || '',
+            format: ad.format || 'single-image'
+          });
+        }
+      }
+      
+      // Garantir que temos pelo menos 3 anúncios
+      while (finalAds.length < 3 && fallbackIndex < fallbackAds.length) {
+        finalAds.push(fallbackAds[fallbackIndex]);
+        fallbackIndex++;
+      }
+      
+      return finalAds;
+    } catch (openAIError) {
+      console.error("Erro ao chamar OpenAI:", openAIError);
+      // Em caso de erro na API, usar fallbacks
+      return generateFallbackLinkedInAds(campaignData);
+    }
+  } catch (error) {
+    console.error("Erro ao gerar anúncios do LinkedIn:", error);
+    // Em caso de erro geral, usar fallbacks
+    return generateFallbackLinkedInAds(campaignData);
+  }
+}
+
+/**
+ * Função para gerar anúncios do Microsoft/Bing com base na análise do website
+ */
+export async function generateMicrosoftAds(campaignData: WebsiteAnalysisResult, mindTrigger?: string) {
+  try {
+    console.log("Gerando anúncios para o Microsoft/Bing...");
+    
+    // Validar dados mínimos necessários
+    if (!campaignData.companyName) {
+      throw new Error("O nome da empresa é obrigatório para gerar anúncios");
+    }
+    
+    // Criação do prompt
+    const prompt = createMicrosoftAdsPrompt(campaignData, mindTrigger);
+    console.log("Prompt do sistema criado para Microsoft Ads");
+    
+    // Chamada à API do OpenAI
+    try {
+      const adsResponse = await callOpenAI(prompt, 0.5);
+      
+      // Validar a resposta
+      let ads = Array.isArray(adsResponse) ? adsResponse : [];
+      
+      // Se a resposta for um objeto com uma propriedade Array, tentar extrair
+      if (!Array.isArray(adsResponse) && typeof adsResponse === 'object') {
+        const possibleArrayKeys = Object.keys(adsResponse).filter(key => 
+          Array.isArray(adsResponse[key]) && 
+          adsResponse[key].length > 0 &&
+          (key.includes('ad') || key.includes('microsoft') || key.includes('bing') || key.includes('result'))
+        );
+        
+        if (possibleArrayKeys.length > 0) {
+          ads = adsResponse[possibleArrayKeys[0]];
+          console.log(`Extraído anúncios da propriedade: ${possibleArrayKeys[0]}`);
+        }
+      }
+      
+      if (!ads || ads.length === 0) {
+        console.log("⚠️ Nenhum anúncio válido retornado pelo OpenAI, usando fallbacks");
+        return generateFallbackMicrosoftAds(campaignData);
+      }
+      
+      // Validar e substituir termos genéricos
+      const langCode = getSimplifiedLanguageCode(campaignData.language || 'pt');
+      const validatedAds = validateGoogleAdsResponse(ads, langCode, campaignData);
+      
+      // Substituir anúncios com termos genéricos por fallbacks
+      const finalAds = [];
+      const fallbackAds = generateFallbackMicrosoftAds(campaignData);
+      let fallbackIndex = 0;
+      
+      for (const ad of validatedAds) {
+        if (ad._containsGenericTerms) {
+          // Usar um anúncio fallback
+          if (fallbackIndex < fallbackAds.length) {
+            finalAds.push(fallbackAds[fallbackIndex]);
+            fallbackIndex++;
+          }
+        } else {
+          // Manter o anúncio original em formato padronizado
+          finalAds.push({
+            headline1: ad.headline_1 || ad.headline1 || '',
+            headline2: ad.headline_2 || ad.headline2 || '',
+            headline3: ad.headline_3 || ad.headline3 || '',
+            description1: ad.description_1 || ad.description1 || '',
+            description2: ad.description_2 || ad.description2 || '',
+            displayPath: ad.display_url || ad.displayPath || ad.displayUrl || campaignData.websiteUrl,
+            path1: ad.path1 || '',
+            path2: ad.path2 || ''
+          });
+        }
+      }
+      
+      // Garantir que temos pelo menos 3 anúncios
+      while (finalAds.length < 3 && fallbackIndex < fallbackAds.length) {
+        finalAds.push(fallbackAds[fallbackIndex]);
+        fallbackIndex++;
+      }
+      
+      return finalAds;
+    } catch (openAIError) {
+      console.error("Erro ao chamar OpenAI:", openAIError);
+      // Em caso de erro na API, usar fallbacks
+      return generateFallbackMicrosoftAds(campaignData);
+    }
+  } catch (error) {
+    console.error("Erro ao gerar anúncios do Microsoft/Bing:", error);
+    // Em caso de erro geral, usar fallbacks
+    return generateFallbackMicrosoftAds(campaignData);
+  }
 }
