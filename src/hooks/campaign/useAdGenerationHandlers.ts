@@ -36,30 +36,34 @@ export const useAdGenerationHandlers = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Generate fallback ads when API fails
-  const generateFallbackAds = (platform: string) => {
+  // Generate fallback Google ads
+  const generateFallbackGoogleAds = (): GoogleAd[] => {
     const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
     
-    if (platform === 'google' || platform === 'microsoft') {
-      return Array(5).fill(null).map((_, i) => ({
-        headline_1: `${companyName} - Professional Services`,
-        headline_2: `Quality Solutions for Your Needs`,
-        headline_3: `Contact Us Today`,
-        description_1: `We provide top-quality services designed for your specific requirements.`,
-        description_2: `Learn more about how we can help your business grow and succeed.`,
-        display_url: campaignData.targetUrl || campaignData.websiteUrl || 'example.com'
-      }));
-    } else if (platform === 'meta' || platform === 'linkedin') {
-      return Array(5).fill(null).map((_, i) => ({
-        headline: `${companyName} - Professional Services`,
-        primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
-        description: `Quality services tailored to your needs. Contact us today to learn more.`,
-        imagePrompt: `Professional business image for ${companyName}, showing ${campaignData.industry || 'professional'} environment`,
-        format: 'square'
-      }));
-    }
+    return Array(5).fill(null).map((_, i) => ({
+      headline1: `${companyName} - Professional Services`,
+      headline2: `Quality Solutions for Your Needs`,
+      headline3: `Contact Us Today`,
+      description1: `We provide top-quality services designed for your specific requirements.`,
+      description2: `Learn more about how we can help your business grow and succeed.`,
+      displayPath: campaignData.targetUrl || campaignData.websiteUrl || 'example.com',
+      path1: 'services',
+      path2: 'info',
+      siteLinks: []
+    }));
+  };
+  
+  // Generate fallback Meta/LinkedIn ads
+  const generateFallbackMetaAds = (): MetaAd[] => {
+    const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
     
-    return [];
+    return Array(5).fill(null).map((_, i) => ({
+      headline: `${companyName} - Professional Services`,
+      primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
+      description: `Quality services tailored to your needs. Contact us today to learn more.`,
+      imagePrompt: `Professional business image for ${companyName}, showing ${campaignData.industry || 'professional'} environment`,
+      format: 'square'
+    }));
   };
 
   // Handler for all ads generated from AdGenerationStep component
@@ -107,9 +111,9 @@ export const useAdGenerationHandlers = ({
       
       // Use fallback if generation fails
       if (!ads || ads.length === 0) {
-        ads = generateFallbackAds('google');
+        ads = generateFallbackGoogleAds();
         toast({
-          variant: "warning",
+          variant: "destructive",
           title: "Using fallback Google Ads",
           description: "We've created placeholder ads. You can edit them now."
         });
@@ -124,11 +128,11 @@ export const useAdGenerationHandlers = ({
     } catch (error) {
       console.error("Failed to generate Google Ads:", error);
       // Use fallback on error
-      const fallbackAds = generateFallbackAds('google');
+      const fallbackAds = generateFallbackGoogleAds();
       setGoogleAds(fallbackAds);
       
       toast({
-        variant: "warning",
+        variant: "destructive",
         title: "Using fallback Google Ads",
         description: "We've created placeholder ads due to an error. You can edit them now."
       });
@@ -155,9 +159,9 @@ export const useAdGenerationHandlers = ({
   
       // Use fallback if generation fails
       if (!ads || ads.length === 0) {
-        ads = generateFallbackAds('meta');
+        ads = generateFallbackMetaAds();
         toast({
-          variant: "warning",
+          variant: "destructive",
           title: "Using fallback Instagram Ads",
           description: "We've created placeholder ads. You can edit them now."
         });
@@ -172,11 +176,11 @@ export const useAdGenerationHandlers = ({
     } catch (error) {
       console.error("Failed to generate Instagram Ads:", error);
       // Use fallback on error
-      const fallbackAds = generateFallbackAds('meta');
+      const fallbackAds = generateFallbackMetaAds();
       setMetaAds(fallbackAds);
       
       toast({
-        variant: "warning",
+        variant: "destructive",
         title: "Using fallback Instagram Ads",
         description: "We've created placeholder ads due to an error. You can edit them now."
       });
@@ -202,9 +206,10 @@ export const useAdGenerationHandlers = ({
   
       // Use fallback if generation fails
       if (!ads || ads.length === 0) {
-        ads = generateFallbackAds('linkedin');
+        // Use the meta fallback generator as they share the same structure
+        ads = generateFallbackMetaAds();
         toast({
-          variant: "warning",
+          variant: "destructive",
           title: "Using fallback LinkedIn Ads",
           description: "We've created placeholder ads. You can edit them now."
         });
@@ -219,11 +224,11 @@ export const useAdGenerationHandlers = ({
     } catch (error) {
       console.error("Failed to generate LinkedIn Ads:", error);
       // Use fallback on error
-      const fallbackAds = generateFallbackAds('linkedin');
+      const fallbackAds = generateFallbackMetaAds();
       setLinkedInAds(fallbackAds);
       
       toast({
-        variant: "warning",
+        variant: "destructive",
         title: "Using fallback LinkedIn Ads",
         description: "We've created placeholder ads due to an error. You can edit them now."
       });
@@ -249,9 +254,10 @@ export const useAdGenerationHandlers = ({
   
       // Use fallback if generation fails
       if (!ads || ads.length === 0) {
-        ads = generateFallbackAds('microsoft');
+        // Use the Google fallback generator as they share the same structure
+        ads = generateFallbackGoogleAds();
         toast({
-          variant: "warning",
+          variant: "destructive",
           title: "Using fallback Microsoft Ads",
           description: "We've created placeholder ads. You can edit them now."
         });
@@ -266,11 +272,11 @@ export const useAdGenerationHandlers = ({
     } catch (error) {
       console.error("Failed to generate Microsoft Ads:", error);
       // Use fallback on error
-      const fallbackAds = generateFallbackAds('microsoft');
+      const fallbackAds = generateFallbackGoogleAds();
       setMicrosoftAds(fallbackAds);
       
       toast({
-        variant: "warning",
+        variant: "destructive",
         title: "Using fallback Microsoft Ads",
         description: "We've created placeholder ads due to an error. You can edit them now."
       });

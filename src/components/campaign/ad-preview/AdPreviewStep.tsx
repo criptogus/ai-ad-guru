@@ -95,33 +95,28 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
       const generateMissingAds = async () => {
         // Determine which platform to generate based on user selection
         if (mindTriggers.google) {
-          toast({
-            title: "Generating Google Ads",
+          toast("Generating Google Ads", {
             description: "No ads found. Generating Google Ads automatically."
           });
           await onGenerateGoogleAds();
         } else if (mindTriggers.meta) {
-          toast({
-            title: "Generating Instagram Ads",
+          toast("Generating Instagram Ads", {
             description: "No ads found. Generating Instagram Ads automatically."
           });
           await onGenerateMetaAds();
         } else if (mindTriggers.linkedin) {
-          toast({
-            title: "Generating LinkedIn Ads",
+          toast("Generating LinkedIn Ads", {
             description: "No ads found. Generating LinkedIn Ads automatically."
           });
           await onGenerateLinkedInAds();
         } else if (mindTriggers.microsoft) {
-          toast({
-            title: "Generating Microsoft Ads",
+          toast("Generating Microsoft Ads", {
             description: "No ads found. Generating Microsoft Ads automatically."
           });
           await onGenerateMicrosoftAds();
         } else {
           // Default to Google Ads if no specific platform is selected
-          toast({
-            title: "Generating Google Ads",
+          toast("Generating Google Ads", {
             description: "No ads found. Generating Google Ads automatically."
           });
           await onGenerateGoogleAds();

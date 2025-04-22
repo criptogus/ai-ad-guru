@@ -8,6 +8,7 @@ import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptType
 import { CampaignData } from '@/hooks/useCampaignState';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -70,18 +71,41 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         try {
           const ads = await generateCampaignAds(promptData);
           
-          // Accepts array or object depending on returned structure
-          if (ads && (Array.isArray(ads) || typeof ads === "object")) {
-            results[platform] = ads;
-            hasAnySuccessfulPlatform = true;
+          // Need to convert the returned GeneratedAdContent to proper ad arrays
+          if (ads) {
+            // Extract correct platform data and convert to array
+            if (platform === 'google' && ads.google_ads) {
+              results[platform] = convertGoogleAdsFormat(ads.google_ads);
+              hasAnySuccessfulPlatform = true;
+            } else if ((platform === 'meta' || platform === 'instagram') && (ads.meta_ads || ads.instagram_ads)) {
+              results[platform] = convertMetaAdsFormat(ads.meta_ads || ads.instagram_ads || []);
+              hasAnySuccessfulPlatform = true;
+            } else if (platform === 'linkedin' && ads.linkedin_ads) {
+              results[platform] = convertMetaAdsFormat(ads.linkedin_ads);
+              hasAnySuccessfulPlatform = true;
+            } else if (platform === 'microsoft' && ads.microsoft_ads) {
+              results[platform] = convertGoogleAdsFormat(ads.microsoft_ads);
+              hasAnySuccessfulPlatform = true;
+            } else {
+              console.warn(`No ${platform} ads data received`);
+              // Create fallback ads if generation returns empty
+              results[platform] = generateFallbackAds(platform, promptData);
+              hasAnySuccessfulPlatform = true;
+              
+              toast({
+                variant: "destructive",
+                title: `Using fallback ads for ${platform}`,
+                description: "We've created placeholder ads. You can edit them in the next step."
+              });
+            }
           } else {
-            console.warn(`No ${platform} ads data received`);
+            console.warn(`No ${platform} ads data received, using fallbacks`);
             // Create fallback ads if generation returns empty
             results[platform] = generateFallbackAds(platform, promptData);
             hasAnySuccessfulPlatform = true;
             
             toast({
-              variant: "warning",
+              variant: "destructive",
               title: `Using fallback ads for ${platform}`,
               description: "We've created placeholder ads. You can edit them in the next step."
             });
@@ -93,7 +117,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           hasAnySuccessfulPlatform = true;
           
           toast({
-            variant: "warning",
+            variant: "destructive",
             title: `Using fallback ads for ${platform}`,
             description: "We've created placeholder ads. You can edit them in the next step."
           });
@@ -133,18 +157,47 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     }
   };
 
+  // Converts API response format to match our GoogleAd interface
+  const convertGoogleAdsFormat = (ads: any[]): GoogleAd[] => {
+    return ads.map(ad => ({
+      headline1: ad.headline_1 || '',
+      headline2: ad.headline_2 || '',
+      headline3: ad.headline_3 || 'Learn More',
+      description1: ad.description_1 || '',
+      description2: ad.description_2 || '',
+      displayPath: ad.display_url || '',
+      path1: 'services',
+      path2: 'info',
+      siteLinks: []
+    }));
+  };
+
+  // Converts API response format to match our MetaAd interface
+  const convertMetaAdsFormat = (ads: any[]): MetaAd[] => {
+    return ads.map(ad => ({
+      headline: ad.headline || ad.text?.split('\n')[0] || 'Discover More',
+      primaryText: ad.text || ad.primaryText || '',
+      description: ad.description || '',
+      imagePrompt: ad.image_prompt || ad.imagePrompt || `Professional ad image`,
+      format: 'feed'
+    }));
+  };
+
   // Generate fallback ads when API fails
   const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
     const companyName = promptData.companyName || 'Your Company';
     
     if (platform === 'google' || platform === 'microsoft') {
       return Array(5).fill(null).map((_, i) => ({
-        headline_1: `${companyName} - Professional Services`,
-        headline_2: `Quality Solutions for Your Needs`,
-        headline_3: `Contact Us Today`,
-        description_1: `We provide top-quality services designed for your specific requirements.`,
-        description_2: `Learn more about how we can help your business grow and succeed.`,
-        display_url: promptData.websiteUrl || 'example.com'
+        headline1: `${companyName} - Professional Services`,
+        headline2: `Quality Solutions for Your Needs`,
+        headline3: `Contact Us Today`,
+        description1: `We provide top-quality services designed for your specific requirements.`,
+        description2: `Learn more about how we can help your business grow and succeed.`,
+        displayPath: promptData.websiteUrl || 'example.com',
+        path1: 'services',
+        path2: 'info',
+        siteLinks: []
       }));
     } else if (platform === 'meta' || platform === 'linkedin') {
       return Array(5).fill(null).map((_, i) => ({
@@ -152,7 +205,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
         description: `Quality services tailored to your needs. Contact us today to learn more.`,
         imagePrompt: `Professional business image for ${companyName}, showing ${promptData.industry || 'professional'} environment`,
-        format: 'square'
+        format: 'feed'
       }));
     }
     
