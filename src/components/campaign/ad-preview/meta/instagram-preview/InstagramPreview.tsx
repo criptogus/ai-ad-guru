@@ -1,84 +1,184 @@
 
 import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import ImageContent from "./ImageContent";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
-  companyName: string;
+  companyName?: string;
+  className?: string;
   index?: number;
   loadingImageIndex?: number | null;
-  onGenerateImage?: () => Promise<void>;
-  onUpdateAd?: (updatedAd: MetaAd) => void;
+  onGenerateImage?: () => void;
   viewMode?: "feed" | "story" | "reel";
-  isLoading?: boolean;
 }
 
-const InstagramPreview: React.FC<InstagramPreviewProps> = ({
+export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
-  companyName,
+  companyName = "Your Company",
+  className,
   index = 0,
   loadingImageIndex = null,
-  onGenerateImage = async () => {},
-  onUpdateAd,
+  onGenerateImage,
   viewMode = "feed",
-  isLoading = false,
 }) => {
-  // Determine loading state from both direct isLoading prop and loadingImageIndex
-  const isImageLoading = isLoading || loadingImageIndex === index;
+  const [imageLoading, setImageLoading] = React.useState(true);
+  const [imageError, setImageError] = React.useState(false);
 
-  // Define the correct format based on viewMode
-  const getFormat = () => {
-    if (viewMode === "story" || viewMode === "reel") {
-      return viewMode;
-    }
-    return "feed";
+  const handleImageLoad = () => {
+    setImageLoading(false);
   };
 
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+    console.error("Failed to load Instagram ad image:", ad.imageUrl);
+  };
+
+  const formatPrimaryText = () => {
+    if (!ad.primaryText) return null;
+
+    const parts = ad.primaryText.split(/(#\w+)/g);
+
+    return parts.map((part, idx) => {
+      if (part.startsWith("#")) {
+        return (
+          <span key={idx} className="text-blue-500">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  const errorPlaceholder = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#f5f5f5"/>
+      <text x="50" y="50" font-family="Arial" font-size="8" fill="#9ca3af" text-anchor="middle">Image unavailable</text>
+    </svg>
+  `;
+
   return (
-    <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-md overflow-hidden max-w-sm mx-auto">
-      {/* Header */}
-      <div className="flex items-center px-3 py-2 border-b dark:border-gray-800">
-        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
-          {companyName.charAt(0).toUpperCase()}
+    <div className={cn("w-full max-w-md border rounded-md overflow-hidden bg-white", className)}>
+      {/* Instagram header with profile */}
+      <div className="p-3 flex items-center">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-fuchsia-600 mr-2 flex-shrink-0"></div>
+        <div>
+          <div className="text-sm font-semibold">{companyName}</div>
+          <div className="text-xs text-gray-500">Sponsored</div>
         </div>
-        <div className="ml-2 text-sm font-medium">{companyName}</div>
       </div>
 
-      {/* Image */}
-      <ImageContent
-        ad={ad}
-        imageKey={index}
-        isLoading={isImageLoading}
-        isUploading={false}
-        format={getFormat() as "feed" | "story" | "reel"}
-        onGenerateImage={onGenerateImage}
-      />
-
-      {/* Caption area */}
-      <div className="p-3">
-        <div className="flex items-start space-x-1">
-          <span className="font-medium text-sm">{companyName}</span>
-          <span className="text-sm whitespace-pre-wrap break-words">
-            {ad.primaryText || ad.description || "Your compelling ad copy goes here."}
-          </span>
-        </div>
-
-        {/* Action button area */}
-        {!isImageLoading && !ad.imageUrl && onGenerateImage && (
-          <div className="mt-3">
-            <Button
-              size="sm"
-              className="w-full"
-              onClick={onGenerateImage}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Generate Image
-            </Button>
+      {/* Instagram image */}
+      <div
+        className={cn(
+          "relative bg-gray-50 flex items-center justify-center",
+          viewMode === "feed"
+            ? "aspect-square max-h-96"
+            : "aspect-[9/16] max-h-[540px]"
+        )}
+      >
+        {imageLoading && !imageError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
           </div>
         )}
+
+        {imageError ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 p-4 text-center">
+            <div
+              dangerouslySetInnerHTML={{ __html: errorPlaceholder }}
+              className="w-16 h-16 mb-2"
+            />
+            <span className="text-sm">Image could not be loaded</span>
+            <span className="text-xs mt-1 max-w-xs">
+              {ad.imagePrompt
+                ? `Prompt: ${ad.imagePrompt.substring(0, 50)}...`
+                : "No prompt provided"}
+            </span>
+          </div>
+        ) : ad.imageUrl ? (
+          <img
+            src={ad.imageUrl}
+            alt={ad.headline || "Instagram ad"}
+            className="w-full h-full object-cover rounded-b-md"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            style={{ display: imageLoading ? "none" : "block" }}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400 p-4 text-center">
+            <span className="text-sm">No image generated yet</span>
+          </div>
+        )}
+      </div>
+
+      {/* Instagram engagement icons */}
+      <div className="p-3">
+        <div className="flex space-x-4 mb-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+            />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div>
+          <div className="font-semibold text-sm mb-1">{companyName}</div>
+          <div className="text-sm whitespace-pre-wrap">{formatPrimaryText()}</div>
+          {ad.headline && (
+            <div className="font-medium text-sm mt-2">{ad.headline}</div>
+          )}
+
+          {/* CTA */}
+          {ad.description && (
+            <div className="mt-3">
+              <button className="bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded-md w-full">
+                {ad.description}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
