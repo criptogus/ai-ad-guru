@@ -19,20 +19,26 @@ export const useAdGenerationFlow = () => {
       console.log('Generating ads with data:', JSON.stringify(data, null, 2));
       setIsGenerating(true);
 
-      const result = await generateAds({
+      // Create a cleaned version of the prompt data
+      const promptData: CampaignPromptData = {
         companyName: data.companyName,
-        websiteUrl: data.websiteUrl || 'example.com',
+        websiteUrl: data.websiteUrl || '',
         objective: data.objective || 'awareness',
         product: data.product || '',
         targetAudience: data.targetAudience || '',
         brandTone: data.brandTone || 'professional',
         mindTrigger: data.mindTrigger || '',
+        mindTriggers: data.mindTriggers || {},
         language: data.language || 'english',
         industry: data.industry || '',
         platforms: data.platforms || ['google', 'meta'],
         companyDescription: data.companyDescription || '',
-        differentials: data.differentials || []
-      });
+        differentials: data.differentials || [],
+        keywords: data.keywords || [],
+        callToAction: data.callToAction || 'Learn More'
+      };
+
+      const result = await generateAds(promptData);
 
       console.log('Generated ad content:', JSON.stringify(result, null, 2));
       return result;

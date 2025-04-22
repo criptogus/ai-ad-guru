@@ -1,23 +1,23 @@
 
-export interface CampaignPromptData {
-  companyName: string;
-  websiteUrl?: string;
-  objective?: string;
-  product?: string;
-  targetAudience?: string;
-  brandTone?: string;
-  mindTrigger?: string;
-  language?: string;
-  industry?: string;
-  platforms?: string[];
-  companyDescription?: string;
-  differentials?: string[];
-  callToAction?: string | string[];
-  keywords?: string | string[];
-  [key: string]: any;
-}
-
 export interface PromptMessages {
   systemMessage: string;
   userMessage: string;
+}
+
+export interface CampaignPromptData {
+  companyName?: string;
+  websiteUrl?: string;
+  industry?: string;
+  product?: string;
+  objective?: string;
+  brandTone?: string;
+  language?: string;
+  targetAudience?: string;
+  companyDescription?: string;
+  keywords?: string[] | string;
+  differentials?: string[] | string;
+  callToAction?: string[] | string;
+  mindTrigger?: string;
+  mindTriggers?: Record<string, string>;
+  platforms?: string[];
 }

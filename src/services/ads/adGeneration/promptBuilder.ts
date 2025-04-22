@@ -10,33 +10,23 @@ function fieldOrDoNotInvent(val: any, notProvidedMsg = "Not provided — do not 
   return val;
 }
 
-// ------ GOOGLE ------
-export const buildGoogleAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are a world-class performance marketer and expert Google Ads copywriter. Only use the provided data—never invent details, and don't use placeholders.`;
+// ------ Unified Prompt Builder ------
+export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): PromptMessages => {
+  // Get platform-specific mind trigger
+  const mindTrigger = data.mindTrigger || 
+    (data.mindTriggers && data.mindTriggers[platform]) || 
+    "Not provided";
+  
+  // Build unified system message
+  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
 
-  const userMessage = `
-Create 5 high-performing Google Search ads for a company with ONLY the data provided below. 
-Omit any section where data is missing—do NOT invent or use generic fill-ins.
-
-Company: ${fieldOrDoNotInvent(data.companyName)}
-Website: ${fieldOrDoNotInvent(data.websiteUrl)}
-Product/Service: ${fieldOrDoNotInvent(data.product)}
-Industry: ${fieldOrDoNotInvent(data.industry)}
-Target Audience: ${fieldOrDoNotInvent(data.targetAudience)}
-Campaign Objective: ${fieldOrDoNotInvent(data.objective)}
-Tone of Voice: ${fieldOrDoNotInvent(data.brandTone)}
-Psychological Trigger: ${fieldOrDoNotInvent(data.mindTrigger, "None")}
-Unique Selling Points: ${fieldOrDoNotInvent(data.differentials)}
-Company Description: ${fieldOrDoNotInvent(data.companyDescription)}
-Keywords: ${fieldOrDoNotInvent(data.keywords)}
-Call to Action: ${fieldOrDoNotInvent(
-    Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
-)}
-
-LANGUAGE: ${data.language || 'English'}
-Respond using this language. 
-
-Format the output as a JSON array with 5 objects, strictly following this format:
+  // Build platform-specific instructions
+  let platformInstructions = '';
+  let jsonSchema = '';
+  
+  if (platform === 'google' || platform === 'microsoft') {
+    platformInstructions = `Create 5 high-converting ${platform === 'google' ? 'Google' : 'Microsoft/Bing'} Search ads. Each ad must have 3 headlines (max 30 chars each) and 2 descriptions (max 90 chars each).`;
+    jsonSchema = `
 {
   "headline_1": "...",    // max 30 chars
   "headline_2": "...",    // max 30 chars
@@ -44,128 +34,78 @@ Format the output as a JSON array with 5 objects, strictly following this format
   "description_1": "...", // max 90 chars
   "description_2": "...", // max 90 chars
   "display_url": "www.example.com/path"   // display URL
-}
-NO placeholders, NO hallucinated facts, and do NOT exceed char limits. Only use data above.
+}`;
+  } else if (platform === 'meta' || platform === 'instagram') {
+    platformInstructions = `Create 5 engaging Instagram/Meta ads. Each ad should have a compelling headline, primary text (caption), and an image prompt that describes a photo WITHOUT text overlay.`;
+    jsonSchema = `
+{
+  "headline": "...",       // concise attention grabber
+  "primaryText": "...",    // main caption (emotional/engaging)
+  "description": "...",    // supporting context (optional)
+  "image_prompt": "photorealistic Instagram ad for ${data.companyName || 'company'}, product: ${data.product || 'product'}, professional lighting, no text"
+}`;
+  } else if (platform === 'linkedin') {
+    platformInstructions = `Create 5 professional LinkedIn ads. Each ad should have a business-oriented headline, primary text that establishes authority, and an image prompt for a professional context.`;
+    jsonSchema = `
+{
+  "headline": "...",        // professional headline for B2B audience
+  "primaryText": "...",     // business-focused main content
+  "description": "...",     // supporting business context
+  "image_prompt": "clean professional photo for LinkedIn, high-end, no text, business context"
+}`;
+  }
+
+  // Build unified user message
+  const userMessage = `
+Create 5 different ad variations for ${platform === 'google' ? 'Google Ads' : platform === 'microsoft' ? 'Microsoft/Bing Ads' : platform === 'meta' ? 'Instagram/Meta Ads' : 'LinkedIn Ads'}.
+
+Use ONLY the data below. Do not invent features or business context. Omit any section where data is missing—do NOT invent or use generic fill-ins.
+
+Company: ${fieldOrDoNotInvent(data.companyName)}
+Website: ${fieldOrDoNotInvent(data.websiteUrl)}
+Product/Service: ${fieldOrDoNotInvent(data.product)}
+Industry: ${fieldOrDoNotInvent(data.industry)}
+Target Audience: ${fieldOrDoNotInvent(data.targetAudience)}
+Campaign Objective: ${fieldOrDoNotInvent(data.objective)}
+Tone of Voice: ${fieldOrDoNotInvent(data.brandTone)}
+Psychological Trigger: ${fieldOrDoNotInvent(mindTrigger, "None")}
+Unique Selling Points: ${fieldOrDoNotInvent(data.differentials)}
+Company Description: ${fieldOrDoNotInvent(data.companyDescription)}
+Keywords: ${fieldOrDoNotInvent(data.keywords)}
+Call to Action: ${fieldOrDoNotInvent(
+    Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
+)}
+
+LANGUAGE: ${data.language || 'English'}
+Respond using this language: ${data.language || 'English'}
+
+${platformInstructions}
+
+Format the output as a JSON array with 5 objects, strictly following this format:
+${jsonSchema}
+
+NO placeholders, NO hallucinated facts, and do NOT exceed character limits. Only use data above.
 `.trim();
 
   return { systemMessage, userMessage };
+};
+
+// ------ GOOGLE ------
+export const buildGoogleAdsPrompt = (data: CampaignPromptData): PromptMessages => {
+  return buildUnifiedPrompt(data, 'google');
 };
 
 // ------ META / INSTAGRAM ------
 export const buildMetaAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are a world-class Meta Ads strategist. Create 5 Instagram/Meta ad variations. Only use the provided campaign and brand data. You must NOT invent any detail.`;
-
-  const userMessage = `
-Create 5 Instagram Ads using ONLY the data below. 
-Do not make up or invent anything; omit any data not provided.
-
-Company: ${fieldOrDoNotInvent(data.companyName)}
-Website: ${fieldOrDoNotInvent(data.websiteUrl)}
-Product/Service: ${fieldOrDoNotInvent(data.product)}
-Industry: ${fieldOrDoNotInvent(data.industry)}
-Target Audience: ${fieldOrDoNotInvent(data.targetAudience)}
-Campaign Objective: ${fieldOrDoNotInvent(data.objective)}
-Tone of Voice: ${fieldOrDoNotInvent(data.brandTone)}
-Psychological Trigger: ${fieldOrDoNotInvent(data.mindTrigger, "None")}
-Unique Selling Points: ${fieldOrDoNotInvent(data.differentials)}
-Company Description: ${fieldOrDoNotInvent(data.companyDescription)}
-Keywords: ${fieldOrDoNotInvent(data.keywords)}
-Call to Action: ${fieldOrDoNotInvent(
-    Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
-)}
-
-LANGUAGE: ${data.language || 'English'}
-Respond using this language.
-
-Format output as a JSON array with 5 objects, strictly following:
-{
-  "headline": "...",       // concise attention grabber
-  "primaryText": "...",    // main caption (emotional/engaging, but only use given info)
-  "description": "...",    // supporting context/benefits (if info available)
-  "image_prompt": "..."    // a realistic prompt for an ad image, with NO text overlay, suitable for Instagram.
-}
-NO invented features/claims. Do NOT use placeholders. Only use fields from campaign data.
-`.trim();
-
-  return { systemMessage, userMessage };
+  return buildUnifiedPrompt(data, 'meta');
 };
 
 // ------ LINKEDIN ------
 export const buildLinkedInAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are a world-class B2B copywriter and LinkedIn Ads strategist. Create 5 professional LinkedIn ads. Use ONLY provided data, and never invent or guess.`;
-
-  const userMessage = `
-Create 5 LinkedIn Ads for a campaign using ONLY the data below. 
-Do NOT invent or fill in missing details—omit fields not provided.
-
-Company: ${fieldOrDoNotInvent(data.companyName)}
-Website: ${fieldOrDoNotInvent(data.websiteUrl)}
-Product/Service: ${fieldOrDoNotInvent(data.product)}
-Industry: ${fieldOrDoNotInvent(data.industry)}
-Target Audience: ${fieldOrDoNotInvent(data.targetAudience)}
-Campaign Objective: ${fieldOrDoNotInvent(data.objective)}
-Tone of Voice: ${fieldOrDoNotInvent(data.brandTone)}
-Psychological Trigger: ${fieldOrDoNotInvent(data.mindTrigger, "None")}
-Unique Selling Points: ${fieldOrDoNotInvent(data.differentials)}
-Company Description: ${fieldOrDoNotInvent(data.companyDescription)}
-Keywords: ${fieldOrDoNotInvent(data.keywords)}
-Call to Action: ${fieldOrDoNotInvent(
-    Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
-)}
-
-LANGUAGE: ${data.language || 'English'}
-Respond using this language.
-
-Format output as a JSON array with 5 objects, each with:
-{
-  "headline": "...",        // professional, concise, only supplied facts
-  "primaryText": "...",     // main caption for business (no fabrications)
-  "description": "...",     // supporting statement if info exists
-  "image_prompt": "..."     // professional ad creative image prompt, NO text overlay, for LinkedIn
-}
-NO "lorem ipsum", NO invented claims, NO placeholders—just use what is above.
-`.trim();
-
-  return { systemMessage, userMessage };
+  return buildUnifiedPrompt(data, 'linkedin');
 };
 
 // ------ MICROSOFT / BING ------
 export const buildMicrosoftAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are a world-class Microsoft/Bing Ads copywriter. Write ONLY real, performance-focused ads using supplied data—NO inventions or placeholders.`;
-
-  const userMessage = `
-Create 5 Microsoft/Bing Search Ads for a company using ONLY the data below. 
-Do NOT invent or use filler—only use data as provided.
-
-Company: ${fieldOrDoNotInvent(data.companyName)}
-Website: ${fieldOrDoNotInvent(data.websiteUrl)}
-Product/Service: ${fieldOrDoNotInvent(data.product)}
-Industry: ${fieldOrDoNotInvent(data.industry)}
-Target Audience: ${fieldOrDoNotInvent(data.targetAudience)}
-Campaign Objective: ${fieldOrDoNotInvent(data.objective)}
-Tone of Voice: ${fieldOrDoNotInvent(data.brandTone)}
-Psychological Trigger: ${fieldOrDoNotInvent(data.mindTrigger, "None")}
-Unique Selling Points: ${fieldOrDoNotInvent(data.differentials)}
-Company Description: ${fieldOrDoNotInvent(data.companyDescription)}
-Keywords: ${fieldOrDoNotInvent(data.keywords)}
-Call to Action: ${fieldOrDoNotInvent(
-    Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
-)}
-
-LANGUAGE: ${data.language || 'English'}
-Respond using this language.
-
-Format output as a JSON array with 5 objects, strictly in this format:
-{
-  "headline_1": "...",    // max 30 chars
-  "headline_2": "...",    // max 30 chars
-  "headline_3": "...",    // max 30 chars
-  "description_1": "...", // max 90 chars
-  "description_2": "...", // max 90 chars
-  "display_url": "www.example.com/path"
-}
-NO hallucinations, NO placeholders, strictly follow character limits and field structure.
-`.trim();
-
-  return { systemMessage, userMessage };
+  return buildUnifiedPrompt(data, 'microsoft');
 };

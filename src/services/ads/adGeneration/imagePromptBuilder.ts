@@ -51,30 +51,31 @@ export const buildImagePrompt = ({
         ? 'conversion and call-to-action' 
         : 'general marketing';
 
+  // Modified prompt to be more specific and aligned with our unified approach
   return `Create a high-resolution advertising image designed for a ${displayPlatform} ad campaign.
 
 ### Brand Context:
-- Brand name: ${brandName}
-- Product/service: ${productService}
-- Industry: ${industry}
+- Brand name: ${brandName || 'Not provided — do not invent a brand name'}
+- Product/service: ${productService || 'Not provided — do not invent a product'}
+- Industry: ${industry || 'Not provided — do not invent an industry'}
 - Campaign objective: ${campaignFocus}
-- Target audience: ${targetAudience}
-- Tone: ${tone}
+- Target audience: ${targetAudience || 'Not provided — do not invent audience details'}
+- Tone: ${tone || 'professional'}
 - Main emotion or mental trigger: ${mentalTrigger || 'trust'}
 - ${uspText}
 
 ### Image Style:
 - Agency-quality, photorealistic composition
 - Cinematic lighting and vibrant colors
-- Clean background with strategic negative space for overlays (but no text on image)
+- Clean background with strategic negative space for overlays (but NO TEXT on image)
 - Use the brand colors subtly: ${brandColors.join(', ')}
 - Format: ${displayPlatform} ${format} (${formatDimensions[format]})
 - Visual focal point: Professional scene showing value proposition, with modern aesthetics
 
 ### Requirements:
-- No text in the image
+- NO TEXT in the image
 - Human figures should look natural and diverse (avoid AI distortions)
-- Avoid watermarks or artifacts
+- No watermarks or artifacts
 - Should immediately convey the value and emotion of the product/service
 - Style inspiration: [Apple ads, Nike visuals, fintech dashboards, startup hero banners]`;
 };

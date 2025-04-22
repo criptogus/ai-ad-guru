@@ -10,11 +10,17 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
     // Show detailed information about what's being sent to the function
     console.log('Platform(s):', data.platforms);
     console.log('Company name:', data.companyName);
-    console.log('Mind trigger:', data.mindTrigger || 'None');
+    console.log('Mind triggers:', data.mindTriggers || 'None specific to platforms');
     
     const { data: response, error } = await supabase.functions.invoke('generate-ads', {
       body: { 
-        campaignData: data,
+        campaignData: {
+          ...data,
+          // Ensure the mind trigger field is available by platform
+          mindTrigger: data.mindTrigger || 
+            (data.platforms && data.platforms[0] && data.mindTriggers ? 
+              data.mindTriggers[data.platforms[0]] : undefined)
+        },
         platforms: data.platforms
       }
     });
