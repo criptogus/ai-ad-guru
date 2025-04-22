@@ -36,6 +36,23 @@ interface AdPreviewStepProps {
   mindTriggers?: Record<string, string>;
 }
 
+const PLATFORM_LABELS: Record<string, string> = {
+  google: "Google Ads",
+  meta: "Instagram Ads",
+  linkedin: "LinkedIn Ads",
+  microsoft: "Microsoft Ads"
+};
+
+const PLATFORM_COMPONENT: Record<
+  string,
+  React.FC<any>
+> = {
+  google: GoogleAdsTab,
+  meta: MetaAdsTab,
+  linkedin: LinkedInAdsTab,
+  microsoft: MicrosoftAdsTab
+};
+
 const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   analysisResult,
   googleAds,
@@ -57,75 +74,107 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
   onBack,
   mindTriggers = {}
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("google");
+  // --- DYNAMIC SELECTED PLATFORMS LOGIC ---
+  const selectedPlatforms: string[] = Object.keys(mindTriggers).filter(
+    (key) => !!mindTriggers[key] && ["google", "meta", "linkedin", "microsoft"].includes(key)
+  );
   
-  // Auto-detect which platform to show based on available ads
-  useEffect(() => {
-    if (googleAds.length > 0) {
-      setActiveTab("google");
-    } else if (metaAds.length > 0) {
-      setActiveTab("meta");
-    } else if (linkedInAds.length > 0) {
-      setActiveTab("linkedin");
-    } else if (microsoftAds.length > 0) {
-      setActiveTab("microsoft");
+  // Pick ads arrays and props by platform
+  const platformAdProps: Record<string, any> = {
+    google: {
+      googleAds,
+      isGenerating,
+      onGenerateAds: onGenerateGoogleAds,
+      onUpdateGoogleAd,
+      analysisResult,
+      mindTrigger: getMindTrigger({ mindTriggers }, "google"),
+    },
+    meta: {
+      metaAds,
+      analysisResult,
+      isGenerating,
+      loadingImageIndex,
+      onGenerateAds: onGenerateMetaAds,
+      onGenerateImage,
+      onUpdateMetaAd,
+      mindTrigger: getMindTrigger({ mindTriggers }, "meta"),
+    },
+    linkedin: {
+      linkedInAds,
+      analysisResult,
+      isGenerating,
+      loadingImageIndex,
+      onGenerateAds: onGenerateLinkedInAds,
+      onGenerateImage,
+      onUpdateLinkedInAd,
+      mindTrigger: getMindTrigger({ mindTriggers }, "linkedin"),
+    },
+    microsoft: {
+      microsoftAds,
+      analysisResult,
+      isGenerating,
+      onGenerateAds: onGenerateMicrosoftAds,
+      onUpdateMicrosoftAd,
+      mindTrigger: getMindTrigger({ mindTriggers }, "microsoft"),
     }
-    
-    // Log what ads are available
-    console.log("Available ads:", {
-      google: googleAds.length,
-      meta: metaAds.length,
-      linkedin: linkedInAds.length,
-      microsoft: microsoftAds.length
-    });
-  }, [googleAds, metaAds, linkedInAds, microsoftAds]);
-  
-  // Get mindTrigger for the current platform
-  const getCurrentMindTrigger = (platform: string): string => {
-    return getMindTrigger({ mindTriggers }, platform);
   };
 
-  // Check if we have any ads at all
-  const hasAnyAds = googleAds.length > 0 || metaAds.length > 0 || 
-                    linkedInAds.length > 0 || microsoftAds.length > 0;
-                    
-  // Generate any missing ads if none are available
+  // Detect if we have any ads at all (for empty state)
+  const hasAnyAds =
+    (googleAds && googleAds.length > 0) ||
+    (metaAds && metaAds.length > 0) ||
+    (linkedInAds && linkedInAds.length > 0) ||
+    (microsoftAds && microsoftAds.length > 0);
+
+  // --- ACTIVE TAB DYNAMIC LOGIC ---
+  const [activeTab, setActiveTab] = useState<string | undefined>(
+    selectedPlatforms.length > 0 ? selectedPlatforms[0] : undefined
+  );
+
+  // Always set active tab to first available platform
+  useEffect(() => {
+    if (!activeTab || !selectedPlatforms.includes(activeTab)) {
+      setActiveTab(selectedPlatforms.length > 0 ? selectedPlatforms[0] : undefined);
+    }
+  }, [selectedPlatforms.join(","), activeTab]);
+
+  // --- Handle generating missing ads if none are present ---
   useEffect(() => {
     if (!hasAnyAds && !isGenerating) {
       const generateMissingAds = async () => {
-        // Determine which platform to generate based on user selection
-        if (mindTriggers.google) {
+        if (selectedPlatforms.includes("google")) {
           toast("Generating Google Ads", {
-            description: "No ads found. Generating Google Ads automatically."
+            description: "No ads found. Generating Google Ads automatically.",
           });
           await onGenerateGoogleAds();
-        } else if (mindTriggers.meta) {
+        } else if (selectedPlatforms.includes("meta")) {
           toast("Generating Instagram Ads", {
-            description: "No ads found. Generating Instagram Ads automatically."
+            description: "No ads found. Generating Instagram Ads automatically.",
           });
           await onGenerateMetaAds();
-        } else if (mindTriggers.linkedin) {
+        } else if (selectedPlatforms.includes("linkedin")) {
           toast("Generating LinkedIn Ads", {
-            description: "No ads found. Generating LinkedIn Ads automatically."
+            description: "No ads found. Generating LinkedIn Ads automatically.",
           });
           await onGenerateLinkedInAds();
-        } else if (mindTriggers.microsoft) {
+        } else if (selectedPlatforms.includes("microsoft")) {
           toast("Generating Microsoft Ads", {
-            description: "No ads found. Generating Microsoft Ads automatically."
+            description: "No ads found. Generating Microsoft Ads automatically.",
           });
           await onGenerateMicrosoftAds();
-        } else {
-          // Default to Google Ads if no specific platform is selected
-          toast("Generating Google Ads", {
-            description: "No ads found. Generating Google Ads automatically."
-          });
-          await onGenerateGoogleAds();
         }
       };
-      
       generateMissingAds();
     }
-  }, [hasAnyAds, isGenerating]);
+  }, [hasAnyAds, isGenerating, selectedPlatforms.join(",")]);
+
+  // Tooltips for platform explanation
+  const tooltips: Record<string, string> = {
+    google: "Google Search/Display text ads",
+    meta: "Instagram Feed or Story ad",
+    linkedin: "LinkedIn sponsored content",
+    microsoft: "Microsoft (Bing) search/text ads"
+  };
 
   return (
     <Card className="shadow-md">
@@ -133,90 +182,69 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
         <CardTitle className="text-xl font-semibold">Ad Preview & Customization</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 bg-background border-b rounded-none p-0 h-auto">
-            <TabsTrigger 
-              value="google" 
-              className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-            >
-              Google Ads {googleAds.length > 0 && `(${googleAds.length})`}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="meta" 
-              className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-            >
-              Instagram Ads {metaAds.length > 0 && `(${metaAds.length})`}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="linkedin" 
-              className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-            >
-              LinkedIn Ads {linkedInAds.length > 0 && `(${linkedInAds.length})`}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="microsoft" 
-              className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-            >
-              Microsoft Ads {microsoftAds.length > 0 && `(${microsoftAds.length})`}
-            </TabsTrigger>
-          </TabsList>
-          
-          <div className="p-6">
-            <TabsContent value="google" className="mt-0">
-              <GoogleAdsTab
-                googleAds={googleAds}
-                isGenerating={isGenerating}
-                onGenerateAds={onGenerateGoogleAds}
-                onUpdateGoogleAd={onUpdateGoogleAd}
-                analysisResult={analysisResult}
-                mindTrigger={getCurrentMindTrigger("google")}
-              />
-            </TabsContent>
-            
-            <TabsContent value="meta" className="mt-0">
-              <MetaAdsTab
-                metaAds={metaAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateMetaAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateMetaAd={onUpdateMetaAd}
-                mindTrigger={getCurrentMindTrigger("meta")}
-              />
-            </TabsContent>
-            
-            <TabsContent value="linkedin" className="mt-0">
-              <LinkedInAdsTab
-                linkedInAds={linkedInAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                loadingImageIndex={loadingImageIndex}
-                onGenerateAds={onGenerateLinkedInAds}
-                onGenerateImage={onGenerateImage}
-                onUpdateLinkedInAd={onUpdateLinkedInAd}
-                mindTrigger={getCurrentMindTrigger("linkedin")}
-              />
-            </TabsContent>
-            
-            <TabsContent value="microsoft" className="mt-0">
-              <MicrosoftAdsTab
-                microsoftAds={microsoftAds}
-                analysisResult={analysisResult}
-                isGenerating={isGenerating}
-                onGenerateAds={onGenerateMicrosoftAds}
-                onUpdateMicrosoftAd={onUpdateMicrosoftAd}
-                mindTrigger={getCurrentMindTrigger("microsoft")}
-              />
-            </TabsContent>
+        {selectedPlatforms.length > 0 ? (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className={`grid grid-cols-${selectedPlatforms.length} bg-background border-b rounded-none p-0 h-auto`}>
+              {selectedPlatforms.map((platform) => (
+                <TabsTrigger
+                  key={platform}
+                  value={platform}
+                  className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                  title={tooltips[platform]}
+                >
+                  {PLATFORM_LABELS[platform]}
+                  {platform === "google" && googleAds.length > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">{googleAds.length}</span>
+                  )}
+                  {platform === "meta" && metaAds.length > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">{metaAds.length}</span>
+                  )}
+                  {platform === "linkedin" && linkedInAds.length > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">{linkedInAds.length}</span>
+                  )}
+                  {platform === "microsoft" && microsoftAds.length > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">{microsoftAds.length}</span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <div className="p-6">
+              {selectedPlatforms.map((platform) => {
+                const TabComponent = PLATFORM_COMPONENT[platform];
+                const tabProps = platformAdProps[platform];
+                return (
+                  <TabsContent key={platform} value={platform} className="mt-0">
+                    <TabComponent {...tabProps} />
+                  </TabsContent>
+                );
+              })}
+            </div>
+          </Tabs>
+        ) : (
+          <div className="flex flex-col gap-4 justify-center items-center min-h-[200px] py-8">
+            {!isGenerating ? (
+              <div className="text-muted-foreground text-center text-base">
+                No ad platforms selected yet.<br />
+                You must select at least one platform in campaign setup.
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <div className="text-muted-foreground text-sm">Generating ads...</div>
+              </div>
+            )}
           </div>
-        </Tabs>
-        
+        )}
+
         <div className="flex justify-between p-6 border-t">
           <Button variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button onClick={onNext}>
+          <Button
+            onClick={onNext}
+            disabled={!hasAnyAds}
+          >
             Next Step
           </Button>
         </div>
@@ -226,3 +254,5 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
 };
 
 export default AdPreviewStep;
+
+// ⚠️ This file is now 229+ lines and long. For maintainability and performance, consider splitting each platform's tab into a separate file or dynamic import when you have time!
