@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDate(input: string | number): string {
+export function formatDate(input: Date | string): string {
   const date = new Date(input)
   return date.toLocaleDateString("en-US", {
     month: "long",
@@ -14,60 +14,75 @@ export function formatDate(input: string | number): string {
   })
 }
 
-export function absoluteUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_APP_URL}${path}`
-}
-
-export function getDomain(url: string): string {
-  try {
-    const urlObj = new URL(url);
-    return urlObj.hostname;
-  } catch (e) {
-    console.error("Invalid URL", url, e);
-    return url;
+// Utility function to convert Google Ad from API response format to app format
+export function normalizeGoogleAd(ad: any): any {
+  // Handle direct structure from OpenAI response (google_ads format)
+  if (ad.headline_1 || ad.headline_2 || ad.headline_3) {
+    return {
+      headline1: ad.headline_1 || '',
+      headline2: ad.headline_2 || '',
+      headline3: ad.headline_3 || '',
+      description1: ad.description_1 || '',
+      description2: ad.description_2 || '',
+      displayPath: ad.display_url || '',
+      headlines: [ad.headline_1 || '', ad.headline_2 || '', ad.headline_3 || ''],
+      descriptions: [ad.description_1 || '', ad.description_2 || '']
+    };
   }
+  
+  // Handle existing app format (ensuring both old and new fields exist)
+  const normalizedAd = { ...ad };
+  
+  // Ensure headlines array exists
+  if (!normalizedAd.headlines) {
+    normalizedAd.headlines = [
+      normalizedAd.headline1 || '',
+      normalizedAd.headline2 || '',
+      normalizedAd.headline3 || ''
+    ];
+  }
+  
+  // Ensure headline1/2/3 fields exist
+  if (!normalizedAd.headline1) normalizedAd.headline1 = normalizedAd.headlines[0] || '';
+  if (!normalizedAd.headline2) normalizedAd.headline2 = normalizedAd.headlines[1] || '';
+  if (!normalizedAd.headline3) normalizedAd.headline3 = normalizedAd.headlines[2] || '';
+  
+  // Ensure descriptions array exists
+  if (!normalizedAd.descriptions) {
+    normalizedAd.descriptions = [
+      normalizedAd.description1 || '',
+      normalizedAd.description2 || ''
+    ];
+  }
+  
+  // Ensure description1/2 fields exist
+  if (!normalizedAd.description1) normalizedAd.description1 = normalizedAd.descriptions[0] || '';
+  if (!normalizedAd.description2) normalizedAd.description2 = normalizedAd.descriptions[1] || '';
+  
+  return normalizedAd;
 }
 
-/**
- * Normalize text for Google Ads by ensuring proper spacing after periods
- */
-export const normalizeGoogleAdText = (text: string): string => {
-  if (!text) return '';
-  // Replace a period followed directly by a character with a period, space, and that character
-  return text.replace(/\.(\S)/g, '. $1');
-};
-
-/**
- * Normalize Google ad object to ensure proper spacing after periods
- */
-export const normalizeGoogleAd = (ad: any): any => {
-  // Fix spacing after periods in all headlines and descriptions
-  const fixSpacing = (text: string) => normalizeGoogleAdText(text);
-
-  // Create new ad object with fixed text
-  return {
-    ...ad,
-    headline1: fixSpacing(ad.headline1),
-    headline2: fixSpacing(ad.headline2),
-    headline3: fixSpacing(ad.headline3),
-    description1: fixSpacing(ad.description1),
-    description2: fixSpacing(ad.description2),
-    headlines: ad.headlines?.map(fixSpacing) || [],
-    descriptions: ad.descriptions?.map(fixSpacing) || [],
-  };
-};
-
-/**
- * Normalize Meta ad object
- */
-export const normalizeMetaAd = (ad: any): any => {
-  if (!ad) return {};
+// Utility function to convert Meta Ad from API response format to app format
+export function normalizeMetaAd(ad: any): any {
+  // Handle direct structure from OpenAI response (instagram_ads format)
+  if (ad.text || ad.image_prompt) {
+    return {
+      primaryText: ad.text || '',
+      headline: ad.headline || '',
+      description: ad.description || '',
+      imagePrompt: ad.image_prompt || '',
+      imageUrl: ad.image_url || ''
+    };
+  }
   
-  // Ensure the ad has required properties
-  return {
-    ...ad,
-    format: ad.format || "feed",
-    hashtags: ad.hashtags || [],
-    // Add other default properties as needed
-  };
-};
+  // Handle existing app format
+  const normalizedAd = { ...ad };
+  
+  // Ensure all required fields exist
+  if (!normalizedAd.primaryText) normalizedAd.primaryText = '';
+  if (!normalizedAd.headline) normalizedAd.headline = '';
+  if (!normalizedAd.description) normalizedAd.description = '';
+  if (!normalizedAd.imagePrompt) normalizedAd.imagePrompt = '';
+  
+  return normalizedAd;
+}

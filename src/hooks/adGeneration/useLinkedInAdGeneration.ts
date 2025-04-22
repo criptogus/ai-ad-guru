@@ -1,45 +1,87 @@
 
 import { useState } from "react";
 import { MetaAd } from "./types";
-import { useToast } from "@/hooks/use-toast";
+import { generateAds } from "@/services/ads/adGeneration/adGenerationService";
+import { normalizeMetaAd } from "@/lib/utils";
 
-export const useLinkedInAdGeneration = () => {
+interface LinkedInAdGenerationProps {
+  onSuccess?: (ads: MetaAd[]) => void;
+  onError?: (error: any) => void;
+}
+
+export const useLinkedInAdGeneration = (props?: LinkedInAdGenerationProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<Error | null>(null);
 
-  const generateLinkedInAds = async (params: any) => {
+  const generateLinkedInAds = async (
+    data: {
+      companyName: string;
+      companyDescription?: string;
+      targetAudience?: string;
+      keywords?: string[];
+      mindTrigger?: string;
+      industry?: string;
+      language?: string;
+      websiteUrl?: string;
+      objective?: string;
+      differentials?: string[];
+      brandTone?: string;
+      product?: string;
+    }
+  ): Promise<MetaAd[] | null> => {
     setIsGenerating(true);
+    setError(null);
     
     try {
-      console.log("Generating LinkedIn ads with params:", params);
+      console.log("Generating LinkedIn Ads with data:", data);
       
-      // Placeholder implementation - return sample ads
-      const ads: MetaAd[] = [
-        {
-          headline: `${params.companyName || 'Brand'} - ${params.industry || 'Solutions'} for Professionals`,
-          primaryText: `Are you looking to enhance your ${params.industry || 'business'}? ${params.companyName || 'We'} provides solutions tailored for ${params.targetAudience || 'professionals'}.`,
-          description: "Learn More",
-          imagePrompt: `Professional LinkedIn image for ${params.companyName || 'a company'} showing expertise in ${params.industry || 'business'}`
-          // Removed callToAction property
-        },
-        {
-          headline: `Grow Your Career with ${params.companyName || 'Our'} ${params.industry || 'Solutions'}`,
-          primaryText: `${params.companyName || 'We'} helps ${params.targetAudience || 'professionals'} achieve more with our industry-leading ${params.industry || 'services'}.`,
-          description: "Discover More",
-          imagePrompt: `Professional corporate image for LinkedIn showing ${params.industry || 'business'} professionals in action`
-          // Removed callToAction property
-        }
-      ];
+      // Prepare the data for the OpenAI prompt
+      const promptData = {
+        companyName: data.companyName,
+        websiteUrl: data.websiteUrl || `https://${data.companyName.toLowerCase().replace(/\s+/g, '')}.com`,
+        objective: data.objective || (data.companyDescription ? `Promote ${data.companyName}` : 'Increase brand awareness'),
+        targetAudience: data.targetAudience || 'Professional audience',
+        language: data.language || 'portuguese',
+        brandTone: data.brandTone || 'professional',
+        differentials: data.differentials || [],
+        product: data.product || '',
+        industry: data.industry || '',
+        mindTrigger: data.mindTrigger || ''
+      };
       
-      return ads;
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate LinkedIn Ads. Please try again."
-      });
-      return [];
+      // Generate ads using the service
+      const result = await generateAds(promptData);
+      
+      if (!result) {
+        throw new Error("Failed to generate LinkedIn Ads");
+      }
+      
+      // Extract LinkedIn Ads from the response
+      const linkedInAds = result.linkedin_ads || [];
+      
+      if (linkedInAds.length === 0) {
+        throw new Error("No LinkedIn Ads were generated");
+      }
+      
+      console.log("Generated LinkedIn Ads:", linkedInAds);
+      
+      // Transform the OpenAI response into our app's ad format
+      const transformedAds = linkedInAds.map(ad => normalizeMetaAd(ad));
+      
+      if (props?.onSuccess) {
+        props.onSuccess(transformedAds);
+      }
+      
+      return transformedAds;
+    } catch (err) {
+      console.error("Error generating LinkedIn Ads:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      
+      if (props?.onError) {
+        props.onError(err);
+      }
+      
+      return null;
     } finally {
       setIsGenerating(false);
     }
@@ -47,6 +89,8 @@ export const useLinkedInAdGeneration = () => {
 
   return {
     generateLinkedInAds,
-    isGenerating
+    isGenerating,
+    error,
+    clearError: () => setError(null)
   };
 };

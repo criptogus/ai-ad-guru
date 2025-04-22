@@ -1,51 +1,87 @@
 
 import { useState } from "react";
-import { GoogleAd } from "./types";
-import { useToast } from "@/hooks/use-toast";
+import { GoogleAd } from "./types"; 
+import { generateAds } from "@/services/ads/adGeneration/adGenerationService";
+import { normalizeGoogleAd } from "@/lib/utils";
 
-export const useMicrosoftAdGeneration = () => {
+interface MicrosoftAdGenerationProps {
+  onSuccess?: (ads: GoogleAd[]) => void;
+  onError?: (error: any) => void;
+}
+
+export const useMicrosoftAdGeneration = (props?: MicrosoftAdGenerationProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<Error | null>(null);
 
-  const generateMicrosoftAds = async (params: any) => {
+  const generateMicrosoftAds = async (
+    data: {
+      companyName: string;
+      companyDescription?: string;
+      targetAudience?: string;
+      keywords?: string[];
+      mindTrigger?: string;
+      industry?: string;
+      language?: string;
+      websiteUrl?: string;
+      objective?: string;
+      differentials?: string[];
+      brandTone?: string;
+      product?: string;
+    }
+  ): Promise<GoogleAd[] | null> => {
     setIsGenerating(true);
+    setError(null);
     
     try {
-      console.log("Generating Microsoft ads with params:", params);
+      console.log("Generating Microsoft Ads with data:", data);
       
-      // Placeholder implementation - return sample ads
-      const ads: GoogleAd[] = [
-        {
-          headline1: `${params.companyName || 'Brand'} - ${params.industry || 'Solutions'}`,
-          headline2: "Professional Services",
-          headline3: "Get Started Today",
-          description1: `${params.companyName || 'We'} helps ${params.targetAudience || 'businesses'} succeed with premium ${params.industry || 'services'}.`,
-          description2: "Contact us today for a consultation.",
-          path1: "services",
-          path2: "professional",
-          finalUrl: params.websiteUrl || "https://example.com"
-        },
-        {
-          headline1: `${params.industry || 'Business'} Experts`,
-          headline2: `Trust ${params.companyName || 'Us'}`,
-          headline3: "Quality Service",
-          description1: `Looking for ${params.industry || 'services'}? Our team helps ${params.targetAudience || 'clients'} achieve more.`,
-          description2: "Visit our website to learn more about our offerings.",
-          path1: "solutions",
-          path2: "expert",
-          finalUrl: params.websiteUrl || "https://example.com"
-        }
-      ];
+      // Prepare the data for the OpenAI prompt
+      const promptData = {
+        companyName: data.companyName,
+        websiteUrl: data.websiteUrl || `https://${data.companyName.toLowerCase().replace(/\s+/g, '')}.com`,
+        objective: data.objective || (data.companyDescription ? `Promote ${data.companyName}` : 'Increase brand awareness'),
+        targetAudience: data.targetAudience || 'General audience',
+        language: data.language || 'portuguese',
+        brandTone: data.brandTone || 'balanced',
+        differentials: data.differentials || [],
+        product: data.product || '',
+        industry: data.industry || '',
+        mindTrigger: data.mindTrigger || ''
+      };
       
-      return ads;
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate Microsoft Ads. Please try again."
-      });
-      return [];
+      // Generate ads using the service
+      const result = await generateAds(promptData);
+      
+      if (!result) {
+        throw new Error("Failed to generate Microsoft Ads");
+      }
+      
+      // Extract Microsoft Ads from the response
+      const microsoftAds = result.microsoft_ads || [];
+      
+      if (microsoftAds.length === 0) {
+        throw new Error("No Microsoft Ads were generated");
+      }
+      
+      console.log("Generated Microsoft Ads:", microsoftAds);
+      
+      // Transform the OpenAI response into our app's ad format
+      const transformedAds = microsoftAds.map(ad => normalizeGoogleAd(ad));
+      
+      if (props?.onSuccess) {
+        props.onSuccess(transformedAds);
+      }
+      
+      return transformedAds;
+    } catch (err) {
+      console.error("Error generating Microsoft Ads:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      
+      if (props?.onError) {
+        props.onError(err);
+      }
+      
+      return null;
     } finally {
       setIsGenerating(false);
     }
@@ -53,6 +89,8 @@ export const useMicrosoftAdGeneration = () => {
 
   return {
     generateMicrosoftAds,
-    isGenerating
+    isGenerating,
+    error,
+    clearError: () => setError(null)
   };
 };

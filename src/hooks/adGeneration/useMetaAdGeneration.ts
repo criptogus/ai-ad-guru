@@ -1,45 +1,87 @@
 
 import { useState } from "react";
 import { MetaAd } from "./types";
-import { useToast } from "@/hooks/use-toast";
+import { generateAds } from "@/services/ads/adGeneration/adGenerationService";
+import { normalizeMetaAd } from "@/lib/utils";
 
-export const useMetaAdGeneration = () => {
+interface MetaAdGenerationProps {
+  onSuccess?: (ads: MetaAd[]) => void;
+  onError?: (error: any) => void;
+}
+
+export const useMetaAdGeneration = (props?: MetaAdGenerationProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<Error | null>(null);
 
-  const generateMetaAds = async (params: any) => {
+  const generateMetaAds = async (
+    data: {
+      companyName: string;
+      companyDescription?: string;
+      targetAudience?: string;
+      keywords?: string[];
+      mindTrigger?: string;
+      industry?: string;
+      language?: string;
+      websiteUrl?: string;
+      objective?: string;
+      differentials?: string[];
+      brandTone?: string;
+      product?: string;
+    }
+  ): Promise<MetaAd[] | null> => {
     setIsGenerating(true);
+    setError(null);
     
     try {
-      console.log("Generating Meta ads with params:", params);
+      console.log("Generating Meta Ads with data:", data);
       
-      // Placeholder implementation - return sample ads
-      const ads: MetaAd[] = [
-        {
-          headline: `${params.companyName || 'Brand'} - Quality ${params.industry || 'Products'}`,
-          primaryText: `Looking for the best ${params.industry || 'solution'}? ${params.companyName || 'We'} helps ${params.targetAudience || 'you'} achieve more.`,
-          description: "Learn More",
-          imagePrompt: `Professional image for ${params.companyName || 'a company'} in the ${params.industry || 'business'} industry`,
-          format: "square" // Changed from "feed" to "square"
-        },
-        {
-          headline: `Discover ${params.companyName || 'Our'} Solutions`,
-          primaryText: `${params.companyName || 'We'} provides industry-leading ${params.industry || 'services'} for ${params.targetAudience || 'customers'}.`,
-          description: "Shop Now",
-          imagePrompt: `Instagram worthy product image for ${params.companyName || 'a company'} featuring ${params.industry || 'products'}`,
-          format: "square" // Changed from "feed" to "square"
-        }
-      ];
+      // Prepare the data for the OpenAI prompt
+      const promptData = {
+        companyName: data.companyName,
+        websiteUrl: data.websiteUrl || `https://${data.companyName.toLowerCase().replace(/\s+/g, '')}.com`,
+        objective: data.objective || (data.companyDescription ? `Promote ${data.companyName}` : 'Increase brand awareness'),
+        targetAudience: data.targetAudience || 'General audience',
+        language: data.language || 'portuguese',
+        brandTone: data.brandTone || 'engaging',
+        differentials: data.differentials || [],
+        product: data.product || '',
+        industry: data.industry || '',
+        mindTrigger: data.mindTrigger || ''
+      };
       
-      return ads;
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Error",
-        description: "Failed to generate Meta Ads. Please try again."
-      });
-      return [];
+      // Generate ads using the service
+      const result = await generateAds(promptData);
+      
+      if (!result) {
+        throw new Error("Failed to generate Meta Ads");
+      }
+      
+      // Extract Meta/Instagram Ads from the response
+      const metaAds = result.instagram_ads || result.meta_ads || [];
+      
+      if (metaAds.length === 0) {
+        throw new Error("No Meta Ads were generated");
+      }
+      
+      console.log("Generated Meta Ads:", metaAds);
+      
+      // Transform the OpenAI response into our app's ad format
+      const transformedAds = metaAds.map(ad => normalizeMetaAd(ad));
+      
+      if (props?.onSuccess) {
+        props.onSuccess(transformedAds);
+      }
+      
+      return transformedAds;
+    } catch (err) {
+      console.error("Error generating Meta Ads:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      
+      if (props?.onError) {
+        props.onError(err);
+      }
+      
+      return null;
     } finally {
       setIsGenerating(false);
     }
@@ -47,6 +89,8 @@ export const useMetaAdGeneration = () => {
 
   return {
     generateMetaAds,
-    isGenerating
+    isGenerating,
+    error,
+    clearError: () => setError(null)
   };
 };

@@ -1,106 +1,96 @@
 
 import { useState } from "react";
 import { GoogleAd } from "./types";
-import { toast } from "sonner";
-import { getHeadlineOptions, getDescriptionOptions } from "@/services/ads/google/options";
-import { useCredits } from "@/contexts/CreditsContext";
-import { generateGoogleAds } from "@/services/api/googleApi";
+import { generateAds } from "@/services/ads/adGeneration/adGenerationService";
+import { normalizeGoogleAd } from "@/lib/utils";
 
-interface UseGoogleAdGenerationProps {
-  defaultParams?: any;
+interface GoogleAdGenerationProps {
+  onSuccess?: (ads: GoogleAd[]) => void;
+  onError?: (error: any) => void;
 }
 
-export const useGoogleAdGeneration = ({
-  defaultParams = {}
-}: UseGoogleAdGenerationProps = {}) => {
+export const useGoogleAdGeneration = (props?: GoogleAdGenerationProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { deductCredits } = useCredits();
+  const [error, setError] = useState<Error | null>(null);
 
-  /**
-   * Normalize Google ad text to ensure proper spacing after periods
-   */
-  const normalizeAdText = (ad: GoogleAd): GoogleAd => {
-    // Fix spacing after periods in all headlines and descriptions
-    const fixSpacing = (text: string) => {
-      if (!text) return text;
-      // Replace a period followed directly by a character with a period, space, and that character
-      return text.replace(/\.(\S)/g, '. $1');
-    };
-
-    // Create new ad object with fixed text
-    return {
-      ...ad,
-      headline1: fixSpacing(ad.headline1),
-      headline2: fixSpacing(ad.headline2),
-      headline3: fixSpacing(ad.headline3),
-      description1: fixSpacing(ad.description1),
-      description2: fixSpacing(ad.description2),
-      headlines: ad.headlines?.map(fixSpacing) || [],
-      descriptions: ad.descriptions?.map(fixSpacing) || [],
-    };
-  };
-
-  const handleGenerate = async (params: any = {}): Promise<GoogleAd[]> => {
+  const generateGoogleAds = async (
+    data: {
+      companyName: string;
+      companyDescription?: string;
+      targetAudience?: string;
+      keywords?: string[];
+      mindTrigger?: string;
+      industry?: string;
+      language?: string;
+      websiteUrl?: string;
+      objective?: string;
+      differentials?: string[];
+      brandTone?: string;
+      product?: string;
+    }
+  ): Promise<GoogleAd[] | null> => {
     setIsGenerating(true);
     setError(null);
     
     try {
-      console.log("Generating Google ads with params:", { ...defaultParams, ...params });
+      console.log("Generating Google Ads with data:", data);
       
-      // Generate the ads
-      let generatedAds = await generateGoogleAds(params);
+      // Prepare the data for the OpenAI prompt
+      const promptData = {
+        companyName: data.companyName,
+        websiteUrl: data.websiteUrl || `https://${data.companyName.toLowerCase().replace(/\s+/g, '')}.com`,
+        objective: data.objective || (data.companyDescription ? `Promote ${data.companyName}` : 'Increase brand awareness'),
+        targetAudience: data.targetAudience || 'General audience',
+        language: data.language || 'portuguese',
+        brandTone: data.brandTone || 'professional',
+        differentials: data.differentials || [],
+        product: data.product || '',
+        industry: data.industry || '',
+        mindTrigger: data.mindTrigger || ''
+      };
       
-      if (!generatedAds) {
-        // Provide some mock data if API call fails
-        generatedAds = [{
-          headline1: "Example Headline 1",
-          headline2: "Example Headline 2",
-          headline3: "Example Headline 3",
-          description1: "Example description 1 for the ad.",
-          description2: "Example description 2 for the ad.",
-          headlines: ["Example Headline 1", "Example Headline 2", "Example Headline 3"],
-          descriptions: ["Example description 1 for the ad.", "Example description 2 for the ad."],
-          path1: "example",
-          path2: "path",
-          finalUrl: "https://example.com",
-          siteLinks: [],
-          displayPath: "example.com/path"
-        }];
+      // Generate ads using the service
+      const result = await generateAds(promptData);
+      
+      if (!result) {
+        throw new Error("Failed to generate Google Ads");
       }
       
-      // Fix spacing after periods in all ads
-      generatedAds = generatedAds.map(normalizeAdText);
+      // Extract Google Ads from the response
+      const googleAds = result.google_ads || [];
       
-      console.log("Generated Google ads:", generatedAds);
-      
-      // Apply credit deduction if available
-      if (deductCredits) {
-        // Standard cost for Google Ads generation
-        deductCredits(5);
-        toast.success("Google Ads Generated", { 
-          description: "5 credits used for Google Ads generation"
-        });
+      if (googleAds.length === 0) {
+        throw new Error("No Google Ads were generated");
       }
       
-      return generatedAds;
+      console.log("Generated Google Ads:", googleAds);
+      
+      // Transform the OpenAI response into our app's ad format
+      const transformedAds = googleAds.map(ad => normalizeGoogleAd(ad));
+      
+      if (props?.onSuccess) {
+        props.onSuccess(transformedAds);
+      }
+      
+      return transformedAds;
     } catch (err) {
-      console.error("Error generating Google ads:", err);
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
+      console.error("Error generating Google Ads:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
       
-      toast.error("Failed to generate Google ads", {
-        description: err instanceof Error ? err.message : "An unknown error occurred"
-      });
+      if (props?.onError) {
+        props.onError(err);
+      }
       
-      return [];
+      return null;
     } finally {
       setIsGenerating(false);
     }
   };
-  
+
   return {
-    generateGoogleAds: handleGenerate,
+    generateGoogleAds,
     isGenerating,
-    error
+    error,
+    clearError: () => setError(null)
   };
 };
