@@ -2,55 +2,41 @@
 export interface WebsiteAnalysisResult {
   companyName?: string;
   businessDescription?: string;
-  industry?: string;
   targetAudience?: string;
-  brandTone?: string;
-  keywords?: string[];
+  keywords?: string[] | string;
+  uniqueSellingPoints?: string[] | string;
   callToAction?: string[] | string;
-  uniqueSellingPoints?: string[];
+  industry?: string;
+  brandTone?: string;
   websiteUrl?: string;
-  [key: string]: any;
 }
 
 export interface GoogleAd {
-  headline1: string;
-  headline2: string;
-  headline3: string;
-  description1: string;
-  description2: string;
-  path1: string;
-  path2: string;
-  displayPath?: string;
-  headlines: string[];
-  descriptions: string[];
-  siteLinks?: Array<{title: string, link: string, description?: string}>;
+  headlines?: string[];
+  descriptions?: string[];
+  path1?: string;
+  path2?: string;
   finalUrl?: string;
-  id?: string;
+  displayPath?: string;
+  siteLinks?: (string | {
+    title: string;
+    description?: string;
+    url?: string;
+  })[];
+  headline1?: string;
+  headline2?: string;
+  headline3?: string;
+  description1?: string;
+  description2?: string;
 }
 
 export interface MetaAd {
-  headline: string;
-  primaryText: string;
-  description: string;
+  headline?: string;
+  primaryText?: string;
+  description?: string;
   imagePrompt?: string;
   imageUrl?: string;
-  format?: "feed" | "story" | "reel";
+  format?: 'feed' | 'story' | 'reel' | 'square' | 'portrait' | 'landscape';
   hashtags?: string[] | string;
-  companyName?: string;
-  finalUrl?: string;
+  callToAction?: string;
 }
-
-export interface AdGenerationInput {
-  companyName: string;
-  businessDescription: string;
-  targetAudience: string;
-  brandTone?: string;
-  keywords?: string[] | string;
-  callToAction?: string[] | string;
-  uniqueSellingPoints?: string[] | string;
-  websiteUrl?: string;
-  [key: string]: any;
-}
-
-// MicrosoftAd type definition (extending GoogleAd)
-export interface MicrosoftAd extends GoogleAd {}

@@ -1,50 +1,16 @@
 
-interface Message {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
+import { OpenAI } from "https://esm.sh/openai@4.20.1";
 
-interface OpenAIResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
+// Get the OpenAI API key from environment variables
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
-interface ChatCompletionRequest {
-  model: string;
-  messages: Message[];
-  temperature?: number;
-  max_tokens?: number;
-}
-
-export interface OpenAIClient {
-  createChatCompletion: (params: ChatCompletionRequest) => Promise<OpenAIResponse>;
-}
-
-export const createOpenAIClient = (apiKey: string): OpenAIClient => {
-  if (!apiKey) {
-    throw new Error("OpenAI API key is required");
+// Create an OpenAI client instance
+export function getOpenAIClient() {
+  if (!OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not set in environment variables");
   }
-
-  return {
-    createChatCompletion: async (params: ChatCompletionRequest): Promise<OpenAIResponse> => {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`OpenAI API error: ${error.error?.message || JSON.stringify(error)}`);
-      }
-
-      return await response.json();
-    }
-  };
-};
+  
+  return new OpenAI({
+    apiKey: OPENAI_API_KEY,
+  });
+}
