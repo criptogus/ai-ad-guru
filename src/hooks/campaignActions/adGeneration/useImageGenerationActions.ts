@@ -28,7 +28,7 @@ export const useImageGenerationActions = ({
     setError(null);
     
     try {
-      console.log(`Gerando imagem para anúncio ${index} com prompt:`, ad.imagePrompt);
+      console.log(`🖼️ Gerando imagem para anúncio ${index} com prompt:`, ad.imagePrompt);
       
       const imageUrl = await generateAdImage(ad.imagePrompt, {
         adType: "instagram",
@@ -36,39 +36,34 @@ export const useImageGenerationActions = ({
       });
       
       if (imageUrl) {
-        console.log(`Imagem gerada com sucesso para anúncio ${index}:`, imageUrl);
+        console.log(`✅ Imagem gerada com sucesso para anúncio ${index}:`, imageUrl);
         
         // Atualizar o anúncio com a nova URL da imagem
         setCampaignData((prev: any) => {
-          // Determinar qual array de anúncios atualizar
-          let adArray = [...(prev.metaAds || [])];
-          let adArrayKey = "metaAds";
+          // Verificar qual array de anúncios atualizar
+          const newState = { ...prev };
           
           // Verificar se é um anúncio Meta ou LinkedIn
-          if (prev.linkedInAds && prev.linkedInAds.length > index && isMatchingAd(prev.linkedInAds[index], ad)) {
-            adArray = [...prev.linkedInAds];
-            adArrayKey = "linkedInAds";
-          }
-          
-          // Atualizar o anúncio no índice especificado
-          if (adArray.length > index) {
-            adArray[index] = {
-              ...adArray[index],
+          if (prev.metaAds && prev.metaAds.length > index) {
+            newState.metaAds = [...prev.metaAds];
+            newState.metaAds[index] = {
+              ...newState.metaAds[index],
               imageUrl
             };
-            
-            // Verificar se a atualização foi bem-sucedida
-            if (adArray[index].imageUrl !== imageUrl) {
-              console.warn(`Aviso: A atualização da URL da imagem não foi registrada corretamente para ${adArrayKey}[${index}]`);
-            } else {
-              console.log(`URL da imagem atualizada com sucesso para ${adArrayKey}[${index}]`);
+            console.log(`✅ URL de imagem atualizada em metaAds[${index}]:`, imageUrl);
+          } else if (prev.linkedInAds && prev.linkedInAds.length > 0) {
+            const linkedInIndex = prev.metaAds ? index - prev.metaAds.length : index;
+            if (linkedInIndex >= 0 && linkedInIndex < prev.linkedInAds.length) {
+              newState.linkedInAds = [...prev.linkedInAds];
+              newState.linkedInAds[linkedInIndex] = {
+                ...newState.linkedInAds[linkedInIndex],
+                imageUrl
+              };
+              console.log(`✅ URL de imagem atualizada em linkedInAds[${linkedInIndex}]:`, imageUrl);
             }
           }
           
-          return {
-            ...prev,
-            [adArrayKey]: adArray
-          };
+          return newState;
         });
         
         toast.success("Imagem gerada com sucesso", {
@@ -91,13 +86,6 @@ export const useImageGenerationActions = ({
     } finally {
       setLoadingImageIndex(null);
     }
-  };
-  
-  // Função auxiliar para comparar anúncios
-  const isMatchingAd = (ad1: MetaAd, ad2: MetaAd) => {
-    return ad1.primaryText === ad2.primaryText || 
-           ad1.headline === ad2.headline || 
-           ad1.imagePrompt === ad2.imagePrompt;
   };
   
   const clearError = () => setError(null);

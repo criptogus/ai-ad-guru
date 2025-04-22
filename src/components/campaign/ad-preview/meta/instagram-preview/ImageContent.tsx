@@ -25,14 +25,15 @@ const ImageContent: React.FC<ImageContentProps> = ({
 }) => {
   const { imageUrl, imagePrompt } = ad;
   
-  // Log para debugging
+  // Log para debugging mais detalhado
   React.useEffect(() => {
+    console.log(`ImageContent: Anúncio [${imageKey}] recebido:`, JSON.stringify(ad, null, 2));
     if (imageUrl) {
-      console.log(`ImageContent: Image URL disponível para anúncio ${imageKey}:`, imageUrl);
+      console.log(`ImageContent: URL da imagem disponível:`, imageUrl);
     } else if (imagePrompt) {
-      console.log(`ImageContent: Sem URL de imagem, mas prompt disponível para anúncio ${imageKey}`);
+      console.log(`ImageContent: Prompt disponível, mas sem URL:`, imagePrompt);
     }
-  }, [imageUrl, imagePrompt, imageKey]);
+  }, [ad, imageKey, imageUrl, imagePrompt]);
   
   // Constrói texto alternativo a partir dos dados do anúncio
   const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Imagem de Anúncio do Instagram";
@@ -42,8 +43,9 @@ const ImageContent: React.FC<ImageContentProps> = ({
     return <ImageLoader format={format} />;
   }
   
-  // Imagem existe
-  if (imageUrl) {
+  // Imagem existe - verificação mais rigorosa da URL
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+    console.log(`ImageContent: Renderizando imagem com URL válida: ${imageUrl}`);
     return (
       <ImageDisplay
         imageUrl={imageUrl}
@@ -65,9 +67,14 @@ const ImageContent: React.FC<ImageContentProps> = ({
       }
       
       console.log("Iniciando geração de imagem para anúncio:", imageKey);
+      console.log("Usando prompt:", imagePrompt);
+      
       await onGenerateImage();
     } catch (error) {
       console.error("Erro ao gerar imagem:", error);
+      toast.error("Falha na geração da imagem", {
+        description: error instanceof Error ? error.message : "Erro desconhecido"
+      });
     }
   };
   

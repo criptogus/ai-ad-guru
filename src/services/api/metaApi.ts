@@ -13,8 +13,24 @@ function ensureCompleteText(text: string): string {
   return withPunctuation.replace(/([.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
 }
 
-// Nova função utilitária para detectar texto não-português
-const hasEnglishText = (text: string) => /\b(the|your|quality|service)\b/i.test(text);
+// Função melhorada para detectar texto em inglês
+const hasEnglishText = (text: string) => {
+  if (!text) return false;
+  
+  // Lista expandida de palavras comuns em inglês que não deveriam aparecer
+  const englishWords = [
+    'the', 'your', 'quality', 'service', 'with', 'and', 'for', 'our',
+    'you', 'we', 'business', 'transform', 'get', 'now', 'more', 'learn',
+    'discover', 'solutions', 'best', 'from', 'about', 'how'
+  ];
+  
+  // Verifica a presença de termos em inglês
+  const textLower = text.toLowerCase();
+  return englishWords.some(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'i');
+    return regex.test(textLower);
+  });
+};
 
 export const generateMetaAds = async (
   campaignData: WebsiteAnalysisResult,
@@ -28,8 +44,11 @@ export const generateMetaAds = async (
     // Forçando idioma português para garantir consistência
     const updatedCampaignData = {
       ...campaignData,
-      language: 'português', // Forçando português explicitamente
+      language: 'pt_BR', // Formato mais explícito para APIs
+      languageName: 'português', // Nome explícito do idioma
     };
+
+    console.log('Enviando requisição com idioma forçado:', updatedCampaignData.language);
 
     const { data, error } = await supabase.functions.invoke('generate-premium-ads', {
       body: {
@@ -38,7 +57,10 @@ export const generateMetaAds = async (
           ...updatedCampaignData,
           mindTriggers: {
             meta: mindTrigger
-          }
+          },
+          language: 'pt_BR', // Reforçando no nível mais externo
+          languagePreference: 'Português do Brasil', // Texto explícito
+          forcePortuguese: true, // Flag adicional
         }
       },
     });
@@ -87,9 +109,12 @@ export const generateMetaAds = async (
         imageUrl: ad.imageUrl || '', // Adiciona suporte para URL da imagem
       };
 
-      // Validar consistência de idioma
-      if (hasEnglishText(metaAd.headline) || hasEnglishText(metaAd.primaryText) || hasEnglishText(metaAd.description)) {
-        console.warn('Anúncio com conteúdo em inglês detectado:', metaAd);
+      // Validar consistência de idioma com feedback mais detalhado
+      if (hasEnglishText(metaAd.headline) || hasEnglishText(metaAd.primaryText)) {
+        console.warn('Texto em inglês detectado no anúncio:', {
+          headline: metaAd.headline,
+          primaryText: metaAd.primaryText?.substring(0, 100) + '...'
+        });
         toast.warning('Conteúdo em inglês detectado', {
           description: 'Alguns textos dos anúncios podem não estar em português.'
         });
@@ -98,7 +123,9 @@ export const generateMetaAds = async (
       return metaAd;
     });
 
-    console.log('Anúncios Meta gerados com sucesso:', metaAds);
+    console.log('Anúncios Meta gerados com sucesso:', metaAds.length);
+    console.log('Exemplo de anúncio gerado:', JSON.stringify(metaAds[0], null, 2));
+    
     return metaAds;
   } catch (error) {
     console.error('Erro em generateMetaAds:', error);
