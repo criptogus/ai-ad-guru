@@ -21,7 +21,7 @@ const platformStyles = {
     caption: "text-[#262626] dark:text-gray-100 text-base leading-snug",
     background: "bg-white dark:bg-gray-800",
   },
-  bing: {
+  microsoft: { // Changed from 'bing' to 'microsoft' to match platform types elsewhere
     headline: "text-[#004e8c] dark:text-blue-300 font-medium text-lg",
     url: "text-[#006621] dark:text-green-400 text-sm",
     description: "text-gray-700 dark:text-gray-300 text-base",
@@ -30,7 +30,7 @@ const platformStyles = {
 };
 
 export interface AdVariationCardProps {
-  platform: "google" | "linkedin" | "meta" | "bing";
+  platform: "google" | "linkedin" | "meta" | "microsoft";
   ad: GoogleAd | MetaAd | any;
   onEdit?: () => void;
   onRegenerate?: () => void;
@@ -86,20 +86,20 @@ export function AdVariationCard({
           </div>
         );
       
-      case "bing":
+      case "microsoft":
         return (
           <div className="font-['Segoe UI'] p-4">
-            <div className={platformStyles.bing.headline}>
+            <div className={platformStyles.microsoft.headline}>
               {ad.headlines?.[0]} | {ad.headlines?.[1]}
             </div>
-            <div className={platformStyles.bing.url}>
+            <div className={platformStyles.microsoft.url}>
               {getDomain(ad.finalUrl || "example.com")}
             </div>
-            <div className={platformStyles.bing.description}>
+            <div className={platformStyles.microsoft.description}>
               {ad.descriptions?.[0]}
             </div>
             {ad.descriptions?.[1] && (
-              <div className={platformStyles.bing.description}>
+              <div className={platformStyles.microsoft.description}>
                 {ad.descriptions[1]}
               </div>
             )}

@@ -1,5 +1,6 @@
+
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Pencil, 
@@ -7,7 +8,7 @@ import {
   Check, 
   X, 
   RotateCw, 
-  Trash, 
+  Trash2, 
   CopyPlus 
 } from "lucide-react";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
@@ -79,43 +80,69 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
     return Promise.resolve();
   };
 
+  // Define platform styles
+  const styles = {
+    google: {
+      headline: "text-[#1a0dab] dark:text-blue-400 font-medium text-lg",
+      url: "text-[#006621] dark:text-green-400 text-sm",
+      description: "text-[#4d5156] dark:text-gray-300 text-base",
+      background: "bg-white dark:bg-gray-800",
+    },
+    linkedin: {
+      headline: "text-[#202124] dark:text-gray-100 font-semibold text-lg",
+      body: "text-gray-700 dark:text-gray-300 text-base",
+      button: "bg-[#0a66c2] text-white px-4 py-2 rounded-md text-sm",
+      background: "bg-[#f3f2ef] dark:bg-gray-800",
+    },
+    meta: {
+      caption: "text-[#262626] dark:text-gray-100 text-base leading-snug",
+      background: "bg-white dark:bg-gray-800",
+    },
+    microsoft: { // Changed from 'bing' to 'microsoft' to match the expected type
+      headline: "text-[#004e8c] dark:text-blue-300 font-medium text-lg",
+      url: "text-[#006621] dark:text-green-400 text-sm",
+      description: "text-gray-700 dark:text-gray-300 text-base",
+      background: "bg-white dark:bg-gray-800",
+    },
+  };
+
   // Render content based on platform
   const renderContent = () => {
     switch (platform) {
       case "google":
         return (
           <div className="font-['Arial'] p-4">
-            <div className={platformStyles.google.headline}>
+            <div className={styles.google.headline}>
               {ad.headlines?.[0]} | {ad.headlines?.[1]}
             </div>
-            <div className={platformStyles.google.url}>
+            <div className={styles.google.url}>
               {getDomain(ad.finalUrl || "example.com")}
             </div>
-            <div className={platformStyles.google.description}>
+            <div className={styles.google.description}>
               {ad.descriptions?.[0]}
             </div>
             {ad.descriptions?.[1] && (
-              <div className={platformStyles.google.description}>
+              <div className={styles.google.description}>
                 {ad.descriptions[1]}
               </div>
             )}
           </div>
         );
       
-      case "bing":
+      case "microsoft":
         return (
           <div className="font-['Segoe UI'] p-4">
-            <div className={platformStyles.bing.headline}>
+            <div className={styles.microsoft.headline}>
               {ad.headlines?.[0]} | {ad.headlines?.[1]}
             </div>
-            <div className={platformStyles.bing.url}>
+            <div className={styles.microsoft.url}>
               {getDomain(ad.finalUrl || "example.com")}
             </div>
-            <div className={platformStyles.bing.description}>
+            <div className={styles.microsoft.description}>
               {ad.descriptions?.[0]}
             </div>
             {ad.descriptions?.[1] && (
-              <div className={platformStyles.bing.description}>
+              <div className={styles.microsoft.description}>
                 {ad.descriptions[1]}
               </div>
             )}
@@ -129,9 +156,9 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
               <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
               <span className="text-sm font-medium">Company Name • Sponsored</span>
             </div>
-            <div className={platformStyles.linkedin.headline}>{ad.headline}</div>
-            <div className={platformStyles.linkedin.body + " my-2"}>{ad.primaryText}</div>
-            <button className={platformStyles.linkedin.button}>{ad.description || "Learn More"}</button>
+            <div className={styles.linkedin.headline}>{ad.headline}</div>
+            <div className={styles.linkedin.body + " my-2"}>{ad.primaryText}</div>
+            <button className={styles.linkedin.button}>{ad.description || "Learn More"}</button>
           </div>
         );
         
@@ -157,7 +184,7 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
               </div>
             )}
             
-            <div className={platformStyles.meta.caption}>
+            <div className={styles.meta.caption}>
               <span className="font-medium mr-1">{ad.companyName || "Your Company"}</span>
               {ad.primaryText}
             </div>
@@ -179,33 +206,8 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
     }
   };
 
-  const styles = {
-    google: {
-      headline: "text-[#1a0dab] dark:text-blue-400 font-medium text-lg",
-      url: "text-[#006621] dark:text-green-400 text-sm",
-      description: "text-[#4d5156] dark:text-gray-300 text-base",
-      background: "bg-white dark:bg-gray-800",
-    },
-    linkedin: {
-      headline: "text-[#202124] dark:text-gray-100 font-semibold text-lg",
-      body: "text-gray-700 dark:text-gray-300 text-base",
-      button: "bg-[#0a66c2] text-white px-4 py-2 rounded-md text-sm",
-      background: "bg-[#f3f2ef] dark:bg-gray-800",
-    },
-    meta: {
-      caption: "text-[#262626] dark:text-gray-100 text-base leading-snug",
-      background: "bg-white dark:bg-gray-800",
-    },
-    bing: {
-      headline: "text-[#004e8c] dark:text-blue-300 font-medium text-lg",
-      url: "text-[#006621] dark:text-green-400 text-sm",
-      description: "text-gray-700 dark:text-gray-300 text-base",
-      background: "bg-white dark:bg-gray-800",
-    },
-  };
-
   return (
-    <div className={`rounded-lg shadow-md overflow-hidden ${styles.background} border border-border`}>
+    <div className={`rounded-lg shadow-md overflow-hidden ${styles[platform].background} border border-border`}>
       {/* Card Header */}
       <div className="flex justify-between items-center bg-muted p-3 border-b border-border">
         <h3 className="text-sm font-medium">
