@@ -6,7 +6,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdPreview from "./google/GoogleAdPreview";
 import MicrosoftAdPreview from "./microsoft/MicrosoftAdPreview";
 import LinkedInAdPreview from "./linkedin/LinkedInAdPreview";
-import InstagramPreview from "./meta/instagram-preview/InstagramPreview";
+import { InstagramPreview } from "./meta/instagram-preview";
 import { Card, CardContent } from "@/components/ui/card";
 import { getDomain } from "@/lib/utils";
 
@@ -64,6 +64,11 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
   const metaAdToDisplay = metaAd || defaultMetaAd;
   const microsoftAdToDisplay = microsoftAd || defaultGoogleAd;
   const linkedInAdToDisplay = linkedInAd || defaultMetaAd;
+
+  // Empty function for onGenerateImage prop to satisfy the interface
+  const handleGenerateImage = () => {
+    console.log("Image generation requested but not implemented in this component");
+  };
 
   return (
     <Card className={className}>
@@ -124,6 +129,8 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
                   ad={metaAdToDisplay} 
                   companyName={analysisResult.companyName || "Company Name"} 
                   viewMode={instagramView}
+                  index={0}
+                  onGenerateImage={handleGenerateImage}
                 />
               </div>
             </TabsContent>

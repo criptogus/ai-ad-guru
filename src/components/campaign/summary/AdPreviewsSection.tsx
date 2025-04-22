@@ -45,6 +45,11 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   const domain = getDomain(websiteUrl);
   const companyName = analysisResult?.companyName || "Sua Empresa";
 
+  // Placeholder function for onGenerateImage
+  const handleGenerateImage = () => {
+    console.log("Image generation not implemented in this component");
+  };
+
   // Get ads based on platform
   const renderPlatformAds = () => {
     switch (platform) {
@@ -69,7 +74,12 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {metaAds.map((ad, index) => (
                 <div key={`meta-ad-${index}`} className="border rounded-md p-4 flex justify-center">
-                  <InstagramPreview ad={ad} companyName={companyName} />
+                  <InstagramPreview 
+                    ad={ad} 
+                    companyName={companyName} 
+                    index={index}
+                    onGenerateImage={handleGenerateImage}
+                  />
                 </div>
               ))}
             </div>

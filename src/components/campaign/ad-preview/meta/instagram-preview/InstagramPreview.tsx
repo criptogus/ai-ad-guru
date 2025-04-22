@@ -8,23 +8,26 @@ import ImageContent from "./ImageContent";
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
-  index: number;
-  loadingImageIndex: number | null;
-  onGenerateImage: () => void;
+  index?: number;
+  loadingImageIndex?: number | null;
+  onGenerateImage?: () => void;
   onUpdateAd?: (updatedAd: MetaAd) => void;
-  viewMode: "feed" | "story" | "reel";
+  viewMode?: "feed" | "story" | "reel";
+  isLoading?: boolean;
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName,
-  index,
-  loadingImageIndex,
-  onGenerateImage,
+  index = 0,
+  loadingImageIndex = null,
+  onGenerateImage = () => {},
   onUpdateAd,
-  viewMode,
+  viewMode = "feed",
+  isLoading = false,
 }) => {
-  const isLoading = loadingImageIndex === index;
+  // Determine loading state from both direct isLoading prop and loadingImageIndex
+  const isImageLoading = isLoading || loadingImageIndex === index;
 
   // Define the correct format based on viewMode
   const getFormat = () => {
@@ -48,7 +51,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
       <ImageContent
         ad={ad}
         imageKey={index}
-        isLoading={isLoading}
+        isLoading={isImageLoading}
         isUploading={false}
         format={getFormat() as "feed" | "story" | "reel"}
         onGenerateImage={onGenerateImage}
@@ -64,7 +67,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
         </div>
 
         {/* Action button area */}
-        {!isLoading && !ad.imageUrl && (
+        {!isImageLoading && !ad.imageUrl && onGenerateImage && (
           <div className="mt-3">
             <Button
               size="sm"

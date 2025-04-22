@@ -8,12 +8,20 @@ interface InstagramPreviewProps {
   ad: MetaAd;
   companyName?: string;
   className?: string;
+  index?: number;
+  loadingImageIndex?: number | null;
+  onGenerateImage?: () => void;
+  viewMode?: "feed" | "story" | "reel";
 }
 
 export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName = "Your Company",
-  className
+  className,
+  index = 0,
+  loadingImageIndex = null,
+  onGenerateImage,
+  viewMode = "feed"
 }) => {
   const [imageLoading, setImageLoading] = React.useState(true);
   const [imageError, setImageError] = React.useState(false);
@@ -129,3 +137,5 @@ export const InstagramPreview: React.FC<InstagramPreviewProps> = ({
     </div>
   );
 };
+
+export default InstagramPreview;

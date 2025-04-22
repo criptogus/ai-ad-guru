@@ -72,7 +72,6 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
           companyName={companyName}
           index={index}
           loadingImageIndex={loadingImageIndex}
-          isLoading={isLoading}
           onGenerateImage={onGenerateImage}
           onUpdateAd={onUpdateAd}
           viewMode={currentViewMode}

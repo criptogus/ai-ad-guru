@@ -60,6 +60,13 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
     }
   };
 
+  // Function to handle image generation
+  const handleGenerateImage = () => {
+    if (onGenerateImage) {
+      onGenerateImage();
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between py-3">
@@ -124,8 +131,8 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
               ad={isEditing ? editedAd : ad}
               companyName={companyName}
               index={index}
-              isLoading={isLoading}
-              onGenerateImage={onGenerateImage}
+              loadingImageIndex={isLoading ? index : null}
+              onGenerateImage={handleGenerateImage}
               onUpdateAd={handleUpdateAd}
               viewMode={format}
             />

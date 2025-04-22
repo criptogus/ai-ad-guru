@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import GoogleAdPreview from "@/components/campaign/ad-preview/google/GoogleAdPreview";
 import MicrosoftAdPreview from "@/components/campaign/ad-preview/microsoft/MicrosoftAdPreview";
 import LinkedInAdPreview from "@/components/campaign/ad-preview/linkedin/LinkedInAdPreview";
-import InstagramPreview from "@/components/campaign/ad-preview/meta/instagram-preview/InstagramPreview";
+import { InstagramPreview } from "@/components/campaign/ad-preview/meta/instagram-preview";
 import AdPreviewSwitcher from "@/components/campaign/ad-preview/AdPreviewSwitcher";
 
 const AdFormatPreviewsPage: React.FC = () => {
@@ -69,6 +70,11 @@ const AdFormatPreviewsPage: React.FC = () => {
     description: "Request Demo",
     imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1470",
     imagePrompt: "Business professionals collaborating around a dashboard showing improved metrics"
+  };
+
+  // Placeholder function for onGenerateImage
+  const handleGenerateImage = () => {
+    console.log("Image generation not implemented in this component");
   };
 
   return (
@@ -142,6 +148,8 @@ const AdFormatPreviewsPage: React.FC = () => {
                       ad={metaAd} 
                       companyName={mockAnalysisResult.companyName} 
                       viewMode="feed" 
+                      index={0}
+                      onGenerateImage={handleGenerateImage}
                     />
                   </div>
                   
@@ -150,7 +158,9 @@ const AdFormatPreviewsPage: React.FC = () => {
                     <InstagramPreview 
                       ad={metaAd} 
                       companyName={mockAnalysisResult.companyName} 
-                      viewMode="story" 
+                      viewMode="story"
+                      index={1}
+                      onGenerateImage={handleGenerateImage}
                     />
                   </div>
                 </div>

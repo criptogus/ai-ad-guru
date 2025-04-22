@@ -72,6 +72,13 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
   const companyName = analysisResult?.companyName || "Your Company";
   const domain = getDomain(analysisResult?.websiteUrl);
 
+  // Create empty handler for image generation to satisfy props
+  const handleGenerateImage = () => {
+    if (onRegenerate) {
+      onRegenerate();
+    }
+  };
+
   return (
     <Card className="overflow-hidden border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between py-3 px-4 bg-muted/40">
@@ -164,7 +171,15 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
             <div className="mb-2 text-sm font-medium text-muted-foreground">Preview</div>
             <div className="border rounded-lg p-3 bg-background flex justify-center">
               {platform === 'google' && <GoogleAdPreview ad={ad} domain={domain} />}
-              {platform === 'meta' && <InstagramPreview ad={ad} companyName={companyName} />}
+              {platform === 'meta' && (
+                <InstagramPreview 
+                  ad={ad} 
+                  companyName={companyName} 
+                  index={index} 
+                  onGenerateImage={handleGenerateImage}
+                  viewMode="feed"
+                />
+              )}
               {platform === 'microsoft' && <MicrosoftAdPreview ad={ad} domain={domain} />}
               {platform === 'linkedin' && analysisResult && (
                 <LinkedInAdPreview ad={ad} analysisResult={analysisResult} />
