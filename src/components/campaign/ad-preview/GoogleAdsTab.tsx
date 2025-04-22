@@ -14,7 +14,7 @@ import { normalizeGoogleAd } from "@/lib/utils";
 interface GoogleAdsTabProps {
   googleAds: GoogleAd[];
   isGenerating: boolean;
-  onGenerateAds: () => Promise<void>;
+  onGenerateAds: (mindTrigger?: string) => Promise<void>;
   onUpdateGoogleAd: (index: number, updatedAd: GoogleAd) => void;
   analysisResult: WebsiteAnalysisResult;
   mindTrigger?: string;
@@ -26,16 +26,21 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
   onGenerateAds,
   onUpdateGoogleAd,
   analysisResult,
-  mindTrigger,
+  mindTrigger: initialMindTrigger,
 }) => {
   const [showTriggers, setShowTriggers] = useState(false);
   const [open, setOpen] = useState(false);
-  const companyName = analysisResult?.companyName || "";
+
+  // Sync the selected mind trigger locally; initialize from prop for backward compatibility
+  const [selectedMindTrigger, setSelectedMindTrigger] = useState<string | undefined>(initialMindTrigger);
+
+  // Use company name or fallback to domain for preview
+  const companyName = analysisResult?.companyName ?? "example.com";
 
   const handleGenerateClick = async () => {
     try {
-      console.log("Generating Google Ads...");
-      await onGenerateAds();
+      console.log("Generating Google Ads with mind trigger:", selectedMindTrigger);
+      await onGenerateAds(selectedMindTrigger);
       console.log("Google Ads generated successfully");
     } catch (error) {
       console.error("Error generating Google Ads:", error);
@@ -44,7 +49,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
 
   const handleSelectTrigger = (trigger: string) => {
     console.log("Selected trigger:", trigger);
-    // Implementation of trigger selection
+    setSelectedMindTrigger(trigger);
   };
 
   return (
@@ -105,15 +110,15 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         </Card>
       )}
 
-      {mindTrigger && (
+      {selectedMindTrigger && (
         <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
           <p className="text-blue-700 dark:text-blue-300 text-sm">
-            <span className="font-semibold">Selected Mind Trigger:</span> {mindTrigger}
+            <span className="font-semibold">Selected Mind Trigger:</span> {selectedMindTrigger}
           </p>
         </div>
       )}
 
-      {googleAds.length > 0 ? (
+      {googleAds?.length > 0 ? (
         <div className="space-y-6">
           {googleAds.map((ad, index) => {
             // Always normalize the ad to ensure it has headlines and descriptions arrays
@@ -133,7 +138,7 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
         <EmptyAdsState
           platform="google"
           isGenerating={isGenerating}
-          onGenerate={onGenerateAds}
+          onGenerate={handleGenerateClick}
         />
       )}
     </div>
@@ -141,3 +146,4 @@ const GoogleAdsTab: React.FC<GoogleAdsTabProps> = ({
 };
 
 export default GoogleAdsTab;
+
