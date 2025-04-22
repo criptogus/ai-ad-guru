@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import useWebsiteAnalysis from "@/hooks/useWebsiteAnalysis";
 import { useCampaignState } from "@/hooks/useCampaignState";
 import { useToast } from "@/hooks/use-toast";
 import { useAdGenerationState } from "@/hooks/campaign/useAdGenerationState";

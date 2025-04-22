@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useWebsiteAnalysis, WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
+import useWebsiteAnalysis, { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { useConnectionTest } from "@/hooks/adConnections/useConnectionTest";
 import { MetaAd } from "@/hooks/adGeneration";
 import { useImageGeneration } from "@/hooks/adGeneration/useImageGeneration";

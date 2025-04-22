@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
-import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
+import useWebsiteAnalysis from "@/hooks/useWebsiteAnalysis";
 import { useAudienceAnalysis } from "@/hooks/useAudienceAnalysis";
 import { useAdGeneration } from "@/hooks/adGeneration";
 import { useCampaignCreation } from "@/hooks/campaignActions/useCampaignCreation";
