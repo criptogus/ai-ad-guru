@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/contexts/CampaignContext";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -166,6 +167,7 @@ const CampaignContent: React.FC = () => {
       });
       
       if (imageUrl) {
+        // Update appropriate ad collection with the new image URL
         if (metaAds && index < metaAds.length) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };

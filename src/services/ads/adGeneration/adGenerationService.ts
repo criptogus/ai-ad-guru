@@ -1,82 +1,31 @@
 
-import { CampaignPromptData, GeneratedAdContent, PromptMessages } from "./types/promptTypes";
-import { buildAdGenerationPrompt } from "./promptBuilder";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
+import { CampaignPromptData } from './types/promptTypes';
 
-/**
- * Generates ad content for multiple platforms based on campaign data
- * @param campaignData Campaign information used to generate the ads
- * @returns Generated ad content for Google, Instagram, LinkedIn and Microsoft ads
- */
-export const generateAds = async (campaignData: CampaignPromptData): Promise<GeneratedAdContent | null> => {
+export const generateAds = async (data: CampaignPromptData) => {
   try {
-    // Validate required fields before proceeding
-    if (!campaignData.companyName || !campaignData.websiteUrl || !campaignData.objective || !campaignData.targetAudience) {
-      console.error("Missing required campaign data fields:", 
-        !campaignData.companyName ? "companyName" : "",
-        !campaignData.websiteUrl ? "websiteUrl" : "",
-        !campaignData.objective ? "objective" : "",
-        !campaignData.targetAudience ? "targetAudience" : ""
-      );
-      throw new Error('Missing required campaign data for ad generation');
-    }
-
-    // Ensure we have business description
-    if (!campaignData.companyDescription) {
-      console.warn("No companyDescription provided, using objective as fallback");
-      campaignData.companyDescription = campaignData.objective;
-    }
+    console.log('Calling generate-ads function with data:', data);
     
-    // Build the prompt for OpenAI with enhanced context
-    const { systemMessage, userMessage } = buildAdGenerationPrompt(campaignData);
-    
-    console.log("Generating ads with system message:", systemMessage);
-    console.log("And user message (preview):", userMessage.substring(0, 300) + "...");
-    
-    // Log full context being sent to model for debugging
-    console.log("Ad generation context data:", {
-      companyName: campaignData.companyName,
-      websiteUrl: campaignData.websiteUrl,
-      objective: campaignData.objective,
-      targetAudience: campaignData.targetAudience,
-      companyDescription: campaignData.companyDescription,
-      industry: campaignData.industry || "Not specified",
-      brandTone: campaignData.brandTone || "professional",
-      mindTrigger: campaignData.mindTrigger || "Not specified",
-      language: campaignData.language || "english",
-      platforms: campaignData.platforms || ["google", "instagram"]
-    });
-    
-    // Call the Supabase edge function to generate ads
-    const { data, error } = await supabase.functions.invoke("generate-ads", {
-      body: {
-        systemMessage,
-        userMessage,
-        language: campaignData.language || "english",
-        temperature: 0.7,
-        campaignData: {
-          ...campaignData,
-          industry: campaignData.industry || "Not specified"
-        }
+    const { data: response, error } = await supabase.functions.invoke('generate-ads', {
+      body: { 
+        campaignData: data,
+        platforms: data.platforms
       }
     });
-    
+
     if (error) {
-      console.error("Error calling generate-ads function:", error);
-      throw new Error(`Failed to generate ads: ${error.message}`);
+      console.error('Error calling generate-ads function:', error);
+      throw new Error(error.message || 'Failed to call generate ads function');
     }
-    
-    if (!data || !data.success) {
-      console.error("No data returned or generation failed:", data);
-      throw new Error("Failed to generate ads: No valid response from API");
+
+    if (!response?.success) {
+      console.error('Generate ads function returned an error:', response?.error);
+      throw new Error(response?.error || 'Generate ads returned an unsuccessful response');
     }
-    
-    console.log("Generated ad content:", data);
-    
-    // Return the content from the response
-    return data.content as GeneratedAdContent;
+
+    return response.data;
   } catch (error) {
-    console.error("Error in generateAds:", error);
+    console.error('Error in generateAds service:', error);
     throw error;
   }
 };

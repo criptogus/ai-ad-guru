@@ -2,32 +2,31 @@
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const useAdGenerationFlow = () => {
-  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateCampaignAds = async (data: CampaignPromptData) => {
     try {
       // Validate required fields
-      if (!data.companyName || !data.websiteUrl || !data.objective || !data.targetAudience) {
+      if (!data.companyName || !data.platforms || data.platforms.length === 0) {
         console.error('Missing required data:', { data });
         throw new Error('Missing required campaign information');
       }
 
-      // Log the complete data being sent to OpenAI for ad generation
-      console.log('Generating ads with complete data:', JSON.stringify(data, null, 2));
+      // Log the complete data being sent for ad generation
+      console.log('Generating ads with data:', JSON.stringify(data, null, 2));
       setIsGenerating(true);
 
       const result = await generateAds({
         companyName: data.companyName,
-        websiteUrl: data.websiteUrl,
-        objective: data.objective,
-        product: data.product,
-        targetAudience: data.targetAudience,
+        websiteUrl: data.websiteUrl || 'example.com',
+        objective: data.objective || 'awareness',
+        product: data.product || '',
+        targetAudience: data.targetAudience || '',
         brandTone: data.brandTone || 'professional',
-        mindTrigger: data.mindTrigger,
+        mindTrigger: data.mindTrigger || '',
         language: data.language || 'english',
         industry: data.industry || '',
         platforms: data.platforms || ['google', 'meta'],
@@ -39,8 +38,8 @@ export const useAdGenerationFlow = () => {
         throw new Error('Failed to generate ads');
       }
 
-      // Log the complete returned data from OpenAI
-      console.log('Complete generated ad content:', JSON.stringify(result, null, 2));
+      // Log the complete returned data
+      console.log('Generated ad content:', JSON.stringify(result, null, 2));
       
       // Add credit usage information
       toast({

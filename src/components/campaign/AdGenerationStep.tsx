@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
 import { CampaignData } from '@/hooks/useCampaignState';
+import { toast } from "sonner";
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -23,32 +24,43 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const { generateCampaignAds, isGenerating } = useAdGenerationFlow();
 
   const handleGenerateAds = async () => {
-    // Create a comprehensive prompt data object with all available information
-    const promptData: CampaignPromptData = {
-      companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
-      websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
-      objective: campaignData.objective || 'awareness',
-      product: campaignData.product || '',
-      targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
-      brandTone: campaignData.brandTone || 'professional',
-      mindTrigger: campaignData.mindTriggers?.[platforms[0]], // Use first platform's trigger
-      language: campaignData.language || 'english',
-      industry: campaignData.industry || analysisResult?.industry || '',
-      platforms: platforms,
-      companyDescription: campaignData.description || analysisResult?.companyDescription || '',
-      differentials: analysisResult?.uniqueSellingPoints || []
-    };
+    try {
+      // Create a comprehensive prompt data object with all available information
+      const promptData: CampaignPromptData = {
+        companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
+        websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
+        objective: campaignData.objective || 'awareness',
+        product: campaignData.product || '',
+        targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
+        brandTone: campaignData.brandTone || 'professional',
+        mindTrigger: campaignData.mindTriggers?.[platforms[0]], // Use first platform's trigger
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || analysisResult?.industry || '',
+        platforms: platforms,
+        companyDescription: campaignData.description || analysisResult?.companyDescription || '',
+        differentials: analysisResult?.uniqueSellingPoints || []
+      };
 
-    // Log what's being sent to OpenAI in a readable format
-    console.log('Sending comprehensive data to OpenAI for ad generation:', 
-      JSON.stringify(promptData, null, 2)
-    );
-    
-    const generatedAds = await generateCampaignAds(promptData);
-    
-    if (generatedAds) {
-      console.log('Successfully generated ads:', generatedAds);
-      onAdsGenerated(generatedAds);
+      console.log('Sending data to OpenAI for ad generation:', JSON.stringify(promptData, null, 2));
+      
+      toast.info("Generating ads...", {
+        description: "This may take up to 30 seconds"
+      });
+      
+      const generatedAds = await generateCampaignAds(promptData);
+      
+      if (generatedAds) {
+        console.log('Successfully generated ads:', generatedAds);
+        toast.success("Ads generated successfully!");
+        onAdsGenerated(generatedAds);
+      } else {
+        toast.error("Failed to generate ads. Please try again.");
+      }
+    } catch (error) {
+      console.error('Error generating ads:', error);
+      toast.error("Error generating ads", {
+        description: error instanceof Error ? error.message : "An unexpected error occurred"
+      });
     }
   };
 
