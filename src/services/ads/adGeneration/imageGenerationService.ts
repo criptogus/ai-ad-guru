@@ -25,9 +25,22 @@ export const generateAdImage = async (
     const format = additionalInfo?.format || additionalInfo?.adContext?.format || 'square';
     const adType = additionalInfo?.adType || 'instagram';
     
+    // Create an enhanced image prompt with more context
+    const enhancedPrompt = `Create a high-resolution, photorealistic ad image based on:
+- Brand: ${additionalInfo?.companyName || additionalInfo?.brandName || ''}
+- Industry: ${additionalInfo?.industry || additionalInfo?.adContext?.industry || ''}
+- Objective: ${additionalInfo?.adContext?.objective || ''}
+- Target audience: ${additionalInfo?.adContext?.targetAudience || ''}
+- Style: Cinematic, modern, agency-quality
+- Colors: Include hints of #3B82F6 and #10B981
+- Do not include text in the image
+- Format: ${adType === 'instagram' ? 'Instagram 1080x1080px' : 'LinkedIn 1200x627px'}
+
+Original prompt: ${prompt}`;
+    
     // Enhanced request body with more context
     const requestBody = { 
-      prompt,
+      prompt: enhancedPrompt,
       additionalInfo: {
         ...additionalInfo,
         format,

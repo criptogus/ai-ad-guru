@@ -29,7 +29,7 @@ Your expertise lies in understanding markets deeply and crafting compelling mess
 ### 📊 Company Information:
 - Company: ${data.companyName}
 - Website: ${data.websiteUrl}
-- Description: ${data.companyDescription || data.objective}
+- Description: ${data.objective}
 - Campaign Goal: ${data.objective}
 - Target Audience: ${data.targetAudience}
 - Brand Voice: ${data.brandTone || 'professional'}
