@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
+import { GeneratedAdContent } from '@/services/ads/adGeneration/types';
 
 export const useAdGenerationFlow = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateCampaignAds = async (data: CampaignPromptData) => {
+  const generateCampaignAds = async (data: CampaignPromptData): Promise<GeneratedAdContent | null> => {
     try {
       // Validate required fields
       if (!data.companyName || !data.platforms || data.platforms.length === 0) {
@@ -33,19 +34,11 @@ export const useAdGenerationFlow = () => {
         differentials: data.differentials || []
       });
 
-      if (!result) {
-        throw new Error('Failed to generate ads');
-      }
-
-      // Log the complete returned data
       console.log('Generated ad content:', JSON.stringify(result, null, 2));
-      // No toast here -- now handled at component level
-
       return result;
     } catch (error) {
       console.error('Error generating ads:', error);
-      // No toast here -- now handled at component level
-      return null;
+      throw error; // Rethrow to handle in component
     } finally {
       setIsGenerating(false);
     }

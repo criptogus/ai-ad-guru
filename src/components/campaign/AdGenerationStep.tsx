@@ -27,6 +27,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const handleGenerateAds = async () => {
     if (!platforms || platforms.length === 0) {
       toast({
+        title: "No platforms selected",
         description: "Please select at least one platform before generating ads."
       });
       return;
@@ -51,32 +52,50 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           differentials: analysisResult?.uniqueSellingPoints || []
         };
 
-        console.log(`Sending prompt for ${platform}:`, JSON.stringify(promptData, null, 2));
+        console.log(`Generating ads for ${platform}:`, JSON.stringify(promptData, null, 2));
 
         toast({
-          description: `Generating ads for ${platform}... (5 credits)`
+          title: `Generating ${platform} ads`,
+          description: `Creating 5 ad variations (5 credits)`
         });
 
-        const result = await generateCampaignAds(promptData);
-
-        if (result) {
-          allPlatformAds[platform] = result;
+        try {
+          const result = await generateCampaignAds(promptData);
+          if (result) {
+            allPlatformAds[platform] = result;
+            toast({
+              title: "Success",
+              description: `Generated ads for ${platform}`
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to generate ads for ${platform}:`, error);
           toast({
-            description: `Successfully generated ads for ${platform}!`
-          });
-        } else {
-          toast({
-            description: `Failed to generate ads for ${platform}.`
+            title: "Generation failed",
+            description: `Could not generate ads for ${platform}`,
+            variant: "destructive"
           });
         }
       }
 
-      onAdsGenerated(allPlatformAds);
+      // Only proceed if we have some ads
+      if (Object.keys(allPlatformAds).length > 0) {
+        console.log("Generated ads for platforms:", Object.keys(allPlatformAds));
+        onAdsGenerated(allPlatformAds);
+      } else {
+        toast({
+          title: "No ads generated",
+          description: "Failed to generate ads for all selected platforms.",
+          variant: "destructive"
+        });
+      }
 
     } catch (error) {
       console.error("Ad generation failed:", error);
       toast({
-        description: error instanceof Error ? error.message : "Something went wrong. Try again."
+        title: "Ad generation failed",
+        description: error instanceof Error ? error.message : "Something went wrong. Try again.",
+        variant: "destructive"
       });
     }
   };

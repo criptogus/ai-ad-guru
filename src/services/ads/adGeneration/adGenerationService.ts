@@ -1,10 +1,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPromptData } from './types/promptTypes';
+import { GeneratedAdContent } from './types';
 
-export const generateAds = async (data: CampaignPromptData) => {
+export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAdContent | null> => {
   try {
-    console.log('Calling generate-ads function with data:', data);
+    console.log('Calling generate-ads function with data:', JSON.stringify(data, null, 2));
+    
+    // Show detailed information about what's being sent to the function
+    console.log('Platform(s):', data.platforms);
+    console.log('Company name:', data.companyName);
+    console.log('Mind trigger:', data.mindTrigger || 'None');
     
     const { data: response, error } = await supabase.functions.invoke('generate-ads', {
       body: { 
@@ -23,6 +29,7 @@ export const generateAds = async (data: CampaignPromptData) => {
       throw new Error(response?.error || 'Generate ads returned an unsuccessful response');
     }
 
+    console.log('Ad generation successful:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error in generateAds service:', error);

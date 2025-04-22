@@ -1,112 +1,129 @@
 
-import { CampaignPromptData, PromptMessages } from './types/promptTypes';
+import { CampaignPromptData } from './types/promptTypes';
+import { PromptMessages } from './types/promptTypes';
 
-export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessages => {
-  // Early validation of required fields
-  if (!data.companyName || !data.websiteUrl || !data.objective || !data.targetAudience) {
-    throw new Error('Missing required campaign data for prompt generation');
-  }
-
-  // Core business info validation - use objective if companyDescription is missing
-  const businessDescription = data.companyDescription?.trim() || data.objective;
-  if (!businessDescription) {
-    throw new Error('Business description is required for accurate ad generation');
-  }
-
-  // Ensure we have a language, defaulting to English
-  const language = data.language || 'english';
+export const buildGoogleAdsPrompt = (data: CampaignPromptData): PromptMessages => {
+  const systemMessage = `You are an expert Google Ads copywriter. Create 5 high-converting Google text ads.`;
   
-  // Get formatted differentials
-  const differentials = data.differentials?.join(', ') || 'not specified';
-  
-  // Build the system message with strict context enforcement
-  const systemMessage = `You are a world-class advertising copywriter inside a premium AI marketing agency. 
-Your task is to create highly effective, contextually relevant advertisements STRICTLY based on the company information provided.
-You must NOT invent or assume services, features, or details that are not explicitly mentioned in the business description.
-Each ad must clearly reflect the company's actual offerings, target audience, and campaign objective.`;
+  const userMessage = `
+Create 5 Google Search Ads for ${data.companyName}.
+Website: ${data.websiteUrl || '(not provided)'}
+Industry: ${data.industry || '(not specified)'}
+Product/Service: ${data.product || 'main product/service'}
+Target Audience: ${data.targetAudience || 'general audience'}
+Brand Tone: ${data.brandTone || 'professional'}
+Objective: ${data.objective || 'awareness'}
+Mind Trigger: ${data.mindTrigger || 'none'}
+Company Description: ${data.companyDescription || '(not provided)'}
+Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
 
-  // Build the user message with enhanced structure and detailed context instructions
-  const userMessage = `IMPORTANT: First analyze the company context, then create ads that are 100% relevant to the specific business.
+Each ad should include:
+- 3 Headlines (max 30 chars each)
+- 2 Descriptions (max 90 chars each)
+- A display URL
 
-### 🏢 COMPANY CONTEXT ANALYSIS:
-- Name: ${data.companyName}
-- Website: ${data.websiteUrl}
-- Business Description: ${businessDescription}
-- Key Differentiators: ${differentials}
-- Industry: ${data.industry || 'Not specified'}
-- Product/Service Focus: ${data.product || 'General company offering'}
-
-### 🎯 CAMPAIGN CONTEXT ANALYSIS:
-- Campaign Goal: ${data.objective}
-- Target Audience: ${data.targetAudience}
-- Brand Voice: ${data.brandTone || 'professional'}
-- Mental Trigger: ${data.mindTrigger || 'not specified'}
-- Language: ${language}
-
-### 📋 CONTENT REQUIREMENTS:
-1. Google/Bing Ads:
-   - Headline 1 (max 30 chars)
-   - Headline 2 (max 30 chars)
-   - Headline 3 (max 30 chars)
-   - Description 1 (max 90 chars)
-   - Description 2 (max 90 chars)
-
-2. Instagram/LinkedIn:
-   - Image prompt (no text overlay, photorealistic)
-   - Caption text (2-3 lines)
-   - Include relevant CTA
-
-### ⚠️ STRICT RULES:
-1. Use ONLY the information provided above - do not invent features or services
-2. Generate content ONLY in ${language}
-3. Every ad must directly address the specific ${data.objective} campaign goal
-4. Ads must target ONLY the described audience: ${data.targetAudience}
-5. Match the specified brand voice: ${data.brandTone || 'professional'}
-6. Incorporate the mental trigger: ${data.mindTrigger || 'general persuasion'}
-7. For images: describe photorealistic scenes that represent the actual business
-
-### 📦 Return JSON Structure:
+Format the response as valid JSON array with objects containing:
 {
-  "market_analysis": {
-    "industry": "identified market/industry based on provided info",
-    "main_service": "core service/product explicitly mentioned",
-    "value_proposition": "unique benefits explicitly mentioned"
-  },
-  "google_ads": [
-    {
-      "headline_1": "",
-      "headline_2": "",
-      "headline_3": "",
-      "description_1": "",
-      "description_2": ""
-    }
-  ],
-  "instagram_ads": [
-    {
-      "text": "",
-      "image_prompt": ""
-    }
-  ],
-  "linkedin_ads": [
-    {
-      "text": "",
-      "image_prompt": ""
-    }
-  ],
-  "microsoft_ads": [
-    {
-      "headline_1": "",
-      "headline_2": "",
-      "description": "",
-      "display_url": ""
-    }
-  ]
+  "headline_1": "...",
+  "headline_2": "...",
+  "headline_3": "...",
+  "description_1": "...",
+  "description_2": "...",
+  "display_url": "..."
 }
+`;
 
-Return ONLY the JSON, without any explanation or additional text.`;
+  return { systemMessage, userMessage };
+};
 
-  return {
-    systemMessage,
-    userMessage
-  };
+export const buildMetaAdsPrompt = (data: CampaignPromptData): PromptMessages => {
+  const systemMessage = `You are an expert Meta Ads copywriter and image prompt engineer. Create 5 high-converting Instagram ads.`;
+  
+  const userMessage = `
+Create 5 Instagram Ads for ${data.companyName}.
+Website: ${data.websiteUrl || '(not provided)'}
+Industry: ${data.industry || '(not specified)'}
+Product/Service: ${data.product || 'main product/service'}
+Target Audience: ${data.targetAudience || 'general audience'}
+Brand Tone: ${data.brandTone || 'professional'}
+Objective: ${data.objective || 'awareness'}
+Mind Trigger: ${data.mindTrigger || 'none'}
+Company Description: ${data.companyDescription || '(not provided)'}
+Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+
+Each ad should include:
+- Ad text (caption) with compelling hook, clear value proposition, and strong call to action
+- Image prompt for DALL-E to generate a high-quality Instagram image
+
+Format the response as valid JSON array with objects containing:
+{
+  "text": "...",
+  "image_prompt": "..."
+}
+`;
+
+  return { systemMessage, userMessage };
+};
+
+export const buildLinkedInAdsPrompt = (data: CampaignPromptData): PromptMessages => {
+  const systemMessage = `You are an expert LinkedIn Ads copywriter and image prompt engineer. Create 5 high-converting LinkedIn ads.`;
+  
+  const userMessage = `
+Create 5 LinkedIn Ads for ${data.companyName}.
+Website: ${data.websiteUrl || '(not provided)'}
+Industry: ${data.industry || '(not specified)'}
+Product/Service: ${data.product || 'main product/service'}
+Target Audience: ${data.targetAudience || 'general audience'}
+Brand Tone: ${data.brandTone || 'professional'}
+Objective: ${data.objective || 'awareness'}
+Mind Trigger: ${data.mindTrigger || 'none'}
+Company Description: ${data.companyDescription || '(not provided)'}
+Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+
+Each ad should include:
+- Ad text with professional tone, clear business value, and appropriate call to action for B2B audience
+- Image prompt for DALL-E to generate a high-quality professional LinkedIn image
+
+Format the response as valid JSON array with objects containing:
+{
+  "text": "...",
+  "image_prompt": "..."
+}
+`;
+
+  return { systemMessage, userMessage };
+};
+
+export const buildMicrosoftAdsPrompt = (data: CampaignPromptData): PromptMessages => {
+  const systemMessage = `You are an expert Microsoft Ads copywriter. Create 5 high-converting Microsoft/Bing text ads.`;
+  
+  const userMessage = `
+Create 5 Microsoft/Bing Search Ads for ${data.companyName}.
+Website: ${data.websiteUrl || '(not provided)'}
+Industry: ${data.industry || '(not specified)'}
+Product/Service: ${data.product || 'main product/service'}
+Target Audience: ${data.targetAudience || 'general audience'}
+Brand Tone: ${data.brandTone || 'professional'}
+Objective: ${data.objective || 'awareness'}
+Mind Trigger: ${data.mindTrigger || 'none'}
+Company Description: ${data.companyDescription || '(not provided)'}
+Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+
+Each ad should include:
+- 3 Headlines (max 30 chars each)
+- 2 Descriptions (max 90 chars each)
+- A display URL
+
+Format the response as valid JSON array with objects containing:
+{
+  "headline_1": "...",
+  "headline_2": "...",
+  "headline_3": "...",
+  "description_1": "...",
+  "description_2": "...",
+  "display_url": "..."
+}
+`;
+
+  return { systemMessage, userMessage };
 };
