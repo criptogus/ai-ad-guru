@@ -45,9 +45,10 @@ const AdPreviewsSection: React.FC<AdPreviewsSectionProps> = ({
   const domain = getDomain(websiteUrl);
   const companyName = analysisResult?.companyName || "Sua Empresa";
 
-  // Placeholder function for onGenerateImage
-  const handleGenerateImage = () => {
+  // Placeholder function for onGenerateImage that returns a Promise
+  const handleGenerateImage = async (): Promise<void> => {
     console.log("Image generation not implemented in this component");
+    return Promise.resolve();
   };
 
   // Get ads based on platform

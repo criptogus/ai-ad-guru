@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,11 +59,11 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
     }
   };
 
-  // Function to handle image generation
-  const handleGenerateImage = () => {
+  const handleGenerateImage = async (): Promise<void> => {
     if (onGenerateImage) {
-      onGenerateImage();
+      return onGenerateImage();
     }
+    return Promise.resolve();
   };
 
   return (
@@ -108,7 +107,6 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
 
       <CardContent className="p-6">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Preview Section */}
           <div className="space-y-4">
             <Tabs value={format} onValueChange={(v) => setFormat(v as typeof format)}>
               <TabsList className="grid grid-cols-3">
@@ -138,7 +136,6 @@ const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
             />
           </div>
 
-          {/* Editor Section */}
           <div>
             <InstagramAdEditor
               ad={isEditing ? editedAd : ad}

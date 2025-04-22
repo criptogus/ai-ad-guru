@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -72,9 +71,10 @@ const AdFormatPreviewsPage: React.FC = () => {
     imagePrompt: "Business professionals collaborating around a dashboard showing improved metrics"
   };
 
-  // Placeholder function for onGenerateImage
-  const handleGenerateImage = () => {
+  // Placeholder function for onGenerateImage that returns a Promise
+  const handleGenerateImage = async (): Promise<void> => {
     console.log("Image generation not implemented in this component");
+    return Promise.resolve();
   };
 
   return (

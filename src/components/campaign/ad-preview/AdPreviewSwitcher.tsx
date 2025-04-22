@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
@@ -32,10 +31,8 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [instagramView, setInstagramView] = useState<"feed" | "story">("feed");
   
-  // Extract domain from website URL
   const domain = getDomain(analysisResult.websiteUrl || "example.com");
   
-  // Default placeholder ads if not provided
   const defaultGoogleAd: GoogleAd = {
     headline1: "Your Main Headline Here",
     headline2: "Secondary Headline",
@@ -59,15 +56,14 @@ const AdPreviewSwitcher: React.FC<AdPreviewSwitcherProps> = ({
     imagePrompt: "A professional lifestyle product image with clean background and modern aesthetic"
   };
 
-  // Use provided ads or fallback to defaults
   const googleAdToDisplay = googleAd || defaultGoogleAd;
   const metaAdToDisplay = metaAd || defaultMetaAd;
   const microsoftAdToDisplay = microsoftAd || defaultGoogleAd;
   const linkedInAdToDisplay = linkedInAd || defaultMetaAd;
 
-  // Empty function for onGenerateImage prop to satisfy the interface
-  const handleGenerateImage = () => {
+  const handleGenerateImage = async (): Promise<void> => {
     console.log("Image generation requested but not implemented in this component");
+    return Promise.resolve();
   };
 
   return (
