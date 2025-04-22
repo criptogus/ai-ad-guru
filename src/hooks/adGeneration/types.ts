@@ -1,3 +1,4 @@
+
 // Define interfaces for ad types
 export interface GoogleAd {
   headline1: string;
@@ -7,7 +8,13 @@ export interface GoogleAd {
   description2: string;
   path1?: string;
   path2?: string;
-  siteLinks?: string[];
+  displayPath?: string;
+  finalUrl?: string;
+  siteLinks?: Array<{
+    title: string;
+    description?: string;
+    url?: string;
+  }>;
   headlines?: string[];
   descriptions?: string[];
 }

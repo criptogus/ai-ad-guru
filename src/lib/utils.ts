@@ -1,5 +1,12 @@
 
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+// Utility function for conditionally joining CSS class names
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
 
 // Get domain from website URL
 export function getDomain(url: string): string {
@@ -20,6 +27,8 @@ export function normalizeGoogleAd(ad: Partial<GoogleAd>): GoogleAd {
     description2: ad.description2 || 'Additional details about features or benefits.',
     path1: ad.path1 || 'path',
     path2: ad.path2 || 'example',
+    displayPath: ad.displayPath || '',
+    finalUrl: ad.finalUrl || '',
     siteLinks: ad.siteLinks || [],
     // Ensure headlines array is populated
     headlines: ad.headlines || [ad.headline1 || 'Your Headline', ad.headline2 || 'Secondary Headline', ad.headline3 || 'Learn More'],
@@ -37,6 +46,7 @@ export function normalizeMetaAd(ad: Partial<MetaAd>): MetaAd {
     imagePrompt: ad.imagePrompt || 'Professional product image with clean background',
     imageUrl: ad.imageUrl || undefined,
     format: ad.format || 'feed',
-    hashtags: ad.hashtags || []
+    hashtags: ad.hashtags || [],
+    callToAction: ad.callToAction || ''
   };
 }

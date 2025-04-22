@@ -15,7 +15,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
     let tags: string[] = [];
     if (typeof ad.hashtags === 'string') {
       // If it's a string, split by spaces or commas
-      tags = ad.hashtags.split(/[\s,]+/).filter(tag => tag.trim());
+      tags = (ad.hashtags as string).split(/[\s,]+/).filter(tag => tag.trim());
     } else if (Array.isArray(ad.hashtags)) {
       tags = ad.hashtags;
     }
@@ -33,6 +33,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ ad, companyName }) => {
   
   // Format text with line breaks
   const formatText = (text: string) => {
+    if (!text) return null;
     return text.split('\n').map((line, index) => (
       <React.Fragment key={index}>
         {line}

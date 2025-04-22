@@ -43,7 +43,7 @@ const MicrosoftAdPreview: React.FC<MicrosoftAdPreviewProps> = ({
             className="sitelink text-[#1a0dab] text-sm mr-4 mb-1 hover:underline"
             onClick={(e) => e.preventDefault()}
           >
-            {link.title}
+            {typeof link === 'string' ? link : link.title}
           </a>
         ))}
       </div>

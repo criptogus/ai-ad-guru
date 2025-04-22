@@ -1,7 +1,6 @@
 
 import React from "react";
-import { MetaAd } from "@/hooks/adGeneration/types";
-import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration";
 
 interface InstagramPreviewFooterProps {
   ad: MetaAd;
@@ -9,55 +8,58 @@ interface InstagramPreviewFooterProps {
 }
 
 const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName }) => {
-  // Parse hashtags from the ad
-  const renderHashtags = () => {
-    if (!ad.hashtags || (Array.isArray(ad.hashtags) && ad.hashtags.length === 0)) {
-      return null;
-    }
-
-    let hashtagArray: string[] = [];
+  // Format hashtags as string if they exist
+  const getHashtagsText = () => {
+    if (!ad.hashtags || ad.hashtags.length === 0) return "";
     
     if (typeof ad.hashtags === 'string') {
-      hashtagArray = ad.hashtags.split(/[,\s]+/).filter(Boolean);
-    } else if (Array.isArray(ad.hashtags)) {
-      hashtagArray = ad.hashtags;
+      return ad.hashtags;
     }
-
-    return hashtagArray.map((tag, index) => {
-      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
-      return (
-        <span key={index} className="text-blue-500">
-          {formattedTag}{' '}
-        </span>
-      );
-    });
+    
+    if (Array.isArray(ad.hashtags)) {
+      // If it's an array, join with spaces
+      return ad.hashtags.map(tag => {
+        // Add # if it doesn't already have one
+        return tag.startsWith('#') ? tag : `#${tag}`;
+      }).join(' ');
+    }
+    
+    return "";
+  };
+  
+  // Format caption with hashtags
+  const getCaption = () => {
+    const caption = ad.primaryText || "";
+    const hashtags = getHashtagsText();
+    
+    if (!caption && !hashtags) return null;
+    
+    if (!caption) return hashtags;
+    if (!hashtags) return caption;
+    
+    // If both exist, combine them
+    return `${caption}\n\n${hashtags}`;
   };
 
+  const caption = getCaption();
+  
+  if (!caption) return null;
+
   return (
-    <div className="p-3">
-      <div className="flex justify-between mb-2">
-        <div className="flex gap-4">
-          <Heart className="w-6 h-6" />
-          <MessageCircle className="w-6 h-6" />
-          <Send className="w-6 h-6" />
+    <div className="mt-2 text-sm">
+      <div>
+        <span className="font-semibold">{companyName}</span>{" "}
+        <span className="line-clamp-2">
+          {/* Render first line of caption */}
+          {caption.split('\n')[0]}
+        </span>
+      </div>
+      {caption.includes('\n') && (
+        <div className="text-gray-500 mt-1">
+          {/* Show indication that there's more */}
+          more...
         </div>
-        <Bookmark className="w-6 h-6" />
-      </div>
-      
-      <div className="text-sm">
-        <p className="font-semibold mb-1">127 likes</p>
-        <p>
-          <span className="font-semibold mr-1">{companyName}</span>
-          {ad.description}
-        </p>
-        {renderHashtags() && (
-          <p className="mt-1">
-            {renderHashtags()}
-          </p>
-        )}
-        <p className="text-gray-500 text-xs mt-1">View all 24 comments</p>
-        <p className="text-gray-400 text-xs mt-1">2 HOURS AGO</p>
-      </div>
+      )}
     </div>
   );
 };

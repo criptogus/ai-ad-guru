@@ -46,9 +46,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
                 className="text-[#1a0dab] hover:underline text-sm font-medium block truncate"
                 onClick={(e) => e.preventDefault()}
               >
-                {siteLinks[i].title}
+                {typeof siteLinks[i] === 'string' ? siteLinks[i] : siteLinks[i].title}
               </a>
-              {siteLinks[i].description && (
+              {typeof siteLinks[i] !== 'string' && siteLinks[i].description && (
                 <p className="text-xs text-[#4d5156] truncate">{siteLinks[i].description}</p>
               )}
             </div>
@@ -60,9 +60,9 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
                 className="text-[#1a0dab] hover:underline text-sm font-medium block truncate"
                 onClick={(e) => e.preventDefault()}
               >
-                {siteLinks[i + 1].title}
+                {typeof siteLinks[i + 1] === 'string' ? siteLinks[i + 1] : siteLinks[i + 1].title}
               </a>
-              {siteLinks[i + 1].description && (
+              {typeof siteLinks[i + 1] !== 'string' && siteLinks[i + 1].description && (
                 <p className="text-xs text-[#4d5156] truncate">{siteLinks[i + 1].description}</p>
               )}
             </div>
