@@ -37,6 +37,7 @@ interface UseCampaignStepRendererProps {
   handleNextWrapper: (data?: any) => void;
   createCampaign: () => Promise<void>;
   cacheInfo?: AnalysisCache | null;
+  handleAdsGenerated: (ads: any) => void;
 }
 
 const useCampaignStepRenderer = ({
@@ -65,7 +66,8 @@ const useCampaignStepRenderer = ({
   handleBack,
   handleNextWrapper,
   createCampaign,
-  cacheInfo
+  cacheInfo,
+  handleAdsGenerated
 }: UseCampaignStepRendererProps) => {
   console.log("Rendering step:", currentStep, "Campaign data:", campaignData);
   

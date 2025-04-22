@@ -184,7 +184,8 @@ export const useCampaignPageController = () => {
     handleBack,
     handleNextWrapper,
     createCampaign: handleCreateCampaign,
-    cacheInfo
+    cacheInfo,
+    handleAdsGenerated
   });
 
   return {
