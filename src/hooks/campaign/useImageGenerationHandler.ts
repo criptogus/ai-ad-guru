@@ -4,7 +4,15 @@ import { MetaAd } from "@/hooks/adGeneration/types";
 import { CampaignData } from "@/hooks/useCampaignState";
 import { useToast } from "@/hooks/use-toast";
 
-export const useImageGenerationHandler = () => {
+interface UseImageGenerationHandlerProps {
+  metaAds?: MetaAd[];
+  linkedInAds?: MetaAd[];
+  setMetaAds?: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  setLinkedInAds?: React.Dispatch<React.SetStateAction<MetaAd[]>>;
+  campaignData?: any;
+}
+
+export const useImageGenerationHandler = (props?: UseImageGenerationHandlerProps) => {
   const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
@@ -54,6 +62,21 @@ export const useImageGenerationHandler = () => {
         title: "Image Generated",
         description: "Ad image successfully created"
       });
+      
+      // If we have both the ad and the metaAds/linkedInAds state, update it
+      if (isMetaAd && props?.metaAds && props?.setMetaAds && index < props.metaAds.length) {
+        const updatedAds = [...props.metaAds];
+        updatedAds[index] = { ...updatedAds[index], imageUrl };
+        props.setMetaAds(updatedAds);
+      } else if (isMetaAd && props?.linkedInAds && props?.setLinkedInAds && 
+                (props?.metaAds ? index >= props.metaAds.length : true)) {
+        const linkedInIndex = props?.metaAds ? index - props.metaAds.length : index;
+        if (linkedInIndex < props.linkedInAds.length) {
+          const updatedAds = [...props.linkedInAds];
+          updatedAds[linkedInIndex] = { ...updatedAds[linkedInIndex], imageUrl };
+          props.setLinkedInAds(updatedAds);
+        }
+      }
       
       return imageUrl;
     } catch (error) {

@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { MetaAd, GoogleAd } from '@/hooks/adGeneration/types';
+import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 import { useNavigate } from 'react-router-dom';
 
-interface UseAdGenerationHandlersProps {
+export interface UseAdGenerationHandlersProps {
   setGoogleAds: (ads: GoogleAd[]) => void;
   setMetaAds: (ads: MetaAd[]) => void;
   setMicrosoftAds: (ads: GoogleAd[]) => void;
