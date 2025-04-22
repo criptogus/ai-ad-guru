@@ -36,10 +36,10 @@ export const useGenerateGoogleAdsHandler = ({
     try {
       setIsGenerating(true);
       
-      // Show credit usage notification
+      // Show credit usage notification before generation
       toast({
-        title: "Credits Usage",
-        description: `Generating Google Ads will use ${creditCost} credits.`,
+        title: "Credits Usage Information",
+        description: `Generating Google Ads will use ${creditCost} credits from your account.`,
       });
       
       const ads = await generateGoogleAds(analysisResult);
@@ -47,15 +47,15 @@ export const useGenerateGoogleAdsHandler = ({
       if (ads && ads.length > 0) {
         setGoogleAds(ads);
         
-        // Deduct credits
+        // Deduct credits and notify
         if (onCreditDeduction) {
           onCreditDeduction(creditCost);
+          
+          toast({
+            title: "Google Ads Generated Successfully",
+            description: `Created ${ads.length} ad variations for ${creditCost} credits.`,
+          });
         }
-        
-        toast({
-          title: "Google Ads Generated",
-          description: `Successfully created ${ads.length} ad variations for ${creditCost} credits.`,
-        });
       } else {
         toast({
           variant: "default",

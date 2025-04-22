@@ -7,17 +7,16 @@ export interface PromptMessages {
 export interface CampaignPromptData {
   companyName?: string;
   websiteUrl?: string;
-  industry?: string;
   product?: string;
+  industry?: string;
+  targetAudience?: string;
   objective?: string;
   brandTone?: string;
-  language?: string;
-  targetAudience?: string;
-  companyDescription?: string;
-  keywords?: string[] | string;
-  differentials?: string[] | string;
-  callToAction?: string[] | string;
   mindTrigger?: string;
   mindTriggers?: Record<string, string>;
-  platforms?: string[];
+  differentials?: string[] | string;
+  companyDescription?: string;
+  keywords?: string[] | string;
+  callToAction?: string[] | string;
+  language?: string;
 }
