@@ -16,7 +16,8 @@ export const useAdGenerationFlow = () => {
         throw new Error('Missing required campaign information');
       }
 
-      console.log('Generating ads with data:', data);
+      // Log the complete data being sent to OpenAI for ad generation
+      console.log('Generating ads with complete data:', JSON.stringify(data, null, 2));
       setIsGenerating(true);
 
       const result = await generateAds({
@@ -25,20 +26,28 @@ export const useAdGenerationFlow = () => {
         objective: data.objective,
         product: data.product,
         targetAudience: data.targetAudience,
-        brandTone: data.brandTone,
+        brandTone: data.brandTone || 'professional',
         mindTrigger: data.mindTrigger,
         language: data.language || 'english',
-        industry: data.industry,
-        platforms: data.platforms,
-        companyDescription: data.companyDescription,
-        differentials: data.differentials
+        industry: data.industry || '',
+        platforms: data.platforms || ['google', 'meta'],
+        companyDescription: data.companyDescription || '',
+        differentials: data.differentials || []
       });
 
       if (!result) {
         throw new Error('Failed to generate ads');
       }
 
-      console.log('Generated ad content:', result);
+      // Log the complete returned data from OpenAI
+      console.log('Complete generated ad content:', JSON.stringify(result, null, 2));
+      
+      // Add credit usage information
+      toast({
+        title: "Ads Generated Successfully",
+        description: `5 credits were used to generate ads for ${data.platforms?.length || 1} platform(s)`
+      });
+      
       return result;
     } catch (error) {
       console.error('Error generating ads:', error);
