@@ -5,6 +5,20 @@ import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { toast } from 'sonner';
 
 /**
+ * Validates and ensures the text is complete (ends with proper punctuation)
+ */
+function ensureCompleteText(text: string): string {
+  if (!text) return '';
+  
+  const trimmedText = text.trim();
+  // Add period at the end if missing proper punctuation
+  if (!trimmedText.match(/[.!?;:]$/)) {
+    return trimmedText + '.';
+  }
+  return trimmedText;
+}
+
+/**
  * Generates Instagram/Meta ad suggestions based on website analysis results
  * 
  * @param campaignData The website analysis result data
@@ -29,7 +43,7 @@ export const generateMetaAds = async (
             meta: mindTrigger
           }
         },
-        language: 'portuguese' // Default language, should be set based on user preference
+        language: campaignData.language || 'portuguese' // Use campaign language or default to Portuguese
       },
     });
 
@@ -54,11 +68,12 @@ export const generateMetaAds = async (
     // Transform the API response into our app's MetaAd format
     const metaAds = (data.data || []).map((ad: any) => ({
       headline: ad.headline || '',
-      primaryText: ad.primaryText || ad.text || '',
-      description: ad.description || '',
+      primaryText: ensureCompleteText(ad.primaryText || ad.text || ''),
+      description: ensureCompleteText(ad.description || ''),
       imagePrompt: ad.imagePrompt || ad.image_prompt || '',
       callToAction: ad.callToAction || 'Saiba Mais',
-      format: ad.format || 'feed'
+      format: ad.format || 'feed',
+      isComplete: true // Mark as having complete text
     }));
     
     return metaAds;

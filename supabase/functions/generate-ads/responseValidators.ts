@@ -74,6 +74,33 @@ export function getSimplifiedLanguageCode(language: string): string {
 }
 
 /**
+ * Validates text to ensure it's not truncated and forms complete sentences
+ * @param text The text to validate
+ * @returns Fixed text with complete sentences
+ */
+function validateTextCompleteness(text: string): string {
+  if (!text) return '';
+  
+  // Check if the text appears to be truncated (ends abruptly without punctuation)
+  const endsWithSentence = /[.!?;:]$/.test(text.trim());
+  
+  if (!endsWithSentence) {
+    // Find the last complete sentence
+    const sentences = text.split(/(?<=[.!?;:])\s+/);
+    
+    if (sentences.length > 1) {
+      // Return only complete sentences
+      return sentences.slice(0, -1).join(' ') + '.';
+    }
+    
+    // If we can't find complete sentences, ensure it at least ends with punctuation
+    return text.trim() + '.';
+  }
+  
+  return text;
+}
+
+/**
  * Validates Google Ads responses to ensure they don't contain generic content
  * @param ads Array of Google Ads
  * @param language Language code
@@ -96,20 +123,31 @@ export function validateGoogleAdsResponse(ads: any[], language: string, campaign
     const description1 = ad.description_1 || ad.description1 || '';
     const description2 = ad.description_2 || ad.description2 || '';
     
+    // Validate text completeness
+    const validatedDescription1 = validateTextCompleteness(description1);
+    const validatedDescription2 = validateTextCompleteness(description2);
+    
     // Check for generic terms
     const hasGenericTerms = 
       containsGenericTerms(headline1, langCode) ||
       containsGenericTerms(headline2, langCode) ||
       containsGenericTerms(headline3, langCode) ||
-      containsGenericTerms(description1, langCode) ||
-      containsGenericTerms(description2, langCode);
+      containsGenericTerms(validatedDescription1, langCode) ||
+      containsGenericTerms(validatedDescription2, langCode);
       
     if (hasGenericTerms) {
       console.log('⚠️ Generic terms detected in ad, marking for replacement');
       ad._containsGenericTerms = true;
     }
     
-    return ad;
+    // Return with validated descriptions
+    return {
+      ...ad,
+      description_1: validatedDescription1,
+      description1: validatedDescription1,
+      description_2: validatedDescription2,
+      description2: validatedDescription2
+    };
   });
 }
 
@@ -133,17 +171,27 @@ export function validateSocialAdsResponse(ads: any[], language: string, campaign
     const primaryText = ad.primaryText || ad.text || '';
     const description = ad.description || '';
     
+    // Validate text completeness
+    const validatedPrimaryText = validateTextCompleteness(primaryText);
+    const validatedDescription = validateTextCompleteness(description);
+    
     // Check for generic terms
     const hasGenericTerms = 
       containsGenericTerms(headline, langCode) ||
-      containsGenericTerms(primaryText, langCode) ||
-      containsGenericTerms(description, langCode);
+      containsGenericTerms(validatedPrimaryText, langCode) ||
+      containsGenericTerms(validatedDescription, langCode);
       
     if (hasGenericTerms) {
       console.log('⚠️ Generic terms detected in ad, marking for replacement');
       ad._containsGenericTerms = true;
     }
     
-    return ad;
+    // Return with validated texts
+    return {
+      ...ad,
+      primaryText: validatedPrimaryText,
+      text: validatedPrimaryText,
+      description: validatedDescription
+    };
   });
 }

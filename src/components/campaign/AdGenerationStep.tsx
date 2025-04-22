@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,7 +63,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
         // Important: Pass the complete mindTriggers object for all platforms
         mindTriggers: mindTriggers,
-        language: campaignData.language || 'english',
+        language: campaignData.language || 'portuguese',
         industry: campaignData.industry || analysisResult?.industry || '',
         platforms: platforms,
         companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
@@ -196,25 +197,69 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     const targetAudience = promptData.targetAudience || 'potential customers';
     const objective = promptData.objective || 'awareness';
     const description = promptData.companyDescription || `${companyName} provides quality ${industry} services`;
+    const language = promptData.language?.toLowerCase() || 'portuguese';
+    
+    // Create complete sentences for descriptions
+    const createCompleteDescription = (text: string, maxLength = 90) => {
+      const truncated = text.substring(0, maxLength);
+      return truncated.endsWith('.') ? truncated : truncated + '.';
+    };
+    
+    // Get language-specific call to action
+    const getCallToAction = () => {
+      if (language.includes('port') || language.includes('pt')) {
+        return objective === 'conversion' ? 'Compre Agora' : 
+               objective === 'consideration' ? 'Saiba Mais' : 'Descubra Hoje';
+      } else if (language.includes('es')) {
+        return objective === 'conversion' ? 'Compre Ahora' : 
+               objective === 'consideration' ? 'Aprenda Más' : 'Descubra Hoy';
+      } else {
+        return objective === 'conversion' ? 'Buy Now' : 
+               objective === 'consideration' ? 'Learn More' : 'Discover Today';
+      }
+    };
+    
+    // Get language-specific descriptive text
+    const getServiceDescription = () => {
+      if (language.includes('port') || language.includes('pt')) {
+        return `Oferecemos ${industry} de alta qualidade para ${targetAudience}.`;
+      } else if (language.includes('es')) {
+        return `Ofrecemos servicios de ${industry} de alta calidad para ${targetAudience}.`;
+      } else {
+        return `We provide high-quality ${industry} services for ${targetAudience}.`;
+      }
+    };
     
     if (platform === 'google' || platform === 'microsoft') {
+      const cta = getCallToAction();
+      const serviceDesc = getServiceDescription();
+      
       return Array(5).fill(null).map((_, i) => ({
         headline1: `${companyName} - ${industry}`,
-        headline2: `Solutions for ${targetAudience}`,
-        headline3: `${objective === 'conversion' ? 'Buy Now' : objective === 'consideration' ? 'Learn More' : 'Discover Today'}`,
-        description1: `We provide top-quality ${industry} services designed for ${targetAudience}.`,
-        description2: `${description.substring(0, 80) || `Learn more about how we help ${targetAudience} succeed.`}`,
+        headline2: `${cta} ${i+1}`,
+        headline3: cta,
+        description1: createCompleteDescription(serviceDesc),
+        description2: createCompleteDescription(description.substring(0, 80) || 
+          `${companyName} é especialista em ${industry}, atendendo ${targetAudience} com excelência.`),
         displayPath: promptData.websiteUrl || 'example.com',
         path1: 'services',
         path2: 'info',
         siteLinks: []
       }));
     } else if (platform === 'meta' || platform === 'linkedin') {
+      const cta = getCallToAction();
       return Array(5).fill(null).map((_, i) => ({
-        headline: `${companyName} - ${industry} Solutions`,
-        primaryText: `${description.substring(0, 100) || `Discover how our ${industry} solutions can transform your experience.`} Our team is ready to help ${targetAudience} achieve their goals.`,
-        description: `Quality services tailored for ${targetAudience}. ${objective === 'conversion' ? 'Buy Now!' : objective === 'consideration' ? 'Learn More Today' : 'Discover How'}`,
-        imagePrompt: `Professional ${industry} image for ${companyName}, showing people representing ${targetAudience}, in a modern setting with ${promptData.brandTone || 'professional'} atmosphere`,
+        headline: `${companyName} - Especialistas em ${industry}`,
+        primaryText: createCompleteDescription(
+          `${description.substring(0, 100) || `${companyName} oferece soluções inovadoras de ${industry}.`} 
+          Nossa equipe está pronta para ajudar ${targetAudience} a alcançar seus objetivos.`, 
+          150
+        ),
+        description: createCompleteDescription(
+          `Serviços de qualidade para ${targetAudience}. ${cta}!`, 
+          80
+        ),
+        imagePrompt: `Imagem profissional de ${industry} para ${companyName}, mostrando pessoas representando ${targetAudience}, em um ambiente moderno com atmosfera ${promptData.brandTone || 'profissional'}`,
         format: 'feed'
       }));
     }

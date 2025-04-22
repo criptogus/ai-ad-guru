@@ -27,9 +27,23 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, com
     return "";
   };
   
+  // Ensure text is properly formatted and complete
+  const ensureCompleteText = (text: string): string => {
+    if (!text) return "";
+    
+    // Make sure the text ends with proper punctuation
+    const trimmedText = text.trim();
+    if (!trimmedText.match(/[.!?;:]$/)) {
+      return trimmedText + ".";
+    }
+    
+    return trimmedText;
+  };
+  
   // Format caption with hashtags
   const getCaption = () => {
-    const caption = ad.primaryText || "";
+    // Ensure primary text is complete
+    const caption = ensureCompleteText(ad.primaryText || "");
     const hashtags = getHashtagsText();
     
     if (!caption && !hashtags) return null;
@@ -49,15 +63,15 @@ const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, com
     <div className="mt-2 text-sm">
       <div>
         <span className="font-semibold">{companyName}</span>{" "}
-        <span className="line-clamp-2">
-          {/* Render first line of caption */}
-          {caption.split('\n')[0]}
+        <span className="line-clamp-3">
+          {/* Render first paragraph of caption */}
+          {caption.split('\n\n')[0]}
         </span>
       </div>
-      {caption.includes('\n') && (
+      {caption.includes('\n\n') && (
         <div className="text-gray-500 mt-1">
           {/* Show indication that there's more */}
-          more...
+          mais...
         </div>
       )}
     </div>

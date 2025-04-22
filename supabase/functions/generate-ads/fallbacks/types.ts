@@ -27,6 +27,7 @@ export interface GoogleAd {
   headlines?: string[];
   descriptions?: string[];
   siteLinks?: string[] | { title: string; description?: string }[];
+  isComplete?: boolean; // Flag to indicate all text fields are complete
 }
 
 export interface MetaAd {
@@ -35,6 +36,7 @@ export interface MetaAd {
   description: string;
   imagePrompt: string;
   format?: string;
+  isComplete?: boolean; // Flag to indicate all text fields are complete
 }
 
 export interface LinkedInAd extends MetaAd {}
