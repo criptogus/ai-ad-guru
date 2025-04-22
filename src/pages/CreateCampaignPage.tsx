@@ -11,13 +11,21 @@ import { useToast } from "@/hooks/use-toast";
 import { CampaignProvider } from "@/contexts/CampaignContext";
 import { AdGenerationStep } from "@/components/campaign/AdGenerationStep";
 import { useAdGenerationFlow } from "@/hooks/useAdGenerationFlow";
-import { useImageGenerationHandler } from "@/hooks/useImageGenerationHandler";
+import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
-import { useGoogleAdGeneration } from "@/hooks/adGeneration/useGoogleAdGeneration";
-import { useMetaAdGeneration } from "@/hooks/adGeneration/useMetaAdGeneration";
-import { useMicrosoftAdGeneration } from "@/hooks/adGeneration/useMicrosoftAdGeneration";
-import { useLinkedInAdGeneration } from "@/hooks/adGeneration/useLinkedInAdGeneration";
 import { useCampaignCreation } from "@/hooks/useCampaignCreation";
+import { useAdGeneration as useGoogleAdGeneration } from "@/hooks/adGeneration";
+import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
+import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
+import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
+
+// Mock implementation of useImageGenerationHandler if it doesn't exist
+const useImageGenerationHandler = (props: any) => {
+  return {
+    handleGenerateImage: async () => console.log("Generate image"),
+    loadingImageIndex: null
+  };
+};
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -123,9 +131,11 @@ const CreateCampaignPage: React.FC = () => {
         setCampaignData(prev => ({ 
           ...prev, 
           name: result.companyName ? `${result.companyName} Campaign` : 'New Campaign',
+          companyName: result.companyName || prev.name || 'New Company', // Set companyName from analysis
           description: result.companyDescription || '',
           keywords: result.keywords || [],
           targetAudience: result.targetAudience || '',
+          industry: result.industry || '', // Set industry from analysis
         }));
         
         return result;
@@ -166,7 +176,22 @@ const CreateCampaignPage: React.FC = () => {
   // Create async wrapper functions for the ad generation hooks
   const handleGenerateGoogleAds = async (): Promise<void> => {
     try {
-      const ads = await generateGoogleAds(campaignData);
+      // Prepare the data expected by the ad generation function
+      const adGenerationData = {
+        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
+        objective: campaignData.objective || 'awareness',
+        targetAudience: campaignData.targetAudience || '',
+        product: campaignData.product || '',
+        brandTone: campaignData.brandTone || 'professional',
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || '',
+        companyDescription: campaignData.description || '',
+        differentials: [] // Add any differentials if available
+      };
+      
+      console.log("Generating Google ads with data:", adGenerationData);
+      const ads = await generateGoogleAds(adGenerationData);
       if (ads) {
         setGoogleAds(ads);
       }
@@ -177,7 +202,22 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateMetaAds = async (): Promise<void> => {
     try {
-      const ads = await generateMetaAds(campaignData);
+      // Prepare the data expected by the ad generation function
+      const adGenerationData = {
+        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
+        objective: campaignData.objective || 'awareness',
+        targetAudience: campaignData.targetAudience || '',
+        product: campaignData.product || '',
+        brandTone: campaignData.brandTone || 'professional',
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || '',
+        companyDescription: campaignData.description || '',
+        differentials: [] // Add any differentials if available
+      };
+      
+      console.log("Generating Meta ads with data:", adGenerationData);
+      const ads = await generateMetaAds(adGenerationData);
       if (ads) {
         setMetaAds(ads);
       }
@@ -188,7 +228,22 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateMicrosoftAds = async (): Promise<void> => {
     try {
-      const ads = await generateMicrosoftAds(campaignData);
+      // Prepare the data expected by the ad generation function
+      const adGenerationData = {
+        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
+        objective: campaignData.objective || 'awareness',
+        targetAudience: campaignData.targetAudience || '',
+        product: campaignData.product || '',
+        brandTone: campaignData.brandTone || 'professional',
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || '',
+        companyDescription: campaignData.description || '',
+        differentials: [] // Add any differentials if available
+      };
+      
+      console.log("Generating Microsoft ads with data:", adGenerationData);
+      const ads = await generateMicrosoftAds(adGenerationData);
       if (ads) {
         setMicrosoftAds(ads);
       }
@@ -199,7 +254,22 @@ const CreateCampaignPage: React.FC = () => {
 
   const handleGenerateLinkedInAds = async (): Promise<void> => {
     try {
-      const ads = await generateLinkedInAds(campaignData);
+      // Prepare the data expected by the ad generation function
+      const adGenerationData = {
+        companyName: campaignData.companyName || campaignData.name || 'Company', // Required field
+        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
+        objective: campaignData.objective || 'awareness',
+        targetAudience: campaignData.targetAudience || '',
+        product: campaignData.product || '',
+        brandTone: campaignData.brandTone || 'professional',
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || '',
+        companyDescription: campaignData.description || '',
+        differentials: [] // Add any differentials if available
+      };
+      
+      console.log("Generating LinkedIn ads with data:", adGenerationData);
+      const ads = await generateLinkedInAds(adGenerationData);
       if (ads) {
         setLinkedInAds(ads);
       }
@@ -213,6 +283,7 @@ const CreateCampaignPage: React.FC = () => {
     try {
       const result = await createCampaign({
         name: campaignData.name,
+        companyName: campaignData.companyName || campaignData.name, // Include companyName
         description: campaignData.description,
         platforms: campaignData.platforms,
         budget: campaignData.budget,

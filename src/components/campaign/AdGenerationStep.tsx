@@ -24,17 +24,17 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const handleGenerateAds = async () => {
     // Create a comprehensive prompt data object with all available information
     const promptData: CampaignPromptData = {
-      companyName: analysisResult?.companyName || campaignData.name,
-      websiteUrl: campaignData.targetUrl,
-      objective: campaignData.objective,
-      product: campaignData.product,
-      targetAudience: analysisResult?.targetAudience || campaignData.targetAudience,
-      brandTone: campaignData.brandTone,
+      companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
+      websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
+      objective: campaignData.objective || 'awareness',
+      product: campaignData.product || '',
+      targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
+      brandTone: campaignData.brandTone || 'professional',
       mindTrigger: campaignData.mindTriggers?.[platforms[0]], // Use first platform's trigger
       language: campaignData.language || 'english',
-      industry: analysisResult?.industry,
+      industry: campaignData.industry || analysisResult?.industry || '',
       platforms: platforms,
-      companyDescription: analysisResult?.companyDescription || campaignData.description,
+      companyDescription: campaignData.description || analysisResult?.companyDescription || '',
       differentials: analysisResult?.uniqueSellingPoints || []
     };
 
@@ -66,10 +66,11 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">Ad Generation Information</h3>
                 <div className="mt-2 text-sm text-blue-700">
-                  <p>Company: {analysisResult?.companyName || campaignData.name}</p>
-                  <p>Objective: {campaignData.objective}</p>
+                  <p>Company: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
+                  <p>Objective: {campaignData.objective || 'Not specified'}</p>
                   <p>Platforms: {platforms.join(', ')}</p>
-                  <p>Mind Trigger: {campaignData.mindTriggers?.[platforms[0]]}</p>
+                  <p>Mind Trigger: {campaignData.mindTriggers?.[platforms[0]] || 'None'}</p>
+                  <p>Target Audience: {campaignData.targetAudience || analysisResult?.targetAudience || 'Not specified'}</p>
                 </div>
               </div>
             </div>

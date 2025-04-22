@@ -9,8 +9,9 @@ interface CampaignData {
   platforms: string[];
   mindTriggers: Record<string, string>;
   targetUrl?: string;
+  companyName?: string; // Add companyName field
   budget?: number;
-  budgetType?: 'daily' | 'lifetime'; // Restrict to these literal types
+  budgetType?: 'daily' | 'lifetime';
   startDate?: string;
   endDate?: string;
   objective?: string;
@@ -20,6 +21,9 @@ interface CampaignData {
   country?: string;
   language?: string;
   optimizationFrequency?: string;
+  product?: string; // Add product field that might be used in ad generation
+  brandTone?: string; // Add brandTone field 
+  industry?: string; // Add industry field
 }
 
 export const useCampaignState = () => {
@@ -27,7 +31,8 @@ export const useCampaignState = () => {
     name: '',
     description: '',
     platforms: [] as string[],
-    mindTriggers: {} as Record<string, string>
+    mindTriggers: {} as Record<string, string>,
+    companyName: '' // Initialize companyName
   });
   
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);
