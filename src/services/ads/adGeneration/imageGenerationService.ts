@@ -41,18 +41,22 @@ export const generateAdImage = async (
       throw new Error("Prompt de imagem inválido: muito curto ou ausente");
     }
 
+    // Ensure format is properly set based on additionalInfo
     const format = additionalInfo?.format ||
       (additionalInfo?.adType === "instagram" ? "square" : "landscape");
     const adType = additionalInfo?.adType || "instagram";
-    const language = additionalInfo?.language || "portuguese"; // Forçar português por padrão
-
-    // Garante que o prompt está em português
-    const languagePrompt = language === "portuguese" && !prompt.toLowerCase().includes("português") ? 
-      `[GERAR EM PORTUGUÊS] ${prompt}` : prompt;
-
-    // Prompt enriquecido e contextualizado
+    const language = "português"; // Forçar português SEMPRE
+    
+    // Add Brazilian context keywords if not present 
+    let promptText = prompt;
+    if (!promptText.toLowerCase().includes("brasil") && 
+        !promptText.toLowerCase().includes("brasileir")) {
+      promptText += ", estética brasileira, estilo brasileiro";
+    }
+    
+    // Force Portuguese and prevent text
     const enhancedPrompt = `
-📌 Criação de Imagem para Anúncio ${adType.toUpperCase()} EM PORTUGUÊS
+📌 Criação de Imagem para Anúncio ${adType.toUpperCase()} EM PORTUGUÊS DO BRASIL
 
 Marca: ${additionalInfo?.companyName || 'empresa'}
 Setor: ${additionalInfo?.industry || 'setor não especificado'}
@@ -61,18 +65,25 @@ Tom de Voz: ${additionalInfo?.brandTone || 'profissional'}
 
 🎯 Objetivo: ${additionalInfo?.objective || 'conversão'}
 
-🧠 Instruções:
-- A imagem deve ser fotorrealista, sem texto (NO TEXT!) e de alta qualidade.
-- Alta qualidade visual, iluminação profissional.
+🧠 Instruções MANDATÓRIAS:
+- A imagem deve ser FOTORREALISTA, de ALTA QUALIDADE e PROFISSIONAL. *SEM TEXTO VISÍVEL*
+- ABSOLUTAMENTE NENHUM TEXTO na imagem - Nenhuma palavra, frase ou letra.
+- ZERO distorções nas faces ou corpos humanos.
+- Ambiente brasileiro, público brasileiro.
+- Iluminação profissional de estúdio.
 - Fundo limpo e moderno.
-- Sem distorções ou marcas d'água.
-- IMPORTANTE: CRIAR SOMENTE EM PORTUGUÊS BRASILEIRO!
+- Cores vivas e atraentes.
+- SEM marcas d'água ou artefatos.
+- IMPORTANTE: Criar imagem que funcionaria em ANÚNCIO REAL do Instagram.
 
-📥 Prompt do usuário:
-${languagePrompt}
+📥 Prompt para Imagem:
+${promptText}
+
+⚠️ LEMBRETE FINAL: Não incluir nenhum texto, palavra ou letra na imagem. A imagem deve ser completamente livre de qualquer texto.
 `;
 
-    console.log("🖼️ Enviando request para geração de imagem com prompt:", truncate(enhancedPrompt, 150));
+    console.log("🖼️ Enviando requisição para geração de imagem DALL-E 3:");
+    console.log(truncate(enhancedPrompt, 200));
 
     const requestBody = {
       prompt: enhancedPrompt,
@@ -81,6 +92,8 @@ ${languagePrompt}
         format,
         adType,
         language: "portuguese", // Garantir idioma português
+        model: "dall-e-3",
+        quality: "hd",
         industry: additionalInfo?.industry || '',
         brandName: additionalInfo?.companyName || '',
         companyDescription: additionalInfo?.companyDescription || '',
@@ -89,10 +102,39 @@ ${languagePrompt}
       }
     };
 
-    const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
-      body: requestBody,
-    });
-
+    // Make three attempts to generate if needed
+    let attempts = 0;
+    let maxAttempts = 2;
+    let data;
+    let error;
+    
+    while (attempts <= maxAttempts) {
+      attempts++;
+      console.log(`🔄 Tentativa ${attempts} de gerar imagem com DALL-E 3`);
+      
+      try {
+        const response = await supabase.functions.invoke('generate-image-gpt4o', {
+          body: requestBody,
+        });
+        
+        data = response.data;
+        error = response.error;
+        
+        if (!error && data?.success && data?.imageUrl) {
+          break; // Successfully got an image, exit the loop
+        } else {
+          console.warn(`⚠️ Tentativa ${attempts} falhou:`, error || "Resposta inválida");
+          
+          // Small delay before retry
+          if (attempts <= maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        }
+      } catch (attemptError) {
+        console.error(`❌ Erro na tentativa ${attempts}:`, attemptError);
+      }
+    }
+    
     if (error) {
       console.error("🚨 Erro na função Supabase:", error);
       throw new Error(error.message || "Erro ao chamar a função de geração de imagem.");

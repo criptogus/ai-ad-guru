@@ -8,6 +8,7 @@ interface ImageDisplayProps {
   onGenerateImage?: () => Promise<void>;
   imagePrompt?: string;
   format: "feed" | "story" | "reel";
+  onError?: () => void;
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
@@ -15,14 +16,39 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   altText,
   onGenerateImage,
   imagePrompt,
-  format
+  format,
+  onError
 }) => {
+  // Try to load a placeholder fallback if the main image fails
+  const [fallbackActive, setFallbackActive] = React.useState(false);
+  
+  // Safely construct a fallback URL with the alt text
+  const getFallbackUrl = () => {
+    const safeAltText = encodeURIComponent(altText.substring(0, 30) || "Imagem Instagram");
+    return `https://placehold.co/600x600?text=${safeAltText}`;
+  };
+  
+  const handleError = () => {
+    console.error("Instagram ad image failed to load:", imageUrl);
+    
+    // Only use fallback for the first error
+    if (!fallbackActive) {
+      setFallbackActive(true);
+      
+      // Also call the parent's error handler if provided
+      if (onError) {
+        onError();
+      }
+    }
+  };
+  
   return (
     <div className="relative w-full flex flex-col items-center justify-center">
       <img
-        src={imageUrl}
+        src={fallbackActive ? getFallbackUrl() : imageUrl}
         alt={altText}
         className={`object-cover rounded-lg shadow w-full h-auto ${format === "feed" ? "aspect-square" : "aspect-[9/16]"} max-h-96 border`}
+        onError={handleError}
       />
       {onGenerateImage && (
         <Button

@@ -24,30 +24,64 @@ const ImageContent: React.FC<ImageContentProps> = ({
   onGenerateImage = async () => {},
 }) => {
   const { imageUrl, imagePrompt } = ad;
+  const [imgError, setImgError] = React.useState(false);
   
-  // Log para debugging mais detalhado
+  // Debug logging
   React.useEffect(() => {
-    console.log(`ImageContent [${imageKey}]: Estado atual do anúncio:`, {
-      temUrl: !!imageUrl,
-      temPrompt: !!imagePrompt,
-      imageUrl: imageUrl?.substring(0, 30) + "...", 
+    console.log(`ImageContent [${imageKey}] Rendering:`, {
+      hasImageUrl: !!imageUrl,
+      imageUrl: imageUrl?.substring(0, 30) + "...",
+      hasImagePrompt: !!imagePrompt,
       isLoading,
       isUploading,
-      format
+      imgError
     });
-  }, [ad, imageKey, imageUrl, imagePrompt, isLoading, isUploading]);
+  }, [ad, imageKey, imageUrl, imagePrompt, isLoading, isUploading, imgError]);
   
-  // Constrói texto alternativo a partir dos dados do anúncio
+  // Constructs alternative text from ad data
   const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Imagem de Anúncio do Instagram";
   
-  // Estado de carregamento
+  // Handle image error state
+  const handleImageError = () => {
+    console.error(`Image failed to load: ${imageUrl}`);
+    setImgError(true);
+    
+    // This will trigger a new attempt to regenerate the image
+    if (onGenerateImage && imagePrompt) {
+      toast.error("Falha ao carregar imagem", {
+        description: "Tentaremos gerar uma nova imagem automaticamente"
+      });
+      
+      // Wait a short time before triggering regeneration
+      setTimeout(() => {
+        onGenerateImage().catch(err => {
+          console.error("Failed to regenerate image:", err);
+        });
+      }, 1000);
+    }
+  };
+  
+  // State of loading
   if (isLoading || isUploading) {
     return <ImageLoader format={format} />;
   }
   
-  // Imagem existe - verificação mais rigorosa da URL
-  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '' && imageUrl.startsWith('http')) {
-    console.log(`ImageContent [${imageKey}]: Renderizando imagem com URL válida: ${imageUrl.substring(0, 30)}...`);
+  // Image exists - stricter URL validation
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '' 
+      && (imageUrl.startsWith('http') || imageUrl.startsWith('data:image'))) {
+    console.log(`ImageContent [${imageKey}]: Displaying image with valid URL: ${imageUrl.substring(0, 30)}...`);
+    
+    if (imgError) {
+      // If we already tried loading this URL and it failed, show placeholder
+      return (
+        <ImagePlaceholder
+          hasPrompt={!!imagePrompt}
+          onGenerateImage={onGenerateImage}
+          text="Imagem anterior falhou. Clique para tentar novamente."
+        />
+      );
+    }
+    
     return (
       <ImageDisplay
         imageUrl={imageUrl}
@@ -55,6 +89,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
         onGenerateImage={onGenerateImage}
         imagePrompt={imagePrompt}
         format={format}
+        onError={handleImageError}
       />
     );
   }
@@ -80,7 +115,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
   
-  // Sem imagem ainda
+  // No image yet
   return (
     <ImagePlaceholder
       hasPrompt={!!imagePrompt}

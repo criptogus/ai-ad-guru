@@ -4,6 +4,7 @@ import { MetaAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { toast } from 'sonner';
 
+// Função para completar o texto e garantir pontuação final
 function ensureCompleteText(text: string): string {
   if (!text) return '';
   const trimmed = text.trim();
@@ -13,37 +14,39 @@ function ensureCompleteText(text: string): string {
   return withPunctuation.replace(/([.!?;:,])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
 }
 
-// Função melhorada para detectar texto em inglês
+// Função detalhada para detectar texto em inglês
 const hasEnglishText = (text: string) => {
   if (!text || typeof text !== 'string') return false;
   
-  // Lista expandida de palavras comuns em inglês que não deveriam aparecer
+  // Lista completa de palavras comuns em inglês que não deveriam aparecer
   const englishWords = [
     'the', 'your', 'quality', 'service', 'with', 'and', 'for', 'our',
     'you', 'we', 'business', 'transform', 'get', 'now', 'more', 'learn',
     'discover', 'solutions', 'best', 'from', 'about', 'how', 'innovate',
-    'transform', 'change', 'join', 'insights', 'professional'
+    'transform', 'change', 'join', 'insights', 'professional', 'services'
   ];
   
   // Verifica a presença de termos em inglês - mais rigoroso
   const textLower = text.toLowerCase();
-  let containsEnglish = false;
+  let englishWordFound = null;
   
   // Verifica se o texto tem palavras em inglês específicas
-  englishWords.forEach(word => {
+  for (const word of englishWords) {
     const regex = new RegExp(`\\b${word}\\b`, 'i');
     if (regex.test(textLower)) {
       console.warn(`⚠️ Palavra em inglês detectada: "${word}" no texto: "${truncate(textLower, 50)}"`);
-      containsEnglish = true;
+      englishWordFound = word;
+      break;
     }
-  });
+  }
   
-  // Verifica se NÃO contém caracteres acentuados (típicos do português)
+  // Verifica se NÃO contém caracteres acentuados típicos do português
   const containsPortugueseChars = /[áàâãéèêíìóòôõúùç]/i.test(textLower);
   
   // Se texto longo sem acentos e com palavras em inglês, provavelmente está em inglês
-  if (textLower.length > 20 && !containsPortugueseChars && containsEnglish) {
-    console.warn(`⚠️ Texto provavelmente em inglês: "${truncate(textLower, 50)}"`);
+  if ((textLower.length > 20 && !containsPortugueseChars && englishWordFound) || 
+      (englishWordFound && ['service', 'professional', 'business', 'transform'].includes(englishWordFound))) {
+    console.warn(`❌ Texto em inglês confirmado: "${truncate(textLower, 50)}"`);
     return true;
   }
   
@@ -54,6 +57,38 @@ const hasEnglishText = (text: string) => {
 const truncate = (str: string, max = 100) =>
   str && typeof str === 'string' ? (str.length > max ? str.substring(0, max) + "..." : str) : '[texto inválido]';
 
+// Função para verificar se o texto está completo e tem sentido
+function isIncompleteText(text: string): boolean {
+  if (!text || typeof text !== 'string') return true;
+  const trimmed = text.trim();
+  
+  // Verifica se o texto tem menos de 5 palavras
+  if (trimmed.split(/\s+/).length < 5) return true;
+  
+  // Verifica se o texto parece truncado (termina sem pontuação e a última palavra tem mais de 3 letras)
+  const lastWordMatch = trimmed.match(/(\S+)$/);
+  if (lastWordMatch && 
+      !trimmed.match(/[.!?;:]$/) && 
+      lastWordMatch[1].length > 3 &&
+      !trimmed.includes('...')) {
+    return true;
+  }
+  
+  // Verifica palavras truncadas (palavras com mais de 3 caracteres e menos de 5)
+  const words = trimmed.split(/\s+/);
+  for (const word of words) {
+    if (word.length > 3 && word.length < 5 && !word.match(/[.!?;:,]$/)) {
+      // Verifica se parece uma palavra completa em português
+      if (!['para', 'como', 'mais', 'novo', 'hoje', 'aqui', 'cada', 'muito', 'anos', 'pela', 'pelo'].includes(word.toLowerCase())) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Função principal para gerar anúncios Meta
 export const generateMetaAds = async (
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
@@ -61,17 +96,30 @@ export const generateMetaAds = async (
   try {
     console.log('Gerando anúncios Meta para:', campaignData.companyName);
     console.log('Usando mind trigger:', mindTrigger || 'Nenhum');
-    console.log('Idioma da campanha:', campaignData.language || 'português');
+    
+    // Dados adicionais para dar contexto mais específico
+    let productContext = '';
+    if (campaignData.industry) {
+      productContext = `Atua no setor de ${campaignData.industry}. `;
+    }
+    if (campaignData.product) {
+      productContext += `Oferece ${campaignData.product}. `;
+    }
+    
+    if (campaignData.targetAudience) {
+      productContext += `Público-alvo: ${campaignData.targetAudience}. `;
+    }
 
-    // Forçando idioma português para garantir consistência
+    // Forçando idioma português de modo explícito
     const updatedCampaignData = {
       ...campaignData,
-      language: 'pt_BR', // Formato mais explícito para APIs
-      languageName: 'português', // Nome explícito do idioma
-      forcePortuguese: true // Força português explicitamente
+      language: 'pt_BR',
+      languageName: 'português brasileiro',
+      forcePortuguese: true,
+      productContext
     };
 
-    console.log('Enviando requisição com idioma forçado:', updatedCampaignData.language);
+    console.log('Enviando requisição com contexto ampliado e idioma forçado:', updatedCampaignData.language);
 
     const { data, error } = await supabase.functions.invoke('generate-premium-ads', {
       body: {
@@ -81,9 +129,10 @@ export const generateMetaAds = async (
           mindTriggers: {
             meta: mindTrigger
           },
-          language: 'pt_BR', // Reforçando no nível mais externo
-          languagePreference: 'Português do Brasil', // Texto explícito
-          forcePortuguese: true, // Flag adicional
+          language: 'pt_BR',
+          languagePreference: 'Português do Brasil',
+          forcePortuguese: true,
+          instructions: "GERE APENAS EM PORTUGUÊS DO BRASIL. NADA EM INGLÊS."
         }
       },
     });
@@ -112,83 +161,97 @@ export const generateMetaAds = async (
       return null;
     }
 
-    // Validação aprimorada para garantir completude do anúncio
-    if (!data.data.every((ad: any) => ad.headline && (ad.primaryText || ad.text) && ad.imagePrompt)) {
-      console.warn("Alguns anúncios gerados estão incompletos:", data.data);
-      toast.warning("Atenção: Alguns anúncios podem estar incompletos", {
-        description: "Revise os campos dos anúncios antes de publicar."
+    // Validação aprimorada para garantir completude e qualidade do anúncio
+    const validatedAds = data.data.filter((ad: any) => {
+      // Verifica se tem todos os campos necessários
+      const hasRequiredFields = ad.headline && (ad.primaryText || ad.text) && ad.imagePrompt;
+      
+      if (!hasRequiredFields) {
+        console.warn("❌ Anúncio rejeitado por campos incompletos:", ad);
+        return false;
+      }
+      
+      // Verifica se o texto está em português
+      const primaryText = ad.primaryText || ad.text || '';
+      const headline = ad.headline || '';
+      
+      if (hasEnglishText(headline) || hasEnglishText(primaryText)) {
+        console.warn("❌ Anúncio rejeitado por texto em inglês:", ad);
+        return false;
+      }
+      
+      // Verifica se o texto está truncado ou incompleto
+      if (isIncompleteText(primaryText) || isIncompleteText(headline)) {
+        console.warn("❌ Anúncio rejeitado por texto incompleto:", ad);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    if (validatedAds.length === 0) {
+      console.error("❌ Todos os anúncios foram rejeitados pelos critérios de qualidade");
+      toast.error("Falha na geração dos anúncios", {
+        description: "Os anúncios gerados não atenderam aos critérios mínimos de qualidade"
       });
+      return null;
     }
 
-    const metaAds = data.data.map((ad: any) => {
-      // Verifica se o texto está em inglês e tenta corrigi-lo
-      const originalText = ad.primaryText || ad.text || '';
-      let primaryText = ensureCompleteText(originalText);
+    const metaAds = validatedAds.map((ad: any) => {
+      // Aplicar correções finais de formatação
+      let primaryText = ensureCompleteText(ad.primaryText || ad.text || '');
       let headline = ensureCompleteText(ad.headline || '');
       
-      // Verificações de idioma mais rigorosas
-      if (hasEnglishText(headline) || hasEnglishText(primaryText)) {
-        console.warn('⚠️ Texto em inglês detectado no anúncio. Tentando aplicar correções.');
-        
-        // Logging detalhado
-        console.warn({
-          headline_original: headline,
-          primaryText_original: truncate(primaryText, 100),
-          containsEnglish: true
-        });
-        
-        // Tenta traduzir manualmente termos comuns (abordagem de emergência)
-        headline = headline
-          .replace(/transform/gi, 'transforme')
-          .replace(/discover/gi, 'descubra')
-          .replace(/service/gi, 'serviço')
-          .replace(/quality/gi, 'qualidade')
-          .replace(/professional/gi, 'profissional')
-          .replace(/business/gi, 'negócio')
-          .replace(/learn/gi, 'aprenda')
-          .replace(/join/gi, 'participe')
-          .replace(/insights/gi, 'insights');
-          
+      // Evitar hashtags genéricas
+      if (primaryText.includes('#profissional') || primaryText.includes('#serviço')) {
         primaryText = primaryText
-          .replace(/transform/gi, 'transforme')
-          .replace(/discover/gi, 'descubra')
-          .replace(/service/gi, 'serviço')
-          .replace(/quality/gi, 'qualidade')
-          .replace(/professional/gi, 'profissional')
-          .replace(/business/gi, 'negócio')
-          .replace(/learn/gi, 'aprenda')
-          .replace(/join/gi, 'participe')
-          .replace(/insights/gi, 'insights');
-        
-        // Aviso para o usuário
-        toast.warning('Conteúdo em inglês detectado', {
-          description: 'Alguns textos dos anúncios podem não estar em português.'
-        });
+          .replace(/#profissional/g, '')
+          .replace(/#serviço/g, '')
+          .replace(/#service/g, '')
+          .replace(/  +/g, ' ');
       }
 
-      // Melhora o prompt de imagem para evitar texto na imagem
+      // Garantir que o prompt da imagem evita texto
       let imagePrompt = ad.imagePrompt ?? ad.image_prompt ?? '[FALHA AO GERAR PROMPT DE IMAGEM]';
+      
+      // Sempre adicionar instrução SANS TEXT ao prompt
       if (!imagePrompt.toLowerCase().includes('sem texto') && 
           !imagePrompt.toLowerCase().includes('no text')) {
-        imagePrompt += ' (sem incluir nenhum texto ou palavras na imagem, apenas elementos visuais)';
+        imagePrompt += ' (SEM INCLUIR NENHUM TEXTO OU PALAVRAS NA IMAGEM, APENAS ELEMENTOS VISUAIS)';
+      }
+      
+      // Adicionar contexto brasileiro ao prompt de imagem
+      if (!imagePrompt.toLowerCase().includes('brasil') && 
+          !imagePrompt.toLowerCase().includes('público brasileiro')) {
+        imagePrompt += ' Aparecem pessoas brasileiras no contexto brasileiro.';
       }
 
       return {
         headline: headline,
         primaryText: primaryText,
-        description: ensureCompleteText(ad.description || ''),
+        description: ensureCompleteText(ad.description || ad.callToAction || 'Saiba Mais'),
         imagePrompt: imagePrompt,
         callToAction: ad.callToAction ?? 'Saiba Mais',
         format: ad.format ?? 'feed',
         isComplete: true,
-        imageUrl: ad.imageUrl || '', // Adiciona suporte para URL da imagem
+        imageUrl: ad.imageUrl || ''
       };
     });
 
-    console.log('Anúncios Meta gerados com sucesso:', metaAds.length);
-    console.log('Exemplo de anúncio gerado:', JSON.stringify(metaAds[0], null, 2));
+    console.log('Anúncios Meta gerados e validados com sucesso:', metaAds.length);
+    console.log('Exemplo de anúncio validado:', JSON.stringify(metaAds[0], null, 2));
     
-    return metaAds;
+    // Criar placeholder para imagens (para não depender da geração posterior)
+    const metaAdsWithPlaceholders = metaAds.map((ad, index) => {
+      if (!ad.imageUrl) {
+        // Create a safe placeholder URL based on company name
+        const safeCompanyName = encodeURIComponent(campaignData.companyName || 'Ad');
+        ad.imageUrl = `https://placehold.co/600x600?text=${safeCompanyName}+${index+1}`;
+      }
+      return ad;
+    });
+    
+    return metaAdsWithPlaceholders;
   } catch (error) {
     console.error('Erro em generateMetaAds:', error);
     toast.error('Erro ao gerar anúncios Meta', {
