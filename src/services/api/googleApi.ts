@@ -45,10 +45,41 @@ export const generateGoogleAds = async (
     // Validate response data structure
     if (!data.data || !Array.isArray(data.data)) {
       console.error('Invalid response format from generate-ads:', data);
+      
+      // Try to parse if string was returned
+      if (typeof data.data === 'string') {
+        try {
+          const parsedData = JSON.parse(data.data);
+          console.log('Successfully parsed string response to JSON:', parsedData);
+          
+          if (Array.isArray(parsedData)) {
+            // Ensure all required fields are present
+            const validatedAds = parsedData.map((ad: any) => ({
+              headline1: ad.headline_1 || ad.headline1 || '',
+              headline2: ad.headline_2 || ad.headline2 || '',
+              headline3: ad.headline_3 || ad.headline3 || '',
+              description1: ad.description_1 || ad.description1 || '',
+              description2: ad.description_2 || ad.description2 || '',
+              displayPath: ad.display_url || ad.displayPath || 'example.com',
+              path1: ad.path1 || '',
+              path2: ad.path2 || '',
+              siteLinks: ad.siteLinks || [],
+            }));
+            
+            console.log('🧪 Validated Google ads:', validatedAds);
+            return validatedAds as GoogleAd[];
+          }
+        } catch (parseError) {
+          console.error('Failed to parse string response as JSON:', parseError);
+          return null;
+        }
+      }
+      
       return null;
     }
 
     console.log('Google ads generated successfully:', data.data);
+    console.log('🧪 First ad sample:', data.data[0]);
     
     // Ensure all required fields are present
     const validatedAds = data.data.map((ad: any) => ({
@@ -63,6 +94,7 @@ export const generateGoogleAds = async (
       siteLinks: ad.siteLinks || [],
     }));
     
+    console.log('🧪 Validated Google ads:', validatedAds);
     return validatedAds as GoogleAd[];
   } catch (error) {
     console.error('Error in generateGoogleAds:', error);

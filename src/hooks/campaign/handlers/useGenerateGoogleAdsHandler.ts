@@ -42,9 +42,16 @@ export const useGenerateGoogleAdsHandler = ({
         description: `Generating Google Ads will use ${creditCost} credits from your account.`,
       });
       
+      // Generate ads
       const ads = await generateGoogleAds(analysisResult);
       
+      // Log the response for debugging
+      console.log("🧪 Ads received from API:", ads);
+      
       if (ads && ads.length > 0) {
+        // Log first ad for detailed debugging
+        console.log("🧪 First ad sample:", ads[0]);
+        
         setGoogleAds(ads);
         
         // Deduct credits and notify
