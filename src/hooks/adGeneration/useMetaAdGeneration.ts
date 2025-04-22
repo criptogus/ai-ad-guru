@@ -46,7 +46,8 @@ export const useMetaAdGeneration = (props?: MetaAdGenerationProps) => {
         differentials: data.differentials || [],
         product: data.product || '',
         industry: data.industry || '',
-        mindTrigger: data.mindTrigger || ''
+        mindTrigger: data.mindTrigger || '',
+        platforms: ['meta', 'instagram']
       };
       
       // Generate ads using the service

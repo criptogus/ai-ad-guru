@@ -1,163 +1,47 @@
 
-import { errorLogger } from '@/services/libs/error-handling';
-import { supabase } from '@/integrations/supabase/client';
-import { CampaignPromptData, GeneratedAdContent } from './types/promptTypes';
-import { buildAdGenerationPrompt } from './promptBuilder';
+import { CampaignPromptData, GeneratedAdContent, PromptMessages } from "./types/promptTypes";
+import { buildAdGenerationPrompt } from "./promptBuilder";
+import { supabase } from "@/integrations/supabase/client";
 
-export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAdContent | null> => {
+/**
+ * Generates ad content for multiple platforms based on campaign data
+ * @param campaignData Campaign information used to generate the ads
+ * @returns Generated ad content for Google, Instagram, LinkedIn and Microsoft ads
+ */
+export const generateAds = async (campaignData: CampaignPromptData): Promise<GeneratedAdContent | null> => {
   try {
-    console.log('Generating ads with data:', JSON.stringify(data, null, 2));
+    // Build the prompt for OpenAI
+    const { systemMessage, userMessage } = buildAdGenerationPrompt(campaignData);
     
-    // Build a detailed prompt using the provided template structure
-    const { systemMessage, userMessage } = buildAdGenerationPrompt(data);
+    console.log("Generating ads with system message:", systemMessage.substring(0, 100) + "...");
+    console.log("And user message:", userMessage.substring(0, 100) + "...");
     
-    console.log('System message for OpenAI:', systemMessage.substring(0, 150) + '...');
-    console.log('User message for OpenAI:', userMessage.substring(0, 150) + '...');
-    
-    // Call the Supabase function to generate ads with the new prompt structure
-    const { data: response, error } = await supabase.functions.invoke('generate-ads', {
+    // Call the Supabase edge function to generate ads
+    const { data, error } = await supabase.functions.invoke("generate-ads", {
       body: {
         systemMessage,
         userMessage,
-        language: data.language || 'portuguese',
-        temperature: 0.7  // Slightly lower temperature for more consistent results
+        language: campaignData.language || "portuguese",
+        temperature: 0.7
       }
     });
     
     if (error) {
-      console.error('Error generating ads:', error);
-      errorLogger.logError(error, 'generateAds');
-      return null;
+      console.error("Error calling generate-ads function:", error);
+      throw new Error(`Failed to generate ads: ${error.message}`);
     }
     
-    if (!response?.success || !response?.content) {
-      console.error('Ad generation failed:', response?.error || 'No content generated');
-      
-      // For debugging: if there's a raw content, log it
-      if (response?.rawContent) {
-        console.log('Raw content from OpenAI:', response.rawContent);
-      }
-      
-      return null;
+    if (!data || !data.success) {
+      console.error("No data returned or generation failed:", data);
+      throw new Error("Failed to generate ads: No valid response from API");
     }
     
-    // Log the received content for debugging
-    console.log('Successfully generated ads, sample:', JSON.stringify(response.content).substring(0, 300) + '...');
+    console.log("Generated ad content:", data);
     
-    // Validate the generated content to ensure it meets requirements
-    const validationResult = validateGeneratedContent(response.content, data);
-    
-    if (!validationResult.isValid) {
-      console.error('Generated content validation failed:', validationResult.reason);
-      return null;
-    }
-    
-    return response.content;
+    // Return the content from the response
+    return data.content as GeneratedAdContent;
   } catch (error) {
-    errorLogger.logError(error, 'generateAds');
-    return null;
+    console.error("Error in generateAds:", error);
+    throw error;
   }
-};
-
-interface ValidationResult {
-  isValid: boolean;
-  reason?: string;
-}
-
-const validateGeneratedContent = (content: any, campaignData: CampaignPromptData): ValidationResult => {
-  // Check that we have at least one platform's ads
-  const hasGoogleAds = Array.isArray(content.google_ads) && content.google_ads.length > 0;
-  const hasInstagramAds = Array.isArray(content.instagram_ads) && content.instagram_ads.length > 0;
-  const hasLinkedInAds = Array.isArray(content.linkedin_ads) && content.linkedin_ads.length > 0;
-  const hasMicrosoftAds = Array.isArray(content.microsoft_ads) && content.microsoft_ads.length > 0;
-  
-  if (!hasGoogleAds && !hasInstagramAds && !hasLinkedInAds && !hasMicrosoftAds) {
-    return {
-      isValid: false,
-      reason: 'No valid ad content found in the response'
-    };
-  }
-  
-  const language = campaignData.language || 'portuguese';
-  const companyName = campaignData.companyName || '';
-  
-  // Check for common placeholders and generic text
-  const contentJson = JSON.stringify(content).toLowerCase();
-  const genericTerms = [
-    'example', 'exemplo', 'placeholder', 'sample', 'amostra', 
-    'your company', 'sua empresa', 'your business', 'seu negócio',
-    'company name', 'nome da empresa', 'click here', 'clique aqui'
-  ];
-  
-  for (const term of genericTerms) {
-    if (contentJson.includes(term.toLowerCase())) {
-      return {
-        isValid: false,
-        reason: `Generated content contains generic placeholder: "${term}"`
-      };
-    }
-  }
-  
-  // Check that company name is actually used in the content
-  if (!contentJson.toLowerCase().includes(companyName.toLowerCase()) && companyName.length > 0) {
-    return {
-      isValid: false,
-      reason: `Generated content does not mention company name "${companyName}"`
-    };
-  }
-
-  // Check for language consistency based on specified language
-  // For Portuguese content: Check for common English words that shouldn't be there
-  if (language.toLowerCase().includes('portuguese') || language.toLowerCase().includes('português')) {
-    const englishWords = ['your', 'business', 'product', 'service', 'professional', 'image for', 'get', 'now', 'free', 'today'];
-    for (const word of englishWords) {
-      // Use word boundary to avoid partial matches
-      const regex = new RegExp(`\\b${word}\\b`, 'i');
-      if (regex.test(contentJson)) {
-        return {
-          isValid: false,
-          reason: `English word "${word}" found in Portuguese ad content`
-        };
-      }
-    }
-  }
-
-  // For English content: Check for common Portuguese words
-  if (language.toLowerCase().includes('english') || language.toLowerCase() === 'inglês') {
-    const portugueseWords = ['empresa', 'negócio', 'produto', 'serviço', 'profissional', 'imagem para', 'agora', 'grátis', 'hoje'];
-    for (const word of portugueseWords) {
-      // Use word boundary to avoid partial matches
-      const regex = new RegExp(`\\b${word}\\b`, 'i');
-      if (regex.test(contentJson)) {
-        return {
-          isValid: false,
-          reason: `Portuguese word "${word}" found in English ad content`
-        };
-      }
-    }
-  }
-
-  // Check image prompts for quality
-  const imagePrompts = [
-    ...(content.instagram_ads || []).map((ad: any) => ad.image_prompt || ''),
-    ...(content.linkedin_ads || []).map((ad: any) => ad.image_prompt || '')
-  ].filter(prompt => prompt.length > 0);
-  
-  for (const prompt of imagePrompts) {
-    if (prompt.length < 30) {
-      return {
-        isValid: false,
-        reason: `Image prompt too short: "${prompt}"`
-      };
-    }
-    
-    if (!prompt.toLowerCase().includes(companyName.toLowerCase()) && companyName.length > 0) {
-      return {
-        isValid: false,
-        reason: `Image prompt does not reference the company context: "${prompt}"`
-      };
-    }
-  }
-
-  return { isValid: true };
 };
