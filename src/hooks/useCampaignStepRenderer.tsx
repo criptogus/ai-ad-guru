@@ -121,6 +121,7 @@ const useCampaignStepRenderer = ({
             campaignData={campaignData}
             onAdsGenerated={handleAdsGenerated}
             platforms={campaignData.platforms || []}
+            onNext={() => handleNextWrapper()}
           />
         );
       case 6:

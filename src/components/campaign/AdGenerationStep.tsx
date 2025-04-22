@@ -7,19 +7,22 @@ import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
 import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
 import { CampaignData } from '@/hooks/useCampaignState';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AdGenerationStepProps {
   analysisResult: any;
   campaignData: CampaignData;
   onAdsGenerated: (ads: Record<string, any[]>) => void;
   platforms: string[];
+  onNext?: () => void;
 }
 
 export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   analysisResult,
   campaignData,
   onAdsGenerated,
-  platforms
+  platforms,
+  onNext
 }) => {
   const { generateCampaignAds, isGenerating } = useAdGenerationFlow();
   const { toast } = useToast();
@@ -90,6 +93,13 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           title: "Ad Variations Generated!",
           description: `Created ads for: ${Object.keys(results).join(", ")}`
         });
+        
+        // Automatically move to the next step after successful generation
+        if (onNext) {
+          setTimeout(() => {
+            onNext();
+          }, 1000); // Short delay to allow user to see the success message
+        }
       } else {
         toast({
           variant: "destructive",
