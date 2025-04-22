@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   generateGoogleAds, 
@@ -114,38 +115,85 @@ serve(async (req) => {
 // Function to generate content from OpenAI prompts
 async function generateFromPrompt(systemMessage: string, userMessage: string) {
   try {
-    // Placeholder for actual OpenAI integration
-    // For demo purposes, return mock data
-    return {
-      google_ads: [
-        {
-          headline_1: "Drive Results with Us",
-          headline_2: "Professional Solutions",
-          headline_3: "Expert Service",
-          description_1: "We provide top-quality service that meets your needs.",
-          description_2: "Contact us today to learn more.",
-          display_url: "example.com"
-        },
-        {
-          headline_1: "Premium Solutions",
-          headline_2: "Exceptional Quality",
-          headline_3: "Best Value",
-          description_1: "Find the perfect solution for your business needs.",
-          description_2: "Trusted by thousands of customers.",
-          display_url: "example.com"
-        }
+    // Better approach to handle OpenAI response
+    console.log("Generating content from prompts");
+    
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      console.log("No OpenAI API key found, returning mock data");
+      return {
+        google_ads: [
+          {
+            headline_1: "Drive Results with Us",
+            headline_2: "Professional Solutions",
+            headline_3: "Expert Service",
+            description_1: "We provide top-quality service that meets your needs.",
+            description_2: "Contact us today to learn more.",
+            display_url: "example.com"
+          },
+          {
+            headline_1: "Premium Solutions",
+            headline_2: "Exceptional Quality",
+            headline_3: "Best Value",
+            description_1: "Find the perfect solution for your business needs.",
+            description_2: "Trusted by thousands of customers.",
+            display_url: "example.com"
+          }
+        ],
+        instagram_ads: [
+          {
+            text: "Transform your experience with our innovative solutions. #innovation #quality",
+            image_prompt: "Professional product display with elegant modern styling"
+          },
+          {
+            text: "Discover what makes us different. Quality you can trust. #trusted #reliable",
+            image_prompt: "Lifestyle image showing product in use in a modern setting"
+          }
+        ]
+      };
+    }
+    
+    const openai = getOpenAIClient();
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: userMessage }
       ],
-      instagram_ads: [
-        {
-          text: "Transform your experience with our innovative solutions. #innovation #quality",
-          image_prompt: "Professional product display with elegant modern styling"
-        },
-        {
-          text: "Discover what makes us different. Quality you can trust. #trusted #reliable",
-          image_prompt: "Lifestyle image showing product in use in a modern setting"
-        }
-      ]
-    };
+      temperature: 0.7,
+      max_tokens: 1500
+    });
+    
+    const content = response.choices[0].message.content;
+    console.log("OpenAI response received, parsing JSON");
+    
+    try {
+      // Try to parse the response as JSON
+      return JSON.parse(content || "{}");
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response as JSON:", parseError);
+      console.log("Raw response:", content);
+      
+      // Return a fallback structure
+      return {
+        google_ads: [
+          {
+            headline_1: "Drive Results with Us",
+            headline_2: "Professional Solutions",
+            headline_3: "Expert Service",
+            description_1: "We provide top-quality service that meets your needs.",
+            description_2: "Contact us today to learn more.",
+            display_url: "example.com"
+          }
+        ],
+        instagram_ads: [
+          {
+            text: "Transform your experience with our innovative solutions. #innovation #quality",
+            image_prompt: "Professional product display with elegant modern styling"
+          }
+        ]
+      };
+    }
   } catch (error) {
     console.error("Error generating content from prompt:", error);
     throw error;

@@ -80,6 +80,7 @@ async function callOpenAI(prompt: string): Promise<string> {
       max_tokens: 1000
     });
     
+    console.log("OpenAI response received, content length:", response.choices[0].message.content?.length || 0);
     return response.choices[0].message.content || "";
   } catch (error) {
     console.error("Error calling OpenAI:", error);
