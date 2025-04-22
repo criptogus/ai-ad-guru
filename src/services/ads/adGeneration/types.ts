@@ -1,3 +1,4 @@
+
 export interface CampaignPromptData {
   companyName: string;
   websiteUrl: string;
@@ -47,4 +48,6 @@ export interface ImageGenerationParams {
   companyName: string;
   brandTone?: string;
   industry?: string;
+  targetAudience?: string;
+  language?: string;
 }
