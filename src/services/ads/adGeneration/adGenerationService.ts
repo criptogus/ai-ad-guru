@@ -1,3 +1,4 @@
+
 import { errorLogger } from '@/services/libs/error-handling';
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPromptData, GeneratedAdContent } from './types/promptTypes';
