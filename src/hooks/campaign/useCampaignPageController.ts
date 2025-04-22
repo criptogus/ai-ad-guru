@@ -63,6 +63,7 @@ export const useCampaignPageController = () => {
 
   const { createCampaign } = useCampaignCreation();
 
+  // Fix: Remove the argument when calling useImageGenerationHandler
   const { 
     handleGenerateImage, 
     loadingImageIndex 
