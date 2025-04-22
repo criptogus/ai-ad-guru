@@ -1,5 +1,25 @@
 
 project_id = "svnockyhgohttzgbgydo"
 
-[functions.generate-image]
-verify_jwt = true
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[functions]
+enabled = true
+
+[functions.generate-ads]
+verify_jwt = false
+
+[functions.generate-image-gpt4o]
+verify_jwt = false

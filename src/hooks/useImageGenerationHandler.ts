@@ -25,30 +25,41 @@ export const useImageGenerationHandler = ({
 
   const handleGenerateImage = async (ad: MetaAd, index: number) => {
     if (!ad.imagePrompt) {
-      toast.error("Descrição da imagem ausente");
+      toast.error("Image prompt is missing", {
+        description: "Please provide a description for the image you want to generate"
+      });
       return;
     }
     
     setLoadingImageIndex(index);
     
     try {
+      // Determine which platform we're generating for
       const platform: AdPlatform = campaignData?.platforms?.includes('meta') ? 'meta' : 'linkedin';
       
       // Convert the ad format to our generation format
       const adFormat = (ad.format || 'square') as AdFormat;
-      const format = formatMapping[adFormat];
+      const format = formatMapping[adFormat] || 'square';
       
-      const imageUrl = await generateAdImage(ad.imagePrompt, {
+      // Add campaign context to the prompt for better results
+      const enhancedPrompt = `${ad.imagePrompt}
+Brand: ${campaignData?.name || campaignData?.companyName || ''}
+Industry: ${campaignData?.industry || ''}
+Target audience: ${campaignData?.targetAudience || ''}`;
+      
+      // Generate the image
+      const imageUrl = await generateAdImage(enhancedPrompt, {
         platform,
         format,
-        companyName: campaignData?.name || '',
+        companyName: campaignData?.name || campaignData?.companyName || '',
         brandTone: campaignData?.brandTone || 'professional',
         industry: campaignData?.industry || ''
       });
       
       if (imageUrl) {
-        toast.success("Imagem gerada com sucesso!");
+        toast.success("Image generated successfully");
         
+        // Update the appropriate ad array
         if (platform === 'meta' && metaAds[index]) {
           const updatedAds = [...metaAds];
           updatedAds[index] = { ...updatedAds[index], imageUrl };
@@ -58,11 +69,13 @@ export const useImageGenerationHandler = ({
           updatedAds[index] = { ...updatedAds[index], imageUrl };
           setLinkedInAds(updatedAds);
         }
+      } else {
+        throw new Error("Failed to generate image: No image URL returned");
       }
     } catch (error) {
       console.error("Error generating image:", error);
-      toast.error("Falha ao gerar imagem", {
-        description: error instanceof Error ? error.message : "Erro desconhecido"
+      toast.error("Failed to generate image", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
       });
     } finally {
       setLoadingImageIndex(null);

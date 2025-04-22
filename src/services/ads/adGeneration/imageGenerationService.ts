@@ -1,75 +1,72 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { buildImagePrompt } from "./imagePromptBuilder";
-import { AdFormat, formatDimensions } from "@/types/adFormats";
-
-export interface ImageGenerationParams {
-  platform: 'instagram' | 'facebook' | 'linkedin' | 'google' | 'meta';
-  format: AdFormat;
-  prompt: string;
-  companyName: string;
-  brandTone?: string;
-  industry?: string;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { ImageGenerationParams } from './types';
+import { toast } from 'sonner';
 
 /**
- * Generates an image for ads based on prompt and additional context
- * @param prompt The base image description
- * @param additionalInfo Additional context like platform, format, etc.
- * @returns URL of the generated image
+ * Generates an image for an ad using AI
+ * 
+ * @param prompt The text prompt describing the image to generate
+ * @param params Additional parameters for image generation
+ * @returns The URL of the generated image or null if generation fails
  */
 export const generateAdImage = async (
-  prompt: string, 
-  additionalInfo?: Partial<ImageGenerationParams>
+  prompt: string,
+  params: Partial<ImageGenerationParams> = {}
 ): Promise<string | null> => {
   try {
-    if (!prompt) {
-      throw new Error("Image prompt is required");
-    }
+    console.log('Generating ad image with prompt:', prompt);
     
-    // Extract parameters or use defaults
-    const platform = additionalInfo?.platform || 'instagram';
-    const format = additionalInfo?.format || 'square';
-    const companyName = additionalInfo?.companyName || 'Your Company';
-    const brandTone = additionalInfo?.brandTone || 'professional';
-    
-    // Build the enhanced prompt
-    const enhancedPrompt = buildImagePrompt({
-      brandName: companyName,
-      productService: additionalInfo?.industry || "services",
-      campaignObjective: "brand awareness",
-      targetAudience: "business professionals",
-      tone: brandTone,
-      platform: platform,
-      format: format,
-      mentalTrigger: "trust"
+    // Call the Supabase edge function to generate the image
+    const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
+      body: { 
+        imagePrompt: prompt,
+        platform: params.platform || 'meta',
+        format: params.format || 'square',
+        adContext: {
+          brandName: params.companyName,
+          industry: params.industry,
+          brandTone: params.brandTone
+        }
+      },
     });
-    
-    console.log("Generating image with prompt:", enhancedPrompt.substring(0, 100) + "...");
-    
-    // Call the OpenAI image generation function
-    const { data, error } = await supabase.functions.invoke("generate-image", {
-      body: {
-        prompt: enhancedPrompt,
-        size: `${formatDimensions[format].width}x${formatDimensions[format].height}`
-      }
-    });
-    
+
     if (error) {
-      console.error("Error calling generate-image function:", error);
-      throw new Error(`Failed to generate image: ${error.message}`);
+      console.error('Error generating image:', error);
+      toast.error('Failed to generate image', { 
+        description: error.message || 'Unknown error'
+      });
+      return null;
     }
-    
-    if (!data || !data.imageUrl) {
-      console.error("No image URL returned:", data);
-      throw new Error("Failed to generate image: No URL returned");
+
+    if (!data || !data.success || !data.imageUrl) {
+      console.error('Image generation failed:', data?.error || 'Unknown error');
+      toast.error('Image generation failed', { 
+        description: data?.error || 'Failed to generate image'
+      });
+      return null;
     }
-    
-    console.log("Generated image URL:", data.imageUrl);
-    
+
+    console.log('Image generated successfully:', data.imageUrl.substring(0, 50) + '...');
     return data.imageUrl;
   } catch (error) {
-    console.error("Error in generateAdImage:", error);
-    throw error;
+    console.error('Error in generateAdImage:', error);
+    toast.error('Error generating image', {
+      description: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
+    return null;
   }
+};
+
+/**
+ * Builds an image prompt with enhanced context
+ * This keeps compatibility with existing code
+ */
+export const buildImagePrompt = (
+  basePrompt: string,
+  additionalContext: Record<string, any> = {}
+): string => {
+  // Simply return the base prompt with any additional context
+  // The actual enhancement will happen in the edge function
+  return basePrompt;
 };

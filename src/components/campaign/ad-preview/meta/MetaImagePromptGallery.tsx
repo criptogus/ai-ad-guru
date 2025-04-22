@@ -57,7 +57,7 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
     <Card>
       <CardContent className="p-4 space-y-4">
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Prompt de Imagem:</h3>
+          <h3 className="text-sm font-medium">Image Prompt:</h3>
           <p className="text-sm text-muted-foreground">{ad.imagePrompt}</p>
         </div>
         
@@ -70,12 +70,12 @@ const MetaImagePromptGallery: React.FC<MetaImagePromptGalleryProps> = ({
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Gerando Imagem...
+              Generating Image...
             </>
           ) : (
             <>
               <ImageIcon className="mr-2 h-4 w-4" />
-              Gerar Imagem
+              Generate Image
             </>
           )}
         </Button>
