@@ -2,17 +2,17 @@
 import React from "react";
 
 export interface ImageLoaderProps {
-  viewType?: "feed" | "story" | "reel";
+  format?: "feed" | "story" | "reel";
   text?: string;
 }
 
 const ImageLoader: React.FC<ImageLoaderProps> = ({ 
-  viewType = "feed",
+  format = "feed",
   text = "Generating image..." 
 }) => {
   return (
     <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${
-      viewType === "feed" ? "aspect-square" : viewType === "story" ? "aspect-[9/16]" : "aspect-[9/16]"
+      format === "feed" ? "aspect-square" : format === "story" ? "aspect-[9/16]" : "aspect-[9/16]"
     }`}>
       <div className="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
         <svg

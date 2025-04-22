@@ -5,6 +5,7 @@ import { Loader2, Image, RefreshCw } from "lucide-react";
 
 interface ImageDisplayProps {
   imageUrl: string;
+  altText?: string;
   alt?: string;
   isLoading?: boolean;
   onGenerateImage?: () => Promise<void>;
@@ -15,6 +16,7 @@ interface ImageDisplayProps {
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   imageUrl,
   alt = "Imagem do anúncio do Instagram",
+  altText, // New prop, used as fallback for alt
   isLoading = false,
   onGenerateImage,
   imagePrompt,
@@ -23,6 +25,9 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   const [imgSrc, setImgSrc] = useState<string | null>(imageUrl || null);
   const [imgError, setImgError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+
+  // Use altText if provided, otherwise fall back to alt
+  const imageAlt = altText || alt;
 
   // Reset error state and set up image source when imageUrl changes
   useEffect(() => {
@@ -133,7 +138,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       <div className="relative w-full h-full">
         <img
           src={imgSrc}
-          alt={alt}
+          alt={imageAlt}
           className="w-full h-full object-cover"
           onError={handleImageError}
           loading="eager"
