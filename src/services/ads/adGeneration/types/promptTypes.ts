@@ -12,6 +12,8 @@ export interface CampaignPromptData {
   platforms?: string[];
   companyDescription?: string;
   differentials?: string[];
+  callToAction?: string | string[];
+  keywords?: string | string[];
   [key: string]: any;
 }
 

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   generateGoogleAds, 
@@ -34,9 +33,9 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { platform, campaignData, mindTrigger, systemMessage, userMessage } = await req.json();
+    const { platform, campaignData, mindTrigger, systemMessage, userMessage, platforms } = await req.json();
     
-    console.log("Generating ads for platform:", platform);
+    console.log("Generating ads for platform:", platform || platforms);
     
     // If we have systemMessage and userMessage, use the prompt-based generation
     if (systemMessage && userMessage) {
@@ -54,13 +53,22 @@ serve(async (req) => {
       throw new Error("Missing campaign data");
     }
     
+    // Log detailed context information
+    console.log("Campaign data context:", JSON.stringify({
+      companyName: campaignData.companyName,
+      objective: campaignData.objective,
+      targetAudience: campaignData.targetAudience,
+      industry: campaignData.industry,
+      mindTrigger: mindTrigger || campaignData.mindTrigger
+    }, null, 2));
+    
     let result;
     
     // Generate ads based on the platform
     switch (platform) {
       case "google":
         try {
-          result = await generateGoogleAds(campaignData, mindTrigger);
+          result = await generateGoogleAds(campaignData, mindTrigger || campaignData.mindTrigger);
         } catch (error) {
           console.error("Error generating Google ads, using fallback:", error);
           result = JSON.stringify(generateFallbackGoogleAds(campaignData));
@@ -68,7 +76,7 @@ serve(async (req) => {
         break;
       case "linkedin":
         try {
-          result = await generateLinkedInAds(campaignData, mindTrigger);
+          result = await generateLinkedInAds(campaignData, mindTrigger || campaignData.mindTrigger);
         } catch (error) {
           console.error("Error generating LinkedIn ads, using fallback:", error);
           result = JSON.stringify(generateFallbackLinkedInAds(campaignData));
@@ -76,7 +84,7 @@ serve(async (req) => {
         break;
       case "microsoft":
         try {
-          result = await generateMicrosoftAds(campaignData, mindTrigger);
+          result = await generateMicrosoftAds(campaignData, mindTrigger || campaignData.mindTrigger);
         } catch (error) {
           console.error("Error generating Microsoft ads, using fallback:", error);
           result = JSON.stringify(generateFallbackMicrosoftAds(campaignData));
@@ -84,7 +92,7 @@ serve(async (req) => {
         break;
       case "meta":
         try {
-          result = await generateMetaAds(campaignData, mindTrigger);
+          result = await generateMetaAds(campaignData, mindTrigger || campaignData.mindTrigger);
         } catch (error) {
           console.error("Error generating Meta ads, using fallback:", error);
           result = JSON.stringify(generateFallbackMetaAds(campaignData));

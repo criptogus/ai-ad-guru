@@ -3,7 +3,7 @@ import { CampaignPromptData } from './types/promptTypes';
 import { PromptMessages } from './types/promptTypes';
 
 export const buildGoogleAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are an expert Google Ads copywriter. Create 5 high-converting Google text ads.`;
+  const systemMessage = `You are an expert Google Ads copywriter. Create 5 high-converting Google text ads for ${data.companyName || 'this company'} in the ${data.industry || 'specified'} industry, targeting ${data.targetAudience || 'their audience'}. The ads should focus on ${data.objective || 'awareness'} with a ${data.brandTone || 'professional'} tone.`;
   
   const userMessage = `
 Create 5 Google Search Ads for ${data.companyName}.
@@ -39,7 +39,7 @@ Format the response as valid JSON array with objects containing:
 };
 
 export const buildMetaAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are an expert Meta Ads copywriter and image prompt engineer. Create 5 high-converting Instagram ads.`;
+  const systemMessage = `You are an expert Meta Ads copywriter and image prompt engineer. Create 5 high-converting Instagram ads for ${data.companyName || 'this company'} in the ${data.industry || 'specified'} industry, targeting ${data.targetAudience || 'their audience'}. The ads should focus on ${data.objective || 'awareness'} with a ${data.brandTone || 'professional'} tone.`;
   
   const userMessage = `
 Create 5 Instagram Ads for ${data.companyName}.
@@ -70,7 +70,7 @@ Format the response as valid JSON array with objects containing:
 };
 
 export const buildLinkedInAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are an expert LinkedIn Ads copywriter and image prompt engineer. Create 5 high-converting LinkedIn ads.`;
+  const systemMessage = `You are an expert LinkedIn Ads copywriter and image prompt engineer. Create 5 high-converting LinkedIn ads for ${data.companyName || 'this company'} in the ${data.industry || 'specified'} industry, targeting ${data.targetAudience || 'their audience'}. The ads should focus on ${data.objective || 'awareness'} with a ${data.brandTone || 'professional'} tone.`;
   
   const userMessage = `
 Create 5 LinkedIn Ads for ${data.companyName}.
@@ -101,7 +101,7 @@ Format the response as valid JSON array with objects containing:
 };
 
 export const buildMicrosoftAdsPrompt = (data: CampaignPromptData): PromptMessages => {
-  const systemMessage = `You are an expert Microsoft Ads copywriter. Create 5 high-converting Microsoft/Bing text ads.`;
+  const systemMessage = `You are an expert Microsoft Ads copywriter. Create 5 high-converting Microsoft/Bing text ads for ${data.companyName || 'this company'} in the ${data.industry || 'specified'} industry, targeting ${data.targetAudience || 'their audience'}. The ads should focus on ${data.objective || 'awareness'} with a ${data.brandTone || 'professional'} tone.`;
   
   const userMessage = `
 Create 5 Microsoft/Bing Search Ads for ${data.companyName}.

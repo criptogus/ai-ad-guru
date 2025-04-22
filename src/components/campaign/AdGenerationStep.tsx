@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,19 +45,22 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       let hasAnySuccessfulPlatform = false;
 
       for (const platform of platforms) {
+        // Create a more comprehensive prompt data object with all available context
         const promptData: CampaignPromptData = {
-          companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name,
-          websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || '',
-          objective: campaignData.objective || 'awareness',
-          product: campaignData.product || '',
+          companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
+          websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
+          objective: campaignData.objective || analysisResult?.objective || 'awareness',
+          product: campaignData.product || analysisResult?.product || '',
           targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
-          brandTone: campaignData.brandTone || 'professional',
-          mindTrigger: campaignData.mindTriggers?.[platform] || '',
+          brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
+          mindTrigger: campaignData.mindTriggers?.[platform] || analysisResult?.mindTrigger || '',
           language: campaignData.language || 'english',
           industry: campaignData.industry || analysisResult?.industry || '',
           platforms: [platform],
-          companyDescription: campaignData.description || analysisResult?.companyDescription || '',
-          differentials: analysisResult?.uniqueSellingPoints || []
+          companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
+          differentials: analysisResult?.uniqueSellingPoints || [],
+          callToAction: analysisResult?.callToAction || 'Learn More',
+          keywords: analysisResult?.keywords || []
         };
 
         toast({
@@ -186,14 +188,17 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   // Generate fallback ads when API fails
   const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
     const companyName = promptData.companyName || 'Your Company';
+    const industry = promptData.industry || 'professional services';
+    const targetAudience = promptData.targetAudience || 'potential customers';
+    const objective = promptData.objective || 'awareness';
     
     if (platform === 'google' || platform === 'microsoft') {
       return Array(5).fill(null).map((_, i) => ({
-        headline1: `${companyName} - Professional Services`,
-        headline2: `Quality Solutions for Your Needs`,
-        headline3: `Contact Us Today`,
-        description1: `We provide top-quality services designed for your specific requirements.`,
-        description2: `Learn more about how we can help your business grow and succeed.`,
+        headline1: `${companyName} - ${industry}`,
+        headline2: `Solutions for ${targetAudience}`,
+        headline3: `${objective === 'conversion' ? 'Buy Now' : objective === 'consideration' ? 'Learn More' : 'Discover Today'}`,
+        description1: `We provide top-quality ${industry} services designed for ${targetAudience}.`,
+        description2: `${promptData.companyDescription?.substring(0, 80) || `Learn more about how we help ${targetAudience} succeed.`}`,
         displayPath: promptData.websiteUrl || 'example.com',
         path1: 'services',
         path2: 'info',
@@ -201,10 +206,10 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       }));
     } else if (platform === 'meta' || platform === 'linkedin') {
       return Array(5).fill(null).map((_, i) => ({
-        headline: `${companyName} - Professional Services`,
-        primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
-        description: `Quality services tailored to your needs. Contact us today to learn more.`,
-        imagePrompt: `Professional business image for ${companyName}, showing ${promptData.industry || 'professional'} environment`,
+        headline: `${companyName} - ${industry} Solutions`,
+        primaryText: `${promptData.companyDescription?.substring(0, 100) || `Discover how our ${industry} solutions can transform your experience.`} Our team is ready to help ${targetAudience} achieve their goals.`,
+        description: `Quality services tailored for ${targetAudience}. ${objective === 'conversion' ? 'Buy Now!' : objective === 'consideration' ? 'Learn More Today' : 'Discover How'}`,
+        imagePrompt: `Professional ${industry} image for ${companyName}, showing people representing ${targetAudience}, in a modern setting with ${promptData.brandTone || 'professional'} atmosphere`,
         format: 'feed'
       }));
     }

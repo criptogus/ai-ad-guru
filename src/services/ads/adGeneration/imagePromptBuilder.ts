@@ -43,13 +43,21 @@ export const buildImagePrompt = ({
     ? `Highlighting: ${uniqueSellingPoints.slice(0, 2).join(', ')}`
     : 'Highlighting the product/service quality and benefits';
 
+  const campaignFocus = campaignObjective === 'awareness' 
+    ? 'brand awareness and recognition' 
+    : campaignObjective === 'consideration' 
+      ? 'product consideration and engagement' 
+      : campaignObjective === 'conversion' 
+        ? 'conversion and call-to-action' 
+        : 'general marketing';
+
   return `Create a high-resolution advertising image designed for a ${displayPlatform} ad campaign.
 
 ### Brand Context:
 - Brand name: ${brandName}
 - Product/service: ${productService}
 - Industry: ${industry}
-- Campaign objective: ${campaignObjective}
+- Campaign objective: ${campaignFocus}
 - Target audience: ${targetAudience}
 - Tone: ${tone}
 - Main emotion or mental trigger: ${mentalTrigger || 'trust'}

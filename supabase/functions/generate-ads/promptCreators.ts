@@ -11,6 +11,7 @@ Product/Service: ${data.product || data.businessDescription || 'main product/ser
 Target Audience: ${data.targetAudience || 'general audience'}
 Brand Tone: ${data.brandTone || 'professional'}
 Mind Trigger: ${mindTrigger || 'none'}
+Objective: ${data.objective || 'awareness'}
 Company Description: ${data.companyDescription || data.businessDescription || '(not provided)'}
 Unique Selling Points: ${(data.uniqueSellingPoints && data.uniqueSellingPoints.length > 0) ? data.uniqueSellingPoints.join(', ') : '(not provided)'}
 Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
@@ -44,6 +45,7 @@ Product/Service: ${data.product || data.businessDescription || 'main product/ser
 Target Audience: ${data.targetAudience || 'general audience'}
 Brand Tone: ${data.brandTone || 'professional'}
 Mind Trigger: ${mindTrigger || 'none'}
+Objective: ${data.objective || 'awareness'}
 Company Description: ${data.companyDescription || data.businessDescription || '(not provided)'}
 Unique Selling Points: ${(data.uniqueSellingPoints && data.uniqueSellingPoints.length > 0) ? data.uniqueSellingPoints.join(', ') : '(not provided)'}
 Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
@@ -72,6 +74,7 @@ Product/Service: ${data.product || data.businessDescription || 'main product/ser
 Target Audience: ${data.targetAudience || 'general audience'}
 Brand Tone: ${data.brandTone || 'professional'}
 Mind Trigger: ${mindTrigger || 'none'}
+Objective: ${data.objective || 'awareness'}
 Company Description: ${data.companyDescription || data.businessDescription || '(not provided)'}
 Unique Selling Points: ${(data.uniqueSellingPoints && data.uniqueSellingPoints.length > 0) ? data.uniqueSellingPoints.join(', ') : '(not provided)'}
 Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
@@ -100,6 +103,7 @@ Product/Service: ${data.product || data.businessDescription || 'main product/ser
 Target Audience: ${data.targetAudience || 'general audience'}
 Brand Tone: ${data.brandTone || 'professional'}
 Mind Trigger: ${mindTrigger || 'none'}
+Objective: ${data.objective || 'awareness'}
 Company Description: ${data.companyDescription || data.businessDescription || '(not provided)'}
 Unique Selling Points: ${(data.uniqueSellingPoints && data.uniqueSellingPoints.length > 0) ? data.uniqueSellingPoints.join(', ') : '(not provided)'}
 Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
