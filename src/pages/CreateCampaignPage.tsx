@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -17,13 +18,14 @@ import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
 import { MetaAd } from "@/hooks/adGeneration/types";
-import { useImageGenerationHandler as useImageGenHandler } from "@/hooks/campaign/useImageGenerationHandler";
+import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
+import { useAdGenerationState } from "@/hooks/campaign/useAdGenerationState";
+import { useAdGenerationHandlers } from "@/hooks/campaign/useAdGenerationHandlers";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isCreating, setIsCreating] = useState(false);
   
   const { 
     analyzeWebsite, 
@@ -33,38 +35,25 @@ const CreateCampaignPage: React.FC = () => {
     cacheInfo 
   } = useWebsiteAnalysis();
   
-  const { 
-    campaignData, 
-    setCampaignData, 
-    googleAds, 
-    setGoogleAds, 
-    metaAds, 
+  const { campaignData, setCampaignData } = useCampaignState();
+  
+  const {
+    googleAds,
+    setGoogleAds,
+    metaAds,
     setMetaAds,
     microsoftAds,
     setMicrosoftAds,
     linkedInAds,
-    setLinkedInAds
-  } = useCampaignState();
-  
-  const { 
-    generateGoogleAds, 
-    isGenerating: isGeneratingGoogleAds 
-  } = useGoogleAdGeneration({});
-  
-  const { 
-    generateMetaAds, 
-    isGenerating: isGeneratingMetaAds 
-  } = useMetaAdGeneration();
-  
-  const { 
-    generateMicrosoftAds, 
-    isGenerating: isGeneratingMicrosoftAds 
-  } = useMicrosoftAdGeneration();
-  
-  const { 
-    generateLinkedInAds, 
-    isGenerating: isGeneratingLinkedInAds 
-  } = useLinkedInAdGeneration();
+    setLinkedInAds,
+    isCreating,
+    setIsCreating
+  } = useAdGenerationState();
+
+  const { generateGoogleAds, isGenerating: isGeneratingGoogleAds } = useGoogleAdGeneration({});
+  const { generateMetaAds, isGenerating: isGeneratingMetaAds } = useMetaAdGeneration();
+  const { generateMicrosoftAds, isGenerating: isGeneratingMicrosoftAds } = useMicrosoftAdGeneration();
+  const { generateLinkedInAds, isGenerating: isGeneratingLinkedInAds } = useLinkedInAdGeneration();
   
   const {
     handleUpdateGoogleAd,
@@ -77,15 +66,35 @@ const CreateCampaignPage: React.FC = () => {
     setMicrosoftAds,
     setLinkedInAds
   });
-  
+
+  const { createCampaign } = useCampaignCreation();
+
   const { 
     handleGenerateImage, 
     loadingImageIndex 
-  } = useImageGenHandler();
-  
-  const { createCampaign } = useCampaignCreation();
-  
-  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || isGeneratingMicrosoftAds || isGeneratingLinkedInAds;
+  } = useImageGenerationHandler({
+    metaAds,
+    linkedInAds,
+    setMetaAds,
+    setLinkedInAds,
+    campaignData
+  });
+
+  const {
+    handleAdsGenerated,
+    handleCreateCampaign
+  } = useAdGenerationHandlers({
+    setGoogleAds,
+    setMetaAds,
+    setMicrosoftAds,
+    setLinkedInAds,
+    campaignData,
+    createCampaign,
+    setIsCreating
+  });
+
+  const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || 
+                      isGeneratingMicrosoftAds || isGeneratingLinkedInAds;
   
   const handleBack = () => {
     if (currentStep > 1) {
@@ -136,169 +145,6 @@ const CreateCampaignPage: React.FC = () => {
         description: "Failed to analyze the website. Please try again."
       });
       return null;
-    }
-  };
-
-  const handleAdsGenerated = (generatedAds: any) => {
-    if (!generatedAds) return;
-
-    if (generatedAds.google_ads) {
-      setGoogleAds(generatedAds.google_ads);
-    }
-    if (generatedAds.meta_ads) {
-      setMetaAds(generatedAds.meta_ads);
-    }
-    if (generatedAds.linkedin_ads) {
-      setLinkedInAds(generatedAds.linkedin_ads);
-    }
-    if (generatedAds.microsoft_ads) {
-      setMicrosoftAds(generatedAds.microsoft_ads);
-    }
-
-    handleNext();
-  };
-
-  const handleGenerateGoogleAds = async (): Promise<void> => {
-    try {
-      const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company',
-        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
-        objective: campaignData.objective || 'awareness',
-        targetAudience: campaignData.targetAudience || '',
-        product: campaignData.product || '',
-        brandTone: campaignData.brandTone || 'professional',
-        language: campaignData.language || 'english',
-        industry: campaignData.industry || '',
-        companyDescription: campaignData.description || '',
-        differentials: [],
-        keywords: campaignData.keywords || []
-      };
-      
-      console.log("Generating Google ads with data:", adGenerationData);
-      const ads = await generateGoogleAds(adGenerationData);
-      if (ads) {
-        setGoogleAds(ads);
-      }
-    } catch (error) {
-      console.error("Error generating Google ads:", error);
-    }
-  };
-
-  const handleGenerateMetaAds = async (): Promise<void> => {
-    try {
-      const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company',
-        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
-        objective: campaignData.objective || 'awareness',
-        targetAudience: campaignData.targetAudience || '',
-        product: campaignData.product || '',
-        brandTone: campaignData.brandTone || 'professional',
-        language: campaignData.language || 'english',
-        industry: campaignData.industry || '',
-        companyDescription: campaignData.description || '',
-        differentials: [],
-        keywords: campaignData.keywords || []
-      };
-      
-      console.log("Generating Meta ads with data:", adGenerationData);
-      const ads = await generateMetaAds(adGenerationData);
-      if (ads) {
-        setMetaAds(ads);
-      }
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
-    }
-  };
-
-  const handleGenerateMicrosoftAds = async (): Promise<void> => {
-    try {
-      const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company',
-        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
-        objective: campaignData.objective || 'awareness',
-        targetAudience: campaignData.targetAudience || '',
-        product: campaignData.product || '',
-        brandTone: campaignData.brandTone || 'professional',
-        language: campaignData.language || 'english',
-        industry: campaignData.industry || '',
-        companyDescription: campaignData.description || '',
-        differentials: [],
-        keywords: campaignData.keywords || []
-      };
-      
-      console.log("Generating Microsoft ads with data:", adGenerationData);
-      const ads = await generateMicrosoftAds(adGenerationData);
-      if (ads) {
-        setMicrosoftAds(ads);
-      }
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
-    }
-  };
-
-  const handleGenerateLinkedInAds = async (): Promise<void> => {
-    try {
-      const adGenerationData = {
-        companyName: campaignData.companyName || campaignData.name || 'Company',
-        websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || '',
-        objective: campaignData.objective || 'awareness',
-        targetAudience: campaignData.targetAudience || '',
-        product: campaignData.product || '',
-        brandTone: campaignData.brandTone || 'professional',
-        language: campaignData.language || 'english',
-        industry: campaignData.industry || '',
-        companyDescription: campaignData.description || '',
-        differentials: [],
-        keywords: campaignData.keywords || []
-      };
-      
-      console.log("Generating LinkedIn ads with data:", adGenerationData);
-      const ads = await generateLinkedInAds(adGenerationData);
-      if (ads) {
-        setLinkedInAds(ads);
-      }
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-    }
-  };
-
-  const handleCreateCampaign = async (): Promise<void> => {
-    setIsCreating(true);
-    try {
-      const result = await createCampaign({
-        name: campaignData.name,
-        description: campaignData.description,
-        platforms: campaignData.platforms,
-        budget: campaignData.budget,
-        startDate: campaignData.startDate,
-        endDate: campaignData.endDate,
-        targetAudience: campaignData.targetAudience,
-        objective: campaignData.objective,
-        googleAds,
-        metaAds,
-        microsoftAds,
-        linkedInAds,
-        targetUrl: campaignData.targetUrl,
-        websiteUrl: campaignData.websiteUrl,
-        mindTriggers: campaignData.mindTriggers
-      });
-
-      if (result) {
-        toast({
-          title: "Campaign Created",
-          description: "Your campaign has been created successfully."
-        });
-        navigate('/campaigns');
-      }
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      toast({
-        variant: "destructive",
-        title: "Creation Failed",
-        description: "Failed to create the campaign. Please try again."
-      });
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -357,8 +203,6 @@ const CreateCampaignPage: React.FC = () => {
     }
     return getStepContent();
   };
-
-  console.log("CreateCampaignPage rendering with step:", currentStep, "and campaign data:", campaignData);
 
   return (
     <CampaignProvider>

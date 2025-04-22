@@ -1,95 +1,73 @@
 
-import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
-import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { normalizeGoogleAd, normalizeMetaAd } from "@/lib/utils";
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { MetaAd, GoogleAd } from '@/hooks/adGeneration/types';
+import { useNavigate } from 'react-router-dom';
 
 interface UseAdGenerationHandlersProps {
-  analysisResult: WebsiteAnalysisResult;
-  campaignData: any;
   setGoogleAds: (ads: GoogleAd[]) => void;
   setMetaAds: (ads: MetaAd[]) => void;
-  setLinkedInAds: (ads: MetaAd[]) => void;
   setMicrosoftAds: (ads: GoogleAd[]) => void;
-  generateGoogleAds: (input: any, trigger?: string) => Promise<GoogleAd[] | null>;
-  generateMetaAds: (input: any, trigger?: string) => Promise<MetaAd[] | null>;
-  generateLinkedInAds: (input: any, trigger?: string) => Promise<MetaAd[] | null>;
-  generateMicrosoftAds: (input: any, trigger?: string) => Promise<GoogleAd[] | null>;
+  setLinkedInAds: (ads: MetaAd[]) => void;
+  campaignData: any;
+  createCampaign: any;
+  setIsCreating: (isCreating: boolean) => void;
 }
 
 export const useAdGenerationHandlers = ({
-  analysisResult,
-  campaignData,
   setGoogleAds,
   setMetaAds,
-  setLinkedInAds,
   setMicrosoftAds,
-  generateGoogleAds,
-  generateMetaAds,
-  generateLinkedInAds,
-  generateMicrosoftAds
+  setLinkedInAds,
+  campaignData,
+  createCampaign,
+  setIsCreating
 }: UseAdGenerationHandlersProps) => {
-  const handleGenerateGoogleAds = async () => {
-    try {
-      const mindTrigger = campaignData?.mindTriggers?.google;
-      const ads = await generateGoogleAds(analysisResult, mindTrigger);
-      
-      if (ads) {
-        // Always normalize ads before setting them
-        const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
-        setGoogleAds(normalizedAds);
-      }
-    } catch (error) {
-      console.error("Error generating Google ads:", error);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleAdsGenerated = (generatedAds: any) => {
+    if (!generatedAds) return;
+
+    if (generatedAds.google_ads) {
+      setGoogleAds(generatedAds.google_ads);
+    }
+    if (generatedAds.meta_ads) {
+      setMetaAds(generatedAds.meta_ads);
+    }
+    if (generatedAds.linkedin_ads) {
+      setLinkedInAds(generatedAds.linkedin_ads);
+    }
+    if (generatedAds.microsoft_ads) {
+      setMicrosoftAds(generatedAds.microsoft_ads);
     }
   };
 
-  const handleGenerateMetaAds = async () => {
+  const handleCreateCampaign = async (): Promise<void> => {
+    setIsCreating(true);
     try {
-      const mindTrigger = campaignData?.mindTriggers?.meta;
-      const ads = await generateMetaAds(analysisResult, mindTrigger);
-      
-      if (ads) {
-        const normalizedAds = ads.map(ad => normalizeMetaAd(ad));
-        setMetaAds(normalizedAds);
+      const result = await createCampaign();
+      if (result) {
+        toast({
+          title: "Campaign Created",
+          description: "Your campaign has been created successfully."
+        });
+        navigate('/campaigns');
       }
     } catch (error) {
-      console.error("Error generating Meta ads:", error);
-    }
-  };
-
-  const handleGenerateLinkedInAds = async () => {
-    try {
-      const mindTrigger = campaignData?.mindTriggers?.linkedin;
-      const ads = await generateLinkedInAds(analysisResult, mindTrigger);
-      
-      if (ads) {
-        const normalizedAds = ads.map(ad => normalizeMetaAd(ad));
-        setLinkedInAds(normalizedAds);
-      }
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-    }
-  };
-
-  const handleGenerateMicrosoftAds = async () => {
-    try {
-      const mindTrigger = campaignData?.mindTriggers?.microsoft;
-      const ads = await generateMicrosoftAds(analysisResult, mindTrigger);
-      
-      if (ads) {
-        // Always normalize Microsoft ads
-        const normalizedAds = ads.map(ad => normalizeGoogleAd(ad));
-        setMicrosoftAds(normalizedAds);
-      }
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
+      console.error("Error creating campaign:", error);
+      toast({
+        variant: "destructive",
+        title: "Creation Failed",
+        description: "Failed to create the campaign. Please try again."
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
   return {
-    handleGenerateGoogleAds,
-    handleGenerateMetaAds,
-    handleGenerateLinkedInAds,
-    handleGenerateMicrosoftAds
+    handleAdsGenerated,
+    handleCreateCampaign
   };
 };
