@@ -24,6 +24,10 @@ export interface GeneratedAdContent {
     text: string;
     image_prompt: string;
   }>;
+  meta_ads?: Array<{
+    text: string;
+    image_prompt: string;
+  }>;
   linkedin_ads?: Array<{
     text: string;
     image_prompt: string;

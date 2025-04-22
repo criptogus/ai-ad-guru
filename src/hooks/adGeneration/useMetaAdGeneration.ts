@@ -58,7 +58,7 @@ export const useMetaAdGeneration = (props?: MetaAdGenerationProps) => {
       
       // Extract Meta/Instagram Ads from the response
       // Check both instagram_ads and meta_ads properties
-      const metaAds = result.instagram_ads || result.meta_ads || [];
+      const metaAds = result.meta_ads || result.instagram_ads || [];
       
       if (metaAds.length === 0) {
         throw new Error("No Meta Ads were generated");
