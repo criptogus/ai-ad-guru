@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { CampaignProvider } from "@/contexts/CampaignContext";
 import { AdGenerationStep } from "@/components/campaign/AdGenerationStep";
 import { useAdGenerationFlow } from "@/hooks/useAdGenerationFlow";
-import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useAdUpdateHandlers } from "@/hooks/campaign/useAdUpdateHandlers";
 import { useCampaignCreation } from "@/hooks/useCampaignCreation";
 import { useAdGeneration as useGoogleAdGeneration } from "@/hooks/adGeneration";
@@ -78,14 +78,8 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler({
-    generateAdImage: useImageGeneration, 
-    metaAds, 
-    linkedInAds, 
-    setMetaAds, 
-    setLinkedInAds, 
-    campaignData
-  });
+  // Now using the updated hook with the correct interface
+  const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
   
   const { createCampaign } = useCampaignCreation();
   
@@ -122,7 +116,7 @@ const CreateCampaignPage: React.FC = () => {
         setCampaignData(prev => ({ 
           ...prev, 
           name: result.companyName ? `${result.companyName} Campaign` : 'New Campaign',
-          companyName: result.companyName || prev.name || 'New Company',
+          companyName: result.companyName || prev.companyName || 'New Company',
           description: result.companyDescription || '',
           keywords: result.keywords || [],
           targetAudience: result.targetAudience || '',

@@ -21,6 +21,7 @@ export interface CampaignData {
   mindTriggers?: Record<string, string>; // Platform to mind trigger mapping
   audienceAnalysis?: AudienceAnalysisResult; // Added audience analysis field
   audienceCacheInfo?: AudienceCacheInfo; // Added audience cache info field
+  companyName: string; // Added companyName as required field
   [key: string]: any;
 }
 
@@ -55,6 +56,7 @@ export const CampaignProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     description: "",
     targetAudience: "",
     mindTriggers: {},
+    companyName: "", // Initialize companyName with empty string
   });
   const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysisResult | null>(null);
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);

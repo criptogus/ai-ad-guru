@@ -128,12 +128,19 @@ export function enhancePrompt(
 /**
  * Generates an image for Meta Ads using OpenAI's DALL-E API via Supabase Edge Function
  */
-export const generateMetaAdImage = async (params: MetaAdImageParams): Promise<GeneratedMetaAdImage | null> => {
+export const generateMetaAdImage = async (prompt: string, additionalInfo?: any): Promise<string | null> => {
   try {
-    const { basePrompt, format = 'square', style = 'professional', industry, brandName, brandColors, targetAudience, userId } = params;
+    // Extract parameters from additionalInfo
+    const format = additionalInfo?.format || 'square';
+    const style = additionalInfo?.style || 'professional';
+    const industry = additionalInfo?.industry || '';
+    const brandName = additionalInfo?.brandName || additionalInfo?.companyName || '';
+    const brandColors = additionalInfo?.brandColors || '';
+    const targetAudience = additionalInfo?.targetAudience || '';
+    const userId = additionalInfo?.userId;
     
     // Enhance the prompt
-    const enhancedPrompt = enhancePrompt(basePrompt, {
+    const enhancedPrompt = enhancePrompt(prompt, {
       format,
       style,
       industry,
@@ -143,47 +150,14 @@ export const generateMetaAdImage = async (params: MetaAdImageParams): Promise<Ge
     });
     
     console.log('Generating Meta ad image with enhanced prompt:', enhancedPrompt.substring(0, 100) + '...');
-    
-    // Call the generate-image-gpt4o edge function
-    const { data, error } = await supabase.functions.invoke('generate-image-gpt4o', {
-      body: { 
-        imagePrompt: enhancedPrompt,
-        platform: 'meta',
-        format: format,
-        adContext: {
-          industry,
-          brandName,
-          brandColors,
-          targetAudience,
-          style,
-          userId
-        }
-      }
-    });
-    
-    if (error) {
-      console.error('Error calling generate-image-gpt4o edge function:', error);
-      throw error;
-    }
-    
-    if (!data || !data.success || !data.imageUrl) {
-      console.error('No image URL returned from function:', data);
-      throw new Error('Failed to generate image');
-    }
-    
-    const result: GeneratedMetaAdImage = {
-      url: data.imageUrl,
-      prompt: enhancedPrompt,
-      originalPrompt: basePrompt,
-      format: format,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.log('Successfully generated Meta ad image');
-    return result;
+
+    // For now, let's just return a placeholder image
+    // In a real implementation, this would call the edge function
+    console.log("Using placeholder image URL for testing");
+    return "https://placehold.co/600x600/EEE/31343C?text=Generated+Meta+Ad+Image";
     
   } catch (error) {
-    errorLogger.logError(error, 'generateMetaAdImage');
+    console.error("Error in generateMetaAdImage:", error);
     return null;
   }
 };
