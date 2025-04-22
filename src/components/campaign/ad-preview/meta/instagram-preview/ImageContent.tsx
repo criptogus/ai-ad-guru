@@ -25,24 +25,24 @@ const ImageContent: React.FC<ImageContentProps> = ({
 }) => {
   const { imageUrl, imagePrompt } = ad;
   
-  // Log for debugging
+  // Log para debugging
   React.useEffect(() => {
     if (imageUrl) {
-      console.log(`ImageContent: Image URL available for ad ${imageKey}:`, imageUrl);
+      console.log(`ImageContent: Image URL disponível para anúncio ${imageKey}:`, imageUrl);
     } else if (imagePrompt) {
-      console.log(`ImageContent: No image URL, but prompt available for ad ${imageKey}`);
+      console.log(`ImageContent: Sem URL de imagem, mas prompt disponível para anúncio ${imageKey}`);
     }
   }, [imageUrl, imagePrompt, imageKey]);
   
-  // Construct alt text from ad data
-  const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Instagram Ad Image";
+  // Constrói texto alternativo a partir dos dados do anúncio
+  const altText = imagePrompt || ad.primaryText?.split("\n")[0] || "Imagem de Anúncio do Instagram";
   
-  // Loading state
+  // Estado de carregamento
   if (isLoading || isUploading) {
     return <ImageLoader format={format} />;
   }
   
-  // Image exists
+  // Imagem existe
   if (imageUrl) {
     return (
       <ImageDisplay
@@ -71,7 +71,7 @@ const ImageContent: React.FC<ImageContentProps> = ({
     }
   };
   
-  // No image yet
+  // Sem imagem ainda
   return (
     <ImagePlaceholder
       hasPrompt={!!imagePrompt}

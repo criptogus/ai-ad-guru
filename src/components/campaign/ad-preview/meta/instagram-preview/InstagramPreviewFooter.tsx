@@ -10,8 +10,13 @@ interface InstagramPreviewFooterProps {
 const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName }) => {
   const ensureCompleteText = (text: string): string => {
     if (!text) return "";
-    const trimmed = text.trim();
-    return /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + ".";
+    // Primeiro garante que a pontuação seja correta
+    let trimmed = text.trim();
+    // Adiciona ponto final se não terminar com pontuação
+    trimmed = /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + ".";
+    
+    // Corrige espaços após pontuação (substitui ".Texto" por ". Texto")
+    return trimmed.replace(/([.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
   };
 
   const getHashtags = (): string => {

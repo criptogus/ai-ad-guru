@@ -15,63 +15,69 @@ export const generateGoogleAds = async (
   mindTrigger?: string
 ): Promise<GoogleAd[] | null> => {
   try {
-    console.log('Generating Google ads for:', campaignData.companyName);
-    console.log('Using mind trigger:', mindTrigger || 'None');
+    console.log('Gerando anúncios Google para:', campaignData.companyName);
+    console.log('Usando mind trigger:', mindTrigger || 'Nenhum');
     
-    // Ensure we have the required data
+    // Garantindo que temos os dados necessários
     if (!campaignData || !campaignData.companyName) {
-      console.error('Missing required campaign data for ad generation');
+      console.error('Dados necessários para geração de anúncios ausentes');
       return null;
     }
+    
+    // Forçar a linguagem para português
+    const updatedCampaignData = {
+      ...campaignData,
+      language: 'português', // Forçando português explicitamente
+    };
     
     const { data, error } = await supabase.functions.invoke('generate-ads', {
       body: { 
         platform: 'google',
-        campaignData,
+        campaignData: updatedCampaignData,
         mindTrigger,
-        temperature: 0.3 // Lower temperature for more consistent results
+        temperature: 0.3 // Temperatura mais baixa para resultados mais consistentes
       },
     });
 
     if (error) {
-      console.error('Error generating Google ads:', error);
+      console.error('Erro ao gerar anúncios Google:', error);
       return null;
     }
 
     if (!data || !data.success) {
-      console.error('Google ads generation failed:', data?.error || 'Unknown error');
+      console.error('Falha na geração de anúncios Google:', data?.error || 'Erro desconhecido');
       return null;
     }
 
-    // Validate response data structure
+    // Validar estrutura de dados da resposta
     if (!data.data || !Array.isArray(data.data)) {
-      console.error('Invalid response format from generate-ads:', data);
+      console.error('Formato de resposta inválido de generate-ads:', data);
       
-      // Try to parse if string was returned
+      // Tentar analisar se uma string foi retornada
       if (typeof data.data === 'string') {
         try {
           const parsedData = JSON.parse(data.data);
-          console.log('Successfully parsed string response to JSON:', parsedData);
+          console.log('Resposta em string analisada com sucesso:', parsedData);
           
           if (Array.isArray(parsedData)) {
-            // Ensure all required fields are present
+            // Garantir que todos os campos necessários estejam presentes
             const validatedAds = parsedData.map((ad: any) => ({
-              headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
-              headline2: ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '',
-              headline3: ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '',
-              description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '',
-              description2: ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '',
-              displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'example.com',
+              headline1: fixTextSpacing(ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || ''),
+              headline2: fixTextSpacing(ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || ''),
+              headline3: fixTextSpacing(ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || ''),
+              description1: fixTextSpacing(ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || ''),
+              description2: fixTextSpacing(ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || ''),
+              displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'exemplo.com',
               path1: ad.path1 || ad.path_1 || '',
               path2: ad.path2 || ad.path_2 || '',
               siteLinks: ad.siteLinks || ad.site_links || [],
             }));
             
-            console.log('🧪 Validated Google ads:', validatedAds);
+            console.log('🧪 Anúncios Google validados:', validatedAds);
             return validatedAds as GoogleAd[];
           }
         } catch (parseError) {
-          console.error('Failed to parse string response as JSON:', parseError);
+          console.error('Falha ao analisar resposta como JSON:', parseError);
           return null;
         }
       }
@@ -79,26 +85,34 @@ export const generateGoogleAds = async (
       return null;
     }
 
-    console.log('Google ads generated successfully:', data.data);
-    console.log('🧪 First ad sample:', data.data[0]);
+    console.log('Anúncios Google gerados com sucesso:', data.data);
+    console.log('🧪 Exemplo do primeiro anúncio:', data.data[0]);
     
-    // Ensure all required fields are present
+    // Garantir que todos os campos necessários estejam presentes e com espaçamento correto
     const validatedAds = data.data.map((ad: any) => ({
-      headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
-      headline2: ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '',
-      headline3: ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '',
-      description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '',
-      description2: ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '',
-      displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'example.com',
+      headline1: fixTextSpacing(ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || ''),
+      headline2: fixTextSpacing(ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || ''),
+      headline3: fixTextSpacing(ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || ''),
+      description1: fixTextSpacing(ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || ''),
+      description2: fixTextSpacing(ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || ''),
+      displayPath: ad.display_url || ad.displayPath || ad.displayUrl || 'exemplo.com',
       path1: ad.path1 || ad.path_1 || '',
       path2: ad.path2 || ad.path_2 || '',
       siteLinks: ad.siteLinks || ad.site_links || [],
     }));
     
-    console.log('🧪 Validated Google ads:', validatedAds);
+    console.log('🧪 Anúncios Google validados:', validatedAds);
     return validatedAds as GoogleAd[];
   } catch (error) {
-    console.error('Error in generateGoogleAds:', error);
+    console.error('Erro em generateGoogleAds:', error);
     return null;
   }
 };
+
+// Função auxiliar para corrigir espaços após pontuação
+function fixTextSpacing(text: string): string {
+  if (!text) return "";
+  
+  // Adiciona espaço após pontuação se não existir
+  return text.replace(/([.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+}

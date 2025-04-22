@@ -7,10 +7,13 @@ import { toast } from 'sonner';
 function ensureCompleteText(text: string): string {
   if (!text) return '';
   const trimmed = text.trim();
-  return /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + '.';
+  // Adiciona ponto final se não terminar com pontuação
+  const withPunctuation = /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + '.';
+  // Corrige espaços após pontuação
+  return withPunctuation.replace(/([.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
 }
 
-// New utility to detect non-Portuguese text
+// Nova função utilitária para detectar texto não-português
 const hasEnglishText = (text: string) => /\b(the|your|quality|service)\b/i.test(text);
 
 export const generateMetaAds = async (
@@ -18,16 +21,21 @@ export const generateMetaAds = async (
   mindTrigger?: string
 ): Promise<MetaAd[] | null> => {
   try {
-    console.log('Generating Meta ads for:', campaignData.companyName);
-    console.log('Using mind trigger:', mindTrigger || 'None');
-    console.log('Campaign language:', campaignData.language || 'português');
+    console.log('Gerando anúncios Meta para:', campaignData.companyName);
+    console.log('Usando mind trigger:', mindTrigger || 'Nenhum');
+    console.log('Idioma da campanha:', campaignData.language || 'português');
+
+    // Forçando idioma português para garantir consistência
+    const updatedCampaignData = {
+      ...campaignData,
+      language: 'português', // Forçando português explicitamente
+    };
 
     const { data, error } = await supabase.functions.invoke('generate-premium-ads', {
       body: {
         platform: 'meta',
         campaignData: {
-          ...campaignData,
-          language: campaignData.language || 'português',
+          ...updatedCampaignData,
           mindTriggers: {
             meta: mindTrigger
           }
@@ -36,7 +44,7 @@ export const generateMetaAds = async (
     });
 
     if (error) {
-      console.error('Error generating Meta ads:', error);
+      console.error('Erro ao gerar anúncios Meta:', error);
       toast.error('Falha ao gerar anúncios Meta', {
         description: error.message || 'Erro desconhecido'
       });
@@ -44,7 +52,7 @@ export const generateMetaAds = async (
     }
 
     if (!data?.success) {
-      console.error('Meta ads generation failed:', data?.error || 'Unknown error');
+      console.error('Falha na geração de anúncios Meta:', data?.error || 'Erro desconhecido');
       toast.error('Falha na geração de anúncios Meta', {
         description: data?.error || 'Não foi possível gerar o conteúdo dos anúncios'
       });
@@ -59,7 +67,7 @@ export const generateMetaAds = async (
       return null;
     }
 
-    // Enhanced validation to ensure ad completeness
+    // Validação aprimorada para garantir completude do anúncio
     if (!data.data.every((ad: any) => ad.headline && (ad.primaryText || ad.text) && ad.imagePrompt)) {
       console.warn("Alguns anúncios gerados estão incompletos:", data.data);
       toast.warning("Atenção: Alguns anúncios podem estar incompletos", {
@@ -79,23 +87,21 @@ export const generateMetaAds = async (
         imageUrl: ad.imageUrl || '', // Adiciona suporte para URL da imagem
       };
 
-      // Validate language consistency
-      if (campaignData.language?.toLowerCase() === 'português') {
-        if ([metaAd.headline, metaAd.primaryText, metaAd.description].some(hasEnglishText)) {
-          console.warn('Anúncio com conteúdo em inglês detectado:', metaAd);
-          toast.warning('Conteúdo em inglês detectado', {
-            description: 'Alguns textos dos anúncios podem não estar em português.'
-          });
-        }
+      // Validar consistência de idioma
+      if (hasEnglishText(metaAd.headline) || hasEnglishText(metaAd.primaryText) || hasEnglishText(metaAd.description)) {
+        console.warn('Anúncio com conteúdo em inglês detectado:', metaAd);
+        toast.warning('Conteúdo em inglês detectado', {
+          description: 'Alguns textos dos anúncios podem não estar em português.'
+        });
       }
 
       return metaAd;
     });
 
-    console.log('Meta ads generated successfully:', metaAds);
+    console.log('Anúncios Meta gerados com sucesso:', metaAds);
     return metaAds;
   } catch (error) {
-    console.error('Error in generateMetaAds:', error);
+    console.error('Erro em generateMetaAds:', error);
     toast.error('Erro ao gerar anúncios Meta', {
       description: error instanceof Error ? error.message : 'Ocorreu um erro desconhecido'
     });
