@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +16,9 @@ import { useAdGeneration as useGoogleAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMetaAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useMicrosoftAdGeneration } from "@/hooks/adGeneration";
 import { useAdGeneration as useLinkedInAdGeneration } from "@/hooks/adGeneration";
-import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { MetaAd } from "@/hooks/adGeneration/types";
+import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
+import { generateMetaAdImage } from "@/services/media/metaAdImageGenerator";
 
 const CreateCampaignPage: React.FC = () => {
   const { toast } = useToast();
@@ -79,7 +79,7 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds
   });
   
-  // Use the updated useImageGenerationHandler hook
+  // Use the updated useImageGenerationHandler hook with no arguments
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
   
   const { createCampaign } = useCampaignCreation();
@@ -308,7 +308,7 @@ const CreateCampaignPage: React.FC = () => {
       const prompt = ad.imagePrompt || ad.description || ad.primaryText || '';
       
       // Call handleGenerateImage with the extracted prompt and additional info
-      const imageUrl = await handleGenerateImage(prompt, {
+      const imageUrl = await generateMetaAdImage(prompt, {
         index,
         ad,
         companyName: campaignData.companyName,
