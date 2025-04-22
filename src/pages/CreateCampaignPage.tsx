@@ -73,12 +73,22 @@ const CreateCampaignPage: React.FC = () => {
   const { 
     handleGenerateImage, 
     loadingImageIndex 
-  } = useImageGenerationHandler();
+  } = useImageGenerationHandler({
+    metaAds,
+    linkedInAds,
+    setMetaAds,
+    setLinkedInAds,
+    campaignData
+  });
 
   // Add ad generation handlers
   const {
     handleAdsGenerated,
-    handleCreateCampaign
+    handleCreateCampaign,
+    handleGenerateGoogleAds,
+    handleGenerateMetaAds,
+    handleGenerateMicrosoftAds,
+    handleGenerateLinkedInAds
   } = useAdGenerationHandlers({
     setGoogleAds,
     setMetaAds,
@@ -86,7 +96,12 @@ const CreateCampaignPage: React.FC = () => {
     setLinkedInAds,
     campaignData,
     createCampaign,
-    setIsCreating
+    setIsCreating,
+    analysisResult,
+    generateGoogleAds,
+    generateMetaAds,
+    generateMicrosoftAds,
+    generateLinkedInAds
   });
 
   const isGenerating = isGeneratingGoogleAds || isGeneratingMetaAds || 
@@ -153,123 +168,6 @@ const CreateCampaignPage: React.FC = () => {
         variant: "destructive",
         title: "Image Generation Failed",
         description: error instanceof Error ? error.message : "Unknown error occurred"
-      });
-    }
-  };
-
-  // Implement ad generation handlers
-  const handleGenerateGoogleAds = async () => {
-    if (!analysisResult) {
-      toast({
-        variant: "destructive",
-        title: "Missing Data",
-        description: "Website analysis data is required to generate ads."
-      });
-      return;
-    }
-    
-    try {
-      const ads = await generateGoogleAds(analysisResult);
-      if (ads && ads.length > 0) {
-        setGoogleAds(ads);
-        toast({
-          title: "Google Ads Generated",
-          description: `Successfully created ${ads.length} ad variations.`
-        });
-      }
-    } catch (error) {
-      console.error("Error generating Google ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to generate Google ads. Please try again."
-      });
-    }
-  };
-
-  const handleGenerateMetaAds = async () => {
-    if (!analysisResult) {
-      toast({
-        variant: "destructive",
-        title: "Missing Data",
-        description: "Website analysis data is required to generate ads."
-      });
-      return;
-    }
-    
-    try {
-      const ads = await generateMetaAds(analysisResult);
-      if (ads && ads.length > 0) {
-        setMetaAds(ads);
-        toast({
-          title: "Meta Ads Generated",
-          description: `Successfully created ${ads.length} ad variations.`
-        });
-      }
-    } catch (error) {
-      console.error("Error generating Meta ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to generate Meta ads. Please try again."
-      });
-    }
-  };
-
-  const handleGenerateMicrosoftAds = async () => {
-    if (!analysisResult) {
-      toast({
-        variant: "destructive",
-        title: "Missing Data",
-        description: "Website analysis data is required to generate ads."
-      });
-      return;
-    }
-    
-    try {
-      const ads = await generateMicrosoftAds(analysisResult);
-      if (ads && ads.length > 0) {
-        setMicrosoftAds(ads);
-        toast({
-          title: "Microsoft Ads Generated",
-          description: `Successfully created ${ads.length} ad variations.`
-        });
-      }
-    } catch (error) {
-      console.error("Error generating Microsoft ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to generate Microsoft ads. Please try again."
-      });
-    }
-  };
-
-  const handleGenerateLinkedInAds = async () => {
-    if (!analysisResult) {
-      toast({
-        variant: "destructive",
-        title: "Missing Data",
-        description: "Website analysis data is required to generate ads."
-      });
-      return;
-    }
-    
-    try {
-      const ads = await generateLinkedInAds(analysisResult);
-      if (ads && ads.length > 0) {
-        setLinkedInAds(ads);
-        toast({
-          title: "LinkedIn Ads Generated",
-          description: `Successfully created ${ads.length} ad variations.`
-        });
-      }
-    } catch (error) {
-      console.error("Error generating LinkedIn ads:", error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to generate LinkedIn ads. Please try again."
       });
     }
   };
