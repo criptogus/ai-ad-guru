@@ -13,47 +13,54 @@ export const buildAdGenerationPrompt = (data: CampaignPromptData): PromptMessage
   // Get formatted differentials
   const differentials = data.differentials?.join(', ') || 'não especificado';
   
-  // Build the system message for the AI with enhanced agency context
-  const systemMessage = `You are a world-class marketing strategist inside an award-winning ad agency, 
-specializing in creating high-converting, emotionally resonant ad campaigns across multiple platforms. 
-Your expertise lies in understanding markets deeply and crafting compelling messages that drive results.`;
+  // Build the system message with strict context enforcement
+  const systemMessage = `You are a world-class advertising copywriter inside a premium AI marketing agency. 
+Your goal is to generate accurate, persuasive ad variations for digital platforms based only on the structured information provided. 
+Do not invent or assume services that are not explicitly mentioned in the business description.`;
 
-  // Build the user message with structured analysis and requirements
-  const userMessage = `Analyze the following company data and create highly effective ad campaigns:
+  // Build the user message with enhanced structure and validation
+  const userMessage = `Please generate high-converting ad variations using only the information below. 
+Do not invent or assume any services not explicitly mentioned.
 
-### 📌 Company Analysis Required:
-1. Market/Industry Identification
-2. Main Product/Service Definition
-3. Unique Value Proposition
-
-### 📊 Company Information:
-- Company: ${data.companyName}
+### 🏢 Company Details:
+- Name: ${data.companyName}
 - Website: ${data.websiteUrl}
-- Description: ${data.objective}
+- Business Description: ${data.objective}
+- Key Differentiators: ${differentials}
+
+### 🎯 Campaign Information:
 - Campaign Goal: ${data.objective}
 - Target Audience: ${data.targetAudience}
 - Brand Voice: ${data.brandTone || 'professional'}
-- Key Differentiators: ${differentials}
 - Mental Trigger: ${data.mindTrigger || 'não especificado'}
-- Campaign Language: ${language}
+- Language: ${language}
 
-### 🎯 Ad Generation Requirements:
-1. Generate ads ONLY in ${language}
-2. Focus on emotional engagement and modern growth marketing techniques
-3. Incorporate the specified mental trigger naturally
-4. Follow platform-specific best practices
-5. For image-based ads (Instagram/LinkedIn):
-   - No text overlays on images
-   - Photorealistic, emotionally resonant quality
-   - Professional agency-grade visuals
-   - No watermarks or artificial elements
+### 📋 Format Requirements:
+1. Google/Bing Ads:
+   - Headline 1 (max 30 chars)
+   - Headline 2 (max 30 chars)
+   - Description 1 (max 90 chars)
+   - Description 2 (max 90 chars)
+
+2. Instagram/LinkedIn:
+   - Image prompt (no text overlay)
+   - Caption text (2-3 lines)
+   - Include relevant CTA
+
+### ⚠️ Important Rules:
+1. Use ONLY the information provided above
+2. Generate content ONLY in ${language}
+3. Never assume or add services not mentioned
+4. Follow platform-specific character limits
+5. For images: describe photorealistic scenes without text
+6. Match the specified brand voice and mental trigger
 
 ### 📦 Return JSON Structure:
 {
   "market_analysis": {
     "industry": "identified market/industry",
-    "main_product": "core product/service offered",
-    "value_proposition": "unique selling points"
+    "main_service": "core service offered",
+    "value_proposition": "unique benefits"
   },
   "google_ads": [
     {
@@ -93,4 +100,3 @@ Return ONLY the JSON, without any explanation or additional text.`;
     userMessage
   };
 };
-
