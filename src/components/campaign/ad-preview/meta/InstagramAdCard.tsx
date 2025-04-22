@@ -1,154 +1,171 @@
+
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Newspaper, Smartphone, Video } from "lucide-react";
-import { MetaAd } from "@/hooks/adGeneration";
+import {
+  RotateCw,
+  Pencil,
+  Check,
+  X,
+  Trash2,
+  Copy
+} from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration/types";
 import { InstagramPreview } from "./instagram-preview";
-import InstagramAdEditor from "./InstagramAdEditor";
-import { toast } from "sonner";
 
 interface InstagramAdCardProps {
   ad: MetaAd;
-  companyName: string;
+  companyName?: string;
   index: number;
-  isLoading?: boolean;
-  onGenerateImage?: () => Promise<void>;
-  onUpdateAd?: (updatedAd: MetaAd) => void;
-  onDuplicate?: () => void;
-  onDelete?: () => void;
   isEditing?: boolean;
+  isSelected?: boolean;
+  isGeneratingImage?: boolean;
+  loadingImageIndex?: number | null;
   onEdit?: () => void;
   onSave?: () => void;
   onCancel?: () => void;
+  onSelect?: () => void;
+  onUnselect?: () => void;
+  onRegenerate?: () => void;
+  onGenerateImage?: () => Promise<void>;
+  onDelete?: () => void;
+  onCopy?: () => void;
+  onChange?: (ad: MetaAd) => void;
 }
 
 const InstagramAdCard: React.FC<InstagramAdCardProps> = ({
   ad,
-  companyName,
+  companyName = "Your Company",
   index,
-  isLoading = false,
-  onGenerateImage,
-  onUpdateAd,
-  onDuplicate,
-  onDelete,
   isEditing = false,
+  isSelected = false,
+  isGeneratingImage = false,
+  loadingImageIndex = null,
   onEdit,
   onSave,
-  onCancel
+  onCancel,
+  onSelect,
+  onUnselect,
+  onRegenerate,
+  onGenerateImage,
+  onDelete,
+  onCopy,
+  onChange
 }) => {
-  const [format, setFormat] = useState<"feed" | "story" | "reel">("feed");
   const [editedAd, setEditedAd] = useState<MetaAd>(ad);
-
-  const handleUpdateAd = (updatedAd: MetaAd) => {
-    setEditedAd(updatedAd);
-    if (onUpdateAd) {
-      onUpdateAd(updatedAd);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditedAd(prev => ({ ...prev, [name]: value }));
+    
+    if (onChange) {
+      onChange({ ...editedAd, [name]: value });
     }
   };
-
-  const handleCopy = () => {
-    const text = `${editedAd.headline}\n\n${editedAd.primaryText}\n\n${editedAd.description || ''}`;
-    navigator.clipboard.writeText(text);
-    toast.success("Ad content copied to clipboard");
-  };
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave();
-    }
-  };
-
+  
+  // Ensure the image generation function returns a Promise
   const handleGenerateImage = async (): Promise<void> => {
     if (onGenerateImage) {
       return onGenerateImage();
     }
     return Promise.resolve();
   };
-
+  
+  const isLoading = isGeneratingImage || loadingImageIndex === index;
+  
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between py-3">
-        <h3 className="text-lg font-semibold">Instagram Ad #{index + 1}</h3>
-        <div className="flex items-center gap-2">
+    <Card className={`overflow-hidden border ${
+      isSelected ? "border-primary ring-2 ring-primary/20" : "border-border"
+    }`}>
+      <div className="bg-muted p-3 border-b border-border flex justify-between items-center">
+        <div className="text-sm font-medium">Instagram Ad {index + 1}</div>
+        
+        <div className="flex items-center gap-1">
           {isEditing ? (
             <>
-              <Button variant="ghost" size="sm" onClick={onCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCancel}
+              >
+                <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
-              <Button variant="default" size="sm" onClick={handleSave}>
-                Save Changes
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onSave}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Save
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={handleCopy}>
-                Copy
-              </Button>
-              {onDuplicate && (
-                <Button variant="ghost" size="sm" onClick={onDuplicate}>
-                  Duplicate
-                </Button>
-              )}
-              {onDelete && (
-                <Button variant="ghost" size="sm" onClick={onDelete}>
-                  Delete
+              {onCopy && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCopy}
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  Copy
                 </Button>
               )}
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onEdit}
+                >
+                  <Pencil className="h-4 w-4 mr-1" />
                   Edit
                 </Button>
               )}
             </>
           )}
         </div>
-      </CardHeader>
-
-      <CardContent className="p-6">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <Tabs value={format} onValueChange={(v) => setFormat(v as typeof format)}>
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="feed">
-                  <Newspaper className="h-4 w-4 mr-2" />
-                  Feed
-                </TabsTrigger>
-                <TabsTrigger value="story">
-                  <Smartphone className="h-4 w-4 mr-2" />
-                  Story
-                </TabsTrigger>
-                <TabsTrigger value="reel">
-                  <Video className="h-4 w-4 mr-2" />
-                  Reel
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <InstagramPreview
-              ad={isEditing ? editedAd : ad}
-              companyName={companyName}
-              index={index}
-              loadingImageIndex={isLoading ? index : null}
-              onGenerateImage={handleGenerateImage}
-              onUpdateAd={handleUpdateAd}
-              viewMode={format}
-            />
-          </div>
-
-          <div>
-            <InstagramAdEditor
-              ad={isEditing ? editedAd : ad}
-              isEditing={isEditing}
-              onUpdateAd={handleUpdateAd}
-              onEdit={onEdit}
-              onSave={onSave}
-              onCancel={onCancel}
-              onCopy={handleCopy}
-            />
-          </div>
+      </div>
+      
+      <CardContent className="p-0">
+        <div className="flex flex-col items-center p-4">
+          <InstagramPreview
+            ad={isEditing ? editedAd : ad}
+            companyName={companyName}
+            index={index}
+            loadingImageIndex={loadingImageIndex}
+            onGenerateImage={handleGenerateImage}
+          />
         </div>
       </CardContent>
+      
+      {!isEditing && (
+        <div className="bg-card p-3 border-t border-border flex justify-between">
+          {onRegenerate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRegenerate}
+              disabled={isLoading}
+            >
+              <RotateCw className={`h-4 w-4 mr-1 ${isLoading ? "animate-spin" : ""}`} />
+              Regenerate
+            </Button>
+          )}
+          
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </Button>
+          )}
+        </div>
+      )}
     </Card>
   );
 };

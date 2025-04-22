@@ -98,7 +98,7 @@ const AdVariationCard: React.FC<AdVariationCardProps> = ({
       caption: "text-[#262626] dark:text-gray-100 text-base leading-snug",
       background: "bg-white dark:bg-gray-800",
     },
-    microsoft: { // Changed from 'bing' to 'microsoft' to match the expected type
+    microsoft: {
       headline: "text-[#004e8c] dark:text-blue-300 font-medium text-lg",
       url: "text-[#006621] dark:text-green-400 text-sm",
       description: "text-gray-700 dark:text-gray-300 text-base",
