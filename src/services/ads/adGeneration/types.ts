@@ -11,6 +11,7 @@ export interface CampaignPromptData {
   language?: string;
   platforms?: string[];
   companyDescription?: string;
+  industry?: string;
 }
 
 export interface GeneratedAdContent {
