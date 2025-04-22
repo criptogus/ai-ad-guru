@@ -1,157 +1,134 @@
 
-import React from "react";
-import { MetaAd } from "@/hooks/adGeneration/types";
+import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { TriggerButton } from "@/components/mental-triggers/TriggerButton";
-import { Smartphone, Video, Newspaper } from "lucide-react";
+import { MetaAd } from "@/hooks/adGeneration";
 
-interface AdEditorSectionProps {
+interface EditorSectionProps {
   ad: MetaAd;
   isEditing: boolean;
   onUpdate: (updatedAd: MetaAd) => void;
   onSelectTrigger?: (trigger: string) => void;
 }
 
-const AdEditorSection: React.FC<AdEditorSectionProps> = ({
-  ad,
-  isEditing,
-  onUpdate,
-  onSelectTrigger
-}) => {
-  const handleFieldChange = (field: keyof MetaAd, value: string) => {
+const AdEditorSection: React.FC<EditorSectionProps> = ({ ad, isEditing, onUpdate, onSelectTrigger }) => {
+  const [editedAd, setEditedAd] = useState<MetaAd>(ad);
+
+  if (!isEditing) return null;
+
+  const handleChange = (field: keyof MetaAd, value: string) => {
+    setEditedAd(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Update the parent component with changes
     onUpdate({
-      ...ad,
+      ...editedAd,
       [field]: value
     });
   };
 
-  const handleFormatChange = (value: string) => {
-    if (value === 'feed' || value === 'story' || value === 'reel') {
-      onUpdate({
-        ...ad,
-        format: value
-      });
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      {/* Format selection */}
+    <div className="space-y-4 p-4 border-t">
       <div>
-        <Label className="mb-2 block">Ad Format</Label>
-        <ToggleGroup 
-          type="single" 
-          variant="outline"
-          value={ad.format || "feed"}
-          onValueChange={handleFormatChange}
-          className="justify-start"
-          disabled={!isEditing}
+        <Label htmlFor="headline">Headline</Label>
+        <Input
+          id="headline"
+          value={editedAd.headline}
+          onChange={(e) => handleChange('headline', e.target.value)}
+          className="mt-1"
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="primaryText">Primary Text</Label>
+        <Textarea
+          id="primaryText"
+          value={editedAd.primaryText}
+          onChange={(e) => handleChange('primaryText', e.target.value)}
+          className="mt-1"
+          rows={3}
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
+          value={editedAd.description}
+          onChange={(e) => handleChange('description', e.target.value)}
+          className="mt-1"
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="format">Format</Label>
+        <Select
+          value={editedAd.format || 'feed'}
+          onValueChange={(value) => handleChange('format', value as 'feed' | 'story' | 'reel')}
         >
-          <ToggleGroupItem value="feed" className="gap-1">
-            <Newspaper className="h-4 w-4" />
-            <span>Feed</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="story" className="gap-1">
-            <Smartphone className="h-4 w-4" />
-            <span>Story</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="reel" className="gap-1">
-            <Video className="h-4 w-4" />
-            <span>Reel</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
+          <SelectTrigger>
+            <SelectValue placeholder="Select format" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="feed">Feed</SelectItem>
+            <SelectItem value="story">Story</SelectItem>
+            <SelectItem value="reel">Reel</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-
-      {/* Headline */}
+      
       <div>
-        <Label htmlFor="headline" className="mb-2 block">
-          Headline (40 char limit)
-        </Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="headline"
-            value={ad.headline}
-            onChange={(e) => handleFieldChange("headline", e.target.value)}
-            maxLength={40}
-            className="font-medium"
-            readOnly={!isEditing}
-          />
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
-            {ad.headline.length}/40
-          </span>
-        </div>
+        <Label htmlFor="imagePrompt">Image Prompt</Label>
+        <Textarea
+          id="imagePrompt"
+          value={editedAd.imagePrompt}
+          onChange={(e) => handleChange('imagePrompt', e.target.value)}
+          className="mt-1"
+          rows={2}
+        />
       </div>
-
-      {/* Primary Text */}
+      
       <div>
-        <Label htmlFor="primaryText" className="mb-2 block">
-          Primary Text (125 char limit)
-        </Label>
-        <div className="flex items-start gap-2">
-          <Textarea
-            id="primaryText"
-            value={ad.primaryText}
-            onChange={(e) => handleFieldChange("primaryText", e.target.value)}
-            maxLength={125}
-            className="min-h-24 resize-none"
-            readOnly={!isEditing}
-          />
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0 pt-2">
-            {ad.primaryText.length}/125
-          </span>
-        </div>
+        <Label htmlFor="callToAction">Call to Action</Label>
+        <Input
+          id="callToAction"
+          value={editedAd.callToAction || ''}
+          onChange={(e) => handleChange('callToAction', e.target.value)}
+          className="mt-1"
+        />
       </div>
-
-      {/* Description */}
-      <div>
-        <Label htmlFor="description" className="mb-2 block">
-          Description / Call to Action (30 char limit)
-        </Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="description"
-            value={ad.description}
-            onChange={(e) => handleFieldChange("description", e.target.value)}
-            maxLength={30}
-            readOnly={!isEditing}
-          />
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">
-            {ad.description.length}/30
-          </span>
-        </div>
-      </div>
-
-      {/* Image Prompt */}
-      <div>
-        <Label htmlFor="imagePrompt" className="mb-2 block">
-          Image Prompt
-        </Label>
-        <div className="flex items-start gap-2">
-          <Textarea
-            id="imagePrompt"
-            value={ad.imagePrompt || ""}
-            onChange={(e) => handleFieldChange("imagePrompt", e.target.value)}
-            className="min-h-24 resize-none"
-            placeholder={isEditing ? "Describe the image you want to generate..." : "No image prompt provided"}
-            readOnly={!isEditing}
-          />
-        </div>
-      </div>
-
-      {/* Mind Triggers */}
-      {isEditing && onSelectTrigger && (
-        <div>
-          <Label className="mb-2 block">Mind Triggers</Label>
-          <div className="grid grid-cols-1 gap-2">
-            <TriggerButton
-              onSelectTrigger={onSelectTrigger}
-              buttonText="Add Mind Trigger"
-              className="w-full"
-            />
-          </div>
+      
+      {onSelectTrigger && (
+        <div className="pt-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => onSelectTrigger('urgency')}
+            className="mr-2 mb-2"
+          >
+            Add Urgency
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => onSelectTrigger('scarcity')}
+            className="mr-2 mb-2"
+          >
+            Add Scarcity
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => onSelectTrigger('social proof')}
+            className="mb-2"
+          >
+            Add Social Proof
+          </Button>
         </div>
       )}
     </div>

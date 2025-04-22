@@ -46,7 +46,8 @@ export const useMicrosoftAdGeneration = (props?: MicrosoftAdGenerationProps) => 
         differentials: data.differentials || [],
         product: data.product || '',
         industry: data.industry || '',
-        mindTrigger: data.mindTrigger || ''
+        mindTrigger: data.mindTrigger || '',
+        platforms: ['microsoft']
       };
       
       // Generate ads using the service

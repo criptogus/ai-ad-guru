@@ -46,7 +46,8 @@ export const useLinkedInAdGeneration = (props?: LinkedInAdGenerationProps) => {
         differentials: data.differentials || [],
         product: data.product || '',
         industry: data.industry || '',
-        mindTrigger: data.mindTrigger || ''
+        mindTrigger: data.mindTrigger || '',
+        platforms: ['linkedin']
       };
       
       // Generate ads using the service

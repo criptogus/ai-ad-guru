@@ -14,7 +14,7 @@ export interface GoogleAd {
     title: string;
     description?: string;
     url?: string;
-  }>;
+  } | string>;
   headlines?: string[];
   descriptions?: string[];
 }
@@ -26,7 +26,7 @@ export interface MetaAd {
   imagePrompt: string;
   imageUrl?: string;
   format?: 'feed' | 'story' | 'reel';
-  hashtags?: string[];
+  hashtags?: string[] | string;
   callToAction?: string;
 }
 

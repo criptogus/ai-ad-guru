@@ -46,10 +46,14 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
                 className="text-[#1a0dab] hover:underline text-sm font-medium block truncate"
                 onClick={(e) => e.preventDefault()}
               >
-                {typeof siteLinks[i] === 'string' ? siteLinks[i] : siteLinks[i].title}
+                {typeof siteLinks[i] === 'string' 
+                  ? siteLinks[i] as string
+                  : (siteLinks[i] as {title: string}).title}
               </a>
-              {typeof siteLinks[i] !== 'string' && siteLinks[i].description && (
-                <p className="text-xs text-[#4d5156] truncate">{siteLinks[i].description}</p>
+              {typeof siteLinks[i] !== 'string' && (siteLinks[i] as {description?: string}).description && (
+                <p className="text-xs text-[#4d5156] truncate">
+                  {(siteLinks[i] as {description?: string}).description}
+                </p>
               )}
             </div>
           )}
@@ -60,10 +64,14 @@ const GoogleAdPreview: React.FC<GoogleAdPreviewProps> = ({
                 className="text-[#1a0dab] hover:underline text-sm font-medium block truncate"
                 onClick={(e) => e.preventDefault()}
               >
-                {typeof siteLinks[i + 1] === 'string' ? siteLinks[i + 1] : siteLinks[i + 1].title}
+                {typeof siteLinks[i + 1] === 'string' 
+                  ? siteLinks[i + 1] as string 
+                  : (siteLinks[i + 1] as {title: string}).title}
               </a>
-              {typeof siteLinks[i + 1] !== 'string' && siteLinks[i + 1].description && (
-                <p className="text-xs text-[#4d5156] truncate">{siteLinks[i + 1].description}</p>
+              {typeof siteLinks[i + 1] !== 'string' && (siteLinks[i + 1] as {description?: string}).description && (
+                <p className="text-xs text-[#4d5156] truncate">
+                  {(siteLinks[i + 1] as {description?: string}).description}
+                </p>
               )}
             </div>
           )}

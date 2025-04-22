@@ -10,7 +10,7 @@ interface InstagramPreviewFooterProps {
 const InstagramPreviewFooter: React.FC<InstagramPreviewFooterProps> = ({ ad, companyName }) => {
   // Format hashtags as string if they exist
   const getHashtagsText = () => {
-    if (!ad.hashtags || ad.hashtags.length === 0) return "";
+    if (!ad.hashtags) return "";
     
     if (typeof ad.hashtags === 'string') {
       return ad.hashtags;
