@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Image, RotateCw, Edit, Eye } from "lucide-react";
@@ -105,9 +106,11 @@ const AdPreviewSection: React.FC<PreviewSectionProps> = ({
             <ScrollArea className="h-28 pb-2">
               <div className="flex gap-2 overflow-x-auto pb-2">
                 <MetaImagePromptGallery 
-                  initialPrompt={ad.imagePrompt || ""} 
+                  ad={ad}
+                  loading={isLoading}
+                  onGenerateImage={onGenerateImage}
                   onSelectPrompt={handleSelectPrompt}
-                  displayMode="horizontal" 
+                  displayMode="horizontal"
                 />
               </div>
             </ScrollArea>
