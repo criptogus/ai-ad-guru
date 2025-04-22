@@ -1,44 +1,36 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ImageIcon } from "lucide-react";
+import { Image } from "lucide-react";
 
 interface ImagePlaceholderProps {
-  format: "feed" | "story" | "reel";
-  prompt?: string;
-  onGenerateImage?: () => void;
+  hasPrompt?: boolean;
+  onGenerateImage?: () => Promise<void>;
+  text?: string;
+  format?: "feed" | "story" | "reel";
 }
 
-const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({ 
-  format, 
-  prompt,
-  onGenerateImage 
+const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
+  hasPrompt = false,
+  onGenerateImage,
+  text = "No image available",
+  format = "feed"
 }) => {
-  // Get container class based on format
-  const getContainerClass = () => {
-    if (format === "story" || format === "reel") {
-      return "h-full";
-    }
-    return "aspect-square";
-  };
-
+  // Apply different aspect ratios based on format
+  const aspectRatioClass = format === "feed" 
+    ? "aspect-square" 
+    : "aspect-[9/16]";
+  
   return (
-    <div className={`${getContainerClass()} flex flex-col items-center justify-center p-4 text-center`}>
-      <ImageIcon className="h-10 w-10 text-gray-400 mb-2" />
-      <p className="text-sm text-gray-500 mb-2">No image generated yet</p>
+    <div className={`w-full ${aspectRatioClass} bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center p-4`}>
+      <Image className="w-10 h-10 text-gray-400 dark:text-gray-500 mb-3" />
+      <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">{text}</p>
       
-      {prompt && (
-        <p className="text-xs text-gray-400 mb-4 max-w-[80%] truncate">
-          Prompt: {prompt}
-        </p>
-      )}
-      
-      {onGenerateImage && (
+      {hasPrompt && onGenerateImage && (
         <Button 
-          variant="outline" 
+          variant="secondary" 
           size="sm" 
           onClick={onGenerateImage}
-          className="mt-2"
         >
           Generate Image
         </Button>

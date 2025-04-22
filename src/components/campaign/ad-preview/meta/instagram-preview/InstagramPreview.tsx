@@ -10,7 +10,7 @@ interface InstagramPreviewProps {
   companyName: string;
   index?: number;
   loadingImageIndex?: number | null;
-  onGenerateImage?: () => void;
+  onGenerateImage?: () => Promise<void>;
   onUpdateAd?: (updatedAd: MetaAd) => void;
   viewMode?: "feed" | "story" | "reel";
   isLoading?: boolean;
@@ -21,7 +21,7 @@ const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   companyName,
   index = 0,
   loadingImageIndex = null,
-  onGenerateImage = () => {},
+  onGenerateImage = async () => {},
   onUpdateAd,
   viewMode = "feed",
   isLoading = false,
