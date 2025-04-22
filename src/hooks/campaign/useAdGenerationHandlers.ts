@@ -36,6 +36,32 @@ export const useAdGenerationHandlers = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const { toast } = useToast();
 
+  // Generate fallback ads when API fails
+  const generateFallbackAds = (platform: string) => {
+    const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
+    
+    if (platform === 'google' || platform === 'microsoft') {
+      return Array(5).fill(null).map((_, i) => ({
+        headline_1: `${companyName} - Professional Services`,
+        headline_2: `Quality Solutions for Your Needs`,
+        headline_3: `Contact Us Today`,
+        description_1: `We provide top-quality services designed for your specific requirements.`,
+        description_2: `Learn more about how we can help your business grow and succeed.`,
+        display_url: campaignData.targetUrl || campaignData.websiteUrl || 'example.com'
+      }));
+    } else if (platform === 'meta' || platform === 'linkedin') {
+      return Array(5).fill(null).map((_, i) => ({
+        headline: `${companyName} - Professional Services`,
+        primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
+        description: `Quality services tailored to your needs. Contact us today to learn more.`,
+        imagePrompt: `Professional business image for ${companyName}, showing ${campaignData.industry || 'professional'} environment`,
+        format: 'square'
+      }));
+    }
+    
+    return [];
+  };
+
   // Handler for all ads generated from AdGenerationStep component
   const handleAdsGenerated = (adsData: Record<string, any[]>) => {
     console.log("Handling generated ads:", adsData);
@@ -73,25 +99,38 @@ export const useAdGenerationHandlers = ({
       });
       
       const mindTrigger = campaignData.mindTriggers?.google || '';
-      const ads = await generateGoogleAds({
+      let ads = await generateGoogleAds({
         ...campaignData, 
         mindTrigger,
         platforms: ['google']
       });
       
-      if (ads && ads.length > 0) {
-        setGoogleAds(ads);
+      // Use fallback if generation fails
+      if (!ads || ads.length === 0) {
+        ads = generateFallbackAds('google');
+        toast({
+          variant: "warning",
+          title: "Using fallback Google Ads",
+          description: "We've created placeholder ads. You can edit them now."
+        });
+      } else {
         toast({
           title: "Google Ads Generated",
           description: `Created ${ads.length} ad variations`
         });
       }
+      
+      setGoogleAds(ads);
     } catch (error) {
       console.error("Failed to generate Google Ads:", error);
+      // Use fallback on error
+      const fallbackAds = generateFallbackAds('google');
+      setGoogleAds(fallbackAds);
+      
       toast({
-        title: "Google Ads Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate ads",
-        variant: "destructive"
+        variant: "warning",
+        title: "Using fallback Google Ads",
+        description: "We've created placeholder ads due to an error. You can edit them now."
       });
     } finally {
       setIsGenerating(false);
@@ -108,25 +147,38 @@ export const useAdGenerationHandlers = ({
       });
   
       const mindTrigger = campaignData.mindTriggers?.meta || '';
-      const ads = await generateMetaAds({
+      let ads = await generateMetaAds({
         ...campaignData,
         mindTrigger,
         platforms: ['meta']
       });
   
-      if (ads && ads.length > 0) {
-        setMetaAds(ads);
+      // Use fallback if generation fails
+      if (!ads || ads.length === 0) {
+        ads = generateFallbackAds('meta');
+        toast({
+          variant: "warning",
+          title: "Using fallback Instagram Ads",
+          description: "We've created placeholder ads. You can edit them now."
+        });
+      } else {
         toast({
           title: "Instagram Ads Generated",
           description: `Created ${ads.length} ad variations`
         });
       }
+      
+      setMetaAds(ads);
     } catch (error) {
       console.error("Failed to generate Instagram Ads:", error);
+      // Use fallback on error
+      const fallbackAds = generateFallbackAds('meta');
+      setMetaAds(fallbackAds);
+      
       toast({
-        title: "Instagram Ads Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate ads",
-        variant: "destructive"
+        variant: "warning",
+        title: "Using fallback Instagram Ads",
+        description: "We've created placeholder ads due to an error. You can edit them now."
       });
     } finally {
       setIsGenerating(false);
@@ -142,25 +194,38 @@ export const useAdGenerationHandlers = ({
       });
   
       const mindTrigger = campaignData.mindTriggers?.linkedin || '';
-      const ads = await generateLinkedInAds({
+      let ads = await generateLinkedInAds({
         ...campaignData,
         mindTrigger,
         platforms: ['linkedin']
       });
   
-      if (ads && ads.length > 0) {
-        setLinkedInAds(ads);
+      // Use fallback if generation fails
+      if (!ads || ads.length === 0) {
+        ads = generateFallbackAds('linkedin');
+        toast({
+          variant: "warning",
+          title: "Using fallback LinkedIn Ads",
+          description: "We've created placeholder ads. You can edit them now."
+        });
+      } else {
         toast({
           title: "LinkedIn Ads Generated",
           description: `Created ${ads.length} ad variations`
         });
       }
+      
+      setLinkedInAds(ads);
     } catch (error) {
       console.error("Failed to generate LinkedIn Ads:", error);
+      // Use fallback on error
+      const fallbackAds = generateFallbackAds('linkedin');
+      setLinkedInAds(fallbackAds);
+      
       toast({
-        title: "LinkedIn Ads Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate ads",
-        variant: "destructive"
+        variant: "warning",
+        title: "Using fallback LinkedIn Ads",
+        description: "We've created placeholder ads due to an error. You can edit them now."
       });
     } finally {
       setIsGenerating(false);
@@ -176,25 +241,38 @@ export const useAdGenerationHandlers = ({
       });
   
       const mindTrigger = campaignData.mindTriggers?.microsoft || '';
-      const ads = await generateMicrosoftAds({
+      let ads = await generateMicrosoftAds({
         ...campaignData,
         mindTrigger,
         platforms: ['microsoft']
       });
   
-      if (ads && ads.length > 0) {
-        setMicrosoftAds(ads);
+      // Use fallback if generation fails
+      if (!ads || ads.length === 0) {
+        ads = generateFallbackAds('microsoft');
+        toast({
+          variant: "warning",
+          title: "Using fallback Microsoft Ads",
+          description: "We've created placeholder ads. You can edit them now."
+        });
+      } else {
         toast({
           title: "Microsoft Ads Generated",
           description: `Created ${ads.length} ad variations`
         });
       }
+      
+      setMicrosoftAds(ads);
     } catch (error) {
       console.error("Failed to generate Microsoft Ads:", error);
+      // Use fallback on error
+      const fallbackAds = generateFallbackAds('microsoft');
+      setMicrosoftAds(fallbackAds);
+      
       toast({
-        title: "Microsoft Ads Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate ads",
-        variant: "destructive"
+        variant: "warning",
+        title: "Using fallback Microsoft Ads",
+        description: "We've created placeholder ads due to an error. You can edit them now."
       });
     } finally {
       setIsGenerating(false);

@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 import { getMindTrigger } from "@/hooks/campaignActions/getMindTrigger";
+import { toast } from "sonner";
 
 // Import existing tab components
 import GoogleAdsTab from "@/components/campaign/ad-preview/GoogleAdsTab";
@@ -58,10 +59,78 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("google");
   
+  // Auto-detect which platform to show based on available ads
+  useEffect(() => {
+    if (googleAds.length > 0) {
+      setActiveTab("google");
+    } else if (metaAds.length > 0) {
+      setActiveTab("meta");
+    } else if (linkedInAds.length > 0) {
+      setActiveTab("linkedin");
+    } else if (microsoftAds.length > 0) {
+      setActiveTab("microsoft");
+    }
+    
+    // Log what ads are available
+    console.log("Available ads:", {
+      google: googleAds.length,
+      meta: metaAds.length,
+      linkedin: linkedInAds.length,
+      microsoft: microsoftAds.length
+    });
+  }, [googleAds, metaAds, linkedInAds, microsoftAds]);
+  
   // Get mindTrigger for the current platform
   const getCurrentMindTrigger = (platform: string): string => {
     return getMindTrigger({ mindTriggers }, platform);
   };
+
+  // Check if we have any ads at all
+  const hasAnyAds = googleAds.length > 0 || metaAds.length > 0 || 
+                    linkedInAds.length > 0 || microsoftAds.length > 0;
+                    
+  // Generate any missing ads if none are available
+  useEffect(() => {
+    if (!hasAnyAds && !isGenerating) {
+      const generateMissingAds = async () => {
+        // Determine which platform to generate based on user selection
+        if (mindTriggers.google) {
+          toast({
+            title: "Generating Google Ads",
+            description: "No ads found. Generating Google Ads automatically."
+          });
+          await onGenerateGoogleAds();
+        } else if (mindTriggers.meta) {
+          toast({
+            title: "Generating Instagram Ads",
+            description: "No ads found. Generating Instagram Ads automatically."
+          });
+          await onGenerateMetaAds();
+        } else if (mindTriggers.linkedin) {
+          toast({
+            title: "Generating LinkedIn Ads",
+            description: "No ads found. Generating LinkedIn Ads automatically."
+          });
+          await onGenerateLinkedInAds();
+        } else if (mindTriggers.microsoft) {
+          toast({
+            title: "Generating Microsoft Ads",
+            description: "No ads found. Generating Microsoft Ads automatically."
+          });
+          await onGenerateMicrosoftAds();
+        } else {
+          // Default to Google Ads if no specific platform is selected
+          toast({
+            title: "Generating Google Ads",
+            description: "No ads found. Generating Google Ads automatically."
+          });
+          await onGenerateGoogleAds();
+        }
+      };
+      
+      generateMissingAds();
+    }
+  }, [hasAnyAds, isGenerating]);
 
   return (
     <Card className="shadow-md">
@@ -75,25 +144,25 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
               value="google" 
               className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
             >
-              Google Ads
+              Google Ads {googleAds.length > 0 && `(${googleAds.length})`}
             </TabsTrigger>
             <TabsTrigger 
               value="meta" 
               className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
             >
-              Instagram Ads
+              Instagram Ads {metaAds.length > 0 && `(${metaAds.length})`}
             </TabsTrigger>
             <TabsTrigger 
               value="linkedin" 
               className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
             >
-              LinkedIn Ads
+              LinkedIn Ads {linkedInAds.length > 0 && `(${linkedInAds.length})`}
             </TabsTrigger>
             <TabsTrigger 
               value="microsoft" 
               className="py-3 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
             >
-              Microsoft Ads
+              Microsoft Ads {microsoftAds.length > 0 && `(${microsoftAds.length})`}
             </TabsTrigger>
           </TabsList>
           
@@ -152,15 +221,7 @@ const AdPreviewStep: React.FC<AdPreviewStepProps> = ({
           <Button variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button 
-            onClick={onNext}
-            disabled={
-              googleAds.length === 0 && 
-              metaAds.length === 0 && 
-              linkedInAds.length === 0 && 
-              microsoftAds.length === 0
-            }
-          >
+          <Button onClick={onNext}>
             Next Step
           </Button>
         </div>
