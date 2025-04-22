@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWebsiteAnalysis } from "@/hooks/useWebsiteAnalysis";
@@ -63,12 +62,11 @@ export const useCampaignPageController = () => {
 
   const { createCampaign } = useCampaignCreation();
 
-  const { 
+  const {
     handleGenerateImage, 
     loadingImageIndex 
   } = useImageGenerationHandler();
 
-  // Wrap createCampaign to match the expected signature
   const handleCreateCampaign = async () => {
     try {
       const campaignParams = {

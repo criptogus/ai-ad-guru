@@ -16,6 +16,7 @@ import { useAdGenerationWrappers } from "@/hooks/useAdGenerationWrappers";
 import { MetaAd } from "@/hooks/adGeneration/types";
 import { useImageGenerationHandler } from "@/hooks/campaign/useImageGenerationHandler";
 import { toast } from "sonner";
+import { useCampaignCreateHandler } from "@/hooks/campaign/handlers/useCampaignCreateHandler";
 
 const CampaignContent: React.FC = () => {
   const {
@@ -97,7 +98,6 @@ const CampaignContent: React.FC = () => {
 
   const {
     handleAdsGenerated,
-    handleCreateCampaign,
     handleGenerateGoogleAds,
     handleGenerateMetaAds,
     handleGenerateLinkedInAds,
@@ -115,6 +115,16 @@ const CampaignContent: React.FC = () => {
     generateMetaAds: wrappedGenerateMetaAds,
     generateLinkedInAds: wrappedGenerateLinkedInAds,
     generateMicrosoftAds: wrappedGenerateMicrosoftAds
+  });
+
+  const { handleCreateCampaign } = useCampaignCreateHandler({
+    createCampaign, 
+    setIsCreating,
+    campaignData,
+    googleAds,
+    metaAds,
+    microsoftAds,
+    linkedInAds
   });
 
   const { handleGenerateImage, loadingImageIndex } = useImageGenerationHandler();
@@ -212,7 +222,7 @@ const CampaignContent: React.FC = () => {
     setCampaignData,
     handleBack,
     handleNextWrapper,
-    createCampaign,
+    createCampaign: handleCreateCampaign,
     cacheInfo,
     handleAdsGenerated
   });
