@@ -37,37 +37,115 @@ export const useAdGenerationHandlers = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Generate fallback Google ads
+  // Detectar o idioma do conteúdo para gerar fallbacks contextualizados
+  const detectLanguage = (): 'pt' | 'en' | 'es' => {
+    const language = campaignData.language || analysisResult?.language || 'pt-BR';
+    if (language.startsWith('pt')) return 'pt';
+    if (language.startsWith('es')) return 'es';
+    return 'en';
+  };
+
+  // Generate fallback Google ads com suporte a idiomas
   const generateFallbackGoogleAds = (): GoogleAd[] => {
-    const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
-    const industry = campaignData.industry || analysisResult?.industry || 'professional services';
-    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || 'potential customers';
+    const language = detectLanguage();
+    const companyName = campaignData.companyName || analysisResult?.companyName || 'Sua Empresa';
+    const industry = campaignData.industry || analysisResult?.industry || '';
+    const industryText = industry || (language === 'pt' ? 'serviços profissionais' : 
+                                       language === 'es' ? 'servicios profesionales' : 
+                                       'professional services');
+    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || '';
+    const audienceText = targetAudience || (language === 'pt' ? 'clientes potenciais' : 
+                                             language === 'es' ? 'clientes potenciales' : 
+                                             'potential customers');
+    
+    // Textos localizados para fallbacks
+    const headlines = {
+      pt: {
+        h1: `${companyName} - ${industryText}`,
+        h2: `Soluções de Qualidade`,
+        h3: `Entre em Contato Hoje`,
+      },
+      es: {
+        h1: `${companyName} - ${industryText}`,
+        h2: `Soluciones de Calidad`,
+        h3: `Contáctenos Hoy`,
+      },
+      en: {
+        h1: `${companyName} - ${industryText}`,
+        h2: `Quality Solutions`,
+        h3: `Contact Us Today`,
+      }
+    };
+    
+    const descriptions = {
+      pt: {
+        d1: `Oferecemos serviços de alta qualidade desenvolvidos para atender suas necessidades específicas no setor de ${industryText}.`,
+        d2: `Saiba mais sobre como podemos ajudar seu negócio a crescer e ter sucesso. Soluções confiáveis para ${audienceText}.`,
+      },
+      es: {
+        d1: `Ofrecemos servicios de alta calidad diseñados para satisfacer sus necesidades específicas en el sector de ${industryText}.`,
+        d2: `Aprenda más sobre cómo podemos ayudar a su negocio a crecer y tener éxito. Soluciones confiables para ${audienceText}.`,
+      },
+      en: {
+        d1: `We provide top-quality services designed for your specific requirements in the ${industryText} sector.`,
+        d2: `Learn more about how we can help your business grow and succeed. Trusted solutions for ${audienceText}.`,
+      }
+    };
     
     return Array(5).fill(null).map((_, i) => ({
-      headline1: `${companyName} - Professional ${industry}`,
-      headline2: `Quality Solutions for ${targetAudience}`,
-      headline3: `Contact Us Today`,
-      description1: `We provide top-quality services designed for your specific requirements in the ${industry} sector.`,
-      description2: `Learn more about how we can help your business grow and succeed. Trusted solutions for ${targetAudience}.`,
+      headline1: headlines[language].h1,
+      headline2: headlines[language].h2,
+      headline3: headlines[language].h3,
+      description1: descriptions[language].d1,
+      description2: descriptions[language].d2,
       displayPath: campaignData.targetUrl || campaignData.websiteUrl || 'example.com',
-      path1: 'services',
-      path2: 'info',
+      path1: language === 'pt' ? 'servicos' : language === 'es' ? 'servicios' : 'services',
+      path2: language === 'pt' ? 'info' : 'info',
       siteLinks: []
     }));
   };
   
-  // Generate fallback Meta/LinkedIn ads
+  // Generate fallback Meta/LinkedIn ads com suporte a idiomas
   const generateFallbackMetaAds = (): MetaAd[] => {
-    const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
-    const industry = campaignData.industry || analysisResult?.industry || 'professional services';
-    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || 'potential customers';
+    const language = detectLanguage();
+    const companyName = campaignData.companyName || analysisResult?.companyName || 'Sua Empresa';
+    const industry = campaignData.industry || analysisResult?.industry || '';
+    const industryText = industry || (language === 'pt' ? 'serviços profissionais' : 
+                                       language === 'es' ? 'servicios profesionales' : 
+                                       'professional services');
+    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || '';
+    const audienceText = targetAudience || (language === 'pt' ? 'clientes potenciais' : 
+                                             language === 'es' ? 'clientes potenciales' : 
+                                             'potential customers');
+    
+    // Textos localizados para fallbacks
+    const adTexts = {
+      pt: {
+        headline: `${companyName} - Soluções em ${industryText}`,
+        primaryText: `Descubra como nossas soluções em ${industryText} podem transformar seu negócio. Nossa equipe de especialistas está pronta para ajudar ${audienceText} a alcançar seus objetivos.`,
+        description: `Serviços de qualidade adaptados às suas necessidades. Entre em contato hoje para saber mais sobre nossas soluções confiáveis para ${audienceText}.`,
+        imagePrompt: `Imagem profissional de negócios para ${companyName}, mostrando ambiente de ${industryText} com pessoas representando ${audienceText}, estilo de fotografia comercial de alta qualidade`
+      },
+      es: {
+        headline: `${companyName} - Soluciones en ${industryText}`,
+        primaryText: `Descubra cómo nuestras soluciones en ${industryText} pueden transformar su negocio. Nuestro equipo de expertos está listo para ayudar a ${audienceText} a alcanzar sus objetivos.`,
+        description: `Servicios de calidad adaptados a sus necesidades. Contáctenos hoy para saber más sobre nuestras soluciones confiables para ${audienceText}.`,
+        imagePrompt: `Imagen profesional de negocios para ${companyName}, mostrando ambiente de ${industryText} con personas representando ${audienceText}, estilo de fotografía comercial de alta calidad`
+      },
+      en: {
+        headline: `${companyName} - ${industryText} Solutions`,
+        primaryText: `Discover how our ${industryText} solutions can transform your business. Our team of experts is ready to help ${audienceText} achieve their goals.`,
+        description: `Quality services tailored to your needs. Contact us today to learn more about our trusted solutions for ${audienceText}.`,
+        imagePrompt: `Professional business image for ${companyName}, showing ${industryText} environment with people representing ${audienceText}, high quality commercial photography style`
+      }
+    };
     
     return Array(5).fill(null).map((_, i) => ({
-      headline: `${companyName} - Professional ${industry} Solutions`,
-      primaryText: `Discover how our ${industry} solutions can transform your business. Our team of experts is ready to help ${targetAudience} achieve their goals.`,
-      description: `Quality services tailored to your needs. Contact us today to learn more about our trusted solutions for ${targetAudience}.`,
-      imagePrompt: `Professional business image for ${companyName}, showing ${industry} environment with people representing ${targetAudience}, high quality commercial photography style`,
-      format: 'feed' // Changed from 'square' to 'feed' to match the MetaAd type
+      headline: adTexts[language].headline,
+      primaryText: adTexts[language].primaryText,
+      description: adTexts[language].description,
+      imagePrompt: adTexts[language].imagePrompt,
+      format: 'feed'
     }));
   };
 

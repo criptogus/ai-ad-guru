@@ -1,5 +1,6 @@
 
 import { WebsiteAnalysisResult } from "./types.ts";
+import { getLanguageFromLocale } from "./utils/languageDetection.ts";
 
 interface PromptMessages {
   systemMessage: string;
@@ -8,14 +9,34 @@ interface PromptMessages {
 
 export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
   const language = campaignData.language || "Portuguese";
+  const languageCode = getLanguageFromLocale(language);
+  
+  // Define language-specific instructions
+  const langInstructions = {
+    pt: {
+      title: "PORTUGUÊS",
+      generic_terms: "serviços profissionais, resultados de qualidade",
+      response_lang: "português"
+    },
+    es: {
+      title: "ESPAÑOL",
+      generic_terms: "servicios profesionales, resultados de calidad",
+      response_lang: "español"
+    },
+    en: {
+      title: "ENGLISH",
+      generic_terms: "professional services, quality results",
+      response_lang: "English"
+    }
+  }[languageCode];
 
   const systemMessage = `
 Você é um redator publicitário sênior especializado em anúncios de Google Ads.
 Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
-A resposta deve estar COMPLETAMENTE em ${language.toUpperCase()}.
+A resposta deve estar COMPLETAMENTE em ${langInstructions.title}.
 IMPORTANTE: 
 - JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.
-- NUNCA use termos genéricos como "professional services", "quality results" ou similares.
+- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.
 - Use APENAS as informações fornecidas abaixo.
 - Ignore campos em branco (NÃO invente dados).
 - Retorne APENAS o JSON formatado conforme o exemplo.
@@ -39,7 +60,7 @@ Requisitos:
 - Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)
 - 2 descrições (máx 90 caracteres cada)
 - Um display_url baseado no site fornecido
-- NÃO incluir texto em inglês ou outro idioma que não seja ${language}
+- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}
 - NÃO criar dados fictícios ou genéricos
 
 Formato OBRIGATÓRIO de resposta (JSON):
@@ -60,14 +81,34 @@ Formato OBRIGATÓRIO de resposta (JSON):
 
 export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
   const language = campaignData.language || "Portuguese";
+  const languageCode = getLanguageFromLocale(language);
+  
+  // Define language-specific instructions
+  const langInstructions = {
+    pt: {
+      title: "PORTUGUÊS",
+      generic_terms: "serviços profissionais, resultados de qualidade",
+      response_lang: "português"
+    },
+    es: {
+      title: "ESPAÑOL",
+      generic_terms: "servicios profesionales, resultados de calidad",
+      response_lang: "español"
+    },
+    en: {
+      title: "ENGLISH",
+      generic_terms: "professional services, quality results",
+      response_lang: "English"
+    }
+  }[languageCode];
 
   const systemMessage = `
 Você é um redator publicitário sênior especializado em anúncios para LinkedIn.
 Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
-A resposta deve estar COMPLETAMENTE em ${language.toUpperCase()}.
+A resposta deve estar COMPLETAMENTE em ${langInstructions.title}.
 IMPORTANTE: 
 - JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.
-- NUNCA use termos genéricos como "professional services", "quality results" ou similares.
+- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.
 - Use APENAS as informações fornecidas abaixo.
 - Ignore campos em branco (NÃO invente dados).
 - Retorne APENAS o JSON formatado conforme o exemplo.
@@ -92,7 +133,7 @@ Requisitos:
 - Texto principal profissional e persuasivo
 - Descrição complementar
 - Sugestão de imagem (sem texto sobreposto)
-- NÃO incluir texto em inglês ou outro idioma que não seja ${language}
+- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}
 - NÃO criar dados fictícios ou genéricos
 
 Formato OBRIGATÓRIO de resposta (JSON):
@@ -111,14 +152,34 @@ Formato OBRIGATÓRIO de resposta (JSON):
 
 export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
   const language = campaignData.language || "Portuguese";
+  const languageCode = getLanguageFromLocale(language);
+  
+  // Define language-specific instructions
+  const langInstructions = {
+    pt: {
+      title: "PORTUGUÊS",
+      generic_terms: "serviços profissionais, resultados de qualidade",
+      response_lang: "português"
+    },
+    es: {
+      title: "ESPAÑOL",
+      generic_terms: "servicios profesionales, resultados de calidad",
+      response_lang: "español"
+    },
+    en: {
+      title: "ENGLISH",
+      generic_terms: "professional services, quality results",
+      response_lang: "English"
+    }
+  }[languageCode];
 
   const systemMessage = `
 Você é um redator publicitário sênior especializado em anúncios para Microsoft/Bing Ads.
 Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
-A resposta deve estar COMPLETAMENTE em ${language.toUpperCase()}.
+A resposta deve estar COMPLETAMENTE em ${langInstructions.title}.
 IMPORTANTE: 
 - JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.
-- NUNCA use termos genéricos como "professional services", "quality results" ou similares.
+- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.
 - Use APENAS as informações fornecidas abaixo.
 - Ignore campos em branco (NÃO invente dados).
 - Retorne APENAS o JSON formatado conforme o exemplo.
@@ -142,7 +203,7 @@ Requisitos:
 - Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)
 - 2 descrições (máx 90 caracteres cada)
 - Um display_url baseado no site fornecido
-- NÃO incluir texto em inglês ou outro idioma que não seja ${language}
+- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}
 - NÃO criar dados fictícios ou genéricos
 
 Formato OBRIGATÓRIO de resposta (JSON):
@@ -163,14 +224,34 @@ Formato OBRIGATÓRIO de resposta (JSON):
 
 export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
   const language = campaignData.language || "Portuguese";
+  const languageCode = getLanguageFromLocale(language);
+  
+  // Define language-specific instructions
+  const langInstructions = {
+    pt: {
+      title: "PORTUGUÊS",
+      generic_terms: "serviços profissionais, resultados de qualidade",
+      response_lang: "português"
+    },
+    es: {
+      title: "ESPAÑOL",
+      generic_terms: "servicios profesionales, resultados de calidad",
+      response_lang: "español"
+    },
+    en: {
+      title: "ENGLISH",
+      generic_terms: "professional services, quality results",
+      response_lang: "English"
+    }
+  }[languageCode];
 
   const systemMessage = `
 Você é um redator publicitário sênior especializado em anúncios para Instagram/Meta.
 Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
-A resposta deve estar COMPLETAMENTE em ${language.toUpperCase()}.
+A resposta deve estar COMPLETAMENTE em ${langInstructions.title}.
 IMPORTANTE: 
 - JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.
-- NUNCA use termos genéricos como "professional services", "quality results" ou similares.
+- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.
 - Use APENAS as informações fornecidas abaixo.
 - Ignore campos em branco (NÃO invente dados).
 - CADA ANÚNCIO DEVE TER UM IMAGE_PROMPT DETALHADO E ESPECÍFICO.
@@ -196,7 +277,7 @@ Requisitos:
 - Texto principal (primaryText) envolvente (legenda do Instagram)
 - Descrição de suporte (description)
 - OBRIGATÓRIO: Um prompt detalhado para gerar imagem (image_prompt) sem texto sobreposto
-- NÃO incluir texto em inglês ou outro idioma que não seja ${language}
+- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}
 - NÃO criar dados fictícios ou genéricos
 
 O CAMPO IMAGE_PROMPT É CRUCIAL. Ele deve:

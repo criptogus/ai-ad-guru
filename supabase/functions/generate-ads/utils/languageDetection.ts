@@ -86,3 +86,31 @@ export function detectLanguagesInAdContent(ad: any): {
     mixed
   };
 }
+
+/**
+ * Returns language code based on language detection or fallback
+ */
+export function detectLanguageCode(text: string | undefined, fallback = 'en'): 'en' | 'pt' | 'es' {
+  if (!text) return fallback as 'en' | 'pt' | 'es';
+  
+  // Check the text for specific language markers
+  if (isPortugueseText(text)) return 'pt';
+  if (isSpanishText(text)) return 'es';
+  if (isEnglishText(text)) return 'en';
+  
+  // Default to fallback if no language detected
+  return fallback as 'en' | 'pt' | 'es';
+}
+
+/**
+ * Detect language from a locale string like pt-BR, en-US
+ */
+export function getLanguageFromLocale(locale: string | undefined): 'en' | 'pt' | 'es' {
+  if (!locale) return 'en';
+  
+  const lang = locale.split('-')[0].toLowerCase();
+  
+  if (lang === 'pt') return 'pt';
+  if (lang === 'es') return 'es';
+  return 'en';
+}
