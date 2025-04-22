@@ -52,12 +52,16 @@ Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.ke
 Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
-- Ad text (caption) with compelling hook, clear value proposition, and strong call to action
+- Headline that grabs attention
+- Primary text (caption) with compelling hook, clear value proposition, and strong call to action
+- Description that expands on the benefits
 - Image prompt for DALL-E to generate a high-quality Instagram image
 
 Format the response as valid JSON array with objects containing:
 {
-  "text": "...",
+  "headline": "...",
+  "primaryText": "...",
+  "description": "...",
   "image_prompt": "..."
 }
 `;
@@ -81,12 +85,16 @@ Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.ke
 Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
-- Ad text with professional tone, clear business value, and appropriate call to action for B2B audience
+- Headline that captures professional attention
+- Primary text with professional tone, clear business value, and appropriate context for B2B audience
+- Description that expands on the benefits with professional language
 - Image prompt for DALL-E to generate a high-quality professional LinkedIn image
 
 Format the response as valid JSON array with objects containing:
 {
-  "text": "...",
+  "headline": "...",
+  "primaryText": "...",
+  "description": "...",
   "image_prompt": "..."
 }
 `;

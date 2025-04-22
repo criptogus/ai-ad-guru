@@ -1,161 +1,138 @@
 
-import { GoogleAd } from "../types.ts";
 import { WebsiteAnalysisResult } from "../types.ts";
 
-/**
- * Generates fallback Google ads when AI generation fails
- */
-export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult): GoogleAd[] {
-  const { 
-    companyName = "Your Company", 
-    businessDescription = "", 
-    callToAction = ["Learn More"]
-  } = campaignData;
+export function generateFallbackGoogleAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Your Company';
+  const industry = campaignData.industry || 'professional services';
+  const targetAudience = campaignData.targetAudience || 'potential customers';
+  const objective = campaignData.objective || 'awareness';
+  const websiteUrl = campaignData.websiteUrl || 'example.com';
   
-  // Extract basic info for fallback content
-  const description = businessDescription 
-    ? businessDescription.substring(0, 80) 
-    : `Quality products and services from ${companyName}`;
+  // Create display URL
+  const displayUrl = websiteUrl.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
   
-  const cta = Array.isArray(callToAction) && callToAction.length > 0 
-    ? callToAction[0] 
-    : "Check Out Our Offers";
+  // Normalize uniqueSellingPoints to array
+  const uniqueSellingPoints = Array.isArray(campaignData.uniqueSellingPoints) 
+    ? campaignData.uniqueSellingPoints 
+    : (typeof campaignData.uniqueSellingPoints === 'string' 
+        ? [campaignData.uniqueSellingPoints] 
+        : ['Quality service', 'Expert team']);
+    
+  // Normalize callToAction to array  
+  const callToActions = Array.isArray(campaignData.callToAction) 
+    ? campaignData.callToAction 
+    : (typeof campaignData.callToAction === 'string' 
+        ? [campaignData.callToAction] 
+        : ['Learn More', 'Contact Us', 'Get Started']);
 
-  // Create basic fallback ads
   return [
     {
-      headlines: [
-        `${companyName}`,
-        "Top Quality Service",
-        "Shop Now & Save"
-      ],
-      descriptions: [
-        `${description.substring(0, 80)}`,
-        `${cta}. Satisfaction guaranteed!`
-      ]
+      headline_1: `${companyName} ${industry}`,
+      headline_2: `Solutions for ${targetAudience}`,
+      headline_3: objective === 'conversion' ? 'Buy Now' : (objective === 'consideration' ? 'Learn More' : 'Discover Today'),
+      description_1: `Top-rated ${industry} services designed specifically for ${targetAudience}. ${uniqueSellingPoints[0] || 'Quality guaranteed'}.`,
+      description_2: `${uniqueSellingPoints[1] || 'Professional team'} ready to help. ${callToActions[0] || 'Contact us'} today for a ${objective === 'conversion' ? 'quote' : 'consultation'}.`,
+      display_url: displayUrl
     },
     {
-      headlines: [
-        `Discover ${companyName}`,
-        "Premium Solutions",
-        "Limited Time Offer"
-      ],
-      descriptions: [
-        "Quality products designed to meet your needs. Best-in-class service.",
-        "Visit our website today for exclusive deals!"
-      ]
+      headline_1: `${industry} Experts | ${companyName}`,
+      headline_2: `Trusted by ${targetAudience}`,
+      headline_3: callToActions[0] || 'Contact Us Today',
+      description_1: `Award-winning ${industry} solutions with ${uniqueSellingPoints[0] || 'proven results'}. Helping ${targetAudience} since 2010.`,
+      description_2: `${uniqueSellingPoints[1] || 'Customized approach'} for your needs. Free ${objective === 'conversion' ? 'quote' : 'consultation'} available.`,
+      display_url: `${displayUrl}/services`
     },
     {
-      headlines: [
-        "Best Quality Guaranteed",
-        `${companyName} Services`,
-        "Trusted by Customers"
-      ],
-      descriptions: [
-        "We provide exceptional products with outstanding customer service.",
-        "Contact us today to learn more about our offers."
-      ]
+      headline_1: `#1 ${industry} Provider`,
+      headline_2: `Solutions for ${targetAudience}`,
+      headline_3: objective === 'conversion' ? 'Get a Quote Today' : (objective === 'consideration' ? 'See Our Approach' : 'Learn How We Help'),
+      description_1: `${companyName} delivers ${uniqueSellingPoints[0] || 'premium'} ${industry} services tailored for ${targetAudience}.`,
+      description_2: `${uniqueSellingPoints[1] || 'Expert team'} with years of experience. ${callToActions[1] || 'Schedule a call'} now.`,
+      display_url: `${displayUrl}/solutions`
     },
     {
-      headlines: [
-        "Exclusive Deals",
-        `${companyName} - Best Choice`,
-        "Save Today"
-      ],
-      descriptions: [
-        "Find the perfect solution for your needs. Quality guaranteed.",
-        "Limited time offer. Don't miss out!"
-      ]
+      headline_1: `${companyName} - ${objective === 'conversion' ? 'Save Today' : (objective === 'consideration' ? 'Compare Options' : 'Discover Solutions')}`,
+      headline_2: `Top-Rated ${industry} Services`,
+      headline_3: `Perfect for ${targetAudience}`,
+      description_1: `Looking for quality ${industry} services? ${companyName} provides ${uniqueSellingPoints[0] || 'exceptional'} solutions.`,
+      description_2: `${uniqueSellingPoints[1] || 'Customized approach'} for every client. ${callToActions[0] || 'Visit our site'} to learn more.`,
+      display_url: displayUrl
     },
     {
-      headlines: [
-        `Why Choose ${companyName}?`,
-        "Superior Quality",
-        "Customer Satisfaction"
-      ],
-      descriptions: [
-        "We deliver excellence in everything we do. Trusted by thousands.",
-        "Visit our website to discover our full range of services."
-      ]
+      headline_1: `${industry} Solutions | ${companyName}`,
+      headline_2: `Designed for ${targetAudience}`,
+      headline_3: callToActions[0] || 'Contact Us Today',
+      description_1: `Get ${uniqueSellingPoints[0] || 'professional'} ${industry} services from ${companyName}. Trusted by clients nationwide.`,
+      description_2: `${uniqueSellingPoints[1] || 'Affordable options'} available. ${objective === 'conversion' ? 'Limited time offer.' : 'Free resources available.'}`,
+      display_url: `${displayUrl}/about`
     }
   ];
 }
 
-/**
- * Generates fallback Microsoft ads when AI generation fails
- */
-export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult): GoogleAd[] {
-  const { 
-    companyName = "Your Company", 
-    businessDescription = "", 
-    callToAction = ["Learn More"]
-  } = campaignData;
+export function generateFallbackMicrosoftAds(campaignData: WebsiteAnalysisResult) {
+  const companyName = campaignData.companyName || 'Your Company';
+  const industry = campaignData.industry || 'professional services';
+  const targetAudience = campaignData.targetAudience || 'potential customers';
+  const objective = campaignData.objective || 'awareness';
+  const websiteUrl = campaignData.websiteUrl || 'example.com';
   
-  // Extract basic info for fallback content
-  const description = businessDescription 
-    ? businessDescription.substring(0, 80) 
-    : `Quality products and services from ${companyName}`;
+  // Create display URL
+  const displayUrl = websiteUrl.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
   
-  const cta = Array.isArray(callToAction) && callToAction.length > 0 
-    ? callToAction[0] 
-    : "Explore Our Solutions";
+  // Normalize uniqueSellingPoints to array
+  const uniqueSellingPoints = Array.isArray(campaignData.uniqueSellingPoints) 
+    ? campaignData.uniqueSellingPoints 
+    : (typeof campaignData.uniqueSellingPoints === 'string' 
+        ? [campaignData.uniqueSellingPoints] 
+        : ['Quality service', 'Expert team']);
+    
+  // Normalize callToAction to array  
+  const callToActions = Array.isArray(campaignData.callToAction) 
+    ? campaignData.callToAction 
+    : (typeof campaignData.callToAction === 'string' 
+        ? [campaignData.callToAction] 
+        : ['Learn More', 'Contact Us', 'Get Started']);
 
-  // Create basic fallback ads for Microsoft
   return [
     {
-      headlines: [
-        `${companyName} Solutions`,
-        "Professional Service",
-        "Expert Assistance"
-      ],
-      descriptions: [
-        `${description.substring(0, 80)}`,
-        `${cta}. Professional support available.`
-      ]
+      headline_1: `${companyName} - ${industry} Solutions`,
+      headline_2: `Perfect for ${targetAudience}`,
+      headline_3: objective === 'conversion' ? 'Special Offer Today' : (objective === 'consideration' ? 'See How We Help' : 'Discover More'),
+      description_1: `Leading provider of ${industry} services with ${uniqueSellingPoints[0] || 'proven results'} for ${targetAudience}.`,
+      description_2: `${uniqueSellingPoints[1] || 'Personalized service'} from experts in the field. ${callToActions[0] || 'Contact us'} today.`,
+      display_url: displayUrl
     },
     {
-      headlines: [
-        `${companyName} - Excellence`,
-        "Trusted Provider",
-        "Professional Service"
-      ],
-      descriptions: [
-        "Industry-leading solutions designed for professionals. Expert support.",
-        "Contact us today for a personalized consultation."
-      ]
+      headline_1: `${industry} Services | ${companyName}`,
+      headline_2: `Trusted by ${targetAudience}`,
+      headline_3: callToActions[0] || 'Contact Us Today',
+      description_1: `Find the right ${industry} solution with ${companyName}. ${uniqueSellingPoints[0] || 'Quality service'} guaranteed.`,
+      description_2: `Serving ${targetAudience} with ${uniqueSellingPoints[1] || 'expertise and dedication'}. Free ${objective === 'conversion' ? 'quote' : 'consultation'}.`,
+      display_url: `${displayUrl}/services`
     },
     {
-      headlines: [
-        "Business Solutions",
-        `${companyName} Services`,
-        "Enterprise Quality"
-      ],
-      descriptions: [
-        "Professional-grade products designed for business efficiency.",
-        "Schedule a demo to see how we can help your business."
-      ]
+      headline_1: `${companyName} ${industry} Services`,
+      headline_2: `Designed for ${targetAudience}`,
+      headline_3: objective === 'conversion' ? 'Request a Quote' : (objective === 'consideration' ? 'See Our Approach' : 'Learn More Today'),
+      description_1: `${companyName} offers ${uniqueSellingPoints[0] || 'comprehensive'} ${industry} solutions that deliver real results.`,
+      description_2: `Our ${uniqueSellingPoints[1] || 'experienced team'} is ready to help. ${callToActions[1] || 'Schedule a consultation'} now.`,
+      display_url: `${displayUrl}/solutions`
     },
     {
-      headlines: [
-        "Professional Services",
-        `${companyName} Expertise`,
-        "Business Solutions"
-      ],
-      descriptions: [
-        "Tailored solutions for modern businesses. Increase productivity.",
-        "Contact our team to discuss your requirements."
-      ]
+      headline_1: `Premium ${industry} Solutions`,
+      headline_2: `Ideal for ${targetAudience}`,
+      headline_3: `By ${companyName} | ${callToActions[2] || 'Get Started'}`,
+      description_1: `${companyName} provides ${uniqueSellingPoints[0] || 'top-quality'} ${industry} services tailored to your needs.`,
+      description_2: `${uniqueSellingPoints[1] || 'Responsive support'} included. ${objective === 'conversion' ? 'Limited availability.' : 'Resources and guides available.'}`,
+      display_url: displayUrl
     },
     {
-      headlines: [
-        `${companyName} for Business`,
-        "Enterprise Solutions",
-        "Professional Support"
-      ],
-      descriptions: [
-        "Comprehensive business solutions with outstanding support.",
-        "Request a quote today for your organization's needs."
-      ]
+      headline_1: `${industry} Experts at ${companyName}`,
+      headline_2: `Solutions for ${targetAudience}`,
+      headline_3: callToActions[0] || 'Learn More Today',
+      description_1: `Looking for reliable ${industry} services? ${companyName} delivers ${uniqueSellingPoints[0] || 'exceptional results'}.`,
+      description_2: `${uniqueSellingPoints[1] || 'Customer satisfaction'} is our priority. ${objective === 'conversion' ? 'Special offers available.' : 'Free resources available.'}`,
+      display_url: `${displayUrl}/about`
     }
   ];
 }

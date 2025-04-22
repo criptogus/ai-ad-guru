@@ -8,6 +8,7 @@ import { CampaignData } from '@/hooks/useCampaignState';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
+import { normalizeGoogleAd, normalizeMetaAd } from '@/lib/utils';
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -77,16 +78,16 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           if (ads) {
             // Extract correct platform data and convert to array
             if (platform === 'google' && ads.google_ads) {
-              results[platform] = convertGoogleAdsFormat(ads.google_ads);
+              results[platform] = ads.google_ads.map(ad => normalizeGoogleAd(ad));
               hasAnySuccessfulPlatform = true;
             } else if ((platform === 'meta' || platform === 'instagram') && (ads.meta_ads || ads.instagram_ads)) {
-              results[platform] = convertMetaAdsFormat(ads.meta_ads || ads.instagram_ads || []);
+              results[platform] = (ads.meta_ads || ads.instagram_ads || []).map(ad => normalizeMetaAd(ad));
               hasAnySuccessfulPlatform = true;
             } else if (platform === 'linkedin' && ads.linkedin_ads) {
-              results[platform] = convertMetaAdsFormat(ads.linkedin_ads);
+              results[platform] = ads.linkedin_ads.map(ad => normalizeMetaAd(ad));
               hasAnySuccessfulPlatform = true;
             } else if (platform === 'microsoft' && ads.microsoft_ads) {
-              results[platform] = convertGoogleAdsFormat(ads.microsoft_ads);
+              results[platform] = ads.microsoft_ads.map(ad => normalizeGoogleAd(ad));
               hasAnySuccessfulPlatform = true;
             } else {
               console.warn(`No ${platform} ads data received`);
@@ -159,38 +160,13 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     }
   };
 
-  // Converts API response format to match our GoogleAd interface
-  const convertGoogleAdsFormat = (ads: any[]): GoogleAd[] => {
-    return ads.map(ad => ({
-      headline1: ad.headline_1 || '',
-      headline2: ad.headline_2 || '',
-      headline3: ad.headline_3 || 'Learn More',
-      description1: ad.description_1 || '',
-      description2: ad.description_2 || '',
-      displayPath: ad.display_url || '',
-      path1: 'services',
-      path2: 'info',
-      siteLinks: []
-    }));
-  };
-
-  // Converts API response format to match our MetaAd interface
-  const convertMetaAdsFormat = (ads: any[]): MetaAd[] => {
-    return ads.map(ad => ({
-      headline: ad.headline || ad.text?.split('\n')[0] || 'Discover More',
-      primaryText: ad.text || ad.primaryText || '',
-      description: ad.description || '',
-      imagePrompt: ad.image_prompt || ad.imagePrompt || `Professional ad image`,
-      format: 'feed'
-    }));
-  };
-
   // Generate fallback ads when API fails
   const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
     const companyName = promptData.companyName || 'Your Company';
     const industry = promptData.industry || 'professional services';
     const targetAudience = promptData.targetAudience || 'potential customers';
     const objective = promptData.objective || 'awareness';
+    const description = promptData.companyDescription || `${companyName} provides quality ${industry} services`;
     
     if (platform === 'google' || platform === 'microsoft') {
       return Array(5).fill(null).map((_, i) => ({
@@ -198,7 +174,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         headline2: `Solutions for ${targetAudience}`,
         headline3: `${objective === 'conversion' ? 'Buy Now' : objective === 'consideration' ? 'Learn More' : 'Discover Today'}`,
         description1: `We provide top-quality ${industry} services designed for ${targetAudience}.`,
-        description2: `${promptData.companyDescription?.substring(0, 80) || `Learn more about how we help ${targetAudience} succeed.`}`,
+        description2: `${description.substring(0, 80) || `Learn more about how we help ${targetAudience} succeed.`}`,
         displayPath: promptData.websiteUrl || 'example.com',
         path1: 'services',
         path2: 'info',
@@ -207,7 +183,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     } else if (platform === 'meta' || platform === 'linkedin') {
       return Array(5).fill(null).map((_, i) => ({
         headline: `${companyName} - ${industry} Solutions`,
-        primaryText: `${promptData.companyDescription?.substring(0, 100) || `Discover how our ${industry} solutions can transform your experience.`} Our team is ready to help ${targetAudience} achieve their goals.`,
+        primaryText: `${description.substring(0, 100) || `Discover how our ${industry} solutions can transform your experience.`} Our team is ready to help ${targetAudience} achieve their goals.`,
         description: `Quality services tailored for ${targetAudience}. ${objective === 'conversion' ? 'Buy Now!' : objective === 'consideration' ? 'Learn More Today' : 'Discover How'}`,
         imagePrompt: `Professional ${industry} image for ${companyName}, showing people representing ${targetAudience}, in a modern setting with ${promptData.brandTone || 'professional'} atmosphere`,
         format: 'feed'

@@ -10,6 +10,7 @@ export const useAdGenerationWrappers = (
 ) => {
   const wrappedGenerateGoogleAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
     try {
+      console.log("wrappedGenerateGoogleAds called with:", input);
       const ads = await generateGoogleAds(input, trigger);
       return Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
     } catch (error) {
@@ -20,6 +21,7 @@ export const useAdGenerationWrappers = (
 
   const wrappedGenerateMetaAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
     try {
+      console.log("wrappedGenerateMetaAds called with:", input);
       const ads = await generateMetaAds(input, trigger);
       return Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
     } catch (error) {
@@ -30,6 +32,7 @@ export const useAdGenerationWrappers = (
 
   const wrappedGenerateLinkedInAds = async (input: any, trigger?: string): Promise<MetaAd[]> => {
     try {
+      console.log("wrappedGenerateLinkedInAds called with:", input);
       const ads = await generateLinkedInAds(input, trigger);
       return Array.isArray(ads) ? ads.map(ad => normalizeMetaAd(ad)) : [];
     } catch (error) {
@@ -40,6 +43,7 @@ export const useAdGenerationWrappers = (
 
   const wrappedGenerateMicrosoftAds = async (input: any, trigger?: string): Promise<GoogleAd[]> => {
     try {
+      console.log("wrappedGenerateMicrosoftAds called with:", input);
       const ads = await generateMicrosoftAds(input, trigger);
       return Array.isArray(ads) ? ads.map(ad => normalizeGoogleAd(ad)) : [];
     } catch (error) {

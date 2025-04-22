@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   generateGoogleAds, 
@@ -36,6 +37,7 @@ serve(async (req) => {
     const { platform, campaignData, mindTrigger, systemMessage, userMessage, platforms } = await req.json();
     
     console.log("Generating ads for platform:", platform || platforms);
+    console.log("Campaign data:", JSON.stringify(campaignData, null, 2));
     
     // If we have systemMessage and userMessage, use the prompt-based generation
     if (systemMessage && userMessage) {
@@ -153,11 +155,15 @@ async function generateFromPrompt(systemMessage: string, userMessage: string) {
         ],
         instagram_ads: [
           {
-            text: "Transform your experience with our innovative solutions. #innovation #quality",
+            headline: "Transform Your Experience",
+            primaryText: "Transform your experience with our innovative solutions. #innovation #quality",
+            description: "Discover what makes us different",
             image_prompt: "Professional product display with elegant modern styling"
           },
           {
-            text: "Discover what makes us different. Quality you can trust. #trusted #reliable",
+            headline: "Quality You Can Trust",
+            primaryText: "Discover what makes us different. Quality you can trust. #trusted #reliable",
+            description: "Premium service for discerning customers",
             image_prompt: "Lifestyle image showing product in use in a modern setting"
           }
         ]
@@ -199,7 +205,7 @@ async function generateFromPrompt(systemMessage: string, userMessage: string) {
         return {
           raw_content: content,
           google_ads: extractGoogleAdsFromText(content),
-          instagram_ads: extractInstagramAdsFromText(content)
+          meta_ads: extractMetaAdsFromText(content)
         };
       }
     } catch (parseError) {
@@ -220,9 +226,11 @@ async function generateFromPrompt(systemMessage: string, userMessage: string) {
             display_url: "example.com"
           }
         ],
-        instagram_ads: [
+        meta_ads: [
           {
-            text: "Transform your experience with our innovative solutions. #innovation #quality",
+            headline: "Transform Your Experience",
+            primaryText: "Transform your experience with our innovative solutions. #innovation #quality",
+            description: "Discover what makes us different",
             image_prompt: "Professional product display with elegant modern styling"
           }
         ]
@@ -235,7 +243,7 @@ async function generateFromPrompt(systemMessage: string, userMessage: string) {
 }
 
 // Extract Google ads from text content
-function extractGoogleAdsFromText(text) {
+function extractGoogleAdsFromText(text: string) {
   if (!text) return [];
   
   try {
@@ -301,7 +309,7 @@ function extractGoogleAdsFromText(text) {
 }
 
 // Extract Instagram ads from text content
-function extractInstagramAdsFromText(text) {
+function extractMetaAdsFromText(text: string) {
   if (!text) return [];
   
   try {
@@ -316,8 +324,16 @@ function extractInstagramAdsFromText(text) {
       const generalMatches = text.match(generalRegex) || [];
       
       for (const adText of generalMatches) {
+        let headline = "";
         let caption = "";
+        let description = "";
         let imagePrompt = "";
+        
+        // Look for headline
+        const headlineMatch = adText.match(/(?:Headline|Title)\s*:?\s*([^\n]+)/i);
+        if (headlineMatch) {
+          headline = headlineMatch[1].trim();
+        }
         
         // Look for caption/text
         const captionMatch = adText.match(/(?:Caption|Text|Copy)\s*:?\s*([^\n]+(?:\n[^\n]+)*?)(?=Image|$)/i);
@@ -331,6 +347,12 @@ function extractInstagramAdsFromText(text) {
           }
         }
         
+        // Look for description
+        const descMatch = adText.match(/(?:Description|Brief)\s*:?\s*([^\n]+)/i);
+        if (descMatch) {
+          description = descMatch[1].trim();
+        }
+        
         // Look for image prompt
         const imageMatch = adText.match(/(?:Image|Visual|Image Prompt|Photo)\s*:?\s*([^\n]+(?:\n[^\n]+)*?)(?=Caption|Text|Copy|$)/i);
         if (imageMatch) {
@@ -340,9 +362,11 @@ function extractInstagramAdsFromText(text) {
           imagePrompt = `Professional lifestyle image related to: ${caption.substring(0, 100)}`;
         }
         
-        if (caption) {
+        if (caption || headline) {
           ads.push({
-            text: caption,
+            headline: headline || caption.split(' ').slice(0, 5).join(' '),
+            primaryText: caption,
+            description: description || "Learn more about our products and services",
             image_prompt: imagePrompt || "Professional brand image with modern aesthetic"
           });
         }
@@ -350,13 +374,27 @@ function extractInstagramAdsFromText(text) {
     } else {
       // Process explicit Instagram sections
       for (const adText of matches) {
+        let headline = "";
         let caption = "";
+        let description = "";
         let imagePrompt = "";
+        
+        // Look for headline
+        const headlineMatch = adText.match(/(?:Headline|Title)\s*:?\s*([^\n]+)/i);
+        if (headlineMatch) {
+          headline = headlineMatch[1].trim();
+        }
         
         // Look for caption/text
         const captionMatch = adText.match(/(?:Caption|Text|Copy)\s*:?\s*([^\n]+(?:\n[^\n]+)*?)(?=Image|$)/i);
         if (captionMatch) {
           caption = captionMatch[1].trim();
+        }
+        
+        // Look for description
+        const descMatch = adText.match(/(?:Description|Brief)\s*:?\s*([^\n]+)/i);
+        if (descMatch) {
+          description = descMatch[1].trim();
         }
         
         // Look for image prompt
@@ -368,9 +406,11 @@ function extractInstagramAdsFromText(text) {
           imagePrompt = `Professional lifestyle image related to: ${caption.substring(0, 100)}`;
         }
         
-        if (caption) {
+        if (caption || headline) {
           ads.push({
-            text: caption,
+            headline: headline || caption.split(' ').slice(0, 5).join(' '),
+            primaryText: caption,
+            description: description || "Learn more about our products and services",
             image_prompt: imagePrompt || "Professional brand image with modern aesthetic"
           });
         }
@@ -382,12 +422,16 @@ function extractInstagramAdsFromText(text) {
       const paragraphs = text.split('\n\n').filter(p => p.trim());
       if (paragraphs.length > 0) {
         ads.push({
-          text: paragraphs[0].trim(),
+          headline: "Premium Quality",
+          primaryText: paragraphs[0].trim(),
+          description: "Discover what sets us apart",
           image_prompt: "Professional lifestyle image representing the brand"
         });
       } else {
         ads.push({
-          text: "Discover our premium quality products and services. #quality #innovation",
+          headline: "Premium Quality",
+          primaryText: "Discover our premium quality products and services. #quality #innovation",
+          description: "Learn what makes us different",
           image_prompt: "Professional lifestyle image with modern aesthetic"
         });
       }
@@ -398,7 +442,9 @@ function extractInstagramAdsFromText(text) {
     console.error("Error extracting Instagram ads from text:", error);
     return [
       {
-        text: "Discover our premium quality products and services. #quality #innovation",
+        headline: "Premium Quality",
+        primaryText: "Discover our premium quality products and services. #quality #innovation",
+        description: "Learn what makes us different",
         image_prompt: "Professional lifestyle image with modern aesthetic"
       }
     ];

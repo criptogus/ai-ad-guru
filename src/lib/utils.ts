@@ -1,55 +1,88 @@
 
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { GoogleAd, MetaAd } from "@/hooks/adGeneration/types";
 
+// Combine Tailwind classes
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-// Function to extract domain from a URL
-export function getDomain(url: string): string {
+// Format currency
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value);
+}
+
+// Truncate text with ellipsis
+export function truncateText(text: string, maxLength: number): string {
+  if (text && text.length > maxLength) {
+    return text.slice(0, maxLength) + '...';
+  }
+  return text;
+}
+
+// Format date 
+export function formatDate(date: Date | string): string {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+// Normalize Google Ad data to ensure consistent structure
+export function normalizeGoogleAd(ad: any): GoogleAd {
+  return {
+    headline1: ad.headline_1 || ad.headline1 || '',
+    headline2: ad.headline_2 || ad.headline2 || '',
+    headline3: ad.headline_3 || ad.headline3 || 'Learn More',
+    description1: ad.description_1 || ad.description1 || '',
+    description2: ad.description_2 || ad.description2 || '',
+    displayPath: ad.display_url || ad.displayPath || '',
+    path1: ad.path1 || 'services',
+    path2: ad.path2 || 'info',
+    siteLinks: ad.siteLinks || []
+  };
+}
+
+// Normalize Meta Ad data to ensure consistent structure
+export function normalizeMetaAd(ad: any): MetaAd {
+  return {
+    headline: ad.headline || (ad.text?.split('\n')[0]) || 'Discover More',
+    primaryText: ad.text || ad.primaryText || '',
+    description: ad.description || '',
+    imagePrompt: ad.image_prompt || ad.imagePrompt || 'Professional ad image',
+    format: ad.format === 'square' ? 'feed' : (ad.format || 'feed') // Convert 'square' to 'feed'
+  };
+}
+
+// Extract domain from URL
+export function extractDomain(url: string): string {
+  if (!url) return '';
+  
   try {
-    if (!url) return 'example.com';
     const hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
     return hostname.replace('www.', '');
   } catch (error) {
     console.error('Error extracting domain:', error);
-    return url || 'example.com';
+    return url;
   }
 }
 
-// Function to normalize Google Ad data format
-export function normalizeGoogleAd(ad: any): GoogleAd {
-  // Handle mismatch between API response format and our interface
-  return {
-    headline1: ad.headline1 || ad.headline_1 || '',
-    headline2: ad.headline2 || ad.headline_2 || '',
-    headline3: ad.headline3 || ad.headline_3 || 'Learn More',
-    description1: ad.description1 || ad.description_1 || '',
-    description2: ad.description2 || ad.description_2 || '',
-    displayPath: ad.displayPath || ad.display_url || '',
-    path1: ad.path1 || 'services',
-    path2: ad.path2 || 'info',
-    siteLinks: ad.siteLinks || [],
-    
-    // Add headlines and descriptions arrays if they don't exist
-    headlines: ad.headlines || [ad.headline1 || ad.headline_1 || '', ad.headline2 || ad.headline_2 || '', ad.headline3 || ad.headline_3 || ''],
-    descriptions: ad.descriptions || [ad.description1 || ad.description_1 || '', ad.description2 || ad.description_2 || '']
-  };
-}
-
-// Function to normalize Meta Ad data format
-export function normalizeMetaAd(ad: any): MetaAd {
-  // Handle mismatch between API response format and our interface
-  return {
-    headline: ad.headline || ad.title || (ad.text ? ad.text.split('\n')[0] : '') || '',
-    primaryText: ad.primaryText || ad.text || ad.primary_text || '',
-    description: ad.description || '',
-    imagePrompt: ad.imagePrompt || ad.image_prompt || `Professional ad image for ${ad.headline || ''}`,
-    imageUrl: ad.imageUrl || ad.image_url || null,
-    format: ad.format || 'feed', // Default to 'feed' format
-    hashtags: ad.hashtags || [],
-    callToAction: ad.callToAction || ad.call_to_action || 'Learn More'
-  };
+// Generate initials from a name
+export function getInitials(name: string): string {
+  if (!name) return '';
+  
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
 }
