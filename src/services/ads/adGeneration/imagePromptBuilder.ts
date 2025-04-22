@@ -9,6 +9,8 @@ interface ImagePromptContext {
   platform: 'instagram' | 'facebook' | 'linkedin' | 'google' | 'meta';
   format: 'square' | 'portrait' | 'landscape' | 'story' | 'horizontal';
   brandColors?: string[];
+  industry?: string;
+  uniqueSellingPoints?: string[];
 }
 
 // Renamed the function export to match the import in imageGenerationService.ts
@@ -21,7 +23,9 @@ export const buildImagePrompt = ({
   mentalTrigger,
   platform,
   format,
-  brandColors = ['#3B82F6', '#10B981']
+  brandColors = ['#3B82F6', '#10B981'],
+  industry = 'professional services',
+  uniqueSellingPoints = []
 }: ImagePromptContext): string => {
   const formatDimensions = {
     square: '1080x1080',
@@ -33,16 +37,23 @@ export const buildImagePrompt = ({
 
   // Map 'meta' platform to 'instagram' for prompt generation
   const displayPlatform = platform === 'meta' ? 'instagram' : platform;
+  
+  // Create USP text from array or use default
+  const uspText = uniqueSellingPoints.length > 0 
+    ? `Highlighting: ${uniqueSellingPoints.slice(0, 2).join(', ')}`
+    : 'Highlighting the product/service quality and benefits';
 
   return `Create a high-resolution advertising image designed for a ${displayPlatform} ad campaign.
 
 ### Brand Context:
 - Brand name: ${brandName}
 - Product/service: ${productService}
+- Industry: ${industry}
 - Campaign objective: ${campaignObjective}
 - Target audience: ${targetAudience}
 - Tone: ${tone}
 - Main emotion or mental trigger: ${mentalTrigger || 'trust'}
+- ${uspText}
 
 ### Image Style:
 - Agency-quality, photorealistic composition

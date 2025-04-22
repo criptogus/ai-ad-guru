@@ -40,13 +40,15 @@ export const useAdGenerationHandlers = ({
   // Generate fallback Google ads
   const generateFallbackGoogleAds = (): GoogleAd[] => {
     const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
+    const industry = campaignData.industry || analysisResult?.industry || 'professional services';
+    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || 'potential customers';
     
     return Array(5).fill(null).map((_, i) => ({
-      headline1: `${companyName} - Professional Services`,
-      headline2: `Quality Solutions for Your Needs`,
+      headline1: `${companyName} - Professional ${industry}`,
+      headline2: `Quality Solutions for ${targetAudience}`,
       headline3: `Contact Us Today`,
-      description1: `We provide top-quality services designed for your specific requirements.`,
-      description2: `Learn more about how we can help your business grow and succeed.`,
+      description1: `We provide top-quality services designed for your specific requirements in the ${industry} sector.`,
+      description2: `Learn more about how we can help your business grow and succeed. Trusted solutions for ${targetAudience}.`,
       displayPath: campaignData.targetUrl || campaignData.websiteUrl || 'example.com',
       path1: 'services',
       path2: 'info',
@@ -57,12 +59,14 @@ export const useAdGenerationHandlers = ({
   // Generate fallback Meta/LinkedIn ads
   const generateFallbackMetaAds = (): MetaAd[] => {
     const companyName = campaignData.companyName || analysisResult?.companyName || 'Your Company';
+    const industry = campaignData.industry || analysisResult?.industry || 'professional services';
+    const targetAudience = campaignData.targetAudience || analysisResult?.targetAudience || 'potential customers';
     
     return Array(5).fill(null).map((_, i) => ({
-      headline: `${companyName} - Professional Services`,
-      primaryText: `Discover how our solutions can transform your business. Our team of experts is ready to help you achieve your goals.`,
-      description: `Quality services tailored to your needs. Contact us today to learn more.`,
-      imagePrompt: `Professional business image for ${companyName}, showing ${campaignData.industry || 'professional'} environment`,
+      headline: `${companyName} - Professional ${industry} Solutions`,
+      primaryText: `Discover how our ${industry} solutions can transform your business. Our team of experts is ready to help ${targetAudience} achieve their goals.`,
+      description: `Quality services tailored to your needs. Contact us today to learn more about our trusted solutions for ${targetAudience}.`,
+      imagePrompt: `Professional business image for ${companyName}, showing ${industry} environment with people representing ${targetAudience}, high quality commercial photography style`,
       format: 'feed' // Changed from 'square' to 'feed' to match the MetaAd type
     }));
   };
@@ -106,6 +110,7 @@ export const useAdGenerationHandlers = ({
       const mindTrigger = campaignData.mindTriggers?.google || '';
       let ads = await generateGoogleAds({
         ...campaignData, 
+        ...analysisResult,
         mindTrigger,
         platforms: ['google']
       });
@@ -156,6 +161,7 @@ export const useAdGenerationHandlers = ({
       const mindTrigger = campaignData.mindTriggers?.meta || '';
       let ads = await generateMetaAds({
         ...campaignData,
+        ...analysisResult,
         mindTrigger,
         platforms: ['meta']
       });
@@ -205,6 +211,7 @@ export const useAdGenerationHandlers = ({
       const mindTrigger = campaignData.mindTriggers?.linkedin || '';
       let ads = await generateLinkedInAds({
         ...campaignData,
+        ...analysisResult,
         mindTrigger,
         platforms: ['linkedin']
       });
@@ -255,6 +262,7 @@ export const useAdGenerationHandlers = ({
       const mindTrigger = campaignData.mindTriggers?.microsoft || '';
       let ads = await generateMicrosoftAds({
         ...campaignData,
+        ...analysisResult,
         mindTrigger,
         platforms: ['microsoft']
       });

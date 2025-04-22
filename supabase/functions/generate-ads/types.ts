@@ -1,18 +1,21 @@
 
 export interface WebsiteAnalysisResult {
   companyName: string;
-  websiteUrl?: string;
+  websiteUrl: string;
   industry?: string;
   product?: string;
-  targetAudience?: string;
-  brandTone?: string;
+  businessDescription?: string;
   companyDescription?: string;
-  uniqueSellingPoints?: string[];
+  targetAudience?: string;
+  uniqueSellingPoints?: string[] | string;
+  callToAction?: string[] | string;
+  keywords?: string[] | string;
+  brandTone?: string;
   mindTrigger?: string;
-  [key: string]: any;
+  objective?: string;
 }
 
 export interface PromptMessages {
-  systemMessage: string;
+  systemMessage?: string;
   userMessage: string;
 }

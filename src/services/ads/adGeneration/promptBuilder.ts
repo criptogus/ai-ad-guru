@@ -16,6 +16,8 @@ Objective: ${data.objective || 'awareness'}
 Mind Trigger: ${data.mindTrigger || 'none'}
 Company Description: ${data.companyDescription || '(not provided)'}
 Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
+Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
 - 3 Headlines (max 30 chars each)
@@ -50,6 +52,8 @@ Objective: ${data.objective || 'awareness'}
 Mind Trigger: ${data.mindTrigger || 'none'}
 Company Description: ${data.companyDescription || '(not provided)'}
 Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
+Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
 - Ad text (caption) with compelling hook, clear value proposition, and strong call to action
@@ -79,6 +83,8 @@ Objective: ${data.objective || 'awareness'}
 Mind Trigger: ${data.mindTrigger || 'none'}
 Company Description: ${data.companyDescription || '(not provided)'}
 Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
+Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
 - Ad text with professional tone, clear business value, and appropriate call to action for B2B audience
@@ -108,6 +114,8 @@ Objective: ${data.objective || 'awareness'}
 Mind Trigger: ${data.mindTrigger || 'none'}
 Company Description: ${data.companyDescription || '(not provided)'}
 Unique Selling Points: ${(data.differentials && data.differentials.length > 0) ? data.differentials.join(', ') : '(not provided)'}
+Keywords: ${(data.keywords && data.keywords.length > 0) ? (Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords) : '(not provided)'}
+Call to Action: ${(data.callToAction && data.callToAction.length > 0) ? (Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction) : 'Learn More'}
 
 Each ad should include:
 - 3 Headlines (max 30 chars each)
