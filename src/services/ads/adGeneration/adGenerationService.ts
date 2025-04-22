@@ -11,6 +11,9 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
     // Build a detailed prompt using the provided template structure
     const { systemMessage, userMessage } = buildAdGenerationPrompt(data);
     
+    console.log('System message for OpenAI:', systemMessage.substring(0, 150) + '...');
+    console.log('User message for OpenAI:', userMessage.substring(0, 150) + '...');
+    
     // Call the Supabase function to generate ads with the new prompt structure
     const { data: response, error } = await supabase.functions.invoke('generate-ads', {
       body: {
@@ -29,20 +32,27 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
     
     if (!response?.success || !response?.content) {
       console.error('Ad generation failed:', response?.error || 'No content generated');
+      
+      // For debugging: if there's a raw content, log it
+      if (response?.rawContent) {
+        console.log('Raw content from OpenAI:', response.rawContent);
+      }
+      
       return null;
     }
     
-    // Validate the generated content
-    const content = response.content;
-    const validationResult = validateGeneratedContent(content, data);
+    // Log the received content for debugging
+    console.log('Successfully generated ads, sample:', JSON.stringify(response.content).substring(0, 300) + '...');
+    
+    // Validate the generated content to ensure it meets requirements
+    const validationResult = validateGeneratedContent(response.content, data);
     
     if (!validationResult.isValid) {
       console.error('Generated content validation failed:', validationResult.reason);
       return null;
     }
     
-    console.log('Successfully generated ads, sample:', JSON.stringify(content).substring(0, 300) + '...');
-    return content;
+    return response.content;
   } catch (error) {
     errorLogger.logError(error, 'generateAds');
     return null;
@@ -55,33 +65,22 @@ interface ValidationResult {
 }
 
 const validateGeneratedContent = (content: any, campaignData: CampaignPromptData): ValidationResult => {
+  // Check that we have at least one platform's ads
+  const hasGoogleAds = Array.isArray(content.google_ads) && content.google_ads.length > 0;
+  const hasInstagramAds = Array.isArray(content.instagram_ads) && content.instagram_ads.length > 0;
+  const hasLinkedInAds = Array.isArray(content.linkedin_ads) && content.linkedin_ads.length > 0;
+  const hasMicrosoftAds = Array.isArray(content.microsoft_ads) && content.microsoft_ads.length > 0;
+  
+  if (!hasGoogleAds && !hasInstagramAds && !hasLinkedInAds && !hasMicrosoftAds) {
+    return {
+      isValid: false,
+      reason: 'No valid ad content found in the response'
+    };
+  }
+  
   const language = campaignData.language || 'portuguese';
   const companyName = campaignData.companyName || '';
   
-  // Validate that we have at least one ad for each requested platform
-  const requestedPlatforms = campaignData.platforms || ['google'];
-  let missingPlatforms = [];
-  
-  if (requestedPlatforms.includes('google') && (!content.google_ads || content.google_ads.length === 0)) {
-    missingPlatforms.push('google');
-  }
-  if (requestedPlatforms.includes('meta') && (!content.instagram_ads || content.instagram_ads.length === 0)) {
-    missingPlatforms.push('instagram');
-  }
-  if (requestedPlatforms.includes('linkedin') && (!content.linkedin_ads || content.linkedin_ads.length === 0)) {
-    missingPlatforms.push('linkedin');
-  }
-  if (requestedPlatforms.includes('microsoft') && (!content.microsoft_ads || content.microsoft_ads.length === 0)) {
-    missingPlatforms.push('microsoft');
-  }
-  
-  if (missingPlatforms.length > 0) {
-    return {
-      isValid: false,
-      reason: `Missing ads for requested platforms: ${missingPlatforms.join(', ')}`
-    };
-  }
-
   // Check for common placeholders and generic text
   const contentJson = JSON.stringify(content).toLowerCase();
   const genericTerms = [
@@ -140,8 +139,8 @@ const validateGeneratedContent = (content: any, campaignData: CampaignPromptData
 
   // Check image prompts for quality
   const imagePrompts = [
-    ...(content.instagram_ads || []).map((ad: any) => ad.imagePrompt || ''),
-    ...(content.linkedin_ads || []).map((ad: any) => ad.imagePrompt || '')
+    ...(content.instagram_ads || []).map((ad: any) => ad.image_prompt || ''),
+    ...(content.linkedin_ads || []).map((ad: any) => ad.image_prompt || '')
   ].filter(prompt => prompt.length > 0);
   
   for (const prompt of imagePrompts) {
