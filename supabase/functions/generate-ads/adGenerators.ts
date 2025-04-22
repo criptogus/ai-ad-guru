@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 import { createGoogleAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt, createMetaAdsPrompt } from "./promptCreators.ts";
 import { getOpenAIClient } from "./openai.ts";
@@ -68,9 +67,15 @@ interface PromptMessages {
   userMessage: string;
 }
 
-async function callOpenAI(prompt: PromptMessages, platform: string): Promise<string> {
+async function callOpenAI(prompt: PromptMessages, platform: string): Promise<any> {
   // Verify the OpenAI API key
-  const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+  let OPENAI_API_KEY: string | undefined;
+
+  try {
+    OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+  } catch (e) {
+    console.error("❌ Erro ao acessar OPENAI_API_KEY com Deno.env.get():", e);
+  }
 
   if (!OPENAI_API_KEY) {
     throw new Error("❌ OPENAI_API_KEY is not defined in environment variables.");
@@ -80,7 +85,6 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
     const openai = getOpenAIClient();
 
     console.log(`🔍 Sending prompt to OpenAI for platform [${platform}]`);
-    
     // Log full prompts for debugging
     console.log("🧠 Complete system message:", prompt.systemMessage);
     console.log("🧠 Complete user message:", prompt.userMessage);
@@ -91,19 +95,22 @@ async function callOpenAI(prompt: PromptMessages, platform: string): Promise<str
         { role: "system", content: prompt.systemMessage },
         { role: "user", content: prompt.userMessage }
       ],
-      temperature: 0.3,
-      max_tokens: 1000
+      temperature: 0.7,
+      max_tokens: 1200,
+      response_format: "json"
     });
 
     const content = response?.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      throw new Error("⚠️ No content returned from OpenAI response.");
-    }
 
-    console.log(`✅ OpenAI response received (${content.length} characters)`);
-    console.log(`📝 Response sample: ${content.substring(0, 300)}...`);
-    return content;
+    // Já tenta parsear aqui a resposta como JSON, senão lança erro claro
+    try {
+      const parsed = JSON.parse(content);
+      console.log("✅ OpenAI respondeu JSON válido!");
+      return parsed;
+    } catch (e) {
+      console.error("❌ Resposta do OpenAI não é um JSON válido:", content);
+      throw new Error("A resposta do modelo não está em JSON. Verifique se o prompt está pedindo o formato corretamente e se o modelo suporta isso.");
+    }
 
   } catch (error) {
     console.error(`🚨 Error during OpenAI call for platform [${platform}]:`, error);
