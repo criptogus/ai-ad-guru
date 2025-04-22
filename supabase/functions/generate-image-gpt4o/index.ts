@@ -25,8 +25,11 @@ serve(async (req) => {
     console.log("Generating image with prompt:", prompt);
     console.log("Additional info:", additionalInfo);
     
-    // Extract format from additionalInfo for proper image generation
+    // Extract format and additional context from additionalInfo
     const format = additionalInfo?.format || 'square';
+    const industry = additionalInfo?.industry || '';
+    const brandName = additionalInfo?.brandName || additionalInfo?.companyName || '';
+    const adType = additionalInfo?.adType || 'instagram';
     
     // Determine image size based on format
     let size = "1024x1024"; // Default square format
@@ -38,13 +41,30 @@ serve(async (req) => {
     
     console.log(`Generating image with size: ${size} for format: ${format}`);
     
+    // Enhance the prompt with context
+    let enhancedPrompt = prompt;
+    
+    // Add brand and industry context if available
+    if (brandName) {
+      enhancedPrompt += ` Brand: ${brandName}.`;
+    }
+    
+    if (industry) {
+      enhancedPrompt += ` Industry: ${industry}.`;
+    }
+    
+    // Final instructions for the image
+    enhancedPrompt += ` The image should be a professional, high-quality advertisement suitable for an ${adType} post in ${format} format. Create a visually stunning image with excellent composition. Do not include any text in the image.`;
+    
+    console.log("Enhanced prompt:", enhancedPrompt);
+    
     const openai = new OpenAI({
       apiKey: Deno.env.get("OPENAI_API_KEY"),
     });
     
     const response = await openai.images.generate({
       model: "dall-e-3",
-      prompt: `${prompt}. The image should be a professional, high-quality advertisement suitable for an ${additionalInfo?.adType || 'instagram'} post. Do not include any text in the image.`,
+      prompt: enhancedPrompt,
       n: 1,
       size: size as "1024x1024" | "1024x1792" | "1792x1024",
       style: "natural",
@@ -64,7 +84,8 @@ serve(async (req) => {
         success: true, 
         imageUrl,
         format,
-        prompt 
+        prompt,
+        enhancedPrompt 
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 

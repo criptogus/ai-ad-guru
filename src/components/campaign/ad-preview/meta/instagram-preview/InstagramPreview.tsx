@@ -1,165 +1,82 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { MetaAd } from "@/hooks/adGeneration";
-import { AdTemplate } from "../../template-gallery/TemplateGallery";
-import InstagramPreviewHeader from "./InstagramPreviewHeader";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import ImageContent from "./ImageContent";
-import TextContent from "./TextContent";
-import ActionBar from "./ActionBar";
-import InstagramPreviewFooter from "./InstagramPreviewFooter";
-import ImageUploadHandler from "./ImageUploadHandler";
-import { toast } from "sonner";
-import { normalizeMetaAd } from "@/lib/utils";
 
 interface InstagramPreviewProps {
   ad: MetaAd;
   companyName: string;
-  index?: number;
-  loadingImageIndex?: number | null;
-  isLoading?: boolean;
-  onGenerateImage?: () => Promise<void>;
+  index: number;
+  loadingImageIndex: number | null;
+  onGenerateImage: () => void;
   onUpdateAd?: (updatedAd: MetaAd) => void;
-  viewMode?: "feed" | "story" | "reel";
+  viewMode: "feed" | "story" | "reel";
 }
 
 const InstagramPreview: React.FC<InstagramPreviewProps> = ({
   ad,
   companyName,
-  index = 0,
-  loadingImageIndex = null,
-  isLoading = false,
+  index,
+  loadingImageIndex,
   onGenerateImage,
   onUpdateAd,
-  viewMode = "feed"
+  viewMode,
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const isImageLoading = isLoading || loadingImageIndex === index;
-  
-  // Normalize the ad to ensure it has format and hashtags properties
-  const normalizedAd = normalizeMetaAd(ad);
-  
-  // Track if we've made an initial image generation attempt
-  useEffect(() => {
-    if (!hasAttemptedLoad && !normalizedAd.imageUrl && onGenerateImage && normalizedAd.imagePrompt) {
-      console.log("Auto-generating image for ad with prompt:", normalizedAd.imagePrompt);
-      onGenerateImage().then(() => {
-        setHasAttemptedLoad(true);
-      });
-    }
-  }, [hasAttemptedLoad, normalizedAd.imageUrl, normalizedAd.imagePrompt, onGenerateImage]);
+  const isLoading = loadingImageIndex === index;
 
-  // Ensure format is one of the allowed values
-  const normalizeFormat = (format?: string): "feed" | "story" | "reel" => {
-    if (format === "story" || format === "reel") {
-      return format;
+  // Define the correct format based on viewMode
+  const getFormat = () => {
+    if (viewMode === "story" || viewMode === "reel") {
+      return viewMode;
     }
-    // Default to "feed" for any other value
     return "feed";
   };
 
-  // Trigger file input dialog
-  const triggerFileUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  // Handle file upload
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !onUpdateAd) return;
-
-    try {
-      setIsUploading(true);
-      
-      // Create a local URL for preview
-      const localUrl = URL.createObjectURL(file);
-      
-      // Update the ad with the new image URL
-      onUpdateAd({
-        ...normalizedAd,
-        imageUrl: localUrl
-      });
-
-      toast.success("Imagem carregada com sucesso");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Falha ao carregar imagem");
-    } finally {
-      setIsUploading(false);
-      // Reset the file input
-      if (event.target) {
-        event.target.value = '';
-      }
-    }
-  };
-
-  const handleTemplateSelect = (template: AdTemplate) => {
-    if (!onUpdateAd) return;
-    
-    // Update the ad with the template information
-    onUpdateAd({
-      ...normalizedAd,
-      imagePrompt: template.prompt
-    });
-    
-    // Generate new image based on the template
-    if (onGenerateImage) {
-      toast.info(`Gerando imagem com template "${template.name}"`);
-      onGenerateImage();
-    }
-  };
-
-  // Generate image from prompt if one isn't already available
-  const handleGenerateImage = async () => {
-    if (onGenerateImage) {
-      try {
-        console.log("Generating image with prompt:", normalizedAd.imagePrompt);
-        await onGenerateImage();
-        setHasAttemptedLoad(true);
-      } catch (error) {
-        console.error("Error generating image:", error);
-        toast.error("Falha ao gerar imagem");
-      }
-    }
-  };
-
-  // Determine which format to use (from props, ad, or default)
-  const format = viewMode 
-    ? viewMode 
-    : normalizeFormat(normalizedAd.format);
-
   return (
-    <div className="w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden bg-white dark:bg-gray-900">
-      <InstagramPreviewHeader companyName={companyName} />
-      
-      <ImageContent 
-        ad={normalizedAd}
-        imageKey={index}
-        isLoading={isImageLoading}
-        isUploading={isUploading}
-        onGenerateImage={handleGenerateImage}
-        triggerFileUpload={triggerFileUpload}
-        format={format}
-        onTemplateSelect={handleTemplateSelect}
-      />
-      
-      <div className="p-3">
-        <ActionBar />
-        <TextContent 
-          headline={normalizedAd.headline}
-          primaryText={normalizedAd.primaryText}
-          companyName={companyName}
-        />
-        <InstagramPreviewFooter ad={normalizedAd} companyName={companyName} />
+    <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-md overflow-hidden max-w-sm mx-auto">
+      {/* Header */}
+      <div className="flex items-center px-3 py-2 border-b dark:border-gray-800">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+          {companyName.charAt(0).toUpperCase()}
+        </div>
+        <div className="ml-2 text-sm font-medium">{companyName}</div>
       </div>
-      
-      <ImageUploadHandler 
-        onChange={handleFileChange}
+
+      {/* Image */}
+      <ImageContent
+        ad={ad}
+        imageKey={index}
+        isLoading={isLoading}
+        isUploading={false}
+        format={getFormat() as "feed" | "story" | "reel"}
+        onGenerateImage={onGenerateImage}
       />
-      {fileInputRef && <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept="image/*" />}
+
+      {/* Caption area */}
+      <div className="p-3">
+        <div className="flex items-start space-x-1">
+          <span className="font-medium text-sm">{companyName}</span>
+          <span className="text-sm whitespace-pre-wrap break-words">
+            {ad.primaryText || ad.description || "Your compelling ad copy goes here."}
+          </span>
+        </div>
+
+        {/* Action button area */}
+        {!isLoading && !ad.imageUrl && (
+          <div className="mt-3">
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={onGenerateImage}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Generate Image
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

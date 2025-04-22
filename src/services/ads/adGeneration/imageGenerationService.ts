@@ -25,13 +25,15 @@ export const generateAdImage = async (
     const format = additionalInfo?.format || additionalInfo?.adContext?.format || 'square';
     const adType = additionalInfo?.adType || 'instagram';
     
-    // Enhanced request body
+    // Enhanced request body with more context
     const requestBody = { 
       prompt,
       additionalInfo: {
         ...additionalInfo,
         format,
-        adType
+        adType,
+        industry: additionalInfo?.industry || additionalInfo?.adContext?.industry || '',
+        brandName: additionalInfo?.companyName || additionalInfo?.brandName || '',
       }
     };
     
