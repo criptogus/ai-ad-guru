@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPromptData } from './types/promptTypes';
 import { GeneratedAdContent } from './types';
@@ -11,12 +10,18 @@ export const generateAds = async (data: CampaignPromptData): Promise<GeneratedAd
     console.log('Platform(s):', data.platforms);
     console.log('Company name:', data.companyName);
     console.log('Mind triggers:', data.mindTriggers || 'None specific to platforms');
+    console.log('Objective:', data.objective);
+    console.log('Brand tone:', data.brandTone);
+    console.log('Language:', data.language);
     
+    // Organize the data for the Edge Function call
     const { data: response, error } = await supabase.functions.invoke('generate-ads', {
       body: { 
         campaignData: {
           ...data,
-          // Ensure the mind trigger field is available by platform
+          // Make sure we're providing a properly structured mind triggers object
+          mindTriggers: data.mindTriggers || {},
+          // But also keep backward compatibility with older code
           mindTrigger: data.mindTrigger || 
             (data.platforms && data.platforms[0] && data.mindTriggers ? 
               data.mindTriggers[data.platforms[0]] : undefined)

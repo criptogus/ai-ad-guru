@@ -1,9 +1,23 @@
 
 import { WebsiteAnalysisResult } from "./types.ts";
 
-export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
-  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
+// Helper function to handle not provided values
+function notProvided(fieldName: string): string {
+  return `Not provided — do not invent`;
+}
 
+// Helper function to format arrays
+function formatArray(arr: any[] | undefined): string {
+  if (!arr || arr.length === 0) {
+    return "Not provided — do not invent";
+  }
+  return arr.join(", ");
+}
+
+// Common system message for all prompt creators
+const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
+
+export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
   const companyName = campaignData.companyName || notProvided("company name");
   const websiteUrl = campaignData.websiteUrl || notProvided("website");
   const industry = campaignData.industry || notProvided("industry");
@@ -57,8 +71,6 @@ NO placeholders, NO hallucinated facts, and do NOT exceed character limits. Only
 }
 
 export function createMetaAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
-  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
-
   const companyName = campaignData.companyName || notProvided("company name");
   const websiteUrl = campaignData.websiteUrl || notProvided("website");
   const industry = campaignData.industry || notProvided("industry");
@@ -102,7 +114,7 @@ Format the output as a JSON array with 5 objects, strictly following this format
   "headline": "...",       // concise attention grabber
   "primaryText": "...",    // main caption (emotional/engaging)
   "description": "...",    // supporting context (optional)
-  "image_prompt": "photorealistic Instagram ad for ${companyName}, product: ${product}, professional lighting, no text"
+  "image_prompt": "photorealistic Instagram ad for ${companyName}, product: ${product || 'company services'}, professional lighting, no text"
 }
 
 NO placeholders, NO hallucinated facts. Only use data above.
@@ -110,8 +122,6 @@ NO placeholders, NO hallucinated facts. Only use data above.
 }
 
 export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
-  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
-
   const companyName = campaignData.companyName || notProvided("company name");
   const websiteUrl = campaignData.websiteUrl || notProvided("website");
   const industry = campaignData.industry || notProvided("industry");
@@ -163,8 +173,6 @@ NO placeholders, NO hallucinated facts. Only use data above.
 }
 
 export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): string {
-  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
-
   const companyName = campaignData.companyName || notProvided("company name");
   const websiteUrl = campaignData.websiteUrl || notProvided("website");
   const industry = campaignData.industry || notProvided("industry");
@@ -215,17 +223,4 @@ Format the output as a JSON array with 5 objects, strictly following this format
 
 NO placeholders, NO hallucinated facts, and do NOT exceed character limits. Only use data above.
 `;
-}
-
-// Helper function to handle not provided values
-function notProvided(fieldName: string): string {
-  return `Not provided — do not invent`;
-}
-
-// Helper function to format arrays
-function formatArray(arr: any[] | undefined): string {
-  if (!arr || arr.length === 0) {
-    return "Not provided — do not invent";
-  }
-  return arr.join(", ");
 }

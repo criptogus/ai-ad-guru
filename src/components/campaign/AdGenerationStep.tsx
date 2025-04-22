@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,38 +46,47 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       const results: Record<string, any[]> = {};
       let hasAnySuccessfulPlatform = false;
 
-      for (const platform of platforms) {
-        // Create a more comprehensive prompt data object with all available context
-        const promptData: CampaignPromptData = {
-          companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
-          websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
-          objective: campaignData.objective || analysisResult?.objective || 'awareness',
-          product: campaignData.product || analysisResult?.product || '',
-          targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
-          brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
-          mindTrigger: campaignData.mindTriggers?.[platform] || analysisResult?.mindTrigger || '',
-          language: campaignData.language || 'english',
-          industry: campaignData.industry || analysisResult?.industry || '',
-          platforms: [platform],
-          companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
-          differentials: analysisResult?.uniqueSellingPoints || [],
-          callToAction: analysisResult?.callToAction || 'Learn More',
-          keywords: analysisResult?.keywords || []
-        };
+      // Properly prepare mind triggers for all platforms
+      const mindTriggers: Record<string, string> = {};
+      platforms.forEach(platform => {
+        mindTriggers[platform] = campaignData.mindTriggers?.[platform] || '';
+      });
 
-        toast({
-          title: `Generating ${platform} ads`,
-          description: `Creating 5 ad variations (5 credits).`
-        });
+      // Generate ads for all selected platforms at once
+      // Create a comprehensive prompt data object with all available context
+      const promptData: CampaignPromptData = {
+        companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
+        websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
+        objective: campaignData.objective || analysisResult?.objective || 'awareness',
+        product: campaignData.product || analysisResult?.product || '',
+        targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
+        brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
+        // Important: Pass the complete mindTriggers object for all platforms
+        mindTriggers: mindTriggers,
+        language: campaignData.language || 'english',
+        industry: campaignData.industry || analysisResult?.industry || '',
+        platforms: platforms,
+        companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
+        differentials: analysisResult?.uniqueSellingPoints || [],
+        callToAction: analysisResult?.callToAction || 'Learn More',
+        keywords: analysisResult?.keywords || []
+      };
 
-        console.log(`🧠 Sending prompt for ${platform}`, JSON.stringify(promptData, null, 2));
+      // Log full data being sent to prompt builder
+      console.log('🧠 Sending unified prompt data:', JSON.stringify(promptData, null, 2));
 
-        try {
-          const ads = await generateCampaignAds(promptData);
-          
-          // Need to convert the returned GeneratedAdContent to proper ad arrays
-          if (ads) {
-            // Extract correct platform data and convert to array
+      toast({
+        title: `Generating ads for ${platforms.join(', ')}`,
+        description: `Creating 5 ad variations per platform (${platforms.length * 5} credits).`
+      });
+
+      try {
+        // Send one request with all platforms
+        const ads = await generateCampaignAds(promptData);
+        
+        if (ads) {
+          // Process returned ads for each platform
+          platforms.forEach(platform => {
             if (platform === 'google' && ads.google_ads) {
               results[platform] = ads.google_ads.map(ad => normalizeGoogleAd(ad));
               hasAnySuccessfulPlatform = true;
@@ -101,53 +111,73 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
                 description: "We've created placeholder ads. You can edit them in the next step."
               });
             }
-          } else {
-            console.warn(`No ${platform} ads data received, using fallbacks`);
-            // Create fallback ads if generation returns empty
+          });
+        } else {
+          console.warn(`No ads data received, using fallbacks`);
+          // Create fallback ads for all platforms
+          platforms.forEach(platform => {
             results[platform] = generateFallbackAds(platform, promptData);
-            hasAnySuccessfulPlatform = true;
-            
-            toast({
-              variant: "destructive",
-              title: `Using fallback ads for ${platform}`,
-              description: "We've created placeholder ads. You can edit them in the next step."
-            });
-          }
-        } catch (error) {
-          console.error(`❌ Failed to generate ads for ${platform}:`, error);
-          // Create fallback ads on error
-          results[platform] = generateFallbackAds(platform, promptData);
+          });
           hasAnySuccessfulPlatform = true;
           
           toast({
             variant: "destructive",
-            title: `Using fallback ads for ${platform}`,
+            title: `Using fallback ads`,
             description: "We've created placeholder ads. You can edit them in the next step."
           });
         }
-      }
-
-      if (hasAnySuccessfulPlatform) {
-        console.log("✅ Final generated ads: ", results);
-        onAdsGenerated(results);
-        toast({
-          title: "Ad Variations Generated!",
-          description: `Created ads for: ${Object.keys(results).join(", ")}`
+        
+        if (hasAnySuccessfulPlatform) {
+          console.log("✅ Final generated ads: ", results);
+          onAdsGenerated(results);
+          toast({
+            title: "Ad Variations Generated!",
+            description: `Created ads for: ${Object.keys(results).join(", ")}`
+          });
+          
+          // Automatically move to the next step after successful generation
+          if (onNext) {
+            setTimeout(() => {
+              onNext();
+            }, 1000); // Short delay to allow user to see the success message
+          }
+        } else {
+          setError("Failed to generate ads for any platform. Please try again.");
+          toast({
+            variant: "destructive",
+            title: "Ad Generation Failed",
+            description: "Could not generate ads. Please try again or check your inputs."
+          });
+        }
+      } catch (error: any) {
+        console.error(`❌ Failed to generate ads:`, error);
+        // Create fallback ads on error for all platforms
+        platforms.forEach(platform => {
+          results[platform] = generateFallbackAds(platform, promptData);
         });
         
-        // Automatically move to the next step after successful generation
-        if (onNext) {
-          setTimeout(() => {
-            onNext();
-          }, 1000); // Short delay to allow user to see the success message
+        if (Object.keys(results).length > 0) {
+          onAdsGenerated(results);
+          toast({
+            variant: "destructive",
+            title: `Using fallback ads`,
+            description: "We've created placeholder ads. You can edit them in the next step."
+          });
+          
+          // Still move to next step with fallback ads
+          if (onNext) {
+            setTimeout(() => {
+              onNext();
+            }, 1000);
+          }
+        } else {
+          setError(error instanceof Error ? error.message : "An unexpected error occurred");
+          toast({
+            variant: "destructive",
+            title: "Ad generation failed",
+            description: error instanceof Error ? error.message : "Something went wrong. Try again."
+          });
         }
-      } else {
-        setError("Failed to generate ads for any platform. Please try again.");
-        toast({
-          variant: "destructive",
-          title: "Ad Generation Failed",
-          description: "Could not generate ads. Please try again or check your inputs."
-        });
       }
     } catch (error: any) {
       console.error("❌ Failed to generate ads:", error);

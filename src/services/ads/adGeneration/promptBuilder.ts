@@ -12,10 +12,10 @@ function fieldOrDoNotInvent(val: any, notProvidedMsg = "Not provided — do not 
 
 // ------ Unified Prompt Builder ------
 export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): PromptMessages => {
-  // Get platform-specific mind trigger
-  const mindTrigger = data.mindTrigger || 
-    (data.mindTriggers && data.mindTriggers[platform]) || 
-    "Not provided";
+  // Get platform-specific mind trigger from the mindTriggers object or fallback
+  const mindTrigger = data.mindTriggers?.[platform] || 
+    data.mindTrigger || 
+    "Not provided — do not invent";
   
   // Build unified system message
   const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
@@ -55,11 +55,11 @@ export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): 
 }`;
   }
 
-  // Build unified user message
+  // Build unified user message with proper handling of missing fields
   const userMessage = `
 Create 5 different ad variations for ${platform === 'google' ? 'Google Ads' : platform === 'microsoft' ? 'Microsoft/Bing Ads' : platform === 'meta' ? 'Instagram/Meta Ads' : 'LinkedIn Ads'}.
 
-Use ONLY the data below. Do not invent features or business context. Omit any section where data is missing—do NOT invent or use generic fill-ins.
+Use ONLY the data below. Do not invent features, services, or business context. Omit any section completely where data is missing—do NOT use generic fillers or invented information.
 
 Company: ${fieldOrDoNotInvent(data.companyName)}
 Website: ${fieldOrDoNotInvent(data.websiteUrl)}
@@ -84,7 +84,7 @@ ${platformInstructions}
 Format the output as a JSON array with 5 objects, strictly following this format:
 ${jsonSchema}
 
-NO placeholders, NO hallucinated facts, and do NOT exceed character limits. Only use data above.
+NO placeholders, NO hallucinated facts, and do NOT exceed character limits for headlines/descriptions. Only use data provided above.
 `.trim();
 
   return { systemMessage, userMessage };
