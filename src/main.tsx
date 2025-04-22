@@ -5,9 +5,20 @@ import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+})
 
 // Debug utility for development - Check Supabase edge function connectivity
 if (import.meta.env.DEV) {
@@ -37,9 +48,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <HelmetProvider>
       <LanguageProvider>
         <BrowserRouter>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </QueryClientProvider>
         </BrowserRouter>
       </LanguageProvider>
     </HelmetProvider>
