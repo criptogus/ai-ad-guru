@@ -10,7 +10,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ConfigPage from "./pages/ConfigPage";
 import CreditsInfoPage from "./pages/CreditsInfoPage";
 import BillingPage from "./pages/BillingPage";
-import NotFound from "./pages/NotFound";
+import NotFoundPage from "./pages/NotFoundPage";
 import BillingHistoryPage from "@/pages/BillingHistoryPage";
 import ProtectedRoute from './components/ProtectedRoute';
 import { setNavigate } from './hooks/adConnections/utils/navigationUtils';
@@ -19,6 +19,7 @@ import ConnectionsPage from './pages/ConnectionsPage';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import SupportPage from './pages/SupportPage';
+import AdManagerPage from "./pages/AdManagerPage";
 
 function App() {
   const navigate = useNavigate();
@@ -44,7 +45,8 @@ function App() {
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
       <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
       <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
-      <Route path="*" element={<NotFound />} />
+      <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

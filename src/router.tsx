@@ -78,6 +78,8 @@ const router = createBrowserRouter(
       {/* Ad Manager route */}
       <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
 
+      {/* Explicit 404 route */}
+      <Route path="/not-found" element={<NotFoundPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )
