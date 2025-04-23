@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import OpenAI from "https://esm.sh/openai@4.6.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
@@ -17,6 +16,146 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 );
 
+function getLocalizedPrompt(language: string, websiteData: any): string {
+  // Portuguese prompt
+  if (language === 'pt' || language === 'pt-BR' || language === 'pt-PT') {
+    return `
+    Você é um analista sênior de Marketing e Novos Negócios com vasta experiência em análise de mercado e público-alvo.
+
+    Baseado nas informações da empresa abaixo, forneça uma análise detalhada, objetiva e baseada em fatos. NÃO INVENTE informações que não estejam presentes nos dados fornecidos.
+
+    Informações da empresa:
+    Nome: ${websiteData.companyName}
+    Descrição: ${websiteData.businessDescription}
+    Diferenciais: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Palavras-chave: ${websiteData.keywords?.join(', ')}
+
+    Por favor, forneça uma análise estruturada com os seguintes pontos:
+
+    1. PERFIL DO PÚBLICO-ALVO DETALHADO
+    - Faixa etária e distribuição por sexo
+    - Profissões e cargos relevantes
+    - Estilo de vida e hábitos
+    - Preocupações e dores específicas
+    - Grupos sociais e ambientes frequentados
+    - Poder aquisitivo e comportamento de compra
+
+    2. GEOLOCALIZAÇÃO ESTRATÉGICA
+    - Regiões prioritárias
+    - Características demográficas por região
+    - Potencial de mercado por localidade
+
+    3. ANÁLISE DE MERCADO
+    - Oportunidades identificadas (Oceano Azul)
+    - Áreas saturadas (Oceano Vermelho)
+    - Tendências de crescimento
+    - Nichos inexplorados ou subatendidos
+    - Tamanho estimado do mercado (se possível identificar)
+
+    4. ANÁLISE COMPETITIVA
+    - Principais concorrentes no segmento
+    - Diferenciais competitivos da empresa
+    - Posicionamento dos concorrentes
+    - Oportunidades vs concorrência
+    - Ameaças do mercado
+
+    Forneça a análise em português, com linguagem profissional mas acessível.
+    `;
+  }
+  // English prompt
+  else if (language === 'en' || language === 'en-US' || language === 'en-GB') {
+    return `
+    You are a senior Marketing and Business Development analyst with extensive experience in market and target audience analysis.
+
+    Based on the company information below, provide a detailed, objective and fact-based analysis. DO NOT INVENT information not present in the provided data.
+
+    Company Information:
+    Name: ${websiteData.companyName}
+    Description: ${websiteData.businessDescription}
+    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Keywords: ${websiteData.keywords?.join(', ')}
+
+    Please provide a structured analysis with the following points:
+
+    1. DETAILED TARGET AUDIENCE PROFILE
+    - Age range and gender distribution
+    - Relevant professions and positions
+    - Lifestyle and habits
+    - Specific concerns and pain points
+    - Social groups and frequented environments
+    - Purchasing power and buying behavior
+
+    2. STRATEGIC GEOLOCATION
+    - Priority regions
+    - Demographic characteristics by region
+    - Market potential by location
+
+    3. MARKET ANALYSIS
+    - Identified opportunities (Blue Ocean)
+    - Saturated areas (Red Ocean)
+    - Growth trends
+    - Unexplored or underserved niches
+    - Estimated market size (if identifiable)
+
+    4. COMPETITIVE ANALYSIS
+    - Main competitors in the segment
+    - Company's competitive advantages
+    - Competitors' positioning
+    - Opportunities vs competition
+    - Market threats
+
+    Provide the analysis in English, with professional but accessible language.
+    `;
+  }
+  // Spanish prompt
+  else if (language === 'es' || language === 'es-ES' || language === 'es-MX') {
+    return `
+    Eres un analista senior de Marketing y Desarrollo de Negocios con amplia experiencia en análisis de mercado y público objetivo.
+
+    Basado en la información de la empresa a continuación, proporciona un análisis detallado, objetivo y basado en hechos. NO INVENTES información que no esté presente en los datos proporcionados.
+
+    Información de la empresa:
+    Nombre: ${websiteData.companyName}
+    Descripción: ${websiteData.businessDescription}
+    Puntos únicos de venta: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Palabras clave: ${websiteData.keywords?.join(', ')}
+
+    Por favor, proporciona un análisis estructurado con los siguientes puntos:
+
+    1. PERFIL DETALLADO DEL PÚBLICO OBJETIVO
+    - Rango de edad y distribución por género
+    - Profesiones y posiciones relevantes
+    - Estilo de vida y hábitos
+    - Preocupaciones y puntos de dolor específicos
+    - Grupos sociales y ambientes frecuentados
+    - Poder adquisitivo y comportamiento de compra
+
+    2. GEOLOCALIZACIÓN ESTRATÉGICA
+    - Regiones prioritarias
+    - Características demográficas por región
+    - Potencial de mercado por ubicación
+
+    3. ANÁLISIS DE MERCADO
+    - Oportunidades identificadas (Océano Azul)
+    - Áreas saturadas (Océano Rojo)
+    - Tendencias de crecimiento
+    - Nichos inexplorados o desatendidos
+    - Tamaño estimado del mercado (si es identificable)
+
+    4. ANÁLISIS COMPETITIVO
+    - Principales competidores en el segmento
+    - Ventajas competitivas de la empresa
+    - Posicionamiento de los competidores
+    - Oportunidades vs competencia
+    - Amenazas del mercado
+
+    Proporciona el análisis en español, con lenguaje profesional pero accesible.
+    `;
+  }
+  // Default to English if language not recognized
+  return getLocalizedPrompt('en', websiteData);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -24,9 +163,11 @@ serve(async (req) => {
 
   try {
     const { websiteData } = await req.json();
-    const detectedLanguage = websiteData.language || 'pt'; // Default to Portuguese if not specified
+    const detectedLanguage = websiteData.language || 'en';
     
-    // Select the appropriate prompt based on detected language
+    console.log('Analyzing audience with language:', detectedLanguage);
+    console.log('Website data:', websiteData);
+    
     const prompt = getLocalizedPrompt(detectedLanguage, websiteData);
 
     const completion = await openai.chat.completions.create({
@@ -34,7 +175,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `Você é um analista de marketing especializado em análise de público-alvo para campanhas digitais. Responda no idioma: ${detectedLanguage}.`
+          content: `You are a senior marketing and business development analyst. Respond in ${detectedLanguage}.`
         },
         {
           role: "user",
@@ -50,7 +191,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        data: analysis
+        data: analysis,
+        language: detectedLanguage
       }),
       { 
         headers: { 
@@ -78,163 +220,3 @@ serve(async (req) => {
     );
   }
 });
-
-// Helper function to get prompts in the correct language
-function getLocalizedPrompt(language: string, websiteData: any): string {
-  // Portuguese prompt (default)
-  if (language === 'pt' || language === 'pt-BR' || language === 'pt-PT') {
-    return `
-    Você é um analista de marketing sênior especializado em publicidade digital. Com base nas informações abaixo, faça uma análise detalhada do público-alvo ideal para este negócio.
-
-    Informações do negócio:
-    Nome: ${websiteData.companyName}
-    Descrição: ${websiteData.businessDescription}
-    Diferenciais: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Palavras-chave: ${websiteData.keywords?.join(', ')}
-
-    Por favor, forneça uma análise estruturada com:
-
-    1. RESUMO DO PÚBLICO-ALVO:
-    - Perfil demográfico (idade, localização, renda)
-    - Interesses e características principais
-
-    2. DORES E NECESSIDADES:
-    - Principais problemas que buscam resolver
-    - Objetivos e aspirações
-
-    3. COMPORTAMENTOS:
-    - Hábitos de consumo
-    - Processo de decisão de compra
-    - Canais de informação preferidos
-
-    4. RECOMENDAÇÕES DE SEGMENTAÇÃO:
-    - Nichos específicos
-    - Oportunidades de microsegmentação
-    - Critérios de targeting para anúncios
-
-    5. CANAIS RECOMENDADOS:
-    - Plataformas mais efetivas
-    - Tipos de conteúdo que mais engajam
-    - Momentos ideais para abordar
-
-    Forneça a análise em português do Brasil, com linguagem profissional mas acessível.
-    `;
-  }
-  // English prompt
-  else if (language === 'en' || language === 'en-US' || language === 'en-GB') {
-    return `
-    You are a senior marketing analyst specializing in digital advertising. Based on the information below, provide a detailed analysis of the ideal target audience for this business.
-
-    Business Information:
-    Name: ${websiteData.companyName}
-    Description: ${websiteData.businessDescription}
-    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Keywords: ${websiteData.keywords?.join(', ')}
-
-    Please provide a structured analysis with:
-
-    1. TARGET AUDIENCE SUMMARY:
-    - Demographic profile (age, location, income)
-    - Main interests and characteristics
-
-    2. PAIN POINTS AND NEEDS:
-    - Main problems they seek to solve
-    - Goals and aspirations
-
-    3. BEHAVIORS:
-    - Consumption habits
-    - Purchase decision process
-    - Preferred information channels
-
-    4. SEGMENTATION RECOMMENDATIONS:
-    - Specific niches
-    - Micro-segmentation opportunities
-    - Ad targeting criteria
-
-    5. RECOMMENDED CHANNELS:
-    - Most effective platforms
-    - Content types that engage the most
-    - Ideal moments for approach
-
-    Provide the analysis in professional yet accessible language.
-    `;
-  }
-  // Spanish prompt
-  else if (language === 'es' || language === 'es-ES' || language === 'es-MX') {
-    return `
-    Eres un analista de marketing senior especializado en publicidad digital. Basado en la información a continuación, realiza un análisis detallado del público objetivo ideal para este negocio.
-
-    Información del negocio:
-    Nombre: ${websiteData.companyName}
-    Descripción: ${websiteData.businessDescription}
-    Puntos de venta únicos: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Palabras clave: ${websiteData.keywords?.join(', ')}
-
-    Por favor, proporciona un análisis estructurado con:
-
-    1. RESUMEN DEL PÚBLICO OBJETIVO:
-    - Perfil demográfico (edad, ubicación, ingresos)
-    - Intereses y características principales
-
-    2. DOLORES Y NECESIDADES:
-    - Principales problemas que buscan resolver
-    - Metas y aspiraciones
-
-    3. COMPORTAMIENTOS:
-    - Hábitos de consumo
-    - Proceso de decisión de compra
-    - Canales de información preferidos
-
-    4. RECOMENDACIONES DE SEGMENTACIÓN:
-    - Nichos específicos
-    - Oportunidades de microsegmentación
-    - Criterios de segmentación para anuncios
-
-    5. CANALES RECOMENDADOS:
-    - Plataformas más efectivas
-    - Tipos de contenido que más enganchan
-    - Momentos ideales para acercamiento
-
-    Proporciona el análisis en español, con lenguaje profesional pero accesible.
-    `;
-  }
-  // Default to English if language not recognized
-  else {
-    return `
-    You are a senior marketing analyst specializing in digital advertising. Based on the information below, provide a detailed analysis of the ideal target audience for this business.
-
-    Business Information:
-    Name: ${websiteData.companyName}
-    Description: ${websiteData.businessDescription}
-    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Keywords: ${websiteData.keywords?.join(', ')}
-
-    Please provide a structured analysis with:
-
-    1. TARGET AUDIENCE SUMMARY:
-    - Demographic profile (age, location, income)
-    - Main interests and characteristics
-
-    2. PAIN POINTS AND NEEDS:
-    - Main problems they seek to solve
-    - Goals and aspirations
-
-    3. BEHAVIORS:
-    - Consumption habits
-    - Purchase decision process
-    - Preferred information channels
-
-    4. SEGMENTATION RECOMMENDATIONS:
-    - Specific niches
-    - Micro-segmentation opportunities
-    - Ad targeting criteria
-
-    5. RECOMMENDED CHANNELS:
-    - Most effective platforms
-    - Content types that engage the most
-    - Ideal moments for approach
-
-    Provide the analysis in professional yet accessible language.
-    `;
-  }
-}
