@@ -13,9 +13,9 @@ const AdManagerPage = () => {
   if (!user) {
     return (
       <div className="container mx-auto py-16 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-4">Autenticação Necessária</h1>
-        <p className="mb-8">Você precisa estar logado para acessar o Gerenciador de Anúncios.</p>
-        <Button onClick={() => navigate("/login")}>Fazer Login</Button>
+        <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+        <p className="mb-8">You need to be logged in to access the Ad Manager.</p>
+        <Button onClick={() => navigate("/login")}>Login</Button>
       </div>
     );
   }

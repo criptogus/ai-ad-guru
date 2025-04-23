@@ -44,9 +44,14 @@ export class CacheHandler {
         .eq('url_hash', urlHash)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors
       
-      if (error || !data) {
+      if (error) {
+        console.log(`Cache check error for URL ${normalizedUrl}: ${error.message}`);
+        return { fromCache: false };
+      }
+      
+      if (!data) {
         console.log(`No cache found for URL: ${normalizedUrl}`);
         return { fromCache: false };
       }

@@ -1,3 +1,4 @@
+
 /**
  * Website Analysis Service
  * Analyzes websites to extract information for ad creation
@@ -46,6 +47,8 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       formattedUrl = 'https://' + formattedUrl;
     }
     
+    console.log('Calling edge function with params:', { url: formattedUrl, userId: params.userId });
+    
     // Add userId to call for credit tracking purposes
     const { data, error } = await supabase.functions.invoke('analyze-website', {
       body: { 
@@ -64,6 +67,8 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       console.error('No data returned from analyze-website function');
       throw new Error('No data returned from analyze-website function');
     }
+    
+    console.log('Edge function response:', data);
     
     if (!data.success) {
       console.error('Analysis error:', data.error);
@@ -128,10 +133,11 @@ export const getAnalysisCacheStatus = async (url: string): Promise<{ exists: boo
     });
     
     if (error) {
+      console.error('Edge function error when checking cache:', error);
       throw error;
     }
     
-    if (data.fromCache) {
+    if (data?.fromCache) {
       return {
         exists: true,
         cachedAt: data.cachedAt,
@@ -141,6 +147,7 @@ export const getAnalysisCacheStatus = async (url: string): Promise<{ exists: boo
     
     return { exists: false };
   } catch (error) {
+    console.error('Error checking cache status:', error);
     errorLogger.logError(error, 'getAnalysisCacheStatus');
     return { exists: false };
   }

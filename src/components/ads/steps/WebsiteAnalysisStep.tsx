@@ -45,9 +45,15 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       return;
     }
 
+    // Format URL for proper validation
+    let formattedUrl = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      formattedUrl = `https://${url}`;
+    }
+
     // Validate URL format
     try {
-      new URL(url.startsWith('http') ? url : `https://${url}`);
+      new URL(formattedUrl);
     } catch (e) {
       setAnalysisError("Invalid URL format. Use format: example.com");
       toast.error("Invalid URL format. Use format: example.com");
@@ -57,7 +63,6 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     setIsAnalyzing(true);
     
     try {
-      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
       console.log('Calling analyzeWebsite with URL:', formattedUrl);
       
       const result = await analyzeWebsite({
@@ -73,7 +78,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         setFormData({
           businessName: result.companyName || "",
           businessType: result.businessDescription || "",
-          industry: result.brandTone || "",
+          industry: result.industry || "",
           products: result.uniqueSellingPoints?.join(", ") || "",
           keywords: result.keywords?.join(", ") || ""
         });
@@ -117,14 +122,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Análise do Website</h2>
+      <h2 className="text-xl font-semibold">Website Analysis</h2>
       <p className="text-muted-foreground">
-        Insira a URL do seu site para nossa IA analisar e extrair informações relevantes para sua campanha.
+        Enter your website URL so our AI can analyze it and extract relevant information for your campaign.
       </p>
 
       <div className="flex gap-2">
         <Input 
-          placeholder="www.seusite.com.br" 
+          placeholder="www.yoursite.com" 
           value={url}
           onChange={(e) => {
             setUrl(e.target.value);
@@ -140,16 +145,16 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           {isAnalyzing ? (
             <>
               <Loader size={16} className="animate-spin mr-2" />
-              Analisando...
+              Analyzing...
             </>
-          ) : "Analisar Site"}
+          ) : "Analyze Site"}
         </Button>
       </div>
       
       {analysisError && (
         <Alert variant="destructive" className="mt-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro na análise</AlertTitle>
+          <AlertTitle>Analysis Error</AlertTitle>
           <AlertDescription>{analysisError}</AlertDescription>
         </Alert>
       )}
@@ -157,7 +162,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <div>
           <label htmlFor="businessName" className="block text-sm font-medium mb-1">
-            Nome do Negócio
+            Business Name
           </label>
           <Input
             id="businessName"
@@ -165,61 +170,66 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
             value={formData.businessName}
             onChange={handleInputChange}
             placeholder="Ex: Zero Digital Agency"
+            className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
         
         <div>
           <label htmlFor="industry" className="block text-sm font-medium mb-1">
-            Indústria/Segmento
+            Industry/Segment
           </label>
           <Input
             id="industry"
             name="industry"
             value={formData.industry}
             onChange={handleInputChange}
-            placeholder="Ex: Marketing Digital"
+            placeholder="Ex: Digital Marketing"
+            className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
         
         <div className="md:col-span-2">
           <label htmlFor="businessType" className="block text-sm font-medium mb-1">
-            Descrição do Negócio
+            Business Description
           </label>
           <Textarea
             id="businessType"
             name="businessType"
             value={formData.businessType}
             onChange={handleInputChange}
-            placeholder="Ex: Agência especializada em marketing digital para pequenas empresas"
+            placeholder="Ex: Digital marketing agency specializing in small businesses"
             rows={3}
+            className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
         
         <div className="md:col-span-2">
           <label htmlFor="products" className="block text-sm font-medium mb-1">
-            Produtos/Serviços (separados por vírgula)
+            Products/Services (comma separated)
           </label>
           <Textarea
             id="products"
             name="products"
             value={formData.products}
             onChange={handleInputChange}
-            placeholder="Ex: Marketing de conteúdo, SEO, Anúncios pagos"
+            placeholder="Ex: Content marketing, SEO, Paid advertising"
             rows={2}
+            className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
         
         <div className="md:col-span-2">
           <label htmlFor="keywords" className="block text-sm font-medium mb-1">
-            Palavras-chave (separadas por vírgula)
+            Keywords (comma separated)
           </label>
           <Textarea
             id="keywords"
             name="keywords"
             value={formData.keywords}
             onChange={handleInputChange}
-            placeholder="Ex: marketing digital, SEO, performance, ROI"
+            placeholder="Ex: digital marketing, SEO, performance, ROI"
             rows={2}
+            className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
       </div>
@@ -229,7 +239,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           onClick={handleNext}
           disabled={!isFormValid}
         >
-          Continuar
+          Continue
         </Button>
       </div>
     </div>
