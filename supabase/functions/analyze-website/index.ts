@@ -199,8 +199,34 @@ serve(async (req) => {
       contentLength: websiteData.content.length
     });
     
+    // Define standard industry categories to guide the AI
+    const standardIndustries = `
+      Standard Industry Categories:
+      - Education (schools, universities, e-learning, training)
+      - Healthcare (hospitals, clinics, medical services)
+      - Technology (software, hardware, IT services)
+      - Finance (banking, insurance, investments)
+      - Retail (e-commerce, stores, consumer goods)
+      - Manufacturing (production, factories)
+      - Marketing (agencies, advertising)
+      - Real Estate (property, construction)
+      - Travel (tourism, hospitality, hotels)
+      - Food & Beverage (restaurants, catering)
+      - Consulting (business services, professional advice)
+      - Entertainment (media, events)
+      - Energy (oil, gas, renewables)
+      - Agriculture (farming, food production)
+      - Arts (creative services, design)
+      - Automotive (vehicles, transportation)
+      - Media (publishing, broadcasting)
+      - Pharmaceuticals (medicine, research)
+      - Telecommunications (communication services)
+      - Transportation (logistics, shipping)
+    `;
+    
     // Create a prompt that respects the detected language
-    let systemPrompt = "You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.";
+    let systemPrompt = `You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.
+    When identifying the industry category, you MUST choose one from the standard industry list and NOT use descriptive adjectives or qualities.`;
     
     // Use the detected language for the analysis prompt
     if (detectedLanguage === "pt") {
@@ -223,7 +249,15 @@ serve(async (req) => {
       5. Keywords (5-10 relevant keywords)
       6. Call to Action phrases (2-4 phrases)
       7. Unique Selling Points (3-5 points)
-      8. Industry category - This must be a standard industry category like "Education", "Health", "Finance", "Technology", "Retail", "Marketing", "Real Estate", etc. Do NOT use terms like "professional" or adjectives here - only use industry vertical categories.
+      8. Industry category - You MUST select from this standard list of industries:
+         Education, Healthcare, Technology, Finance, Retail, Manufacturing, Marketing, Real Estate,
+         Travel, Food & Beverage, Consulting, Entertainment, Energy, Agriculture, Arts, Automotive,
+         Media, Pharmaceuticals, Telecommunications, Transportation, Professional Services, Non-Profit,
+         Government, Sports, Fitness, Beauty, Fashion
+      
+      IMPORTANT: For the industry field, ONLY choose ONE standard industry category name from the list above.
+      DO NOT use descriptive terms like "professional" or "inspirational" for the industry field.
+      For example, if it's a school website, use "Education" not "Educational" or "Professional".
       
       Website Title: ${websiteData.title}
       Website Description: ${websiteData.description}
@@ -247,7 +281,7 @@ serve(async (req) => {
       }
       
       If you can't determine something, make an educated guess based on the available content.
-      For the "industry" field, ONLY use a standard industry category name (like "Education", "Healthcare", "Technology", etc.) NOT descriptive adjectives.
+      For the "industry" field, ONLY use a standard industry category name from the list provided.
       Do not include explanations, just the JSON object.
       Respond in the primary language of the website content.
     `;

@@ -4,6 +4,7 @@ import AdManager from "@/components/ads/AdManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import AppLayout from "@/components/AppLayout";
 
 const AdManagerPage = () => {
   const { user } = useAuth();
@@ -19,7 +20,11 @@ const AdManagerPage = () => {
     );
   }
 
-  return <AdManager />;
+  return (
+    <AppLayout activePage="ad-manager">
+      <AdManager />
+    </AppLayout>
+  );
 };
 
 export default AdManagerPage;

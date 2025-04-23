@@ -20,7 +20,9 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
     "Education", "Healthcare", "Technology", "Finance", "Retail", 
     "Manufacturing", "Marketing", "Real Estate", "Travel", "Food & Beverage",
     "Consulting", "Entertainment", "Energy", "Agriculture", "Arts",
-    "Automotive", "Media", "Pharmaceuticals", "Telecommunications", "Transportation"
+    "Automotive", "Media", "Pharmaceuticals", "Telecommunications", "Transportation",
+    "Professional Services", "Non-Profit", "Government", "Sports", "Fitness",
+    "Beauty", "Fashion", "Home Improvement", "Legal", "Logistics"
   ];
 
   // Common brand tone options
