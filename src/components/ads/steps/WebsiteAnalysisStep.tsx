@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader } from "lucide-react";
+import { Loader, AlertCircle } from "lucide-react";
 import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface WebsiteAnalysisStepProps {
   campaignData: any;
@@ -33,9 +34,12 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     products: campaignData.products || "",
     keywords: campaignData.keywords || ""
   });
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleAnalyze = async () => {
+    setAnalysisError(null);
+    
     if (!url) {
       toast.error("Please enter a valid URL");
       return;
@@ -45,6 +49,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     try {
       new URL(url.startsWith('http') ? url : `https://${url}`);
     } catch (e) {
+      setAnalysisError("Invalid URL format. Use format: example.com");
       toast.error("Invalid URL format. Use format: example.com");
       return;
     }
@@ -75,11 +80,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
         toast.success("Website analysis completed!");
       } else {
-        toast.error("Failed to analyze website. Please try again or fill in manually.");
+        throw new Error("No result returned from analysis");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing website:", error);
-      toast.error("Failed to analyze website. Please try again or fill in manually.");
+      setAnalysisError(error?.message || "Failed to analyze website. Please try again or fill in manually.");
+      toast.error("Analysis Failed", {
+        description: error?.message || "Failed to analyze website. Please try again or fill in manually."
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -118,7 +126,10 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         <Input 
           placeholder="www.seusite.com.br" 
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (analysisError) setAnalysisError(null);
+          }}
           className="flex-1"
         />
         <Button 
@@ -134,6 +145,14 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           ) : "Analisar Site"}
         </Button>
       </div>
+      
+      {analysisError && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erro na análise</AlertTitle>
+          <AlertDescription>{analysisError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <div>

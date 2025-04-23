@@ -36,7 +36,7 @@ export const useAudienceAnalysis = () => {
     websiteData: WebsiteAnalysisResult,
     platform?: string
   ): Promise<AudienceAnalysisResult | null> => {
-    // Limpar estados antes de iniciar uma nova análise
+    // Clear states before starting a new analysis
     setIsAnalyzing(true);
     setAnalysisResult(null);
     setCacheInfo(null);
@@ -62,14 +62,14 @@ export const useAudienceAnalysis = () => {
         throw error;
       }
 
-      // Validar o objeto retornado
+      // Validate the returned object
       if (!data || typeof data !== 'object') {
         throw new Error("Invalid response from audience analysis function");
       }
 
       console.log('Audience analysis result:', data);
       
-      // Incluir todos os campos estruturados retornados da API
+      // Include all structured fields returned from the API
       const processedData: AudienceAnalysisResult = {
         success: true,
         platform: platform || 'all',
@@ -77,7 +77,7 @@ export const useAudienceAnalysis = () => {
         fromCache: data.fromCache || false,
         cachedAt: data.cachedAt,
         language: language,
-        // Incluir campos estruturados opcionais
+        // Include structured optional fields
         demographics: data.demographics,
         interests: data.interests,
         painPoints: data.painPoints,
@@ -89,9 +89,9 @@ export const useAudienceAnalysis = () => {
       
       setAnalysisResult(processedData);
       
-      // Verificar se data.fromCache e data.cachedAt existem antes de criar o objeto Date
+      // Check if data.fromCache and data.cachedAt exist before creating the Date object
       if (data.fromCache && data.cachedAt) {
-        // Calcular expiration date (30 dias após a data de cache)
+        // Calculate expiration date (30 days after the cache date)
         const cachedAt = new Date(data.cachedAt);
         const expiresAt = new Date(cachedAt);
         expiresAt.setDate(expiresAt.getDate() + 30);
@@ -137,6 +137,6 @@ export const useAudienceAnalysis = () => {
     analysisResult,
     setAnalysisResult,
     cacheInfo,
-    setCacheInfo // Adicionando o setter para acesso externo, se necessário
+    setCacheInfo // Adding the setter for external access, if needed
   };
 };

@@ -21,6 +21,8 @@ export interface WebsiteAnalysisResult {
   callToAction: string[];
   uniqueSellingPoints: string[];
   websiteUrl: string;
+  language?: string;
+  industry?: string;
 }
 
 export interface WebsiteAnalysisCache {
@@ -55,13 +57,23 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
     if (error) {
       console.error('Edge function error:', error);
       errorLogger.logError(error, 'analyzeWebsite');
-      return null;
+      throw new Error(`Edge function error: ${error.message || 'Unknown error'}`);
+    }
+    
+    if (!data) {
+      console.error('No data returned from analyze-website function');
+      throw new Error('No data returned from analyze-website function');
     }
     
     if (!data.success) {
       console.error('Analysis error:', data.error);
       errorLogger.logError(new Error(data.error || 'Unknown error'), 'analyzeWebsite');
-      return null;
+      throw new Error(`Analysis error: ${data.error || 'Unknown error'}`);
+    }
+    
+    if (!data.data) {
+      console.error('No analysis result data in response');
+      throw new Error('No analysis result data in response');
     }
     
     const result = data.data as WebsiteAnalysisResult;
@@ -88,10 +100,10 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
     
     // Show error toast
     toast.error("Website Analysis Error", {
-      description: "Couldn't analyze the website. Please try again later."
+      description: error instanceof Error ? error.message : "Couldn't analyze the website. Please try again later."
     });
     
-    return null;
+    throw error; // Re-throw to allow the caller to handle it
   }
 };
 

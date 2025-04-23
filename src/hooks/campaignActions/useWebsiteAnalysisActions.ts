@@ -57,12 +57,17 @@ export const useWebsiteAnalysisActions = () => {
       console.log('Calling analyze-website function with URL:', formattedUrl);
       
       // Get data from cache first - this doesn't consume credits
-      const { data: cacheData } = await supabase.functions.invoke('analyze-website', {
+      const { data: cacheData, error: cacheError } = await supabase.functions.invoke('analyze-website', {
         body: { url: formattedUrl, checkCacheOnly: true }
       });
       
+      if (cacheError) {
+        console.error('Cache check error:', cacheError);
+        throw new Error(`Cache check failed: ${cacheError.message}`);
+      }
+      
       if (cacheData?.fromCache) {
-        console.log('Using cached analysis data');
+        console.log('Using cached analysis data:', cacheData);
         setCacheInfo({
           fromCache: true,
           cachedAt: cacheData.cachedAt,
@@ -93,7 +98,7 @@ export const useWebsiteAnalysisActions = () => {
       });
       
       if (!result) {
-        throw new Error("Failed to analyze website");
+        throw new Error("Failed to analyze website - no result returned");
       }
       
       console.log('Analysis result:', result);
@@ -151,7 +156,8 @@ export const useWebsiteAnalysisActions = () => {
             'Customizable solutions'
           ],
           websiteUrl: url,
-          industry: 'Technology'
+          industry: 'Technology',
+          language: 'en'
         };
         
         toast.success("Using Demo Data", {
