@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -8,20 +7,8 @@ export interface AudienceAnalysisResult {
   success: boolean;
   platform?: string;
   analysisText: string;
-  // Structured audience data
-  demographics?: {
-    ageGroups: string[];
-    gender: string[];
-    educationLevel: string[];
-    incomeLevel: string[];
-  };
-  interests?: string[];
-  painPoints?: string[];
-  decisionFactors?: string[];
-  // Cache information
   fromCache?: boolean;
   cachedAt?: string;
-  // Language information
   language?: string;
 }
 
@@ -48,7 +35,6 @@ export const useAudienceAnalysis = () => {
         throw new Error("Website data is required for audience analysis");
       }
 
-      // Extract the language from website analysis, default to English
       const language = websiteData.language || 'en';
       console.log(`Analyzing audience for ${platform || 'all platforms'} using website: ${websiteData.websiteUrl || 'unknown'} in language: ${language}`);
       
@@ -67,17 +53,17 @@ export const useAudienceAnalysis = () => {
 
       console.log('Audience analysis result:', data);
       
-      // Create a properly structured result object
       const processedData: AudienceAnalysisResult = {
         success: true,
         platform: platform || 'all',
         analysisText: data.data || "",
+        fromCache: data.fromCache || false,
+        cachedAt: data.cachedAt,
         language: language
       };
       
       setAnalysisResult(processedData);
       
-      // Set cache info if available
       if (data.fromCache) {
         // Calculate expiration date (30 days from cached date)
         const cachedAt = new Date(data.cachedAt);

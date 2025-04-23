@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import OpenAI from "https://esm.sh/openai@4.6.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
@@ -16,6 +15,66 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_URL') || '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 );
+
+async function checkCache(url: string, platform: string) {
+  try {
+    const { data, error } = await supabase
+      .from('audience_analysis_cache')
+      .select('*')
+      .eq('url', url)
+      .eq('platform', platform)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Cache check error:', error);
+      return null;
+    }
+
+    if (data) {
+      const createdAt = new Date(data.created_at);
+      const now = new Date();
+      const daysDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+
+      if (daysDiff <= 30) {
+        console.log('Cache hit for URL:', url, 'platform:', platform);
+        return {
+          fromCache: true,
+          data: data.analysis_result,
+          cachedAt: data.created_at
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error checking cache:', error);
+    return null;
+  }
+}
+
+async function saveToCache(url: string, platform: string, analysisResult: any) {
+  try {
+    const { error } = await supabase
+      .from('audience_analysis_cache')
+      .upsert({
+        url,
+        platform,
+        analysis_result: analysisResult,
+        updated_at: new Date().toISOString(),
+        status: 'active',
+        version: 1
+      });
+
+    if (error) {
+      console.error('Cache save error:', error);
+    } else {
+      console.log('Successfully cached analysis for URL:', url, 'platform:', platform);
+    }
+  } catch (error) {
+    console.error('Error saving to cache:', error);
+  }
+}
 
 function getLocalizedPrompt(language: string, websiteData: any): string {
   // Portuguese prompt
@@ -163,11 +222,32 @@ serve(async (req) => {
   }
 
   try {
-    const { websiteData } = await req.json();
+    const { websiteData, platform = 'all' } = await req.json();
     const detectedLanguage = websiteData.language || 'en';
+    const websiteUrl = websiteData.websiteUrl || '';
     
     console.log('Analyzing audience with language:', detectedLanguage);
     console.log('Website data:', websiteData);
+    
+    // Check cache first
+    const cacheResult = await checkCache(websiteUrl, platform);
+    if (cacheResult) {
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          data: cacheResult.data,
+          fromCache: true,
+          cachedAt: cacheResult.cachedAt,
+          language: detectedLanguage
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          } 
+        }
+      );
+    }
     
     const prompt = getLocalizedPrompt(detectedLanguage, websiteData);
 
@@ -188,12 +268,16 @@ serve(async (req) => {
     });
 
     const analysis = completion.choices[0].message.content;
+    
+    // Save to cache
+    await saveToCache(websiteUrl, platform, analysis);
 
     return new Response(
       JSON.stringify({ 
         success: true,
         data: analysis,
-        language: detectedLanguage
+        language: detectedLanguage,
+        fromCache: false
       }),
       { 
         headers: { 
