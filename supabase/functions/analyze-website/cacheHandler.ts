@@ -1,98 +1,154 @@
 
+/**
+ * Website Analysis Cache Handler
+ * Handles caching and retrieval of website analysis results
+ */
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
+
+interface CacheResult {
+  fromCache: boolean;
+  data?: any;
+  cachedAt?: string;
+  expiresAt?: string;
+}
 
 export class CacheHandler {
   private supabaseUrl: string;
   private supabaseKey: string;
-  private client: any;
-
+  private supabaseClient: any;
+  
   constructor(supabaseUrl: string, supabaseKey: string) {
     this.supabaseUrl = supabaseUrl;
     this.supabaseKey = supabaseKey;
-    this.client = createClient(supabaseUrl, supabaseKey);
+    this.supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
-
-  async checkCache(url: string): Promise<{ fromCache: boolean; data?: any; cachedAt?: string; expiresAt?: string }> {
+  
+  /**
+   * Check if a URL has been cached recently
+   */
+  async checkCache(url: string): Promise<CacheResult> {
     try {
-      // Normalize URL for consistent caching
+      // Normalize URL for consistent cache checking
       const normalizedUrl = this.normalizeUrl(url);
       
-      console.log('Checking cache for URL:', normalizedUrl);
+      // Hash the URL to use as a cache key
+      const urlHash = await this.hashUrl(normalizedUrl);
       
-      const { data, error } = await this.client
+      console.log(`Checking cache for URL: ${normalizedUrl} (hash: ${urlHash})`);
+      
+      // Check if we have a cached analysis for this URL
+      const { data, error } = await this.supabaseClient
         .from('website_analysis_cache')
-        .select('analysis_data, created_at')
-        .eq('url', normalizedUrl)
+        .select('*')
+        .eq('url_hash', urlHash)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
       
       if (error || !data) {
-        console.log('Cache miss:', error?.message || 'No data found');
+        console.log(`No cache found for URL: ${normalizedUrl}`);
         return { fromCache: false };
       }
       
-      // Calculate expiry date (30 days from creation)
-      const createdAt = new Date(data.created_at);
-      const expiresAt = new Date(createdAt);
+      // Check if the cache entry is still valid (less than 30 days old)
+      const cacheDate = new Date(data.created_at);
+      const now = new Date();
+      const diffDays = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (diffDays > 30) {
+        console.log(`Cache expired for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
+        return { fromCache: false };
+      }
+      
+      console.log(`Cache hit for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
+      
+      // Calculate expiration date (30 days from cache date)
+      const expiresAt = new Date(cacheDate);
       expiresAt.setDate(expiresAt.getDate() + 30);
       
-      // Check if cache has expired
-      if (expiresAt < new Date()) {
-        console.log('Cache expired for URL:', normalizedUrl);
-        return { fromCache: false };
-      }
-      
-      console.log('Cache hit for URL:', normalizedUrl);
-      return { 
-        fromCache: true, 
-        data: data.analysis_data,
+      return {
+        fromCache: true,
+        data: data.analysis_result,
         cachedAt: data.created_at,
         expiresAt: expiresAt.toISOString()
       };
     } catch (error) {
-      console.error('Error checking cache:', error);
+      console.error(`Error checking cache: ${error.message}`);
       return { fromCache: false };
     }
   }
-
-  async cacheResult(url: string, data: any): Promise<boolean> {
+  
+  /**
+   * Store analysis result in cache
+   */
+  async cacheResult(url: string, result: any): Promise<void> {
     try {
-      // Normalize URL for consistent caching
+      // Normalize URL for consistent cache storage
       const normalizedUrl = this.normalizeUrl(url);
       
-      console.log('Caching result for URL:', normalizedUrl);
+      // Hash the URL to use as a cache key
+      const urlHash = await this.hashUrl(normalizedUrl);
       
-      // Using upsert to handle both insert and update cases
-      const { error } = await this.client
+      console.log(`Caching result for URL: ${normalizedUrl} (hash: ${urlHash})`);
+      
+      // Store the analysis result in the cache table
+      const { error } = await this.supabaseClient
         .from('website_analysis_cache')
-        .upsert({
+        .insert({
           url: normalizedUrl,
-          analysis_data: data,
-          created_at: new Date().toISOString()
+          url_hash: urlHash,
+          analysis_result: result
         });
       
       if (error) {
-        console.error('Error caching result:', error);
-        return false;
+        console.error(`Error caching result: ${error.message}`);
+        throw error;
       }
       
-      console.log('Successfully cached result for URL:', normalizedUrl);
-      return true;
+      console.log(`Successfully cached result for URL: ${normalizedUrl}`);
     } catch (error) {
-      console.error('Error caching result:', error);
-      return false;
+      console.error(`Failed to cache result: ${error.message}`);
     }
   }
   
+  /**
+   * Normalize URL for consistent cache lookups
+   */
   private normalizeUrl(url: string): string {
-    try {
-      // Remove protocol, trailing slashes, and www
-      let normalizedUrl = url.trim().toLowerCase();
-      normalizedUrl = normalizedUrl.replace(/^(https?:\/\/)?(www\.)?/i, '');
-      normalizedUrl = normalizedUrl.replace(/\/+$/, '');
-      return normalizedUrl;
-    } catch (error) {
-      console.error('Error normalizing URL:', error);
-      return url; // Return original if normalization fails
+    // Remove trailing slash if present
+    let normalizedUrl = url.trim();
+    
+    // Ensure URL has a protocol
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://' + normalizedUrl;
     }
+    
+    // Remove trailing slash if present
+    if (normalizedUrl.endsWith('/')) {
+      normalizedUrl = normalizedUrl.slice(0, -1);
+    }
+    
+    // Convert to lowercase for case-insensitive matching
+    normalizedUrl = normalizedUrl.toLowerCase();
+    
+    return normalizedUrl;
+  }
+  
+  /**
+   * Create a hash of the URL for use as a cache key
+   */
+  private async hashUrl(url: string): Promise<string> {
+    // Create a simple hash from the URL string
+    // For a production system, consider using crypto APIs for better hashing
+    const encoder = new TextEncoder();
+    const data = encoder.encode(url);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    
+    // Convert hash to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hashHex;
   }
 }
