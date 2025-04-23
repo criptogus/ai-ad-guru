@@ -60,7 +60,7 @@ export const generateGoogleAds = async (
       return null;
     }
 
-    // Verificar o status da resposta atraves da estrutura de erro no data
+    // Verificar erro de créditos insuficientes
     if (data && data.error && data.error.toLowerCase().includes("credit")) {
       toast.error('Você não tem créditos suficientes para gerar anúncios.', {
         description: 'Por favor, adquira mais créditos ou ajuste seu plano.'
