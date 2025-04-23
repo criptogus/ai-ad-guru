@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,10 +79,15 @@ export const GenerateAds: React.FC<GenerateAdsProps> = ({ onNext }) => {
       
       setIsGenerating(true);
       
-      // Ensure companyName is always present in the values
+      // Ensure companyName and websiteUrl are always present
       const generationData = {
         ...values,
-        companyName: values.companyName || "Default Company Name", // Provide a default if somehow empty
+        companyName: values.companyName || "Default Company Name", 
+        websiteUrl: values.websiteUrl || "https://example.com", // Add a default website URL
+        companyDescription: values.companyDescription || "",
+        objective: values.objective || "awareness",
+        targetAudience: values.targetAudience || "",
+        brandTone: values.brandTone || "professional"
       };
       
       // Generate ads via service
@@ -345,3 +349,5 @@ export const GenerateAds: React.FC<GenerateAdsProps> = ({ onNext }) => {
     </Card>
   );
 };
+
+export default GenerateAds;
