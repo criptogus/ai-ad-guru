@@ -78,143 +78,9 @@ async function saveToCache(url: string, platform: string, analysisResult: any) {
 }
 
 function getLocalizedPrompt(language: string, websiteData: any): string {
-  // Portuguese prompt
-  if (language === 'pt' || language === 'pt-BR' || language === 'pt-PT') {
-    return `
-    Você é um analista sênior de Marketing e Novos Negócios com vasta experiência em análise de mercado e público-alvo.
-
-    Baseado nas informações da empresa abaixo, forneça uma análise detalhada, objetiva e baseada em fatos. NÃO INVENTE informações que não estejam presentes nos dados fornecidos.
-
-    Informações da empresa:
-    Nome: ${websiteData.companyName}
-    Descrição: ${websiteData.businessDescription}
-    Diferenciais: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Palavras-chave: ${websiteData.keywords?.join(', ')}
-
-    Por favor, forneça uma análise estruturada com os seguintes pontos:
-
-    1. PERFIL DO PÚBLICO-ALVO DETALHADO
-    - Faixa etária e distribuição por sexo
-    - Profissões e cargos relevantes
-    - Estilo de vida e hábitos
-    - Preocupações e dores específicas
-    - Grupos sociais e ambientes frequentados
-    - Poder aquisitivo e comportamento de compra
-
-    2. GEOLOCALIZAÇÃO ESTRATÉGICA
-    - Regiões prioritárias
-    - Características demográficas por região
-    - Potencial de mercado por localidade
-
-    3. ANÁLISE DE MERCADO
-    - Oportunidades identificadas (Oceano Azul)
-    - Áreas saturadas (Oceano Vermelho)
-    - Tendências de crescimento
-    - Nichos inexplorados ou subatendidos
-    - Tamanho estimado do mercado (se possível identificar)
-
-    4. ANÁLISE COMPETITIVA
-    - Principais concorrentes no segmento
-    - Diferenciais competitivos da empresa
-    - Posicionamento dos concorrentes
-    - Oportunidades vs concorrência
-    - Ameaças do mercado
-
-    Forneça a análise em português, com linguagem profissional mas acessível.
-    `;
-  }
-  // English prompt
-  else if (language === 'en' || language === 'en-US' || language === 'en-GB') {
-    return `
-    You are a senior Marketing and Business Development analyst with extensive experience in market and target audience analysis.
-
-    Based on the company information below, provide a detailed, objective and fact-based analysis. DO NOT INVENT information not present in the provided data.
-
-    Company Information:
-    Name: ${websiteData.companyName}
-    Description: ${websiteData.businessDescription}
-    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Keywords: ${websiteData.keywords?.join(', ')}
-
-    Please provide a structured analysis with the following points:
-
-    1. DETAILED TARGET AUDIENCE PROFILE
-    - Age range and gender distribution
-    - Relevant professions and positions
-    - Lifestyle and habits
-    - Specific concerns and pain points
-    - Social groups and frequented environments
-    - Purchasing power and buying behavior
-
-    2. STRATEGIC GEOLOCATION
-    - Priority regions
-    - Demographic characteristics by region
-    - Market potential by location
-
-    3. MARKET ANALYSIS
-    - Identified opportunities (Blue Ocean)
-    - Saturated areas (Red Ocean)
-    - Growth trends
-    - Unexplored or underserved niches
-    - Estimated market size (if identifiable)
-
-    4. COMPETITIVE ANALYSIS
-    - Main competitors in the segment
-    - Company's competitive advantages
-    - Competitors' positioning
-    - Opportunities vs competition
-    - Market threats
-
-    Provide the analysis in English, with professional but accessible language.
-    `;
-  }
-  // Spanish prompt
-  else if (language === 'es' || language === 'es-ES' || language === 'es-MX') {
-    return `
-    Eres un analista senior de Marketing y Desarrollo de Negocios con amplia experiencia en análisis de mercado y público objetivo.
-
-    Basado en la información de la empresa a continuación, proporciona un análisis detallado, objetivo y basado en hechos. NO INVENTES información que no esté presente en los datos proporcionados.
-
-    Información de la empresa:
-    Nombre: ${websiteData.companyName}
-    Descripción: ${websiteData.businessDescription}
-    Puntos únicos de venta: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Palabras clave: ${websiteData.keywords?.join(', ')}
-
-    Por favor, proporciona un análisis estructurado con los siguientes puntos:
-
-    1. PERFIL DETALLADO DEL PÚBLICO OBJETIVO
-    - Rango de edad y distribución por género
-    - Profesiones y posiciones relevantes
-    - Estilo de vida y hábitos
-    - Preocupaciones y puntos de dolor específicos
-    - Grupos sociales y ambientes frecuentados
-    - Poder adquisitivo y comportamiento de compra
-
-    2. GEOLOCALIZACIÓN ESTRATÉGICA
-    - Regiones prioritarias
-    - Características demográficas por región
-    - Potencial de mercado por ubicación
-
-    3. ANÁLISIS DE MERCADO
-    - Oportunidades identificadas (Océano Azul)
-    - Áreas saturadas (Océano Rojo)
-    - Tendencias de crecimiento
-    - Nichos inexplorados o desatendidos
-    - Tamaño estimado del mercado (si es identificable)
-
-    4. ANÁLISIS COMPETITIVO
-    - Principales competidores en el segmento
-    - Ventajas competitivas de la empresa
-    - Posicionamiento de los competidores
-    - Oportunidades vs competencia
-    - Amenazas del mercado
-
-    Proporciona el análisis en español, con lenguaje profesional pero accesible.
-    `;
-  }
-  // Default to English if language not recognized
-  return getLocalizedPrompt('en', websiteData);
+  // Import the createAudienceAnalysisPrompt function
+  const { createAudienceAnalysisPrompt } = await import('./promptCreator.ts');
+  return createAudienceAnalysisPrompt(websiteData, 'all', language);
 }
 
 serve(async (req) => {
@@ -259,7 +125,7 @@ serve(async (req) => {
       }
     }
     
-    const prompt = getLocalizedPrompt(detectedLanguage, websiteData);
+    const prompt = await getLocalizedPrompt(detectedLanguage, websiteData);
 
     // Verifique se temos informações suficientes da empresa para gerar uma análise
     if (!websiteData.companyName || 

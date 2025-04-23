@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
 
 interface AudienceMarketStepProps {
   campaignData: any;
@@ -34,20 +35,79 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     setIsGenerating(true);
     
     try {
-      // This would be a real API call in production
-      // For now, we'll simulate the AI generation
+      // If we already have audience analysis data, use that
+      if (analysisResult?.audienceAnalysis?.analysisText) {
+        const analysisText = analysisResult.audienceAnalysis.analysisText;
+        
+        // Extract sections from the analysis text
+        const audienceProfile = extractSection(analysisText, 
+          ["DETAILED TARGET AUDIENCE PROFILE", "PERFIL DO PÚBLICO-ALVO DETALHADO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO"],
+          ["STRATEGIC GEOLOCATION", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"]
+        );
+        
+        const geolocation = extractSection(analysisText,
+          ["STRATEGIC GEOLOCATION", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"],
+          ["MARKET ANALYSIS", "ANÁLISE DE MERCADO", "ANÁLISIS DE MERCADO"]
+        );
+        
+        const marketAnalysis = extractSection(analysisText,
+          ["MARKET ANALYSIS", "ANÁLISE DE MERCADO", "ANÁLISIS DE MERCADO"],
+          ["COMPETITIVE ANALYSIS", "ANÁLISE COMPETITIVA", "ANÁLISIS COMPETITIVO"]
+        );
+        
+        const competitorInsights = extractSection(analysisText,
+          ["COMPETITIVE ANALYSIS", "ANÁLISE COMPETITIVA", "ANÁLISIS COMPETITIVO"],
+          []
+        );
+        
+        setAudienceData({
+          audienceProfile: audienceProfile || generateAudienceProfile(),
+          geolocation: geolocation || generateGeolocation(),
+          marketAnalysis: marketAnalysis || generateMarketAnalysis(),
+          competitorInsights: competitorInsights || generateCompetitorInsights()
+        });
+        
+        toast.success("Insights de público gerados com sucesso!");
+        return;
+      }
       
-      // Wait for a brief period to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // If we don't have analysis data but have basic website data
+      if (campaignData.websiteUrl || campaignData.businessDescription) {
+        try {
+          const { data, error } = await supabase.functions.invoke('generate-targeting', {
+            body: { 
+              businessDescription: campaignData.businessDescription || campaignData.companyDescription || '',
+              targetAudience: campaignData.targetAudience || ''
+            }
+          });
+          
+          if (error) throw new Error(error.message || 'Failed to generate targeting recommendations');
+          
+          if (data) {
+            setAudienceData({
+              audienceProfile: `Faixa etária: ${data.ageRange || '25-54'}, Gênero: ${translateGender(data.gender) || 'todos'}. ${campaignData.audienceProfile || generateAudienceProfile()}`,
+              geolocation: data.locations || generateGeolocation(),
+              marketAnalysis: campaignData.marketAnalysis || generateMarketAnalysis(),
+              competitorInsights: campaignData.competitorInsights || generateCompetitorInsights()
+            });
+            
+            toast.success("Recomendações de público-alvo geradas com sucesso!");
+            return;
+          }
+        } catch (err) {
+          console.error("Error generating targeting:", err);
+          // Fall back to default generation if API fails
+        }
+      }
       
-      const generatedInsights = {
+      // Use fallback generation method if we don't have structured data
+      setAudienceData({
         audienceProfile: generateAudienceProfile(),
         geolocation: generateGeolocation(),
         marketAnalysis: generateMarketAnalysis(),
         competitorInsights: generateCompetitorInsights()
-      };
+      });
       
-      setAudienceData(generatedInsights);
       toast.success("Insights de público gerados com sucesso!");
       
     } catch (error) {
@@ -55,6 +115,57 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
       toast.error("Erro ao gerar insights de público.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  // Helper function to extract sections from analysis text
+  const extractSection = (text: string, sectionHeaders: string[], nextSectionHeaders: string[]): string => {
+    if (!text) return "";
+    
+    let startIndex = -1;
+    let endIndex = text.length;
+    
+    // Find the start of the section
+    for (const header of sectionHeaders) {
+      const index = text.indexOf(header);
+      if (index !== -1 && (startIndex === -1 || index < startIndex)) {
+        startIndex = index;
+      }
+    }
+    
+    // Find the end of the section (start of next section)
+    if (nextSectionHeaders.length > 0) {
+      for (const header of nextSectionHeaders) {
+        const index = text.indexOf(header);
+        if (index !== -1 && index > startIndex && index < endIndex) {
+          endIndex = index;
+        }
+      }
+    }
+    
+    // If we found the section
+    if (startIndex !== -1) {
+      // Extract the section text
+      const sectionText = text.substring(startIndex, endIndex).trim();
+      
+      // Remove the header from the section text
+      const headerEndIndex = sectionText.indexOf("\n");
+      if (headerEndIndex !== -1) {
+        return sectionText.substring(headerEndIndex).trim();
+      }
+      return sectionText;
+    }
+    
+    return "";
+  };
+  
+  const translateGender = (gender: string): string => {
+    if (!gender) return "todos";
+    switch (gender.toLowerCase()) {
+      case "male": return "masculino";
+      case "female": return "feminino";
+      case "all": return "todos";
+      default: return gender;
     }
   };
   
@@ -86,7 +197,7 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
   useEffect(() => {
     // If analysis result is available but no audience data has been set yet, 
     // auto-generate on component mount
-    if (analysisResult && !audienceData.audienceProfile) {
+    if ((analysisResult?.audienceAnalysis || campaignData?.websiteUrl) && !audienceData.audienceProfile) {
       generateAudienceInsights();
     }
   }, []);

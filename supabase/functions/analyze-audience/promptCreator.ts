@@ -12,9 +12,11 @@ export const createAudienceAnalysisPrompt = (
     : 'Provide a general audience analysis that works across all major ad platforms.';
   
   // Build the base prompt with language awareness
-  let basePrompt = `Analyze the following website data and create a detailed audience targeting profile for digital advertising.
+  const basePrompt = `Act as a highly experienced Senior Marketing and New Business Analyst AI with deep expertise in strategic market analysis, consumer behavior, competitive positioning, and business development. Your task is to deliver a comprehensive, data-driven, and actionable report based on the provided company information, adhering to the highest standards of clarity, objectivity, and strategic insight.
 
-Website Information:
+IMPORTANT: Respond ONLY in ${getLanguageName(language)} language. Do not mix languages or include any text in other languages.
+
+I'll analyze the following website/company information:
 - Company Name: ${websiteData.companyName || 'Not provided'}
 - Website URL: ${websiteData.websiteUrl || 'Not provided'}
 - Business Description: ${websiteData.businessDescription || 'Not provided'}
@@ -26,32 +28,39 @@ Website Information:
 
 ${platformText}
 
-Based on this information, please provide:
+Structure your report with the following four main sections:
 
-1. A comprehensive audience analysis in paragraph form (this will be displayed to the user).
-2. Structured audience targeting data in these categories:
-   - Demographics (age groups, gender, education level, income level)
-   - Interests
-   - Pain points
-   - Decision factors
-   - Market size
-   - Competitors
-   - Geolocation recommendations
+1. DETAILED TARGET AUDIENCE PROFILE (PÚBLICO-ALVO DETALHADO)
+- Demographics: Age range, gender distribution, income level, education, and relevant professions
+- Psychographics: Core desires, values, motivations, and pain points related to the company's offerings
+- Lifestyle: Daily habits, hobbies, media consumption patterns, and social affiliations
+- Concerns: Key worries or challenges related to the industry or product category
+- Social Groups: Specific communities or subcultures likely to engage with the brand
 
-Format your response in a clear, structured way with the following sections:
+2. STRATEGIC GEOLOCATION (GEOLOCALIZAÇÃO ESTRATÉGICA)
+- Primary Markets: Key cities, regions, or countries where the target audience is concentrated
+- Market Accessibility: Factors that make these locations viable for targeting
+- Growth Potential: Emerging regions or underserved areas with high potential
+- Challenges: Local barriers and strategies to mitigate them
 
-1. DETAILED TARGET AUDIENCE PROFILE
-2. STRATEGIC GEOLOCATION
-3. MARKET ANALYSIS
-4. COMPETITIVE ANALYSIS
+3. MARKET ANALYSIS (ANÁLISE DE MERCADO)
+- Market Overview: Size, growth rate, and key trends shaping the industry
+- Oceano Azul (Blue Ocean): Identify untapped or underserved market segments
+- Oceano Vermelho (Red Ocean): Describe the saturated, highly competitive segments
+- Growth Opportunities: Specific areas for expansion
+- Niche Markets: Micro-segments with unique needs that can be targeted
 
-Your analysis should be strategic and specific, not generic. Use headers and bullet points to organize information.`;
+4. COMPETITIVE ANALYSIS (ANÁLISE COMPETITIVA)
+- Key Competitors: Identify 3-5 primary competitors (direct and indirect)
+- Diferenciais Competitivos: Analyze each competitor's unique strengths and weaknesses
+- Posicionamento de Mercado: Describe how competitors position themselves
+- Oportunidades: Gaps in competitors' offerings that can be exploited
+- Ameaças: Risks posed by competitors' actions and external factors
 
-  // Add language-specific instructions
-  if (language && language !== 'en') {
-    basePrompt += `\n\nPlease provide your analysis in ${getLanguageName(language)} language.`;
-  }
-  
+For each section, provide specific, actionable insights rather than generic statements. Base your analysis exclusively on the provided information - DO NOT invent or assume facts not present in the data. If information is limited, clearly state where you've made reasonable inferences based on the available context.
+
+The response must be in a professional, concise, and authoritative tone, suitable for senior executives. Organize information with clear headers and bullet points where appropriate.`;
+
   return basePrompt;
 };
 
