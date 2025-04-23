@@ -9,7 +9,8 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="relative h-screen w-full bg-gray-50 dark:bg-background">
+      {/* Sidebar fixed na lateral */}
       <Sidebar
         isOpen={sidebarOpen}
         isCollapsed={sidebarCollapsed}
@@ -18,10 +19,15 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       />
       <MobileSidebarToggle onOpen={() => setSidebarOpen(true)} />
 
-      <main className={cn(
-        "flex-1 overflow-y-auto bg-gray-50 dark:bg-background transition-all duration-300 p-4",
-        sidebarCollapsed ? "md:ml-16" : "md:ml-64"
-      )}>
+      {/* O <main> agora usa pl-16/pl-64, nunca margin */}
+      <main
+        className={cn(
+          "transition-all duration-300 flex-1 min-h-screen overflow-y-auto p-4 md:p-6",
+          sidebarCollapsed
+            ? "md:pl-16" // compensação lateral para sidebar colapsado
+            : "md:pl-64" // compensação lateral para sidebar expandido
+        )}
+      >
         {children}
       </main>
     </div>
@@ -29,3 +35,4 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default MainLayout;
+
