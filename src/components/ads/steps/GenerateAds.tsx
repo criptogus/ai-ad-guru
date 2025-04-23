@@ -78,28 +78,28 @@ export const GenerateAds: React.FC<GenerateAdsProps> = ({ onNext }) => {
       }
       
       setIsGenerating(true);
-      
-      const generationData = {
+
+      const generationData: import("@/services/ads/generationService").AdGenerationParams = {
         ...values,
-        companyName: values.companyName || "Default Company Name", 
+        companyName: values.companyName || "Default Company Name",
         websiteUrl: values.websiteUrl || "https://example.com",
         companyDescription: values.companyDescription || "",
         objective: values.objective || "awareness",
         targetAudience: values.targetAudience || "",
         brandTone: values.brandTone || "professional",
-        platforms: values.platforms && values.platforms.length > 0 
-          ? values.platforms 
+        platforms: values.platforms && values.platforms.length > 0
+          ? values.platforms
           : ["google"]
       };
       
       const generatedAds = await generateAds(generationData);
-      
+
       await deductCredits(creditCost);
-      
+
       toast.success("Anúncios gerados com sucesso!", {
         description: `Foram gastos ${creditCost} créditos.`
       });
-      
+
       onNext(generatedAds, values);
     } catch (error) {
       console.error("Error generating ads:", error);
