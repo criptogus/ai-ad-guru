@@ -29,12 +29,11 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
 const ConnectionsPage = lazy(() => import('@/pages/ConnectionsPage'));
-const CreateCampaignPage = lazy(() => import('@/pages/CreateCampaignPage'));
 const CampaignsPage = lazy(() => import('@/pages/CampaignsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
-// Import the new page
+// Import the ad manager page
 import AdManagerPage from "@/pages/AdManagerPage";
 
 // ProtectedRoute component to handle authentication
@@ -68,11 +67,14 @@ const router = createBrowserRouter(
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-      <Route path="/campaign/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
+      
+      {/* Redirect from old campaign/create route to the new ad-manager route */}
+      <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
+      
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       
-      {/* Add the new route to the routes array */}
+      {/* Ad Manager route */}
       <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
 
       <Route path="*" element={<NotFoundPage />} />
