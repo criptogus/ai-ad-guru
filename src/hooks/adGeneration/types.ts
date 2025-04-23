@@ -1,4 +1,3 @@
-
 // Define interfaces for ad types
 export interface GoogleAd {
   headline1: string;
@@ -28,6 +27,7 @@ export interface MetaAd {
   format?: 'feed' | 'story' | 'reel' | 'square'; // Added 'square' to valid formats
   hashtags?: string[] | string;
   callToAction?: string;
+  isComplete?: boolean;
 }
 
 export interface MicrosoftAd extends GoogleAd {
