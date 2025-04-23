@@ -6,7 +6,7 @@ import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 
 export interface AudienceAnalysisResult {
   success: boolean;
-  platform: string;
+  platform?: string;
   analysisText: string;
   // Structured audience data
   demographics?: {
@@ -67,20 +67,12 @@ export const useAudienceAnalysis = () => {
 
       console.log('Audience analysis result:', data);
       
-      // Process the raw analysis text if needed and structure the data
+      // Create a properly structured result object
       const processedData: AudienceAnalysisResult = {
-        ...data,
-        // If data doesn't have the structured fields, we add them with defaults
-        demographics: data.demographics || {
-          ageGroups: ["25-34", "35-44"], // Default values
-          gender: ["All"],
-          educationLevel: ["College", "Graduate"],
-          incomeLevel: ["Middle", "Upper-middle"]
-        },
-        interests: data.interests || ["Digital Marketing", "Technology", "Business"],
-        painPoints: data.painPoints || ["Time management", "ROI tracking", "Ad performance"],
-        decisionFactors: data.decisionFactors || ["Cost effectiveness", "Ease of use", "Support"],
-        language: language // Set the language from website data
+        success: true,
+        platform: platform || 'all',
+        analysisText: data.data || "",
+        language: language
       };
       
       setAnalysisResult(processedData);

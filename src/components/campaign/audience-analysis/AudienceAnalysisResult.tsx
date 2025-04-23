@@ -20,6 +20,8 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
 }) => {
   // Format analysis text as HTML if it contains markdown-like syntax
   const formatAnalysisText = (text: string) => {
+    if (!text) return '';
+    
     // Replace markdown-like headers with HTML
     let formattedText = text
       .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
@@ -28,8 +30,41 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
       
       // Replace bullet points with HTML lists
       .replace(/^\*\s(.*$)/gim, '<li class="ml-4">$1</li>')
-      .replace(/^\-\s(.*$)/gim, '<li class="ml-4">$1</li>');
+      .replace(/^\-\s(.*$)/gim, '<li class="ml-4">$1</li>')
+      
+      // Replace numbered lists
+      .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-4">$1</li>');
     
+    // Replace sections specifically for our audience analysis
+    formattedText = formattedText
+      .replace(/1\.\s*PERFIL DO PÚBLICO-ALVO DETALHADO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DO PÚBLICO-ALVO DETALHADO</h2>')
+      .replace(/1\.\s*DETAILED TARGET AUDIENCE PROFILE/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">DETAILED TARGET AUDIENCE PROFILE</h2>')
+      .replace(/1\.\s*PERFIL DETALLADO DEL PÚBLICO OBJETIVO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DETALLADO DEL PÚBLICO OBJETIVO</h2>')
+               
+      .replace(/2\.\s*GEOLOCALIZAÇÃO ESTRATÉGICA/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCALIZAÇÃO ESTRATÉGICA</h2>')
+      .replace(/2\.\s*STRATEGIC GEOLOCATION/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">STRATEGIC GEOLOCATION</h2>')
+      .replace(/2\.\s*GEOLOCALIZACIÓN ESTRATÉGICA/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCALIZACIÓN ESTRATÉGICA</h2>')
+               
+      .replace(/3\.\s*ANÁLISE DE MERCADO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISE DE MERCADO</h2>')
+      .replace(/3\.\s*MARKET ANALYSIS/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">MARKET ANALYSIS</h2>')
+      .replace(/3\.\s*ANÁLISIS DE MERCADO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISIS DE MERCADO</h2>')
+               
+      .replace(/4\.\s*ANÁLISE COMPETITIVA/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISE COMPETITIVA</h2>')
+      .replace(/4\.\s*COMPETITIVE ANALYSIS/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">COMPETITIVE ANALYSIS</h2>')
+      .replace(/4\.\s*ANÁLISIS COMPETITIVO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISIS COMPETITIVO</h2>');
+
     // Add paragraph tags to text that isn't already wrapped in HTML
     const lines = formattedText.split('\n');
     formattedText = lines.map(line => {
@@ -39,7 +74,9 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
     }).join('');
     
     // Replace bold text markers with span elements
-    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold">$1</span>');
+    formattedText = formattedText
+      .replace(/\*\*(.*?)\*\*/g, '<span class="font-bold">$1</span>')
+      .replace(/__(.*?)__/g, '<span class="font-bold">$1</span>');
     
     return formattedText;
   };

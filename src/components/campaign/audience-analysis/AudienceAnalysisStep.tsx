@@ -55,6 +55,7 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
 
   const handleNextClick = () => {
     console.log("AudienceAnalysisStep: Next button clicked");
+    console.log("Audience analysis result:", audienceResult);
     
     // Pass the audience analysis data to the next step
     if (audienceResult) {
