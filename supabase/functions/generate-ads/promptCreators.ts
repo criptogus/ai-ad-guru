@@ -19,7 +19,6 @@ function normalizeLanguage(input: string): string {
 function getLanguageName(langCode: string): string {
   const map: Record<string, string> = {
     pt: "Português",
-    "pt-br": "Português",
     en: "Inglês",
     es: "Espanhol",
     fr: "Francês",
@@ -27,9 +26,9 @@ function getLanguageName(langCode: string): string {
     it: "Italiano",
     zh: "Chinês",
     ja: "Japonês",
-    ko: "Coreano",
+    ko: "Coreano"
   };
-  return map[langCode.toLowerCase()] || "Português";
+  return map[langCode.toLowerCase()] || langCode;
 }
 
 export function createGoogleAdsPrompt(
@@ -40,36 +39,35 @@ export function createGoogleAdsPrompt(
   const readableLanguage = getLanguageName(language);
 
   const systemMessage = `
-You are a senior copywriter specialized in Google Ads.
-Your goal is to write highly converting ads using ONLY the provided information.
-Do NOT invent information. 
-Make sure the entire response is in ${readableLanguage.toUpperCase()} — absolutely no mixed languages.
-Never use generic placeholders like "professional services" unless explicitly stated.
-Only return the response in the format specified.
+You are a senior copywriter for high-performance Google Ads campaigns.
+Your role is to write ads that generate clicks, using ONLY the data provided below.
+Do NOT invent anything. Do NOT mix languages.
+Your response must be ENTIRELY in ${readableLanguage.toUpperCase()}.
+Avoid generic terms like "professional service" unless they appear explicitly.
+Return only the JSON output in the exact format below.
 `;
 
   const userMessage = `
-Create 5 Google Ads using ONLY the following campaign information:
+Write 5 Google Ads using the data below:
 
 - Company: ${campaignData.companyName || "(missing)"}
 - Website: ${campaignData.websiteUrl || "(missing)"}
-- Product/Service: ${campaignData.product || "(missing)"}
+- Product or service: ${campaignData.product || "(missing)"}
 - Objective: ${campaignData.objective || "(missing)"}
-- Target Audience: ${campaignData.targetAudience || "(missing)"}
-- Tone of voice: ${campaignData.brandTone || "(missing)"}
-- Mental Trigger: ${mindTrigger || "(missing)"}
+- Target audience: ${campaignData.targetAudience || "(missing)"}
+- Tone: ${campaignData.brandTone || "(missing)"}
+- Mental trigger: ${mindTrigger || "(missing)"}
 - Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
 - Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
 - Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
 
-Rules:
-- Each ad must include 3 headlines (max 30 characters each)
-- 2 descriptions (max 90 characters each)
-- A display_url derived from the provided website
-- NO invented content
-- NO text in any language other than ${readableLanguage}
+Ad format:
+- Each ad must have:
+  - 3 headlines (up to 30 characters each)
+  - 2 descriptions (up to 90 characters each)
+  - A display URL based on the company website
 
-Return ONLY a JSON array like this:
+Response format (JSON):
 [
   {
     "headline_1": "...",
@@ -98,7 +96,7 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
     },
     es: {
       name: "Español",
-      generic_terms: "servicios profesionales, resultados de qualidade",
+      generic_terms: "serviços profesionales, resultados de qualidade",
       response_lang: "español"
     },
     en: {
