@@ -11,10 +11,15 @@ export const createAudienceAnalysisPrompt = (
     ? `Focus specifically on audiences for ${platform} ads.` 
     : 'Provide a general audience analysis that works across all major ad platforms.';
   
+  // Determine likely country context from website data or default to Brazil
+  const countryContext = determineCountryContext(websiteData);
+  
   // Build the base prompt with language awareness
   const basePrompt = `Act as a highly experienced Senior Marketing and New Business Analyst AI with deep expertise in strategic market analysis, consumer behavior, competitive positioning, and business development. Your task is to deliver a comprehensive, data-driven, and actionable report based on the provided company information, adhering to the highest standards of clarity, objectivity, and strategic insight.
 
 IMPORTANT: Respond ONLY in ${getLanguageName(language)} language. Do not mix languages or include any text in other languages.
+
+VERY IMPORTANT: This analysis should be specifically focused on ${countryContext}. All geographic recommendations, competitor analysis, and market insights should be relevant to this geographic context. Do NOT recommend locations outside ${countryContext} unless explicitly stated in the company information.
 
 I'll analyze the following website/company information:
 - Company Name: ${websiteData.companyName || 'Not provided'}
@@ -40,20 +45,20 @@ Structure your report with the following four main sections:
 - Social Groups: Specific communities or subcultures likely to engage with the brand
 
 2. GEOLOCATION ANALYSIS (ANÁLISE DE GEOLOCALIZAÇÃO)
-- Primary Markets: Key cities, regions, or countries where the target audience is concentrated
+- Primary Markets: Key cities, regions, or countries where the target audience is concentrated - SPECIFICALLY IN ${countryContext}
 - Market Accessibility: Factors that make these locations viable for targeting
 - Growth Potential: Emerging regions or underserved areas with high potential
 - Challenges: Local barriers and strategies to mitigate them
 
 3. MARKET ANALYSIS (ANÁLISE DE MERCADO)
-- Market Overview: Size, growth rate, and key trends shaping the industry
+- Market Overview: Size, growth rate, and key trends shaping the industry in ${countryContext}
 - Oceano Azul (Blue Ocean): Identify untapped or underserved market segments
 - Oceano Vermelho (Red Ocean): Describe the saturated, highly competitive segments
 - Growth Opportunities: Specific areas for expansion
 - Niche Markets: Micro-segments with unique needs that can be targeted
 
 4. COMPETITOR INSIGHTS (INSIGHTS DOS CONCORRENTES)
-- Key Competitors: Identify 3-5 primary competitors (direct and indirect)
+- Key Competitors: Identify 3-5 primary competitors (direct and indirect) IN ${countryContext}
 - Diferenciais Competitivos: Analyze each competitor's unique strengths and weaknesses
 - Posicionamento de Mercado: Describe how competitors position themselves
 - Oportunidades: Gaps in competitors' offerings that can be exploited
@@ -65,6 +70,54 @@ The response must be in a professional, concise, and authoritative tone, suitabl
 
   return basePrompt;
 };
+
+// Helper function to determine country context from website data
+function determineCountryContext(websiteData: WebsiteData): string {
+  // Check if there's any explicit country information
+  const allText = [
+    websiteData.companyName || '',
+    websiteData.websiteUrl || '',
+    websiteData.businessDescription || '',
+    websiteData.targetAudience || '',
+    websiteData.brandTone || '',
+    (websiteData.uniqueSellingPoints || []).join(' '),
+    (websiteData.keywords || []).join(' '),
+    (websiteData.callToAction || []).join(' ')
+  ].join(' ').toLowerCase();
+  
+  // Look for URL TLD
+  if (websiteData.websiteUrl) {
+    if (websiteData.websiteUrl.endsWith('.br')) {
+      return 'Brazil';
+    }
+    if (websiteData.websiteUrl.endsWith('.pt')) {
+      return 'Portugal';
+    }
+    if (websiteData.websiteUrl.endsWith('.mx')) {
+      return 'Mexico';
+    }
+    if (websiteData.websiteUrl.endsWith('.es')) {
+      return 'Spain';
+    }
+  }
+  
+  // Look for mentions of country names
+  if (allText.includes('brasil') || allText.includes('brazil')) {
+    return 'Brazil';
+  }
+  if (allText.includes('portugal')) {
+    return 'Portugal';
+  }
+  if (allText.includes('méxico') || allText.includes('mexico')) {
+    return 'Mexico';
+  }
+  if (allText.includes('españa') || allText.includes('spain')) {
+    return 'Spain';
+  }
+  
+  // Default to Brazil if no country detected
+  return 'Brazil';
+}
 
 // Helper function to get language name from code
 function getLanguageName(langCode: string): string {

@@ -36,9 +36,9 @@ serve(async (req) => {
     console.log("Sending request to OpenAI...");
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // Using gpt-4o for better results
       messages: [
-        { role: "system", content: "You are a senior marketing and business analyst AI providing detailed audience, market, and competitor analysis. Respond in the language specified by the user." },
+        { role: "system", content: "You are a senior marketing and business analyst AI providing detailed audience, market, and competitor analysis specifically for the country context provided. Respond in the language specified by the user. Ensure all geographic recommendations are relevant to the specified country (usually Brazil)." },
         { role: "user", content: prompt }
       ],
       temperature: 0.7,

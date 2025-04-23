@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,7 +35,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
   const [rawAnalysisText, setRawAnalysisText] = useState<string>("");
   const [showRawDialog, setShowRawDialog] = useState<boolean>(false);
 
-  // Function to generate audience insights with AI
   const generateAudienceInsights = async () => {
     setIsGenerating(true);
     setAnalysisError(null);
@@ -44,21 +42,18 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     try {
       console.log("Generating audience insights with data:", campaignData);
       
-      // If we already have audience analysis data, use that
       if (analysisResult?.audienceAnalysis?.analysisText) {
         const analysisText = analysisResult.audienceAnalysis.analysisText;
         setRawAnalysisText(analysisText);
         
         console.log("Using existing audience analysis:", analysisText.substring(0, 200) + "...");
         
-        // Check if the analysis text has the required sections
         if (!isValidAnalysisStructure(analysisText)) {
           console.error("Invalid analysis structure - missing required sections");
           setAnalysisError("A análise da OpenAI não contém as seções necessárias. Tente novamente ou preencha manualmente.");
           throw new Error("Invalid analysis structure from OpenAI");
         }
         
-        // Extract sections from the analysis text
         const audienceProfile = extractSection(analysisText, 
           ["DETAILED TARGET AUDIENCE PROFILE", "PUBLIC TARGET PROFILE", "PERFIL DO PÚBLICO-ALVO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO"],
           ["STRATEGIC GEOLOCATION", "GEOLOCATION ANALYSIS", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA", "ANÁLISE DE GEOLOCALIZAÇÃO"]
@@ -86,7 +81,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           competitorInsightsLength: competitorInsights?.length
         });
         
-        // Validate that we have at least some content from the OpenAI response
         if (!audienceProfile && !geolocation && !marketAnalysis && !competitorInsights) {
           console.error("Failed to extract valid information from analysis");
           setAnalysisError("Não foi possível extrair informações válidas da análise da OpenAI");
@@ -104,15 +98,14 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
         return;
       }
       
-      // If we don't have analysis data but have basic website data
       if (campaignData.websiteUrl || campaignData.businessDescription) {
         try {
           console.log("Calling generate-targeting with data:", {
             businessDescription: campaignData.businessDescription || campaignData.companyDescription || '',
             targetAudience: campaignData.targetAudience || '',
+            country: 'BR'
           });
           
-          // First, try to get a complete analysis using the analyze-audience function
           try {
             const { data: fullAnalysisData, error: fullAnalysisError } = await supabase.functions.invoke('analyze-audience', {
               body: { 
@@ -124,7 +117,8 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
                   brandTone: campaignData.brandTone || '',
                   uniqueSellingPoints: campaignData.uniqueSellingPoints || [],
                   keywords: campaignData.keywords || [],
-                  callToAction: campaignData.callToAction || []
+                  callToAction: campaignData.callToAction || [],
+                  language: campaignData.language || 'pt'
                 },
                 language: campaignData.language || 'pt'
               }
@@ -139,13 +133,11 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
               console.log("Received full audience analysis from OpenAI");
               setRawAnalysisText(fullAnalysisData.data);
               
-              // Check if the analysis text has the required sections
               if (!isValidAnalysisStructure(fullAnalysisData.data)) {
                 console.error("Invalid analysis structure - missing required sections");
                 throw new Error("A análise da OpenAI não contém as seções necessárias");
               }
               
-              // Extract sections from the analysis text
               const audienceProfile = extractSection(fullAnalysisData.data, 
                 ["DETAILED TARGET AUDIENCE PROFILE", "PUBLIC TARGET PROFILE", "PERFIL DO PÚBLICO-ALVO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO"],
                 ["STRATEGIC GEOLOCATION", "GEOLOCATION ANALYSIS", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA", "ANÁLISE DE GEOLOCALIZAÇÃO"]
@@ -166,7 +158,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
                 []
               );
               
-              // If we successfully extracted the sections
               if (audienceProfile || geolocation || marketAnalysis || competitorInsights) {
                 setAudienceData({
                   audienceProfile: audienceProfile || campaignData.audienceProfile || "",
@@ -179,19 +170,18 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
               }
             }
             
-            // If we didn't get a valid analysis from the analyze-audience function, fall back to generate-targeting
             console.log("Falling back to generate-targeting function");
           } catch (fullAnalysisError) {
             console.error("Error generating full audience analysis:", fullAnalysisError);
             console.log("Falling back to generate-targeting function");
           }
           
-          // Fall back to the simpler targeting function
           const { data, error } = await supabase.functions.invoke('generate-targeting', {
             body: { 
               businessDescription: campaignData.businessDescription || campaignData.companyDescription || '',
               targetAudience: campaignData.targetAudience || '',
-              keywordsCount: 5
+              keywordsCount: 5,
+              country: 'BR'
             }
           });
           
@@ -206,7 +196,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           
           console.log("Received targeting data from OpenAI:", data);
           
-          // Handle both array and string formats for locations and interests
           const formatLocations = (locations: any): string => {
             if (Array.isArray(locations)) {
               return locations.join(', ');
@@ -223,8 +212,8 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           setAudienceData({
             audienceProfile: audienceProfileText,
             geolocation: locations || campaignData.geolocation || '',
-            marketAnalysis: campaignData.marketAnalysis || 'Análise de mercado necessária. Por favor, adicione informações relevantes sobre o mercado.',
-            competitorInsights: campaignData.competitorInsights || 'Informações sobre concorrentes necessárias. Por favor, adicione insights sobre os principais concorrentes.'
+            marketAnalysis: data.marketAnalysis || 'Análise de mercado necessária. Por favor, adicione informações relevantes sobre o mercado.',
+            competitorInsights: data.competitorInsights || 'Informações sobre concorrentes necessárias. Por favor, adicione insights sobre os principais concorrentes.'
           });
           
           toast.success("Recomendações de público-alvo geradas com sucesso!");
@@ -248,8 +237,7 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
       setIsGenerating(false);
     }
   };
-  
-  // Helper function to check if the analysis text has a valid structure
+
   const isValidAnalysisStructure = (text: string): boolean => {
     if (!text || typeof text !== 'string' || text.length < 100) {
       return false;
@@ -257,16 +245,13 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     
     const upperText = text.toUpperCase();
     
-    // Define expected section headers in different languages
     const expectedSections = [
-      // English, Portuguese, Spanish
-      ['PUBLIC TARGET PROFILE', 'PERFIL DO PÚBLICO-ALVO', 'PERFIL DETALLADO DEL PÚBLICO OBJETIVO', 'DETAILED TARGET AUDIENCE PROFILE'],
-      ['GEOLOCATION ANALYSIS', 'GEOLOCALIZAÇÃO ESTRATÉGICA', 'GEOLOCALIZACIÓN ESTRATÉGICA', 'STRATEGIC GEOLOCATION', 'ANÁLISE DE GEOLOCALIZAÇÃO'],
-      ['MARKET ANALYSIS', 'ANÁLISE DE MERCADO', 'ANÁLISIS DE MERCADO'],
-      ['COMPETITOR INSIGHTS', 'ANÁLISE COMPETITIVA', 'INSIGHTS DOS CONCORRENTES', 'ANÁLISIS COMPETITIVO', 'COMPETITIVE ANALYSIS']
+      ["PUBLIC TARGET PROFILE", "PERFIL DO PÚBLICO-ALVO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO", "DETAILED TARGET AUDIENCE PROFILE"],
+      ["GEOLOCATION ANALYSIS", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA", "STRATEGIC GEOLOCATION", "ANÁLISE DE GEOLOCALIZAÇÃO"],
+      ["MARKET ANALYSIS", "ANÁLISE DE MERCADO", "ANÁLISIS DE MERCADO"],
+      ["COMPETITOR INSIGHTS", "ANÁLISE COMPETITIVA", "INSIGHTS DOS CONCORRENTES", "ANÁLISIS COMPETITIVO", "COMPETITIVE ANALYSIS"]
     ];
     
-    // Check if at least 2 of the expected sections are present
     let foundSections = 0;
     for (const sectionVariants of expectedSections) {
       if (sectionVariants.some(header => upperText.includes(header))) {
@@ -276,8 +261,7 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     
     return foundSections >= 2;
   };
-  
-  // Helper function to extract sections from analysis text
+
   const extractSection = (text: string, sectionHeaders: string[], nextSectionHeaders: string[]): string => {
     if (!text) return "";
     
@@ -285,7 +269,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     let endIndex = text.length;
     const upperText = text.toUpperCase();
     
-    // Find the start of the section
     for (const header of sectionHeaders) {
       const index = upperText.indexOf(header);
       if (index !== -1 && (startIndex === -1 || index < startIndex)) {
@@ -293,7 +276,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
       }
     }
     
-    // Find the end of the section (start of next section)
     if (nextSectionHeaders.length > 0) {
       for (const header of nextSectionHeaders) {
         const index = upperText.indexOf(header);
@@ -303,12 +285,9 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
       }
     }
     
-    // If we found the section
     if (startIndex !== -1) {
-      // Extract the section text
       const sectionText = text.substring(startIndex, endIndex).trim();
       
-      // Remove the header from the section text
       const headerEndIndex = sectionText.indexOf("\n");
       if (headerEndIndex !== -1) {
         return sectionText.substring(headerEndIndex).trim();
@@ -318,7 +297,7 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     
     return "";
   };
-  
+
   const translateGender = (gender: string): string => {
     if (!gender) return "todos";
     switch (gender.toLowerCase()) {
@@ -330,8 +309,6 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
   };
 
   useEffect(() => {
-    // If analysis result is available but no audience data has been set yet, 
-    // auto-generate on component mount
     if ((analysisResult?.audienceAnalysis || campaignData?.websiteUrl) && 
         !audienceData.audienceProfile && !isGenerating) {
       generateAudienceInsights().catch(err => {

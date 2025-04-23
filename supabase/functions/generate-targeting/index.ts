@@ -23,12 +23,13 @@ serve(async (req) => {
   }
 
   try {
-    const { businessDescription, targetAudience, keywordsCount = 5 } = await req.json();
+    const { businessDescription, targetAudience, keywordsCount = 5, country = "BR" } = await req.json();
     
     console.log(`Generating targeting recommendations with input: ${JSON.stringify({
       businessDescription,
       targetAudience,
-      keywordsCount
+      keywordsCount,
+      country
     }, null, 2)}`);
 
     const openai = new OpenAI({
@@ -37,27 +38,32 @@ serve(async (req) => {
 
     const prompt = `
     Based on the following business description and target audience, provide targeting recommendations for digital advertising campaigns.
+    IMPORTANT: This business operates in ${country === "BR" ? "Brazil" : country}. All recommendations should be specific to this country.
 
     Business Description: ${businessDescription || "Not provided"}
     
     Target Audience: ${targetAudience || "Not provided"}
     
-    Please provide:
-    1. A language code (e.g., en, es, pt)
-    2. A country code (e.g., US, UK, BR)
+    Please provide a complete analysis with the following information:
+    1. A language code (e.g., pt for Portuguese, en for English)
+    2. A country code (e.g., BR for Brazil, US for United States)
     3. An age range (e.g., 18-24, 25-54)
     4. Gender targeting (e.g., all, male, female)
-    5. Top ${keywordsCount} specific locations (cities or regions)
+    5. Top ${keywordsCount} specific locations within ${country === "BR" ? "Brazil" : country} (cities or regions)
     6. Top ${keywordsCount} interests or keywords for targeting
+    7. Market Analysis: Provide a brief analysis of the current market trends relevant to this business
+    8. Competitor Insights: Identify at least 3 potential competitors and their strengths/weaknesses
     
     Format your response as a JSON object with the following structure without any markdown formatting or code blocks:
     {
-      "language": "en",
-      "country": "US",
+      "language": "pt",
+      "country": "BR",
       "ageRange": "25-54",
       "gender": "all",
-      "locations": ["New York", "Los Angeles", "Chicago", "Miami", "Seattle"],
-      "interests": ["fitness", "nutrition", "wellness", "yoga", "meditation"]
+      "locations": ["São Paulo", "Rio de Janeiro", "Belo Horizonte", "Porto Alegre", "Brasília"],
+      "interests": ["tecnologia", "inovação", "negócios", "produtividade", "marketing"],
+      "marketAnalysis": "Detailed market analysis goes here with multiple paragraphs as needed.",
+      "competitorInsights": "Detailed competitor insights go here with information about at least 3 competitors."
     }`;
     
     console.log("Sending request to OpenAI...");
@@ -65,7 +71,7 @@ serve(async (req) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns. Respond ONLY with the JSON object requested, without any markdown formatting, explanation text, or code blocks." },
+        { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns in Brazil and other countries. You perform detailed market and competitor analysis. Respond ONLY with the JSON object requested, without any markdown formatting, explanation text, or code blocks." },
         { role: "user", content: prompt }
       ],
       temperature: 0.7,
@@ -90,16 +96,18 @@ serve(async (req) => {
       const targetingData = JSON.parse(jsonText);
       console.log(`Successfully parsed OpenAI response as JSON: ${JSON.stringify(targetingData, null, 2)}`);
       
-      // Ensure consistent data structure
+      // Ensure consistent data structure and expand to include market analysis and competitor insights
       const formattedData = {
-        language: targetingData.language || "en",
-        country: targetingData.country || "US",
+        language: targetingData.language || "pt",
+        country: targetingData.country || "BR",
         ageRange: targetingData.ageRange || "25-54",
         gender: targetingData.gender || "all",
         locations: Array.isArray(targetingData.locations) ? targetingData.locations : 
                   [targetingData.locations || "No locations provided"],
         interests: Array.isArray(targetingData.interests) ? targetingData.interests :
-                  [targetingData.interests || "No interests provided"]
+                  [targetingData.interests || "No interests provided"],
+        marketAnalysis: targetingData.marketAnalysis || "Análise de mercado não disponível. Por favor, tente novamente.",
+        competitorInsights: targetingData.competitorInsights || "Informações sobre concorrentes não disponíveis. Por favor, tente novamente."
       };
       
       return new Response(JSON.stringify(formattedData), {
