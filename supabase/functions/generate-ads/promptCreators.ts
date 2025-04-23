@@ -1,21 +1,13 @@
+
 import { WebsiteAnalysisResult } from "./types.ts";
 import { getLanguageFromLocale } from "./utils/languageDetection.ts";
 
-function normalizeLanguage(input: string): string {
-  const map: Record<string, string> = {
-    "pt": "Português",
-    "pt-br": "Português",
-    "portuguese": "Português",
-    "português": "Português",
-    "en": "English",
-    "english": "English",
-    "es": "Español",
-    "español": "Español",
-    "spanish": "Español",
-  };
-  return map[input?.trim().toLowerCase()] || input || "Português";
-}
+type PromptMessages = {
+  systemMessage: string;
+  userMessage: string;
+};
 
+// Helper to normalize language references
 function getLanguageName(langCode: string): string {
   const map: Record<string, string> = {
     pt: "Português",
@@ -23,51 +15,46 @@ function getLanguageName(langCode: string): string {
     es: "Espanhol",
     fr: "Francês",
     de: "Alemão",
-    it: "Italiano",
-    zh: "Chinês",
-    ja: "Japonês",
-    ko: "Coreano"
+    it: "Italiano"
   };
-  return map[langCode.toLowerCase()] || langCode;
+  return map[langCode.toLowerCase()] || "Português";
 }
 
+// Google Ads prompt creator with consistent Portuguese language enforcement
 export function createGoogleAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
-  const language = campaignData.language?.toLowerCase() || "en";
-  const readableLanguage = getLanguageName(language);
-
   const systemMessage = `
-You are a senior copywriter for high-performance Google Ads campaigns.
-Your role is to write ads that generate clicks, using ONLY the data provided below.
-Do NOT invent anything. Do NOT mix languages.
-Your response must be ENTIRELY in ${readableLanguage.toUpperCase()}.
-Avoid generic terms like "professional service" unless they appear explicitly.
-Return only the JSON output in the exact format below.
+Você é um especialista em redação publicitária para anúncios Google Ads.
+IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
+Seu papel é escrever anúncios que geram cliques, usando APENAS os dados fornecidos abaixo.
+NUNCA invente nada. NUNCA misture idiomas. Sua resposta deve ser 100% em português brasileiro.
+Evite termos genéricos como "serviço profissional" a menos que apareçam explicitamente.
+Retorne apenas o JSON de saída no formato exato abaixo.
 `;
 
   const userMessage = `
-Write 5 Google Ads using the data below:
+Escreva 5 anúncios Google Ads usando os dados abaixo:
 
-- Company: ${campaignData.companyName || "(missing)"}
-- Website: ${campaignData.websiteUrl || "(missing)"}
-- Product or service: ${campaignData.product || "(missing)"}
-- Objective: ${campaignData.objective || "(missing)"}
-- Target audience: ${campaignData.targetAudience || "(missing)"}
-- Tone: ${campaignData.brandTone || "(missing)"}
-- Mental trigger: ${mindTrigger || "(missing)"}
-- Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
-- Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
-- Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
+- Empresa: ${campaignData.companyName || "(não fornecido)"}
+- Website: ${campaignData.websiteUrl || "(não fornecido)"}
+- Produto ou serviço: ${campaignData.product || "(não fornecido)"}
+- Objetivo: ${campaignData.objective || "(não fornecido)"}
+- Público-alvo: ${campaignData.targetAudience || "(não fornecido)"}
+- Tom: ${campaignData.brandTone || "(não fornecido)"}
+- Gatilho mental: ${mindTrigger || "(não fornecido)"}
+- Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
+- Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
 
-Ad format:
-- Each ad must have:
-  - 3 headlines (up to 30 characters each)
-  - 2 descriptions (up to 90 characters each)
-  - A display URL based on the company website
+Formato do anúncio:
+- Cada anúncio deve ter:
+  - 3 títulos (até 30 caracteres cada)
+  - 2 descrições (até 90 caracteres cada)
+  - Um URL de exibição baseado no website da empresa
 
-Response format (JSON):
+Formato da resposta (JSON):
 [
   {
     "headline_1": "...",
@@ -75,7 +62,7 @@ Response format (JSON):
     "headline_3": "...",
     "description_1": "...",
     "description_2": "...",
-    "display_url": "www.example.com"
+    "display_url": "www.exemplo.com.br"
   }
 ]
 `;
@@ -83,114 +70,96 @@ Response format (JSON):
   return { systemMessage, userMessage };
 }
 
-export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const languageInput = campaignData.language || "Portuguese";
-  const language = normalizeLanguage(languageInput);
-  const languageCode = getLanguageFromLocale(language);
+// LinkedIn Ads prompt creator with consistent Portuguese language enforcement
+export function createLinkedInAdsPrompt(
+  campaignData: WebsiteAnalysisResult, 
+  mindTrigger?: string
+): PromptMessages {
+  const systemMessage = `
+Você é um redator publicitário sênior especializado em anúncios para LinkedIn.
+Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
+IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
+A resposta deve estar COMPLETAMENTE em português brasileiro.
+IMPORTANTE:
+- JAMAIS misture idiomas, seja 100% fiel ao português brasileiro.
+- NUNCA use termos genéricos como "serviços profissionais" ou similares.
+- Use APENAS as informações fornecidas abaixo.
+- Ignore campos em branco (NÃO invente dados).
+- Retorne APENAS o JSON formatado conforme o exemplo.
+- Valide que a resposta esteja no formato JSON usando aspas duplas corretas (não use aspas simples) para cada chave e valor.
+`;
 
-  const langInstructions = {
-    pt: {
-      name: "Português",
-      generic_terms: "serviços profissionais, resultados de qualidade",
-      response_lang: "português"
-    },
-    es: {
-      name: "Español",
-      generic_terms: "serviços profesionales, resultados de qualidade",
-      response_lang: "español"
-    },
-    en: {
-      name: "English",
-      generic_terms: "professional services, quality results",
-      response_lang: "English"
-    }
-  }[languageCode];
+  const userMessage = `
+Crie 5 anúncios para LinkedIn usando exclusivamente os dados abaixo:
 
-  const systemMessage = [
-    `Você é um redator publicitário sênior especializado em anúncios para LinkedIn.`,
-    `Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.`,
-    `A resposta deve estar COMPLETAMENTE em ${langInstructions.name}.`,
-    `IMPORTANTE:`,
-    `- JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.`,
-    `- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.`,
-    `- Use APENAS as informações fornecidas abaixo.`,
-    `- Ignore campos em branco (NÃO invente dados).`,
-    `- Retorne APENAS o JSON formatado conforme o exemplo.`,
-    `- Valide que a resposta esteja no formato JSON usando aspas duplas corretas (não use aspas simples) para cada chave e valor.`,
-  ].join('\n');
+- Empresa: ${campaignData.companyName}
+- Website: ${campaignData.websiteUrl}
+- Produto ou serviço: ${campaignData.product || "Não especificado - não invente"}
+- Objetivo: ${campaignData.objective || "Não especificado - não invente"}
+- Público-alvo: ${campaignData.targetAudience || "Não especificado - não invente"}
+- Tom de voz: ${campaignData.brandTone || "Não especificado - não invente"}
+- Gatilho mental: ${mindTrigger || "Não especificado - não invente"}
+- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) && campaignData.uniqueSellingPoints.length > 0) ? campaignData.uniqueSellingPoints.join(', ') : "Não especificado - não invente"}
+- Palavras-chave: ${(Array.isArray(campaignData.keywords) && campaignData.keywords.length > 0) ? campaignData.keywords.join(', ') : "Não especificado - não invente"}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "Não especificado - não invente"}
 
-  const userMessage = [
-    `Crie 5 anúncios para LinkedIn usando exclusivamente os dados abaixo:`,
-    ``,
-    `- Empresa: ${campaignData.companyName}`,
-    `- Website: ${campaignData.websiteUrl}`,
-    `- Produto ou serviço: ${campaignData.product || "Não especificado - não invente"}`,
-    `- Objetivo: ${campaignData.objective || "Não especificado - não invente"}`,
-    `- Público-alvo: ${campaignData.targetAudience || "Não especificado - não invente"}`,
-    `- Tom de voz: ${campaignData.brandTone || "Não especificado - não invente"}`,
-    `- Gatilho mental: ${mindTrigger || "Não especificado - não invente"}`,
-    `- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) && campaignData.uniqueSellingPoints.length > 0) ? campaignData.uniqueSellingPoints.join(', ') : "Não especificado - não invente"}`,
-    `- Palavras-chave: ${(Array.isArray(campaignData.keywords) && campaignData.keywords.length > 0) ? campaignData.keywords.join(', ') : "Não especificado - não invente"}`,
-    `- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "Não especificado - não invente"}`,
-    ``,
-    `Requisitos:`,
-    `- Cada anúncio deve ter um título atraente`,
-    `- Texto principal profissional e persuasivo`,
-    `- Descrição complementar`,
-    `- Sugestão de imagem (sem texto sobreposto)`,
-    `- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}`,
-    `- NÃO criar dados fictícios ou genéricos`,
-    `- O JSON deve ser válido com aspas duplas para todas as chaves e valores.`,
-    ``,
-    `Formato OBRIGATÓRIO de resposta (JSON):`,
-    `[`,
-    `  {`,
-    `    "headline": "...",`,
-    `    "primaryText": "...",`,
-    `    "description": "...",`,
-    `    "image_prompt": "Foto profissional mostrando..."`,
-    `  }`,
-    `]`
-  ].join('\n');
+Requisitos:
+- Cada anúncio deve ter um título atraente
+- Texto principal profissional e persuasivo
+- Descrição complementar
+- Sugestão de imagem (sem texto sobreposto)
+- NÃO incluir texto em inglês ou outro idioma que não seja português brasileiro
+- NÃO criar dados fictícios ou genéricos
+- O JSON deve ser válido com aspas duplas para todas as chaves e valores.
+
+Formato OBRIGATÓRIO de resposta (JSON):
+[
+  {
+    "headline": "...",
+    "primaryText": "...",
+    "description": "...",
+    "image_prompt": "Foto profissional mostrando..."
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
 
+// Microsoft Ads prompt creator with consistent Portuguese language enforcement
 export function createMicrosoftAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
-  const language = campaignData.language?.toLowerCase() || "en";
-  const readableLanguage = getLanguageName(language);
-
   const systemMessage = `
-You are a Bing Ads expert. Write search ads optimized for conversions, using ONLY the campaign data provided.
-Do NOT invent any data. Use the language: ${readableLanguage.toUpperCase()} only.
-Be direct, persuasive, and informative.
-NEVER mix languages or use placeholder terms.
-Return ONLY the ads in the JSON format shown below.
+Você é um especialista em anúncios Microsoft/Bing. Escreva anúncios de pesquisa otimizados para conversões, usando APENAS os dados de campanha fornecidos.
+IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
+NÃO invente nenhum dado. Use apenas o idioma português brasileiro.
+Seja direto, persuasivo e informativo.
+NUNCA misture idiomas ou use termos genéricos.
+Retorne APENAS os anúncios no formato JSON mostrado abaixo.
 `;
 
   const userMessage = `
-Create 5 Bing Ads for Microsoft Advertising:
+Crie 5 anúncios Bing para Microsoft Advertising:
 
-- Company: ${campaignData.companyName || "(missing)"}
-- Website: ${campaignData.websiteUrl || "(missing)"}
-- Product or service: ${campaignData.product || "(missing)"}
-- Objective: ${campaignData.objective || "(missing)"}
-- Target audience: ${campaignData.targetAudience || "(missing)"}
-- Tone: ${campaignData.brandTone || "(missing)"}
-- Mental trigger: ${mindTrigger || "(missing)"}
-- Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
-- Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
-- Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
+- Empresa: ${campaignData.companyName || "(não fornecido)"}
+- Website: ${campaignData.websiteUrl || "(não fornecido)"}
+- Produto ou serviço: ${campaignData.product || "(não fornecido)"}
+- Objetivo: ${campaignData.objective || "(não fornecido)"}
+- Público-alvo: ${campaignData.targetAudience || "(não fornecido)"}
+- Tom: ${campaignData.brandTone || "(não fornecido)"}
+- Gatilho mental: ${mindTrigger || "(não fornecido)"}
+- Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
+- Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
 
-Format:
-- 3 headlines (30 characters max)
-- 2 descriptions (90 characters max)
-- Display URL must be based on the provided website
+Formato:
+- 3 títulos (máximo 30 caracteres)
+- 2 descrições (máximo 90 caracteres)
+- URL de exibição deve ser baseado no website fornecido
 
-JSON Format:
+Formato JSON:
 [
   {
     "headline_1": "...",
@@ -198,7 +167,7 @@ JSON Format:
     "headline_3": "...",
     "description_1": "...",
     "description_2": "...",
-    "display_url": "www.example.com"
+    "display_url": "www.exemplo.com.br"
   }
 ]
 `;
@@ -206,54 +175,51 @@ JSON Format:
   return { systemMessage, userMessage };
 }
 
+// Meta Ads prompt creator with consistent Portuguese language enforcement
 export function createMetaAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
-  const language = (campaignData.language || "pt")
-    .trim().toLowerCase();
-  const readableLanguage = getLanguageName(language);
-
   const systemMessage = `
-You are a senior copywriter specialized in Meta/Instagram ads.
-Your job is to write highly effective, CONVERTING Meta/Instagram ads using ONLY the provided information.
+Você é um redator publicitário especializado em anúncios Meta/Instagram.
+Sua função é escrever anúncios altamente eficazes e CONVERSIVOS usando APENAS as informações fornecidas.
 
-STRICT LANGUAGE GUIDELINES:
-- ABSOLUTELY NO mixing of languages: Use ONLY ${readableLanguage.toUpperCase()}, never combine with English or any other language.
-- You MUST write 100% in ${readableLanguage.toUpperCase()} as detected from the website.
-- If the language is Portuguese (pt or pt-br), write ONLY in formal Brazilian Portuguese.
-- Do NOT use English, Spanglish, or any translation; the full ad must be in ${readableLanguage.toUpperCase()}.
-- Never use generic placeholders or create assumptions about missing info!
+DIRETRIZES ESTRITAS DE IDIOMA:
+- ABSOLUTAMENTE SEM mistura de idiomas: Use APENAS PORTUGUÊS BRASILEIRO, nunca combine com inglês ou qualquer outro idioma.
+- Você DEVE escrever 100% em PORTUGUÊS BRASILEIRO.
+- Se o idioma é português (pt ou pt-br), escreva APENAS em português brasileiro formal.
+- NUNCA use inglês, spanglish ou qualquer tradução; o anúncio completo deve estar em PORTUGUÊS BRASILEIRO.
+- Nunca use espaços reservados genéricos ou crie suposições sobre informações ausentes!
 
-PUNCTUATION/FORMATTING:
-- All sentences must start with capital letters and end with proper punctuation (period, exclamation, or question mark), NO truncation.
-- Never cut sentences: output must be fluid, logical, and proof-read for human quality.
-- Do NOT invent content or include any text not provided.
+PONTUAÇÃO/FORMATAÇÃO:
+- Todas as frases devem começar com letras maiúsculas e terminar com pontuação adequada (ponto, exclamação ou interrogação), SEM truncamento.
+- Nunca corte frases: a saída deve ser fluida, lógica e revisada com qualidade humana.
+- NÃO invente conteúdo ou inclua qualquer texto não fornecido.
 
-OUTPUT FORMAT: return ONLY valid JSON as specified.
+FORMATO DE SAÍDA: retorne APENAS JSON válido conforme especificado.
 `;
 
   const userMessage = `
-Based ONLY on these details, create 5 Meta/Instagram ad variations:
+Com base APENAS nestes detalhes, crie 5 variações de anúncios Meta/Instagram:
 
-- Company: ${campaignData.companyName || "(missing)"}
-- Website: ${campaignData.websiteUrl || "(missing)"}
-- Product/Service: ${campaignData.product || "(missing)"}
-- Objective: ${campaignData.objective || "(missing)"}
-- Target Audience: ${campaignData.targetAudience || "(missing)"}
-- Tone of Voice: ${campaignData.brandTone || "(missing)"}
-- Mental Trigger: ${mindTrigger || "(missing)"}
-- Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
-- Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
-- Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
+- Empresa: ${campaignData.companyName || "(não fornecido)"}
+- Website: ${campaignData.websiteUrl || "(não fornecido)"}
+- Produto/Serviço: ${campaignData.product || "(não fornecido)"}
+- Objetivo: ${campaignData.objective || "(não fornecido)"}
+- Público-alvo: ${campaignData.targetAudience || "(não fornecido)"}
+- Tom de voz: ${campaignData.brandTone || "(não fornecido)"}
+- Gatilho mental: ${mindTrigger || "(não fornecido)"}
+- Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
+- Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
+- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
 
-For EACH ad, you must provide:
-- "headline": a concise, original headline (max 1 sentence, correct punctuation)
-- "primaryText": a persuasive, emotional main text (Instagram caption style, full sentences, proof-read, correct punctuation)
-- "description": a short support description (proper sentence, punctuation)
-- "image_prompt": a detailed image description (min. 20 words), no text or logos in the image, ONLY visual content, specify target audience/setting/lighting as relevant (FEED/STORY format)
+Para CADA anúncio, você deve fornecer:
+- "headline": um título conciso e original (máx. 1 frase, pontuação correta)
+- "primaryText": um texto principal persuasivo e emocional (estilo legenda do Instagram, frases completas, revisado, pontuação correta)
+- "description": uma breve descrição de apoio (frase adequada, pontuação)
+- "image_prompt": uma descrição detalhada da imagem (mín. 20 palavras), sem texto ou logotipos na imagem, APENAS conteúdo visual, especifique público-alvo/ambiente/iluminação conforme relevante (formato FEED/STORY)
 
-RETURN ONLY this JSON, do not explain or comment:
+RETORNE APENAS este JSON, não explique ou comente:
 [
   {
     "headline": "...",

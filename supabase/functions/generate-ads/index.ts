@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   generateGoogleAds,
@@ -23,23 +24,6 @@ function detectLanguageFromUrl(url: string): string | null {
   if (domain.includes(".it")) return "it";
   if (domain.endsWith(".com") && !domain.endsWith(".com.br")) return "en";
   return null;
-}
-
-function isInCorrectLanguage(text: string, lang: string): boolean {
-  if (!text || !lang) return true;
-  
-  const patternMap: Record<string, RegExp> = {
-    pt: /[áàâãéêíóôõúçè]/i,
-    en: /\b(the|you|your|service|quality|contact)\b/i,
-    es: /[áéíóúñ¿¡]/i,
-    fr: /[éèêàçôœù]/i,
-    de: /[äöüß]/i,
-    it: /[àèéìíîòóùú]/i,
-  };
-  
-  const pattern = patternMap[lang];
-  if (!pattern) return true;
-  return pattern.test(text);
 }
 
 async function getUserIdFromJWT(req: Request): Promise<string | null> {
@@ -107,7 +91,7 @@ serve(async (req) => {
   }
 
   try {
-    const { platform, campaignData, mindTrigger, temperature = 0.7 } = await req.json();
+    const { platform, campaignData, mindTrigger, temperature = 0.7, systemInstructions } = await req.json();
 
     const userId = await getUserIdFromJWT(req);
     if (!userId) {
@@ -147,11 +131,16 @@ serve(async (req) => {
     if (balance < creditsRequired) {
       return new Response(JSON.stringify({
         success: false,
-        error: "Not enough credits. Please purchase more credits."
+        error: "Créditos insuficientes. Adquira mais créditos para continuar.",
+        errorCode: "INSUFFICIENT_CREDITS",
+        creditsRequired,
+        creditsAvailable: balance
       }), { headers: corsHeaders, status: 402 });
     }
 
+    // Always force Portuguese regardless of input
     const normalizedData: WebsiteAnalysisResult = {
+      ...campaignData,
       companyName: campaignData.companyName,
       websiteUrl: campaignData.websiteUrl || campaignData.targetUrl || "exemplo.com.br",
       objective: campaignData.objective || "awareness",
@@ -159,46 +148,49 @@ serve(async (req) => {
       industry: campaignData.industry || "",
       targetAudience: campaignData.targetAudience || "",
       brandTone: campaignData.brandTone || "professional",
-      language: campaignData.language || "",
+      language: "pt_BR",  // Force Portuguese
+      languageName: "português",
+      forcePortuguese: true,
       companyDescription: campaignData.companyDescription || campaignData.description || "",
       businessDescription: campaignData.businessDescription || "",
       uniqueSellingPoints: campaignData.uniqueSellingPoints || campaignData.differentials || [],
       callToAction: campaignData.callToAction || "Saiba mais",
       keywords: campaignData.keywords || []
     };
-
-    if (!normalizedData.language) {
-      const detectedLanguage = detectLanguageFromUrl(normalizedData.websiteUrl);
-      normalizedData.language = detectedLanguage || "pt";
-      console.log(`Detected language from URL: ${normalizedData.language}`);
-    }
     
-    const simplifiedLangCode = getSimplifiedLanguageCode(normalizedData.language);
-    console.log(`Using simplified language code: ${simplifiedLangCode}`);
-
     console.log("Processing ad generation with normalized data:", JSON.stringify(normalizedData, null, 2));
+    console.log("Language settings:", {
+      language: normalizedData.language,
+      languageName: normalizedData.languageName,
+      forcePortuguese: normalizedData.forcePortuguese
+    });
+    
+    // Additional system instructions to force Portuguese
+    const ptSystemInstructions = "Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês. Texto deve ser 100% em português brasileiro.";
+    const combinedInstructions = systemInstructions ? `${ptSystemInstructions} ${systemInstructions}` : ptSystemInstructions;
 
     let adsJson;
     let platformName;
 
     try {
+      // Pass language forcing parameters to all generators
       switch (platform) {
         case "google":
-          adsJson = await generateGoogleAds(normalizedData, mindTrigger);
+          adsJson = await generateGoogleAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Google Ads";
           break;
         case "meta":
         case "instagram":
-          adsJson = await generateMetaAds(normalizedData, mindTrigger);
+          adsJson = await generateMetaAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Meta/Instagram Ads";
           break;
         case "linkedin":
-          adsJson = await generateLinkedInAds(normalizedData, mindTrigger);
+          adsJson = await generateLinkedInAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "LinkedIn Ads";
           break;
         case "microsoft":
         case "bing":
-          adsJson = await generateMicrosoftAds(normalizedData, mindTrigger);
+          adsJson = await generateMicrosoftAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Microsoft/Bing Ads";
           break;
         default:

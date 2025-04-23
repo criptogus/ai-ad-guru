@@ -1,197 +1,191 @@
 
-const GENERIC_TERMS_PT = [
-  "serviços profissionais",
-  "soluções de qualidade",
-  "resultados de qualidade",
-  "entre em contato hoje",
-  "oferecemos serviços",
-  "serviços de alta qualidade"
-];
+import { WebsiteAnalysisResult } from "./types.ts";
 
-const GENERIC_TERMS_EN = [
-  "professional services",
-  "quality solutions",
-  "quality results",
-  "contact us today",
-  "we offer services",
-  "high quality services"
-];
+// Language code simplification
+export function getSimplifiedLanguageCode(languageCode: string): string {
+  if (!languageCode) return 'pt';
+  
+  const code = languageCode.toLowerCase();
+  if (code.startsWith('pt')) return 'pt';
+  if (code.startsWith('en')) return 'en';
+  if (code.startsWith('es')) return 'es';
+  if (code.startsWith('fr')) return 'fr';
+  if (code.startsWith('de')) return 'de';
+  if (code.startsWith('it')) return 'it';
+  
+  return 'pt'; // Default to Portuguese if unknown
+}
 
-const GENERIC_TERMS_ES = [
-  "servicios profesionales",
-  "soluciones de calidad",
-  "resultados de calidad",
-  "contáctenos hoy",
-  "ofrecemos servicios",
-  "servicios de alta calidad"
-];
-
-/**
- * Checks if text contains generic terms that should be avoided
- * @param text The text to check
- * @param language The language code (pt, en, es)
- * @returns true if generic terms are found
- */
-export function containsGenericTerms(text: string, language: string = 'pt'): boolean {
+// Check if text contains English words
+function containsEnglish(text: string): boolean {
   if (!text) return false;
+  const englishWordPatterns = [
+    /\bthe\b/i, /\band\b/i, /\bwith\b/i, /\bfor\b/i, /\byour\b/i, /\bservices?\b/i,
+    /\bprofessional\b/i, /\bbusiness\b/i, /\blearn\b/i, /\bmore\b/i, /\bquality\b/i,
+    /\btoday\b/i, /\bnow\b/i, /\bcontact\b/i, /\bus\b/i, /\bget\b/i, /\bdiscover\b/i
+  ];
   
-  const lowercaseText = text.toLowerCase();
-  
-  let termsToCheck: string[] = GENERIC_TERMS_PT;
-  
-  if (language === 'en') {
-    termsToCheck = GENERIC_TERMS_EN;
-  } else if (language === 'es') {
-    termsToCheck = GENERIC_TERMS_ES;
-  }
-  
-  return termsToCheck.some(term => lowercaseText.includes(term.toLowerCase()));
+  return englishWordPatterns.some(pattern => pattern.test(text));
 }
 
-/**
- * Gets the language code from a full language name or code
- * @param language The language name or code
- * @returns A simplified language code (pt, en, es)
- */
-export function getSimplifiedLanguageCode(language: string): string {
-  if (!language) return 'pt';
+// Standardize punctuation
+function fixPunctuation(text: string): string {
+  if (!text) return "";
+  let fixedText = text;
   
-  const lowercaseLanguage = language.toLowerCase();
+  // Fix multiple punctuation & whitespace
+  fixedText = fixedText.replace(/,\./g, ',');
+  fixedText = fixedText.replace(/\.{2,}/g, '.');
+  fixedText = fixedText.replace(/\s+([,.!?;:])/g, '$1');
+  fixedText = fixedText.replace(/([,.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+  fixedText = fixedText.replace(/([,.!?;:])\1+/g, '$1');
+  fixedText = fixedText.replace(/\s+/g, ' ').trim();
   
-  if (lowercaseLanguage.includes('port') || lowercaseLanguage.includes('pt') || lowercaseLanguage.includes('brasil') || lowercaseLanguage.includes('brazil')) {
-    return 'pt';
+  // Ensure proper ending punctuation
+  if (!/[.!?]$/.test(fixedText)) {
+    fixedText = fixedText + '.';
   }
   
-  if (lowercaseLanguage.includes('en') || lowercaseLanguage.includes('ing') || lowercaseLanguage.includes('english')) {
-    return 'en';
-  }
-  
-  if (lowercaseLanguage.includes('es') || lowercaseLanguage.includes('span') || lowercaseLanguage.includes('español')) {
-    return 'es';
-  }
-  
-  return 'pt'; // Default to Portuguese
+  return fixedText;
 }
 
-/**
- * Validates text to ensure it's not truncated and forms complete sentences
- * @param text The text to validate
- * @returns Fixed text with complete sentences
- */
-function validateTextCompleteness(text: string): string {
-  if (!text) return '';
+// Translate common English words to Portuguese
+function translateEnglishToPt(text: string): string {
+  if (!text) return "";
   
-  // Check if the text appears to be truncated (ends abruptly without punctuation)
-  const endsWithSentence = /[.!?;:]$/.test(text.trim());
+  const translations: Record<string, string> = {
+    'Learn More': 'Saiba Mais',
+    'Get Started': 'Comece Agora',
+    'Discover': 'Descubra',
+    'Contact Us': 'Entre em Contato',
+    'with': 'com',
+    'for': 'para',
+    'your': 'seu',
+    'our': 'nosso',
+    'business': 'negócio',
+    'and': 'e',
+    'services': 'serviços',
+    'solutions': 'soluções',
+    'the': 'o',
+    'Transform': 'Transforme',
+    'quality': 'qualidade',
+    'today': 'hoje',
+    'get': 'obtenha',
+    'contact': 'contato',
+    'professional': 'profissional'
+  };
   
-  if (!endsWithSentence) {
-    // Find the last complete sentence
-    const sentences = text.split(/(?<=[.!?;:])\s+/);
-    
-    if (sentences.length > 1) {
-      // Return only complete sentences
-      return sentences.slice(0, -1).join(' ') + '.';
-    }
-    
-    // If we can't find complete sentences, ensure it at least ends with punctuation
-    return text.trim() + '.';
-  }
+  let fixedText = text;
+  Object.entries(translations).forEach(([english, portuguese]) => {
+    const regex = new RegExp(`\\b${english}\\b`, 'gi');
+    fixedText = fixedText.replace(regex, portuguese);
+  });
   
-  return text;
+  return fixedText;
 }
 
-/**
- * Validates Google Ads responses to ensure they don't contain generic content
- * @param ads Array of Google Ads
- * @param language Language code
- * @param campaignData Campaign data for fallback
- * @returns Validated ads with generic terms replaced
- */
-export function validateGoogleAdsResponse(ads: any[], language: string, campaignData: any): any[] {
-  const langCode = getSimplifiedLanguageCode(language);
+// Common sanitization for any ad text
+function sanitizeText(text: string, attemptTranslation = true): string {
+  if (!text) return "";
+  let sanitized = text.trim();
   
-  if (!ads || !Array.isArray(ads) || ads.length === 0) {
-    console.log('❌ No valid ads found, using fallbacks');
-    // Import would cause circular dependency, so callers should handle this
-    return []; 
+  // Check if translation needed
+  if (attemptTranslation && containsEnglish(sanitized)) {
+    sanitized = translateEnglishToPt(sanitized);
+  }
+  
+  return fixPunctuation(sanitized);
+}
+
+// Google Ads sanitizer
+export function sanitizeGoogleAds(ads: any[], campaignData: WebsiteAnalysisResult): any[] {
+  if (!Array.isArray(ads) || ads.length === 0) {
+    return [];
   }
   
   return ads.map(ad => {
-    const headline1 = ad.headline_1 || ad.headline1 || '';
-    const headline2 = ad.headline_2 || ad.headline2 || '';
-    const headline3 = ad.headline_3 || ad.headline3 || '';
-    const description1 = ad.description_1 || ad.description1 || '';
-    const description2 = ad.description_2 || ad.description2 || '';
+    // Extract fields using various possible naming patterns
+    const headline1Raw = ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '';
+    const headline2Raw = ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '';
+    const headline3Raw = ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '';
+    const description1Raw = ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '';
+    const description2Raw = ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '';
     
-    // Validate text completeness
-    const validatedDescription1 = validateTextCompleteness(description1);
-    const validatedDescription2 = validateTextCompleteness(description2);
+    // Sanitize text
+    const headline1 = sanitizeText(headline1Raw);
+    const headline2 = sanitizeText(headline2Raw);
+    const headline3 = sanitizeText(headline3Raw);
+    const description1 = sanitizeText(description1Raw);
+    const description2 = sanitizeText(description2Raw);
     
-    // Check for generic terms
-    const hasGenericTerms = 
-      containsGenericTerms(headline1, langCode) ||
-      containsGenericTerms(headline2, langCode) ||
-      containsGenericTerms(headline3, langCode) ||
-      containsGenericTerms(validatedDescription1, langCode) ||
-      containsGenericTerms(validatedDescription2, langCode);
-      
-    if (hasGenericTerms) {
-      console.log('⚠️ Generic terms detected in ad, marking for replacement');
-      ad._containsGenericTerms = true;
-    }
+    // Ensure URL is Portuguese-friendly
+    const rawUrl = ad.display_url || ad.displayPath || ad.displayUrl || 'exemplo.com.br';
+    const displayPath = rawUrl.includes('.com') && !rawUrl.includes('.com.br') 
+      ? rawUrl.replace('.com', '.com.br') 
+      : rawUrl;
     
-    // Return with validated descriptions
     return {
-      ...ad,
-      description_1: validatedDescription1,
-      description1: validatedDescription1,
-      description_2: validatedDescription2,
-      description2: validatedDescription2
+      headline1,
+      headline2,
+      headline3,
+      description1,
+      description2,
+      displayPath,
+      path1: ad.path1 || ad.path_1 || '',
+      path2: ad.path2 || ad.path_2 || '',
+      siteLinks: ad.siteLinks || ad.site_links || [],
     };
   });
 }
 
-/**
- * Validates Meta/Instagram/LinkedIn Ads responses
- * @param ads Array of Social Ads
- * @param language Language code
- * @param campaignData Campaign data for fallback
- * @returns Validated ads with generic terms replaced
- */
-export function validateSocialAdsResponse(ads: any[], language: string, campaignData: any): any[] {
-  const langCode = getSimplifiedLanguageCode(language);
-  
-  if (!ads || !Array.isArray(ads) || ads.length === 0) {
-    console.log('❌ No valid ads found, using fallbacks');
-    return []; 
+// Microsoft Ads sanitizer
+export function sanitizeMicrosoftAds(ads: any[], campaignData: WebsiteAnalysisResult): any[] {
+  return sanitizeGoogleAds(ads, campaignData); // Identical format to Google Ads
+}
+
+// Meta Ads sanitizer
+export function sanitizeMetaAds(ads: any[], campaignData: WebsiteAnalysisResult): any[] {
+  if (!Array.isArray(ads) || ads.length === 0) {
+    return [];
   }
   
   return ads.map(ad => {
-    const headline = ad.headline || '';
-    const primaryText = ad.primaryText || ad.text || '';
-    const description = ad.description || '';
+    // Extract and sanitize fields
+    const headlineRaw = ad.headline || ad.title || '';
+    const primaryTextRaw = ad.primaryText || ad.text || ad.primary_text || '';
+    const descriptionRaw = ad.description || ad.desc || '';
+    const imagePromptRaw = ad.imagePrompt || ad.image_prompt || '';
     
-    // Validate text completeness
-    const validatedPrimaryText = validateTextCompleteness(primaryText);
-    const validatedDescription = validateTextCompleteness(description);
+    // Sanitize text
+    const headline = sanitizeText(headlineRaw);
+    const primaryText = sanitizeText(primaryTextRaw);
+    const description = sanitizeText(descriptionRaw);
     
-    // Check for generic terms
-    const hasGenericTerms = 
-      containsGenericTerms(headline, langCode) ||
-      containsGenericTerms(validatedPrimaryText, langCode) ||
-      containsGenericTerms(validatedDescription, langCode);
-      
-    if (hasGenericTerms) {
-      console.log('⚠️ Generic terms detected in ad, marking for replacement');
-      ad._containsGenericTerms = true;
+    // Ensure image prompt is appropriate
+    let imagePrompt = imagePromptRaw;
+    if (!imagePrompt) {
+      imagePrompt = `Imagem profissional para anúncio de ${campaignData.companyName}, mostrando ${campaignData.product || 'o produto'} para ${campaignData.targetAudience || 'o público-alvo'}. Estilo profissional, sem texto.`;
     }
     
-    // Return with validated texts
+    // Add no-text instruction to image prompt if missing
+    if (!imagePrompt.toLowerCase().includes('sem texto') && !imagePrompt.toLowerCase().includes('no text')) {
+      imagePrompt += ' (SEM INCLUIR TEXTO OU PALAVRAS NA IMAGEM, APENAS ELEMENTOS VISUAIS)';
+    }
+    
     return {
-      ...ad,
-      primaryText: validatedPrimaryText,
-      text: validatedPrimaryText,
-      description: validatedDescription
+      headline,
+      primaryText,
+      description: description || 'Saiba mais sobre nossos produtos e serviços.',
+      imagePrompt,
+      callToAction: ad.callToAction || ad.call_to_action || 'Saiba Mais',
+      format: ad.format || 'feed',
+      isComplete: true,
+      imageUrl: ad.imageUrl || '',
     };
   });
+}
+
+// LinkedIn Ads sanitizer
+export function sanitizeLinkedInAds(ads: any[], campaignData: WebsiteAnalysisResult): any[] {
+  return sanitizeMetaAds(ads, campaignData); // Similar format to Meta Ads
 }

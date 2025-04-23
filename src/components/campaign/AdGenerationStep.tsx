@@ -33,8 +33,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const handleGenerateAds = async () => {
     if (!platforms || platforms.length === 0) {
       toast({
-        title: "No platforms selected",
-        description: "Please select at least one platform before generating ads."
+        title: "Nenhuma plataforma selecionada",
+        description: "Selecione pelo menos uma plataforma antes de gerar anúncios."
       });
       return;
     }
@@ -63,12 +63,12 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
         // Important: Pass the complete mindTriggers object for all platforms
         mindTriggers: mindTriggers,
-        language: campaignData.language || 'portuguese',
+        language: 'pt_BR', // Force Portuguese
         industry: campaignData.industry || analysisResult?.industry || '',
         platforms: platforms,
         companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
         differentials: analysisResult?.uniqueSellingPoints || [],
-        callToAction: analysisResult?.callToAction || 'Learn More',
+        callToAction: analysisResult?.callToAction || 'Saiba Mais',
         keywords: analysisResult?.keywords || []
       };
 
@@ -76,8 +76,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       console.log('🧠 Sending unified prompt data:', JSON.stringify(promptData, null, 2));
 
       toast({
-        title: `Generating ads for ${platforms.join(', ')}`,
-        description: `Creating 5 ad variations per platform (${platforms.length * 5} credits).`
+        title: `Gerando anúncios para ${platforms.join(', ')}`,
+        description: `Criando 5 variações de anúncios por plataforma (${platforms.length * 5} créditos).`
       });
 
       try {
@@ -107,8 +107,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
               
               toast({
                 variant: "destructive",
-                title: `Using fallback ads for ${platform}`,
-                description: "We've created placeholder ads. You can edit them in the next step."
+                title: `Usando anúncios alternativos para ${platform}`,
+                description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
               });
             }
           });
@@ -122,8 +122,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           
           toast({
             variant: "destructive",
-            title: `Using fallback ads`,
-            description: "We've created placeholder ads. You can edit them in the next step."
+            title: `Usando anúncios alternativos`,
+            description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
           });
         }
         
@@ -131,22 +131,20 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           console.log("✅ Final generated ads: ", results);
           onAdsGenerated(results);
           toast({
-            title: "Ad Variations Generated!",
-            description: `Created ads for: ${Object.keys(results).join(", ")}`
+            title: "Variações de anúncios geradas!",
+            description: `Anúncios criados para: ${Object.keys(results).join(", ")}`
           });
           
           // Automatically move to the next step after successful generation
           if (onNext) {
-            setTimeout(() => {
-              onNext();
-            }, 1000); // Short delay to allow user to see the success message
+            onNext();
           }
         } else {
-          setError("Failed to generate ads for any platform. Please try again.");
+          setError("Falha ao gerar anúncios para qualquer plataforma. Por favor, tente novamente.");
           toast({
             variant: "destructive",
-            title: "Ad Generation Failed",
-            description: "Could not generate ads. Please try again or check your inputs."
+            title: "Falha na geração de anúncios",
+            description: "Não foi possível gerar anúncios. Verifique seus dados e tente novamente."
           });
         }
       } catch (error: any) {
@@ -160,44 +158,41 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           onAdsGenerated(results);
           toast({
             variant: "destructive",
-            title: `Using fallback ads`,
-            description: "We've created placeholder ads. You can edit them in the next step."
+            title: `Usando anúncios alternativos`,
+            description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
           });
           
           // Still move to next step with fallback ads
           if (onNext) {
-            setTimeout(() => {
-              onNext();
-            }, 1000);
+            onNext();
           }
         } else {
-          setError(error instanceof Error ? error.message : "An unexpected error occurred");
+          setError(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
           toast({
             variant: "destructive",
-            title: "Ad generation failed",
-            description: error instanceof Error ? error.message : "Something went wrong. Try again."
+            title: "Falha na geração de anúncios",
+            description: error instanceof Error ? error.message : "Algo deu errado. Tente novamente."
           });
         }
       }
     } catch (error: any) {
       console.error("❌ Failed to generate ads:", error);
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
+      setError(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
       toast({
         variant: "destructive",
-        title: "Ad generation failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Try again."
+        title: "Falha na geração de anúncios",
+        description: error instanceof Error ? error.message : "Algo deu errado. Tente novamente."
       });
     }
   };
 
   // Generate fallback ads when API fails
   const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
-    const companyName = promptData.companyName || 'Your Company';
-    const industry = promptData.industry || 'professional services';
-    const targetAudience = promptData.targetAudience || 'potential customers';
+    const companyName = promptData.companyName || 'Sua Empresa';
+    const industry = promptData.industry || 'serviços profissionais';
+    const targetAudience = promptData.targetAudience || 'clientes potenciais';
     const objective = promptData.objective || 'awareness';
-    const description = promptData.companyDescription || `${companyName} provides quality ${industry} services`;
-    const language = promptData.language?.toLowerCase() || 'portuguese';
+    const description = promptData.companyDescription || `${companyName} fornece serviços de ${industry} de qualidade`;
     
     // Create complete sentences for descriptions
     const createCompleteDescription = (text: string, maxLength = 90) => {
@@ -207,27 +202,13 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     
     // Get language-specific call to action
     const getCallToAction = () => {
-      if (language.includes('port') || language.includes('pt')) {
-        return objective === 'conversion' ? 'Compre Agora' : 
-               objective === 'consideration' ? 'Saiba Mais' : 'Descubra Hoje';
-      } else if (language.includes('es')) {
-        return objective === 'conversion' ? 'Compre Ahora' : 
-               objective === 'consideration' ? 'Aprenda Más' : 'Descubra Hoy';
-      } else {
-        return objective === 'conversion' ? 'Buy Now' : 
-               objective === 'consideration' ? 'Learn More' : 'Discover Today';
-      }
+      return objective === 'conversion' ? 'Compre Agora' : 
+             objective === 'consideration' ? 'Saiba Mais' : 'Descubra Hoje';
     };
     
-    // Get language-specific descriptive text
+    // Get descriptive text
     const getServiceDescription = () => {
-      if (language.includes('port') || language.includes('pt')) {
-        return `Oferecemos ${industry} de alta qualidade para ${targetAudience}.`;
-      } else if (language.includes('es')) {
-        return `Ofrecemos servicios de ${industry} de alta calidad para ${targetAudience}.`;
-      } else {
-        return `We provide high-quality ${industry} services for ${targetAudience}.`;
-      }
+      return `Oferecemos ${industry} de alta qualidade para ${targetAudience}.`;
     };
     
     if (platform === 'google' || platform === 'microsoft') {
@@ -241,8 +222,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         description1: createCompleteDescription(serviceDesc),
         description2: createCompleteDescription(description.substring(0, 80) || 
           `${companyName} é especialista em ${industry}, atendendo ${targetAudience} com excelência.`),
-        displayPath: promptData.websiteUrl || 'example.com',
-        path1: 'services',
+        displayPath: promptData.websiteUrl || 'exemplo.com.br',
+        path1: 'servicos',
         path2: 'info',
         siteLinks: []
       }));
@@ -271,16 +252,16 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     <Card>
       <CardContent className="p-6">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Generate Ad Content</h3>
+          <h3 className="text-lg font-semibold">Gerar Conteúdo de Anúncios</h3>
           <p className="text-muted-foreground">
-            We'll use AI to create 5 compelling ad variations for each selected platform based on your campaign details.
-            This will use 5 credits per platform from your account.
+            Usaremos IA para criar 5 variações de anúncios convincentes para cada plataforma selecionada, com base nos detalhes da sua campanha.
+            Esta operação usará 5 créditos por plataforma da sua conta.
           </p>
 
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Erro</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -288,19 +269,19 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           <div className="rounded-md bg-blue-50 p-4 mb-4">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">Ad Generation Information</h3>
+                <h3 className="text-sm font-medium text-blue-800">Informações de Geração de Anúncios</h3>
                 <div className="mt-2 text-sm text-blue-700">
-                  <p>Company: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
-                  <p>Objective: {campaignData.objective || 'Not specified'}</p>
-                  <p>Platforms:</p>
+                  <p>Empresa: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
+                  <p>Objetivo: {campaignData.objective || 'Não especificado'}</p>
+                  <p>Plataformas:</p>
                   <ul className="list-disc ml-4 text-sm text-gray-700 dark:text-gray-300">
                     {platforms.map((platform) => (
                       <li key={platform}>
-                        <strong>{platform}:</strong> Mind Trigger: {campaignData.mindTriggers?.[platform] || 'None'}
+                        <strong>{platform}:</strong> Gatilho Mental: {campaignData.mindTriggers?.[platform] || 'Nenhum'}
                       </li>
                     ))}
                   </ul>
-                  <p>Target Audience: {campaignData.targetAudience || analysisResult?.targetAudience || 'Not specified'}</p>
+                  <p>Público-Alvo: {campaignData.targetAudience || analysisResult?.targetAudience || 'Não especificado'}</p>
                 </div>
               </div>
             </div>
@@ -314,10 +295,10 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Ads...
+                Gerando Anúncios...
               </>
             ) : (
-              `Generate Ad Content (${platforms.length * 5} credits)`
+              `Gerar Conteúdo de Anúncios (${platforms.length * 5} créditos)`
             )}
           </Button>
         </div>
