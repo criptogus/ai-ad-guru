@@ -1,36 +1,47 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { MetaAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { toast } from 'sonner';
 
-function ensureCompleteText(text: string): string {
-  if (!text) return '';
-  const trimmed = text.trim();
-  // Adiciona ponto final se não terminar com pontuação
-  const withPunctuation = /[.!?;:]$/.test(trimmed) ? trimmed : trimmed + '.';
-  // Corrige espaços após pontuação
-  return withPunctuation.replace(/([.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+function detectAndFixEnglish(text: string): string {
+  if (!text) return "";
+  const translations: Record<string, string> = {
+    'Learn More': 'Saiba Mais',
+    'Get Started': 'Comece Agora',
+    'Discover': 'Descubra',
+    'Contact Us': 'Entre em Contato',
+    'with': 'com',
+    'for': 'para',
+    'your': 'seu',
+    'our': 'nosso',
+    'business': 'negócio',
+    'and': 'e',
+    'services': 'serviços',
+    'solutions': 'soluções',
+    'the': 'o',
+    'Transform': 'Transforme'
+  };
+  let fixedText = text;
+  Object.entries(translations).forEach(([english, portuguese]) => {
+    const regex = new RegExp(`\\b${english}\\b`, 'gi');
+    fixedText = fixedText.replace(regex, portuguese);
+  });
+  return fixedText;
 }
 
-// Função melhorada para detectar texto em inglês
-const hasEnglishText = (text: string) => {
-  if (!text) return false;
-  
-  // Lista expandida de palavras comuns em inglês que não deveriam aparecer
-  const englishWords = [
-    'the', 'your', 'quality', 'service', 'with', 'and', 'for', 'our',
-    'you', 'we', 'business', 'transform', 'get', 'now', 'more', 'learn',
-    'discover', 'solutions', 'best', 'from', 'about', 'how'
-  ];
-  
-  // Verifica a presença de termos em inglês
-  const textLower = text.toLowerCase();
-  return englishWords.some(word => {
-    const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(textLower);
-  });
-};
+function fixPunctuation(text: string): string {
+  if (!text) return "";
+  let fixedText = text.replace(/,\./g, ',');
+  fixedText = fixedText.replace(/\.{2,}/g, '.');
+  fixedText = fixedText.replace(/\s+([,.!?;:])/g, '$1');
+  fixedText = fixedText.replace(/([,.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+  fixedText = fixedText.replace(/([,.!?;:])\1+/g, '$1');
+  fixedText = fixedText.replace(/\s+/g, ' ').trim();
+  if (!/[.!?]$/.test(fixedText)) {
+    fixedText = fixedText + '.';
+  }
+  return fixedText;
+}
 
 export const generateMetaAds = async (
   campaignData: WebsiteAnalysisResult,
@@ -41,11 +52,10 @@ export const generateMetaAds = async (
     console.log('Usando mind trigger:', mindTrigger || 'Nenhum');
     console.log('Idioma da campanha:', campaignData.language || 'português');
 
-    // Forçando idioma português para garantir consistência
     const updatedCampaignData = {
       ...campaignData,
-      language: 'pt_BR', // Formato mais explícito para APIs
-      languageName: 'português', // Nome explícito do idioma
+      language: 'pt_BR',
+      languageName: 'português',
     };
 
     console.log('Enviando requisição com idioma forçado:', updatedCampaignData.language);
@@ -58,9 +68,9 @@ export const generateMetaAds = async (
           mindTriggers: {
             meta: mindTrigger
           },
-          language: 'pt_BR', // Reforçando no nível mais externo
-          languagePreference: 'Português do Brasil', // Texto explícito
-          forcePortuguese: true, // Flag adicional
+          language: 'pt_BR',
+          languagePreference: 'Português do Brasil',
+          forcePortuguese: true,
         }
       },
     });
@@ -89,38 +99,37 @@ export const generateMetaAds = async (
       return null;
     }
 
-    // Validação aprimorada para garantir completude do anúncio
-    if (!data.data.every((ad: any) => ad.headline && (ad.primaryText || ad.text) && ad.imagePrompt)) {
-      console.warn("Alguns anúncios gerados estão incompletos:", data.data);
-      toast.warning("Atenção: Alguns anúncios podem estar incompletos", {
-        description: "Revise os campos dos anúncios antes de publicar."
-      });
-    }
-
+    // Normalize and force correct language/punctuation
     const metaAds = data.data.map((ad: any) => {
-      const metaAd = {
-        headline: ensureCompleteText(ad.headline || ''),
-        primaryText: ensureCompleteText(ad.primaryText || ad.text || ''),
-        description: ensureCompleteText(ad.description || ''),
+      const headlineRaw = ad.headline || '';
+      const primaryTextRaw = ad.primaryText || ad.text || '';
+      const descriptionRaw = ad.description || '';
+      const headline = fixPunctuation(detectAndFixEnglish(headlineRaw));
+      const primaryText = fixPunctuation(detectAndFixEnglish(primaryTextRaw));
+      const description = fixPunctuation(detectAndFixEnglish(descriptionRaw));
+      return {
+        headline,
+        primaryText,
+        description,
         imagePrompt: ad.imagePrompt ?? ad.image_prompt ?? '[FALHA AO GERAR PROMPT DE IMAGEM]',
         callToAction: ad.callToAction ?? 'Saiba Mais',
         format: ad.format ?? 'feed',
         isComplete: true,
-        imageUrl: ad.imageUrl || '', // Adiciona suporte para URL da imagem
+        imageUrl: ad.imageUrl || '',
       };
+    });
 
-      // Validar consistência de idioma com feedback mais detalhado
-      if (hasEnglishText(metaAd.headline) || hasEnglishText(metaAd.primaryText)) {
-        console.warn('Texto em inglês detectado no anúncio:', {
-          headline: metaAd.headline,
-          primaryText: metaAd.primaryText?.substring(0, 100) + '...'
-        });
+    // Check for any remaining English and warn
+    metaAds.forEach(metaAd => {
+      if (
+        /(\bthe\b|\byour\b|service|quality|contact|learn|solutions)/i.test(
+          metaAd.headline + metaAd.primaryText
+        )
+      ) {
         toast.warning('Conteúdo em inglês detectado', {
           description: 'Alguns textos dos anúncios podem não estar em português.'
         });
       }
-
-      return metaAd;
     });
 
     console.log('Anúncios Meta gerados com sucesso:', metaAds.length);

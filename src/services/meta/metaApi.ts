@@ -1,8 +1,47 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { MetaAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { toast } from 'sonner';
+
+function detectAndFixEnglish(text: string): string {
+  if (!text) return "";
+  const translations: Record<string, string> = {
+    'Learn More': 'Saiba Mais',
+    'Get Started': 'Comece Agora',
+    'Discover': 'Descubra',
+    'Contact Us': 'Entre em Contato',
+    'with': 'com',
+    'for': 'para',
+    'your': 'seu',
+    'our': 'nosso',
+    'business': 'negócio',
+    'and': 'e',
+    'services': 'serviços',
+    'solutions': 'soluções',
+    'the': 'o',
+    'Transform': 'Transforme'
+  };
+  let fixedText = text;
+  Object.entries(translations).forEach(([english, portuguese]) => {
+    const regex = new RegExp(`\\b${english}\\b`, 'gi');
+    fixedText = fixedText.replace(regex, portuguese);
+  });
+  return fixedText;
+}
+
+function fixPunctuation(text: string): string {
+  if (!text) return "";
+  let fixedText = text.replace(/,\./g, ',');
+  fixedText = fixedText.replace(/\.{2,}/g, '.');
+  fixedText = fixedText.replace(/\s+([,.!?;:])/g, '$1');
+  fixedText = fixedText.replace(/([,.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+  fixedText = fixedText.replace(/([,.!?;:])\1+/g, '$1');
+  fixedText = fixedText.replace(/\s+/g, ' ').trim();
+  if (!/[.!?]$/.test(fixedText)) {
+    fixedText = fixedText + '.';
+  }
+  return fixedText;
+}
 
 // Função para completar o texto e garantir pontuação final
 function ensureCompleteText(text: string): string {
@@ -88,7 +127,6 @@ function isIncompleteText(text: string): boolean {
   return false;
 }
 
-// Função principal para gerar anúncios Meta
 export const generateMetaAds = async (
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
