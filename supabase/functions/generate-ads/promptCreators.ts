@@ -156,76 +156,52 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
   return { systemMessage, userMessage };
 }
 
-export function createMicrosoftAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const languageInput = campaignData.language || "Portuguese";
-  const language = normalizeLanguage(languageInput);
-  const languageCode = getLanguageFromLocale(language);
+export function createMicrosoftAdsPrompt(
+  campaignData: WebsiteAnalysisResult,
+  mindTrigger?: string
+): PromptMessages {
+  const language = campaignData.language?.toLowerCase() || "en";
+  const readableLanguage = getLanguageName(language);
 
-  const langInstructions = {
-    pt: {
-      name: "Português",
-      generic_terms: "serviços profissionais, resultados de qualidade",
-      response_lang: "português"
-    },
-    es: {
-      name: "Español",
-      generic_terms: "serviços profesionales, resultados de qualidade",
-      response_lang: "español"
-    },
-    en: {
-      name: "English",
-      generic_terms: "professional services, quality results",
-      response_lang: "English"
-    }
-  }[languageCode];
+  const systemMessage = `
+You are a Bing Ads expert. Write search ads optimized for conversions, using ONLY the campaign data provided.
+Do NOT invent any data. Use the language: ${readableLanguage.toUpperCase()} only.
+Be direct, persuasive, and informative.
+NEVER mix languages or use placeholder terms.
+Return ONLY the ads in the JSON format shown below.
+`;
 
-  const systemMessage = [
-    `Você é um redator publicitário sênior especializado em anúncios para Microsoft/Bing Ads.`,
-    `Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.`,
-    `A resposta deve estar COMPLETAMENTE em ${langInstructions.name}.`,
-    `IMPORTANTE:`,
-    `- JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.`,
-    `- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.`,
-    `- Use APENAS as informações fornecidas abaixo.`,
-    `- Ignore campos em branco (NÃO invente dados).`,
-    `- Retorne APENAS o JSON formatado conforme o exemplo.`,
-    `- Valide que a resposta esteja no formato JSON usando aspas duplas corretas (não use aspas simples) para cada chave e valor.`,
-  ].join('\n');
+  const userMessage = `
+Create 5 Bing Ads for Microsoft Advertising:
 
-  const userMessage = [
-    `Crie 5 anúncios de texto para Microsoft/Bing Ads usando exclusivamente os dados abaixo:`,
-    ``,
-    `- Empresa: ${campaignData.companyName}`,
-    `- Website: ${campaignData.websiteUrl}`,
-    `- Produto ou serviço: ${campaignData.product || "Não especificado - não invente"}`,
-    `- Objetivo: ${campaignData.objective || "Não especificado - não invente"}`,
-    `- Público-alvo: ${campaignData.targetAudience || "Não especificado - não invente"}`,
-    `- Tom de voz: ${campaignData.brandTone || "Não especificado - não invente"}`,
-    `- Gatilho mental: ${mindTrigger || "Não especificado - não invente"}`,
-    `- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) && campaignData.uniqueSellingPoints.length > 0) ? campaignData.uniqueSellingPoints.join(', ') : "Não especificado - não invente"}`,
-    `- Palavras-chave: ${(Array.isArray(campaignData.keywords) && campaignData.keywords.length > 0) ? campaignData.keywords.join(', ') : "Não especificado - não invente"}`,
-    `- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "Não especificado - não invente"}`,
-    ``,
-    `Requisitos:`,
-    `- Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)`,
-    `- 2 descrições (máx 90 caracteres cada)`,
-    `- Um display_url baseado no site fornecido`,
-    `- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}`,
-    `- NÃO criar dados fictícios ou genéricos`,
-    `- O JSON deve ser válido com aspas duplas para todas as chaves e valores.`,
-    ``,
-    `Formato OBRIGATÓRIO de resposta (JSON):`,
-    `[`,
-    `  {`,
-    `    "headline_1": "...",`,
-    `    "headline_2": "...",`,
-    `    "headline_3": "...",`,
-    `    "description_1": "...",`,
-    `    "description_2": "...",`,
-    `    "display_url": "www.exemplo.com"`,
-    `  }`,
-    `]`
-  ].join('\n');
+- Company: ${campaignData.companyName || "(missing)"}
+- Website: ${campaignData.websiteUrl || "(missing)"}
+- Product or service: ${campaignData.product || "(missing)"}
+- Objective: ${campaignData.objective || "(missing)"}
+- Target audience: ${campaignData.targetAudience || "(missing)"}
+- Tone: ${campaignData.brandTone || "(missing)"}
+- Mental trigger: ${mindTrigger || "(missing)"}
+- Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
+- Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
+- Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
+
+Format:
+- 3 headlines (30 characters max)
+- 2 descriptions (90 characters max)
+- Display URL must be based on the provided website
+
+JSON Format:
+[
+  {
+    "headline_1": "...",
+    "headline_2": "...",
+    "headline_3": "...",
+    "description_1": "...",
+    "description_2": "...",
+    "display_url": "www.example.com"
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
