@@ -7,7 +7,7 @@ import WebsiteUrlInput from "./website-analysis/WebsiteUrlInput";
 import AnalysisInfoBox from "./website-analysis/AnalysisInfoBox";
 import AnalysisResults from "./website-analysis/AnalysisResults";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "lucide-react";
+import { Calendar, Globe } from "lucide-react";
 import { format } from "date-fns";
 
 interface WebsiteAnalysisStepProps {
@@ -107,6 +107,25 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
   };
 
+  // Language display
+  const getLanguageName = (code?: string) => {
+    if (!code) return "Unknown";
+    
+    const languages: Record<string, string> = {
+      en: "English",
+      pt: "Portuguese",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      "pt-br": "Brazilian Portuguese",
+      "en-us": "American English",
+      "es-es": "Spanish (Spain)"
+    };
+    
+    return languages[code.toLowerCase()] || code;
+  };
+
   return (
     <Card className="shadow-md border border-accent/20 overflow-hidden">
       <CardHeader className="bg-card pb-4">
@@ -118,12 +137,21 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
             </CardDescription>
           </div>
           
-          {cacheInfo?.fromCache && cacheInfo.cachedAt && (
-            <Badge variant="outline" className="flex items-center gap-1 bg-amber-100/10">
-              <Calendar className="h-3 w-3" />
-              <span className="text-xs">Cached {formatCacheDate(cacheInfo.cachedAt)}</span>
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {analysisResult?.language && (
+              <Badge variant="outline" className="flex items-center gap-1 bg-blue-100/10">
+                <Globe className="h-3 w-3" />
+                <span className="text-xs">{getLanguageName(analysisResult.language)}</span>
+              </Badge>
+            )}
+            
+            {cacheInfo?.fromCache && cacheInfo.cachedAt && (
+              <Badge variant="outline" className="flex items-center gap-1 bg-amber-100/10">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs">Cached {formatCacheDate(cacheInfo.cachedAt)}</span>
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6">

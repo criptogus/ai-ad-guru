@@ -114,3 +114,40 @@ export function getLanguageFromLocale(locale: string | undefined): 'en' | 'pt' |
   if (lang === 'es') return 'es';
   return 'en';
 }
+
+/**
+ * Validate that ad content matches the expected language
+ */
+export function validateAdLanguage(ad: any, expectedLanguage: string): boolean {
+  const languages = detectLanguagesInAdContent(ad);
+  
+  switch (expectedLanguage.toLowerCase()) {
+    case 'pt':
+    case 'pt-br':
+      return languages.portuguese && !languages.mixed;
+    case 'es':
+    case 'es-es':
+      return languages.spanish && !languages.mixed;
+    case 'en':
+    case 'en-us':
+    default:
+      return languages.english && !languages.mixed;
+  }
+}
+
+/**
+ * Get language display name from code
+ */
+export function getLanguageDisplayName(code: string): string {
+  const languages: Record<string, string> = {
+    en: "English",
+    pt: "Portuguese",
+    es: "Spanish",
+    fr: "French",
+    de: "German",
+    "pt-br": "Brazilian Portuguese",
+    "en-us": "American English"
+  };
+  
+  return languages[code.toLowerCase()] || code;
+}

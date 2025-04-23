@@ -17,8 +17,22 @@ export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): 
     data.mindTrigger || 
     "Not provided — do not invent";
   
-  // Build unified system message
-  const systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
+  // Get the language or default to English
+  const language = data.language || 'en';
+  
+  // System message with language adaptation
+  let systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
+  
+  // Add language instruction
+  if (language === 'pt' || language === 'pt-BR') {
+    systemMessage += ` Você deve escrever em português do Brasil.`;
+  } else if (language === 'es' || language === 'es-ES') {
+    systemMessage += ` Debes escribir en español.`;
+  } else if (language === 'fr' || language === 'fr-FR') {
+    systemMessage += ` Vous devez écrire en français.`;
+  } else {
+    systemMessage += ` Write in English.`;
+  }
 
   // Build platform-specific instructions
   let platformInstructions = '';
@@ -55,6 +69,25 @@ export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): 
 }`;
   }
 
+  // Localize instructions based on language
+  if (language === 'pt' || language === 'pt-BR') {
+    if (platform === 'google' || platform === 'microsoft') {
+      platformInstructions = `Crie 5 anúncios de pesquisa ${platform === 'google' ? 'Google' : 'Microsoft/Bing'} de alta conversão. Cada anúncio deve ter 3 títulos (máx. 30 caracteres cada) e 2 descrições (máx. 90 caracteres cada).`;
+    } else if (platform === 'meta' || platform === 'instagram') {
+      platformInstructions = `Crie 5 anúncios envolventes para Instagram/Meta. Cada anúncio deve ter um título atraente, texto principal (legenda) e um prompt de imagem que descreva uma foto SEM sobreposição de texto.`;
+    } else if (platform === 'linkedin') {
+      platformInstructions = `Crie 5 anúncios profissionais para LinkedIn. Cada anúncio deve ter um título orientado a negócios, texto principal que estabeleça autoridade e um prompt de imagem para um contexto profissional.`;
+    }
+  } else if (language === 'es' || language === 'es-ES') {
+    if (platform === 'google' || platform === 'microsoft') {
+      platformInstructions = `Crea 5 anuncios de búsqueda de ${platform === 'google' ? 'Google' : 'Microsoft/Bing'} de alta conversión. Cada anuncio debe tener 3 títulos (máx. 30 caracteres cada uno) y 2 descripciones (máx. 90 caracteres cada una).`;
+    } else if (platform === 'meta' || platform === 'instagram') {
+      platformInstructions = `Crea 5 anuncios atractivos para Instagram/Meta. Cada anuncio debe tener un título llamativo, texto principal (descripción) y un prompt de imagen que describa una foto SIN superposición de texto.`;
+    } else if (platform === 'linkedin') {
+      platformInstructions = `Crea 5 anuncios profesionales para LinkedIn. Cada anuncio debe tener un título orientado a negocios, texto principal que establezca autoridad y un prompt de imagen para un contexto profesional.`;
+    }
+  }
+
   // Build unified user message with proper handling of missing fields
   const userMessage = `
 Create 5 different ad variations for ${platform === 'google' ? 'Google Ads' : platform === 'microsoft' ? 'Microsoft/Bing Ads' : platform === 'meta' ? 'Instagram/Meta Ads' : 'LinkedIn Ads'}.
@@ -76,8 +109,8 @@ Call to Action: ${fieldOrDoNotInvent(
     Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
 )}
 
-LANGUAGE: ${data.language || 'English'}
-Respond using this language: ${data.language || 'English'}
+LANGUAGE: ${language || 'English'}
+Respond using this language: ${language || 'English'}
 
 ${platformInstructions}
 

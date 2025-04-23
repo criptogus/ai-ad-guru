@@ -32,7 +32,8 @@ export const useCampaignState = () => {
     description: '',
     platforms: [] as string[],
     mindTriggers: {} as Record<string, string>,
-    companyName: '' // Initialize companyName
+    companyName: '', // Initialize companyName
+    language: 'en', // Default to English
   });
   
   const [googleAds, setGoogleAds] = useState<GoogleAd[]>([]);

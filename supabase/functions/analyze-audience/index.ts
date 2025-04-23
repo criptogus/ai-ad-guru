@@ -24,50 +24,17 @@ serve(async (req) => {
 
   try {
     const { websiteData } = await req.json();
-
-    const prompt = `
-    Você é um analista de marketing sênior especializado em publicidade digital. Com base nas informações abaixo, faça uma análise detalhada do público-alvo ideal para este negócio.
-
-    Informações do negócio:
-    Nome: ${websiteData.companyName}
-    Descrição: ${websiteData.businessDescription}
-    Diferenciais: ${websiteData.uniqueSellingPoints?.join(', ')}
-    Palavras-chave: ${websiteData.keywords?.join(', ')}
-
-    Por favor, forneça uma análise estruturada com:
-
-    1. RESUMO DO PÚBLICO-ALVO:
-    - Perfil demográfico (idade, localização, renda)
-    - Interesses e características principais
-
-    2. DORES E NECESSIDADES:
-    - Principais problemas que buscam resolver
-    - Objetivos e aspirações
-
-    3. COMPORTAMENTOS:
-    - Hábitos de consumo
-    - Processo de decisão de compra
-    - Canais de informação preferidos
-
-    4. RECOMENDAÇÕES DE SEGMENTAÇÃO:
-    - Nichos específicos
-    - Oportunidades de microsegmentação
-    - Critérios de targeting para anúncios
-
-    5. CANAIS RECOMENDADOS:
-    - Plataformas mais efetivas
-    - Tipos de conteúdo que mais engajam
-    - Momentos ideais para abordar
-
-    Forneça a análise em português do Brasil, com linguagem profissional mas acessível.
-    `;
+    const detectedLanguage = websiteData.language || 'pt'; // Default to Portuguese if not specified
+    
+    // Select the appropriate prompt based on detected language
+    const prompt = getLocalizedPrompt(detectedLanguage, websiteData);
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: "Você é um analista de marketing especializado em análise de público-alvo para campanhas digitais."
+          content: `Você é um analista de marketing especializado em análise de público-alvo para campanhas digitais. Responda no idioma: ${detectedLanguage}.`
         },
         {
           role: "user",
@@ -111,3 +78,163 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to get prompts in the correct language
+function getLocalizedPrompt(language: string, websiteData: any): string {
+  // Portuguese prompt (default)
+  if (language === 'pt' || language === 'pt-BR' || language === 'pt-PT') {
+    return `
+    Você é um analista de marketing sênior especializado em publicidade digital. Com base nas informações abaixo, faça uma análise detalhada do público-alvo ideal para este negócio.
+
+    Informações do negócio:
+    Nome: ${websiteData.companyName}
+    Descrição: ${websiteData.businessDescription}
+    Diferenciais: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Palavras-chave: ${websiteData.keywords?.join(', ')}
+
+    Por favor, forneça uma análise estruturada com:
+
+    1. RESUMO DO PÚBLICO-ALVO:
+    - Perfil demográfico (idade, localização, renda)
+    - Interesses e características principais
+
+    2. DORES E NECESSIDADES:
+    - Principais problemas que buscam resolver
+    - Objetivos e aspirações
+
+    3. COMPORTAMENTOS:
+    - Hábitos de consumo
+    - Processo de decisão de compra
+    - Canais de informação preferidos
+
+    4. RECOMENDAÇÕES DE SEGMENTAÇÃO:
+    - Nichos específicos
+    - Oportunidades de microsegmentação
+    - Critérios de targeting para anúncios
+
+    5. CANAIS RECOMENDADOS:
+    - Plataformas mais efetivas
+    - Tipos de conteúdo que mais engajam
+    - Momentos ideais para abordar
+
+    Forneça a análise em português do Brasil, com linguagem profissional mas acessível.
+    `;
+  }
+  // English prompt
+  else if (language === 'en' || language === 'en-US' || language === 'en-GB') {
+    return `
+    You are a senior marketing analyst specializing in digital advertising. Based on the information below, provide a detailed analysis of the ideal target audience for this business.
+
+    Business Information:
+    Name: ${websiteData.companyName}
+    Description: ${websiteData.businessDescription}
+    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Keywords: ${websiteData.keywords?.join(', ')}
+
+    Please provide a structured analysis with:
+
+    1. TARGET AUDIENCE SUMMARY:
+    - Demographic profile (age, location, income)
+    - Main interests and characteristics
+
+    2. PAIN POINTS AND NEEDS:
+    - Main problems they seek to solve
+    - Goals and aspirations
+
+    3. BEHAVIORS:
+    - Consumption habits
+    - Purchase decision process
+    - Preferred information channels
+
+    4. SEGMENTATION RECOMMENDATIONS:
+    - Specific niches
+    - Micro-segmentation opportunities
+    - Ad targeting criteria
+
+    5. RECOMMENDED CHANNELS:
+    - Most effective platforms
+    - Content types that engage the most
+    - Ideal moments for approach
+
+    Provide the analysis in professional yet accessible language.
+    `;
+  }
+  // Spanish prompt
+  else if (language === 'es' || language === 'es-ES' || language === 'es-MX') {
+    return `
+    Eres un analista de marketing senior especializado en publicidad digital. Basado en la información a continuación, realiza un análisis detallado del público objetivo ideal para este negocio.
+
+    Información del negocio:
+    Nombre: ${websiteData.companyName}
+    Descripción: ${websiteData.businessDescription}
+    Puntos de venta únicos: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Palabras clave: ${websiteData.keywords?.join(', ')}
+
+    Por favor, proporciona un análisis estructurado con:
+
+    1. RESUMEN DEL PÚBLICO OBJETIVO:
+    - Perfil demográfico (edad, ubicación, ingresos)
+    - Intereses y características principales
+
+    2. DOLORES Y NECESIDADES:
+    - Principales problemas que buscan resolver
+    - Metas y aspiraciones
+
+    3. COMPORTAMIENTOS:
+    - Hábitos de consumo
+    - Proceso de decisión de compra
+    - Canales de información preferidos
+
+    4. RECOMENDACIONES DE SEGMENTACIÓN:
+    - Nichos específicos
+    - Oportunidades de microsegmentación
+    - Criterios de segmentación para anuncios
+
+    5. CANALES RECOMENDADOS:
+    - Plataformas más efectivas
+    - Tipos de contenido que más enganchan
+    - Momentos ideales para acercamiento
+
+    Proporciona el análisis en español, con lenguaje profesional pero accesible.
+    `;
+  }
+  // Default to English if language not recognized
+  else {
+    return `
+    You are a senior marketing analyst specializing in digital advertising. Based on the information below, provide a detailed analysis of the ideal target audience for this business.
+
+    Business Information:
+    Name: ${websiteData.companyName}
+    Description: ${websiteData.businessDescription}
+    Unique Selling Points: ${websiteData.uniqueSellingPoints?.join(', ')}
+    Keywords: ${websiteData.keywords?.join(', ')}
+
+    Please provide a structured analysis with:
+
+    1. TARGET AUDIENCE SUMMARY:
+    - Demographic profile (age, location, income)
+    - Main interests and characteristics
+
+    2. PAIN POINTS AND NEEDS:
+    - Main problems they seek to solve
+    - Goals and aspirations
+
+    3. BEHAVIORS:
+    - Consumption habits
+    - Purchase decision process
+    - Preferred information channels
+
+    4. SEGMENTATION RECOMMENDATIONS:
+    - Specific niches
+    - Micro-segmentation opportunities
+    - Ad targeting criteria
+
+    5. RECOMMENDED CHANNELS:
+    - Most effective platforms
+    - Content types that engage the most
+    - Ideal moments for approach
+
+    Provide the analysis in professional yet accessible language.
+    `;
+  }
+}

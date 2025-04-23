@@ -151,6 +151,38 @@ serve(async (req) => {
     
     // Clean up the text
     contentText = contentText.replace(/\s+/g, ' ').trim();
+
+    // Detect language first
+    console.log("Detecting language of website content...");
+    const languageDetectionPrompt = `
+      You are a language detection system. Analyze the following website content and determine the primary language used.
+      
+      Website title: ${metaTitle}
+      Website description: ${metaDescription}
+      Content sample: ${contentText.substring(0, 500)}
+      
+      Respond with ONLY the ISO language code (e.g., "en", "pt", "es", "fr", etc.).
+      Do not include any explanation or additional text.
+    `;
+    
+    const languageDetection = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a language detection system. Respond with ONLY the ISO language code (e.g., 'en', 'pt', 'es', 'fr') without any explanation."
+        },
+        {
+          role: "user",
+          content: languageDetectionPrompt
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 10
+    });
+    
+    const detectedLanguage = languageDetection.choices[0].message.content.trim().toLowerCase();
+    console.log("Detected language:", detectedLanguage);
     
     // Prepare the data for analysis
     const websiteData = {
@@ -166,6 +198,18 @@ serve(async (req) => {
       headingsCount: headings.length,
       contentLength: websiteData.content.length
     });
+    
+    // Create a prompt that respects the detected language
+    let systemPrompt = "You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.";
+    
+    // Use the detected language for the analysis prompt
+    if (detectedLanguage === "pt") {
+      systemPrompt += " Responda em português.";
+    } else if (detectedLanguage === "es") {
+      systemPrompt += " Responde en español.";
+    } else if (detectedLanguage === "fr") {
+      systemPrompt += " Répondez en français.";
+    }
     
     // Analyze the website using OpenAI
     const prompt = `
@@ -198,18 +242,20 @@ serve(async (req) => {
         "keywords": [],
         "callToAction": [],
         "uniqueSellingPoints": [],
-        "industry": ""
+        "industry": "",
+        "language": "${detectedLanguage}"
       }
       
       If you can't determine something, make an educated guess based on the available content.
       Do not include explanations, just the JSON object.
+      Respond in the primary language of the website content.
     `;
     
     console.log("Calling OpenAI for website analysis...");
     
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: "system", content: "You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format." },
+        { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
       model: "gpt-4o",
@@ -220,13 +266,15 @@ serve(async (req) => {
     // Parse the response
     const analysisResult = JSON.parse(completion.choices[0].message.content);
     
-    // Fill in websiteUrl field
+    // Fill in websiteUrl field and ensure language is set
     analysisResult.websiteUrl = url;
+    analysisResult.language = detectedLanguage;
     
     console.log("Analysis complete:", {
       companyName: analysisResult.companyName,
       industryDetected: analysisResult.industry,
-      keywordsCount: analysisResult.keywords.length
+      keywordsCount: analysisResult.keywords.length,
+      language: analysisResult.language
     });
     
     // Cache the result

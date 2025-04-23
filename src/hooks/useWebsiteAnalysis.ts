@@ -141,12 +141,13 @@ const useWebsiteAnalysis = () => {
         });
       }
       
-      // Make sure all array fields are actually arrays
+      // Make sure all array fields are actually arrays and include language
       const processedData = {
         ...data.data,
         uniqueSellingPoints: ensureArray(data.data.uniqueSellingPoints),
         keywords: ensureArray(data.data.keywords),
-        callToAction: ensureArray(data.data.callToAction)
+        callToAction: ensureArray(data.data.callToAction),
+        language: data.data.language || 'en' // Ensure language exists, default to English
       };
       
       setAnalysisResult(processedData);
