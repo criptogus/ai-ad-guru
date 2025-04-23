@@ -2,12 +2,20 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
-import { supabase } from "@/integrations/supabase/client";
+import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { errorLogger } from "@/services/libs/error-handling";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useWebsiteAnalysisActions = () => {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [cacheInfo, setCacheInfo] = useState<{fromCache?: boolean; cachedAt?: string; expiresAt?: string} | null>(null);
+  
+  // Get the current authenticated user
+  const getUserId = async () => {
+    const { data } = await supabase.auth.getUser();
+    return data?.user?.id || 'anonymous';
+  };
   
   // Properly implement the website analysis function
   const handleAnalyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
@@ -33,37 +41,60 @@ export const useWebsiteAnalysisActions = () => {
       
       console.log('Calling analyze-website function with URL:', formattedUrl);
       
-      try {
-        const { data, error } = await supabase.functions.invoke('analyze-website', {
-          body: { url: formattedUrl },
-        });
-  
-        if (error) {
-          console.error('Error from Supabase function:', error);
-          throw error;
-        }
-  
-        if (!data || !data.success) {
-          console.error('Analysis failed:', data?.error || 'Unknown error');
-          throw new Error(data?.error || "Failed to analyze website");
-        }
-  
-        console.log('Analysis result from Supabase function:', data.data);
-        const result = data.data as WebsiteAnalysisResult;
-        
-        // Store the website URL in the result
+      const userId = await getUserId();
+      
+      const result = await analyzeWebsite({
+        url: formattedUrl,
+        userId
+      });
+      
+      if (!result) {
+        throw new Error("Failed to analyze website");
+      }
+      
+      console.log('Analysis result:', result);
+      
+      // Store the website URL in the result if not already present
+      if (!result.websiteUrl) {
         result.websiteUrl = formattedUrl;
+      }
+      
+      // Check if the result came from cache
+      if ((result as any).fromCache) {
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: (result as any).cachedAt,
+          expiresAt: (result as any).expiresAt
+        });
+        
+        toast({
+          title: "Website Analysis",
+          description: "Using cached analysis from previous scan",
+        });
+      } else {
+        setCacheInfo(null);
         
         toast({
           title: "Website Analyzed",
           description: "Successfully analyzed website content",
         });
-        
-        return result;
-      } catch (invokeError: any) {
-        console.error('Error calling analyze-website function:', invokeError);
-
-        // Since we're in development, we'll simulate a successful response
+      }
+      
+      return result;
+    } catch (error: any) {
+      errorLogger.logError(error, 'handleAnalyzeWebsite');
+      
+      console.error('Error analyzing website:', error);
+      
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "Failed to analyze website. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Since we're in development, we'll simulate a successful response
+      // only if we're in development mode
+      if (import.meta.env.DEV) {
         console.log('Generating mock data for development');
         const mockResult: WebsiteAnalysisResult = {
           companyName: 'Example Company',
@@ -78,24 +109,18 @@ export const useWebsiteAnalysisActions = () => {
             '24/7 customer support',
             'Customizable solutions'
           ],
-          websiteUrl: formattedUrl,
+          websiteUrl: url,
           industry: 'Technology'
         };
         
         toast({
-          title: "Website Analyzed (Demo Mode)",
+          title: "Using Demo Data",
           description: "Using mock data while in development mode",
         });
         
         return mockResult;
       }
-    } catch (error: any) {
-      errorLogger.logError(error, 'handleAnalyzeWebsite');
-      toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze website. Please try again.",
-        variant: "destructive",
-      });
+      
       return null;
     } finally {
       setIsAnalyzing(false);
@@ -104,6 +129,7 @@ export const useWebsiteAnalysisActions = () => {
 
   return {
     handleAnalyzeWebsite,
-    isAnalyzing
+    isAnalyzing,
+    cacheInfo
   };
 };

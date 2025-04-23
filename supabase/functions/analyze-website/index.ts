@@ -47,7 +47,8 @@ serve(async (req) => {
             success: true, 
             data: cacheResult.data,
             fromCache: true, 
-            cachedAt: cacheResult.cachedAt 
+            cachedAt: cacheResult.cachedAt,
+            expiresAt: cacheResult.expiresAt 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -70,7 +71,7 @@ serve(async (req) => {
     Title: ${websiteData.title}
     Description: ${websiteData.description}
     Keywords: ${websiteData.keywords}
-    Content: ${websiteData.visibleText.slice(0, 3000)}
+    Content: ${websiteData.visibleText.slice(0, 6500)}
     URL: ${websiteData.url}
 
     Extract and provide:
@@ -92,6 +93,9 @@ serve(async (req) => {
       "keywords": ["string"],
       "callToAction": ["string"]
     }
+    
+    Do not include any other text in your response, just the JSON.
+    If you can't determine a value, use a reasonable guess based on the industry.
     `;
 
     console.log("Sending request to OpenAI...");
@@ -103,8 +107,47 @@ serve(async (req) => {
       temperature: 0.7
     });
 
-    const analysisResult = JSON.parse(completion.choices[0].message.content);
-    console.log('Analysis completed successfully');
+    // Parse the response and ensure it's valid JSON
+    let analysisResult;
+    try {
+      analysisResult = JSON.parse(completion.choices[0].message.content);
+      console.log('Analysis completed successfully');
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      console.log('Raw response:', completion.choices[0].message.content);
+      
+      // Attempt to extract JSON from response if it's wrapped in other text
+      const jsonMatch = completion.choices[0].message.content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          analysisResult = JSON.parse(jsonMatch[0]);
+          console.log('Successfully extracted JSON from response');
+        } catch (e) {
+          throw new Error('Failed to extract valid JSON from OpenAI response');
+        }
+      } else {
+        throw new Error('OpenAI response did not contain valid JSON');
+      }
+    }
+    
+    // Validate result has the expected structure
+    if (!analysisResult.companyName || !analysisResult.businessDescription) {
+      console.warn('OpenAI response missing some required fields', analysisResult);
+      
+      // Try to fill in missing values
+      analysisResult.companyName = analysisResult.companyName || extractCompanyName(websiteData.title);
+      analysisResult.businessDescription = analysisResult.businessDescription || 
+        "Business description not detected. Please update manually.";
+    }
+    
+    // Ensure arrays are actually arrays
+    ['uniqueSellingPoints', 'keywords', 'callToAction'].forEach(field => {
+      if (!Array.isArray(analysisResult[field])) {
+        analysisResult[field] = analysisResult[field] ? 
+          [analysisResult[field]] : 
+          [`${field.charAt(0).toUpperCase() + field.slice(1)} not detected. Please update manually.`];
+      }
+    });
     
     // Store in cache if available
     if (cacheHandler) {
@@ -113,14 +156,21 @@ serve(async (req) => {
 
     // Return the analysis result
     return new Response(
-      JSON.stringify({ success: true, data: analysisResult }),
+      JSON.stringify({ 
+        success: true, 
+        data: analysisResult,
+        fromCache: false
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "An unknown error occurred"
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -128,3 +178,19 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to extract company name from title if needed
+function extractCompanyName(title: string): string {
+  // Remove common title suffixes
+  let name = title.replace(/\s*[|]\s*.+$/, '')
+                 .replace(/\s*[-]\s*.+$/, '')
+                 .replace(/\s*[–]\s*.+$/, '')
+                 .replace(/\s*[:]\s*.+$/, '');
+                 
+  // Further clean up if needed
+  if (name.length > 50) {
+    name = name.substring(0, 50);
+  }
+  
+  return name || "Company name not detected";
+}
