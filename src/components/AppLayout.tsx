@@ -2,9 +2,8 @@
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import SidebarNavigation from "@/components/navigation/SidebarNavigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import MainLayout from "@/components/layout/MainLayout";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -32,20 +31,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }
   
   return (
-    <SidebarProvider>
-      <div className="h-screen w-full flex overflow-hidden bg-background dark:bg-gray-900">
-        <TooltipProvider>
-          <SidebarNavigation />
-        </TooltipProvider>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-hidden flex flex-col">
-          <div className="w-full h-full overflow-y-auto p-6">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    <TooltipProvider>
+      <MainLayout>
+        {children}
+      </MainLayout>
+    </TooltipProvider>
   );
 };
 

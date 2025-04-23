@@ -7,19 +7,21 @@ import {
   BarChart,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Home,
+  BarChart3
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import React from "react";
 
 const menuItems = [
+  { name: "Home", icon: Home, path: "/" },
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { name: "Campanhas", icon: ClipboardList, path: "/campanhas" },
-  { name: "Conexões", icon: Share2, path: "/conexoes" },
-  { name: "Gerador de Anúncios", icon: Layers, path: "/gerador" },
-  { name: "Analytics", icon: BarChart, path: "/analytics" },
-  { name: "Configurações", icon: Settings, path: "/configuracoes" },
+  { name: "Campanhas", icon: ClipboardList, path: "/campaigns" },
+  { name: "Conexões", icon: Share2, path: "/connections" },
+  { name: "Gerenciador de Anúncios", icon: BarChart3, path: "/ad-manager" },
+  { name: "Configurações", icon: Settings, path: "/settings" },
 ];
 
 export const Sidebar = ({
