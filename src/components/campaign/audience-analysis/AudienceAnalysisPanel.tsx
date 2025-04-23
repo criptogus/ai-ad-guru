@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { AudienceAnalysisResult, AudienceCacheInfo } from "@/hooks/useAudienceAnalysis";
-import AudienceAnalysisResult from "./AudienceAnalysisResult";
+import AudienceAnalysisResultView from "./AudienceAnalysisResult";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
@@ -98,7 +98,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
       {isAnalyzing ? (
         <Card>
           <CardContent className="pt-6">
-            <AudienceAnalysisResult 
+            <AudienceAnalysisResultView 
               analysisResult={{ analysisText: "", success: false }} 
               isAnalyzing={true}
             />
@@ -107,7 +107,7 @@ const AudienceAnalysisPanel: React.FC<AudienceAnalysisPanelProps> = ({
       ) : analysisResult ? (
         <Card>
           <CardContent className="pt-6">
-            <AudienceAnalysisResult 
+            <AudienceAnalysisResultView 
               analysisResult={analysisResult} 
               websiteData={websiteData}
               platform={selectedPlatform}
