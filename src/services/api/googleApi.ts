@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { GoogleAd } from '@/hooks/adGeneration';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
@@ -42,7 +41,7 @@ export const generateGoogleAds = async (
       languageName: updatedCampaignData.languageName
     });
     
-    const { data, error } = await supabase.functions.invoke('generate-ads', {
+    const { data, error, status } = await supabase.functions.invoke('generate-ads', {
       body: { 
         platform: 'google',
         campaignData: updatedCampaignData,
@@ -56,6 +55,13 @@ export const generateGoogleAds = async (
       console.error('Erro ao gerar anúncios Google:', error);
       toast.error('Falha na geração', {
         description: error.message || 'Não foi possível conectar ao serviço de geração'
+      });
+      return null;
+    }
+
+    if (status === 402 || (data && data.error && data.error.toLowerCase().includes("credit"))) {
+      toast.error('Você não tem créditos suficientes para gerar anúncios.', {
+        description: 'Por favor, adquira mais créditos ou ajuste seu plano.'
       });
       return null;
     }

@@ -217,6 +217,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_logs: {
+        Row: {
+          action: string
+          context: Json | null
+          created_at: string | null
+          credits_used: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          context?: Json | null
+          created_at?: string | null
+          credits_used: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          context?: Json | null
+          created_at?: string | null
+          credits_used?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_images: {
         Row: {
           campaign_id: string | null
