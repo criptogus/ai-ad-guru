@@ -77,10 +77,54 @@ async function saveToCache(url: string, platform: string, analysisResult: any) {
   }
 }
 
-function getLocalizedPrompt(language: string, websiteData: any): string {
+function getLocalizedPrompt(language: string, websiteData: any): Promise<string> {
   // Import the createAudienceAnalysisPrompt function
-  const { createAudienceAnalysisPrompt } = await import('./promptCreator.ts');
-  return createAudienceAnalysisPrompt(websiteData, 'all', language);
+  return import('./promptCreator.ts').then(module => {
+    return module.createAudienceAnalysisPrompt(websiteData, 'all', language);
+  });
+}
+
+// Function to validate the OpenAI response
+function validateAudienceAnalysis(text: string): boolean {
+  if (!text || typeof text !== 'string' || text.length < 100) {
+    return false;
+  }
+  
+  // Convert to uppercase for case-insensitive matching
+  const upperText = text.toUpperCase();
+  
+  // Define expected section headers in different languages
+  const expectedSections = [
+    // English
+    ['PUBLIC TARGET PROFILE', 'TARGET AUDIENCE PROFILE', 'DETAILED TARGET AUDIENCE PROFILE'],
+    ['GEOLOCATION ANALYSIS', 'STRATEGIC GEOLOCATION'],
+    ['MARKET ANALYSIS'],
+    ['COMPETITOR INSIGHTS', 'COMPETITIVE ANALYSIS'],
+    
+    // Portuguese
+    ['PERFIL DO PÚBLICO-ALVO', 'PÚBLICO-ALVO DETALHADO'],
+    ['ANÁLISE DE GEOLOCALIZAÇÃO', 'GEOLOCALIZAÇÃO ESTRATÉGICA'],
+    ['ANÁLISE DE MERCADO'],
+    ['INSIGHTS DOS CONCORRENTES', 'ANÁLISE COMPETITIVA'],
+    
+    // Spanish
+    ['PERFIL DETALLADO DEL PÚBLICO OBJETIVO'],
+    ['GEOLOCALIZACIÓN ESTRATÉGICA'],
+    ['ANÁLISIS DE MERCADO'],
+    ['ANÁLISIS COMPETITIVO']
+  ];
+  
+  // Count how many section types are found
+  let foundSections = 0;
+  
+  for (const sectionVariants of expectedSections) {
+    if (sectionVariants.some(header => upperText.includes(header))) {
+      foundSections++;
+    }
+  }
+  
+  // Valid if at least 2 of the 4 main section types are found
+  return foundSections >= 2;
 }
 
 serve(async (req) => {
@@ -100,11 +144,9 @@ serve(async (req) => {
     const cacheResult = await checkCache(websiteUrl, platform);
     if (cacheResult) {
       console.log('Found cached result for', websiteUrl);
-      // Validate that the cached result has the expected format (with the four sections)
-      if (cacheResult.data && typeof cacheResult.data === 'string' && 
-          (cacheResult.data.includes('TARGET AUDIENCE PROFILE') || 
-           cacheResult.data.includes('PÚBLICO-ALVO') ||
-           cacheResult.data.includes('PERFIL DETALLADO'))) {
+      
+      // Validate that the cached result has the expected format
+      if (validateAudienceAnalysis(cacheResult.data)) {
         return new Response(
           JSON.stringify({ 
             success: true,
@@ -127,7 +169,7 @@ serve(async (req) => {
     
     const prompt = await getLocalizedPrompt(detectedLanguage, websiteData);
 
-    // Verifique se temos informações suficientes da empresa para gerar uma análise
+    // Verify if we have enough company information to generate an analysis
     if (!websiteData.companyName || 
         (!websiteData.businessDescription && !websiteData.companyDescription)) {
       return new Response(
@@ -145,7 +187,7 @@ serve(async (req) => {
       );
     }
     
-    // Certifique-se que a chave da API está definida
+    // Make sure the API key is defined
     if (!Deno.env.get('OPENAI_API_KEY')) {
       return new Response(
         JSON.stringify({
@@ -163,12 +205,14 @@ serve(async (req) => {
     }
 
     try {
+      console.log('Sending request to OpenAI with prompt...');
+      
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a senior marketing and business development analyst. Respond in ${detectedLanguage}.`
+            content: `You are a senior marketing and business development analyst specializing in audience analysis. Respond in ${detectedLanguage}.`
           },
           {
             role: "user",
@@ -176,18 +220,15 @@ serve(async (req) => {
           }
         ],
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1500
       });
       
       const analysis = completion.choices[0].message.content;
+      console.log('OpenAI response received. Length:', analysis?.length);
       
-      // Valide se a resposta contém todas as seções esperadas
-      const hasRequiredSections = 
-        analysis.includes('TARGET AUDIENCE PROFILE') || 
-        analysis.includes('PÚBLICO-ALVO') ||
-        analysis.includes('PERFIL DETALLADO');
-        
-      if (!hasRequiredSections) {
+      // Validate the OpenAI response is structured correctly
+      if (!validateAudienceAnalysis(analysis || '')) {
+        console.error('OpenAI response validation failed. Response:', analysis?.substring(0, 200) + '...');
         return new Response(
           JSON.stringify({
             success: false,
@@ -203,7 +244,7 @@ serve(async (req) => {
         );
       }
       
-      // Save to cache
+      // Save to cache if valid
       await saveToCache(websiteUrl, platform, analysis);
 
       return new Response(

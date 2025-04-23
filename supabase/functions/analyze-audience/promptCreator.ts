@@ -28,16 +28,18 @@ I'll analyze the following website/company information:
 
 ${platformText}
 
+The report must address the following sections with precision and depth, leveraging industry best practices, analytical frameworks (e.g., SWOT, Porter's Five Forces, Blue Ocean Strategy), and real-world market dynamics. If specific company details are limited, make reasonable assumptions based on the provided context and clearly state them, ensuring the analysis remains grounded and adaptable.
+
 Structure your report with the following four main sections:
 
-1. DETAILED TARGET AUDIENCE PROFILE (PÚBLICO-ALVO DETALHADO)
+1. PUBLIC TARGET PROFILE (PERFIL DO PÚBLICO-ALVO)
 - Demographics: Age range, gender distribution, income level, education, and relevant professions
 - Psychographics: Core desires, values, motivations, and pain points related to the company's offerings
 - Lifestyle: Daily habits, hobbies, media consumption patterns, and social affiliations
 - Concerns: Key worries or challenges related to the industry or product category
 - Social Groups: Specific communities or subcultures likely to engage with the brand
 
-2. STRATEGIC GEOLOCATION (GEOLOCALIZAÇÃO ESTRATÉGICA)
+2. GEOLOCATION ANALYSIS (ANÁLISE DE GEOLOCALIZAÇÃO)
 - Primary Markets: Key cities, regions, or countries where the target audience is concentrated
 - Market Accessibility: Factors that make these locations viable for targeting
 - Growth Potential: Emerging regions or underserved areas with high potential
@@ -50,7 +52,7 @@ Structure your report with the following four main sections:
 - Growth Opportunities: Specific areas for expansion
 - Niche Markets: Micro-segments with unique needs that can be targeted
 
-4. COMPETITIVE ANALYSIS (ANÁLISE COMPETITIVA)
+4. COMPETITOR INSIGHTS (INSIGHTS DOS CONCORRENTES)
 - Key Competitors: Identify 3-5 primary competitors (direct and indirect)
 - Diferenciais Competitivos: Analyze each competitor's unique strengths and weaknesses
 - Posicionamento de Mercado: Describe how competitors position themselves

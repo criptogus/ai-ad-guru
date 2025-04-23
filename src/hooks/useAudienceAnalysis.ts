@@ -81,22 +81,34 @@ export const useAudienceAnalysis = () => {
 
       console.log('Audience analysis result:', data);
       
-      // Validate that we have actual analysis text
-      if (!data.data || typeof data.data !== 'string' || data.data.trim().length < 50) {
-        const errorMsg = "OpenAI did not return a valid analysis";
+      // Validate that we have actual analysis text with detailed checks
+      if (!data.data || typeof data.data !== 'string' || data.data.trim().length < 100) {
+        const errorMsg = "OpenAI did not return a valid analysis (text too short or missing)";
         setAnalysisError(errorMsg);
         throw new Error(errorMsg);
       }
       
-      // Verificar se o texto tem a estrutura esperada
-      const hasExpectedStructure = 
-        data.data.includes('TARGET AUDIENCE PROFILE') || 
-        data.data.includes('PÚBLICO-ALVO') || 
-        data.data.includes('ANÁLISE DE MERCADO') ||
-        data.data.includes('PERFIL DETALLADO');
+      // Verify if the text has the expected structure with more precise checking
+      const expectedSections = [
+        // Check for the existence of any of these headers in different languages
+        ['PUBLIC TARGET PROFILE', 'PERFIL DO PÚBLICO-ALVO', 'PERFIL DETALLADO DEL PÚBLICO OBJETIVO'], 
+        ['GEOLOCATION ANALYSIS', 'ANÁLISE DE GEOLOCALIZAÇÃO', 'GEOLOCALIZACIÓN ESTRATÉGICA'],
+        ['MARKET ANALYSIS', 'ANÁLISE DE MERCADO', 'ANÁLISIS DE MERCADO'],
+        ['COMPETITOR INSIGHTS', 'INSIGHTS DOS CONCORRENTES', 'ANÁLISIS COMPETITIVO', 'ANÁLISE COMPETITIVA']
+      ];
       
-      if (!hasExpectedStructure) {
-        const errorMsg = "Response does not contain the expected analysis structure";
+      let hasValidStructure = false;
+      const analysisText = data.data.toUpperCase();
+      
+      // Check if at least 2 of the expected sections are present
+      const foundSections = expectedSections.filter(sectionVariants => 
+        sectionVariants.some(header => analysisText.includes(header))
+      );
+      
+      hasValidStructure = foundSections.length >= 2;
+      
+      if (!hasValidStructure) {
+        const errorMsg = "OpenAI response does not contain the expected analysis structure";
         setAnalysisError(errorMsg);
         throw new Error(errorMsg);
       }

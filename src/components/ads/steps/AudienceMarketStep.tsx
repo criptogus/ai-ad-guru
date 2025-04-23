@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader, Sparkles } from "lucide-react";
+import { Loader, Sparkles, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AudienceMarketStepProps {
   campaignData: any;
@@ -29,42 +30,56 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     marketAnalysis: campaignData.marketAnalysis || "",
     competitorInsights: campaignData.competitorInsights || ""
   });
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // Function to generate audience insights with AI
   const generateAudienceInsights = async () => {
     setIsGenerating(true);
+    setAnalysisError(null);
     
     try {
       // If we already have audience analysis data, use that
       if (analysisResult?.audienceAnalysis?.analysisText) {
         const analysisText = analysisResult.audienceAnalysis.analysisText;
         
+        // Check if the analysis text has the required sections
+        if (!isValidAnalysisStructure(analysisText)) {
+          setAnalysisError("A análise da OpenAI não contém as seções necessárias. Tente novamente ou preencha manualmente.");
+          throw new Error("Invalid analysis structure from OpenAI");
+        }
+        
         // Extract sections from the analysis text
         const audienceProfile = extractSection(analysisText, 
-          ["DETAILED TARGET AUDIENCE PROFILE", "PERFIL DO PÚBLICO-ALVO DETALHADO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO"],
-          ["STRATEGIC GEOLOCATION", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"]
+          ["DETAILED TARGET AUDIENCE PROFILE", "PUBLIC TARGET PROFILE", "PERFIL DO PÚBLICO-ALVO", "PERFIL DETALLADO DEL PÚBLICO OBJETIVO"],
+          ["STRATEGIC GEOLOCATION", "GEOLOCATION ANALYSIS", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"]
         );
         
         const geolocation = extractSection(analysisText,
-          ["STRATEGIC GEOLOCATION", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"],
+          ["STRATEGIC GEOLOCATION", "GEOLOCATION ANALYSIS", "GEOLOCALIZAÇÃO ESTRATÉGICA", "GEOLOCALIZACIÓN ESTRATÉGICA"],
           ["MARKET ANALYSIS", "ANÁLISE DE MERCADO", "ANÁLISIS DE MERCADO"]
         );
         
         const marketAnalysis = extractSection(analysisText,
           ["MARKET ANALYSIS", "ANÁLISE DE MERCADO", "ANÁLISIS DE MERCADO"],
-          ["COMPETITIVE ANALYSIS", "ANÁLISE COMPETITIVA", "ANÁLISIS COMPETITIVO"]
+          ["COMPETITIVE ANALYSIS", "COMPETITOR INSIGHTS", "ANÁLISE COMPETITIVA", "INSIGHTS DOS CONCORRENTES", "ANÁLISIS COMPETITIVO"]
         );
         
         const competitorInsights = extractSection(analysisText,
-          ["COMPETITIVE ANALYSIS", "ANÁLISE COMPETITIVA", "ANÁLISIS COMPETITIVO"],
+          ["COMPETITIVE ANALYSIS", "COMPETITOR INSIGHTS", "ANÁLISE COMPETITIVA", "INSIGHTS DOS CONCORRENTES", "ANÁLISIS COMPETITIVO"],
           []
         );
         
+        // Validate that we have at least some content from the OpenAI response
+        if (!audienceProfile && !geolocation && !marketAnalysis && !competitorInsights) {
+          setAnalysisError("Não foi possível extrair informações válidas da análise da OpenAI");
+          throw new Error("Failed to extract valid information from OpenAI analysis");
+        }
+        
         setAudienceData({
-          audienceProfile: audienceProfile || generateAudienceProfile(),
-          geolocation: geolocation || generateGeolocation(),
-          marketAnalysis: marketAnalysis || generateMarketAnalysis(),
-          competitorInsights: competitorInsights || generateCompetitorInsights()
+          audienceProfile: audienceProfile || campaignData.audienceProfile || "",
+          geolocation: geolocation || campaignData.geolocation || "",
+          marketAnalysis: marketAnalysis || campaignData.marketAnalysis || "",
+          competitorInsights: competitorInsights || campaignData.competitorInsights || ""
         });
         
         toast.success("Insights de público gerados com sucesso!");
@@ -85,10 +100,10 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           
           if (data) {
             setAudienceData({
-              audienceProfile: `Faixa etária: ${data.ageRange || '25-54'}, Gênero: ${translateGender(data.gender) || 'todos'}. ${campaignData.audienceProfile || generateAudienceProfile()}`,
-              geolocation: data.locations || generateGeolocation(),
-              marketAnalysis: campaignData.marketAnalysis || generateMarketAnalysis(),
-              competitorInsights: campaignData.competitorInsights || generateCompetitorInsights()
+              audienceProfile: `Faixa etária: ${data.ageRange || '25-54'}, Gênero: ${translateGender(data.gender) || 'todos'}. ${campaignData.audienceProfile || ''}`,
+              geolocation: data.locations || campaignData.geolocation || '',
+              marketAnalysis: campaignData.marketAnalysis || '',
+              competitorInsights: campaignData.competitorInsights || ''
             });
             
             toast.success("Recomendações de público-alvo geradas com sucesso!");
@@ -96,26 +111,48 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           }
         } catch (err) {
           console.error("Error generating targeting:", err);
-          // Fall back to default generation if API fails
+          setAnalysisError("Falha ao gerar recomendações de público-alvo. Tente novamente ou preencha manualmente.");
         }
+      } else {
+        setAnalysisError("Dados insuficientes para gerar análise de público-alvo. Adicione uma descrição do negócio ou URL do site.");
       }
-      
-      // Use fallback generation method if we don't have structured data
-      setAudienceData({
-        audienceProfile: generateAudienceProfile(),
-        geolocation: generateGeolocation(),
-        marketAnalysis: generateMarketAnalysis(),
-        competitorInsights: generateCompetitorInsights()
-      });
-      
-      toast.success("Insights de público gerados com sucesso!");
       
     } catch (error) {
       console.error("Error generating audience insights:", error);
-      toast.error("Erro ao gerar insights de público.");
+      if (!analysisError) {
+        setAnalysisError("Erro ao gerar insights de público-alvo.");
+      }
     } finally {
       setIsGenerating(false);
     }
+  };
+  
+  // Helper function to check if the analysis text has a valid structure
+  const isValidAnalysisStructure = (text: string): boolean => {
+    if (!text || typeof text !== 'string' || text.length < 100) {
+      return false;
+    }
+    
+    const upperText = text.toUpperCase();
+    
+    // Define expected section headers in different languages
+    const expectedSections = [
+      // English, Portuguese, Spanish
+      ['PUBLIC TARGET PROFILE', 'PERFIL DO PÚBLICO-ALVO', 'PERFIL DETALLADO DEL PÚBLICO OBJETIVO', 'DETAILED TARGET AUDIENCE PROFILE'],
+      ['GEOLOCATION ANALYSIS', 'GEOLOCALIZAÇÃO ESTRATÉGICA', 'GEOLOCALIZACIÓN ESTRATÉGICA', 'STRATEGIC GEOLOCATION'],
+      ['MARKET ANALYSIS', 'ANÁLISE DE MERCADO', 'ANÁLISIS DE MERCADO'],
+      ['COMPETITOR INSIGHTS', 'ANÁLISE COMPETITIVA', 'INSIGHTS DOS CONCORRENTES', 'ANÁLISIS COMPETITIVO', 'COMPETITIVE ANALYSIS']
+    ];
+    
+    // Check if at least 2 of the expected sections are present
+    let foundSections = 0;
+    for (const sectionVariants of expectedSections) {
+      if (sectionVariants.some(header => upperText.includes(header))) {
+        foundSections++;
+      }
+    }
+    
+    return foundSections >= 2;
   };
   
   // Helper function to extract sections from analysis text
@@ -124,10 +161,11 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     
     let startIndex = -1;
     let endIndex = text.length;
+    const upperText = text.toUpperCase();
     
     // Find the start of the section
     for (const header of sectionHeaders) {
-      const index = text.indexOf(header);
+      const index = upperText.indexOf(header);
       if (index !== -1 && (startIndex === -1 || index < startIndex)) {
         startIndex = index;
       }
@@ -136,7 +174,7 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     // Find the end of the section (start of next section)
     if (nextSectionHeaders.length > 0) {
       for (const header of nextSectionHeaders) {
-        const index = text.indexOf(header);
+        const index = upperText.indexOf(header);
         if (index !== -1 && index > startIndex && index < endIndex) {
           endIndex = index;
         }
@@ -168,36 +206,12 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
       default: return gender;
     }
   };
-  
-  // Helper functions to generate sample content based on campaign data
-  const generateAudienceProfile = () => {
-    const industry = campaignData.industry || "";
-    const businessType = campaignData.businessType || "";
-    
-    if (industry.toLowerCase().includes("marketing")) {
-      return "Profissionais de marketing entre 25-45 anos, gerentes e diretores de marketing, pequenos empresários que buscam aumentar sua presença digital. Possuem conhecimento intermediário em marketing digital e estão interessados em melhorar seu ROI.";
-    } else {
-      return `Pessoas interessadas em ${industry}, com poder de decisão de compra, faixa etária de 25-55 anos, que valorizam qualidade e resultados comprovados. Buscam soluções para otimizar seus processos e aumentar sua eficiência.`;
-    }
-  };
-  
-  const generateGeolocation = () => {
-    return "Principais capitais do Brasil, com foco em São Paulo, Rio de Janeiro, Belo Horizonte, Brasília e Porto Alegre. Áreas urbanas com alta concentração de empresas e profissionais do setor.";
-  };
-  
-  const generateMarketAnalysis = () => {
-    const industry = campaignData.industry || "";
-    return `O mercado de ${industry} está em crescimento constante, com taxa média de 8% ao ano. Há uma tendência crescente de digitalização e automação. Os clientes estão cada vez mais exigentes quanto à qualidade dos serviços e buscam parceiros que ofereçam soluções completas e personalizadas.`;
-  };
-  
-  const generateCompetitorInsights = () => {
-    return "Os principais concorrentes focam em preço baixo, mas frequentemente comprometem a qualidade. Existe uma oportunidade para se destacar oferecendo serviços premium com resultados mensuráveis. A maioria dos concorrentes não oferece suporte contínuo após a venda, o que pode ser um diferencial competitivo.";
-  };
 
   useEffect(() => {
     // If analysis result is available but no audience data has been set yet, 
     // auto-generate on component mount
-    if ((analysisResult?.audienceAnalysis || campaignData?.websiteUrl) && !audienceData.audienceProfile) {
+    if ((analysisResult?.audienceAnalysis || campaignData?.websiteUrl) && 
+        !audienceData.audienceProfile && !isGenerating) {
       generateAudienceInsights();
     }
   }, []);
@@ -246,6 +260,13 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
         Defina seu público-alvo e obtenha insights sobre o mercado. Nossa IA pode gerar sugestões
         baseadas na sua indústria e descrição do negócio.
       </p>
+
+      {analysisError && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{analysisError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-4 mt-6">
         <div>

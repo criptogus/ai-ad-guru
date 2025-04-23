@@ -3,7 +3,7 @@ import React from "react";
 import { AudienceAnalysisResult as AudienceResult } from "@/hooks/useAudienceAnalysis";
 import EditableAnalysisText from "./EditableAnalysisText";
 import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface AudienceAnalysisResultProps {
   analysisResult: AudienceResult;
@@ -20,12 +20,33 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
   websiteData,
   isAnalyzing
 }) => {
-  // Validar se temos uma análise real da OpenAI ou um placeholder genérico
-  const isGenericText = !analysisResult?.analysisText || 
-    analysisResult.analysisText.length < 50 ||
-    (!analysisResult.analysisText.includes('PÚBLICO-ALVO') && 
-     !analysisResult.analysisText.includes('TARGET AUDIENCE') && 
-     !analysisResult.analysisText.includes('PERFIL DETALLADO'));
+  // Verify if we have a real OpenAI analysis or a generic placeholder
+  const isValidAnalysis = () => {
+    if (!analysisResult?.analysisText || analysisResult.analysisText.length < 100) {
+      return false;
+    }
+    
+    const analysisText = analysisResult.analysisText.toUpperCase();
+    
+    // Check for required sections in different languages
+    const requiredSections = [
+      // Combinations of different possible section headers in different languages
+      ['PUBLIC TARGET PROFILE', 'PERFIL DO PÚBLICO-ALVO', 'PERFIL DETALLADO DEL PÚBLICO OBJETIVO'],
+      ['GEOLOCATION ANALYSIS', 'ANÁLISE DE GEOLOCALIZAÇÃO', 'GEOLOCALIZACIÓN ESTRATÉGICA'],
+      ['MARKET ANALYSIS', 'ANÁLISE DE MERCADO', 'ANÁLISIS DE MERCADO'],
+      ['COMPETITOR INSIGHTS', 'INSIGHTS DOS CONCORRENTES', 'ANÁLISE COMPETITIVA', 'ANÁLISIS COMPETITIVO']
+    ];
+    
+    // Count how many of the required sections are found
+    const foundSections = requiredSections.filter(sectionOptions => 
+      sectionOptions.some(header => analysisText.includes(header))
+    ).length;
+    
+    // Valid if at least 2 of the 4 section types are found
+    return foundSections >= 2;
+  };
+  
+  const isGenericText = !isValidAnalysis();
   
   // Format analysis text as HTML if it contains markdown-like syntax
   const formatAnalysisText = (text: string) => {
@@ -46,31 +67,43 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
     
     // Replace sections specifically for our audience analysis
     formattedText = formattedText
-      .replace(/1\.\s*PERFIL DO PÚBLICO-ALVO DETALHADO/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DO PÚBLICO-ALVO DETALHADO</h2>')
-      .replace(/1\.\s*DETAILED TARGET AUDIENCE PROFILE/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">DETAILED TARGET AUDIENCE PROFILE</h2>')
-      .replace(/1\.\s*PERFIL DETALLADO DEL PÚBLICO OBJETIVO/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DETALLADO DEL PÚBLICO OBJETIVO</h2>')
-               
+      // Portuguese
+      .replace(/1\.\s*PERFIL DO PÚBLICO-ALVO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DO PÚBLICO-ALVO</h2>')
+      .replace(/2\.\s*ANÁLISE DE GEOLOCALIZAÇÃO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISE DE GEOLOCALIZAÇÃO</h2>')
       .replace(/2\.\s*GEOLOCALIZAÇÃO ESTRATÉGICA/gi, 
                '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCALIZAÇÃO ESTRATÉGICA</h2>')
-      .replace(/2\.\s*STRATEGIC GEOLOCATION/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">STRATEGIC GEOLOCATION</h2>')
-      .replace(/2\.\s*GEOLOCALIZACIÓN ESTRATÉGICA/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCALIZACIÓN ESTRATÉGICA</h2>')
-               
       .replace(/3\.\s*ANÁLISE DE MERCADO/gi, 
                '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISE DE MERCADO</h2>')
-      .replace(/3\.\s*MARKET ANALYSIS/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">MARKET ANALYSIS</h2>')
-      .replace(/3\.\s*ANÁLISIS DE MERCADO/gi, 
-               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISIS DE MERCADO</h2>')
-               
       .replace(/4\.\s*ANÁLISE COMPETITIVA/gi, 
                '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISE COMPETITIVA</h2>')
+      .replace(/4\.\s*INSIGHTS DOS CONCORRENTES/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">INSIGHTS DOS CONCORRENTES</h2>')
+               
+      // English
+      .replace(/1\.\s*PUBLIC TARGET PROFILE/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PUBLIC TARGET PROFILE</h2>')
+      .replace(/1\.\s*DETAILED TARGET AUDIENCE PROFILE/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">DETAILED TARGET AUDIENCE PROFILE</h2>')
+      .replace(/2\.\s*GEOLOCATION ANALYSIS/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCATION ANALYSIS</h2>')
+      .replace(/2\.\s*STRATEGIC GEOLOCATION/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">STRATEGIC GEOLOCATION</h2>')
+      .replace(/3\.\s*MARKET ANALYSIS/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">MARKET ANALYSIS</h2>')
       .replace(/4\.\s*COMPETITIVE ANALYSIS/gi, 
                '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">COMPETITIVE ANALYSIS</h2>')
+      .replace(/4\.\s*COMPETITOR INSIGHTS/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">COMPETITOR INSIGHTS</h2>')
+               
+      // Spanish
+      .replace(/1\.\s*PERFIL DETALLADO DEL PÚBLICO OBJETIVO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">PERFIL DETALLADO DEL PÚBLICO OBJETIVO</h2>')
+      .replace(/2\.\s*GEOLOCALIZACIÓN ESTRATÉGICA/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">GEOLOCALIZACIÓN ESTRATÉGICA</h2>')
+      .replace(/3\.\s*ANÁLISIS DE MERCADO/gi, 
+               '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISIS DE MERCADO</h2>')
       .replace(/4\.\s*ANÁLISIS COMPETITIVO/gi, 
                '<h2 class="text-xl font-bold mt-5 mb-3 text-primary">ANÁLISIS COMPETITIVO</h2>');
 
@@ -115,8 +148,10 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
       ) : isGenericText ? (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Formato de análise inválido</AlertTitle>
           <AlertDescription>
-            Não foi possível obter uma análise de público-alvo válida da OpenAI. Por favor, tente novamente ou preencha manualmente.
+            A resposta da OpenAI não contém as seções de análise necessárias ou está incompleta. 
+            Por favor, tente novamente ou preencha as informações manualmente.
           </AlertDescription>
         </Alert>
       ) : (
