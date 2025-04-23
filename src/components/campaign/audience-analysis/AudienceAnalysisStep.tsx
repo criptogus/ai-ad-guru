@@ -20,9 +20,10 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   onBack,
   onNext
 }) => {
-  const { analyzeAudience, isAnalyzing, analysisResult: audienceResult, cacheInfo } = useAudienceAnalysis();
-  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>("all");
+  const { analyzeAudience, isAnalyzing, analysisResult: audienceResult, cacheInfo, setAnalysisResult } = useAudienceAnalysis();
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const { setAudienceAnalysisResult, setAudienceCacheInfo } = useCampaign();
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   
   // Initialize form for any form controls in AudienceAnalysisPanel
   const methods = useForm({
@@ -32,24 +33,39 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
   });
 
   const handleAnalyze = async (platform?: string) => {
-    if (!analysisResult) return;
+    if (!analysisResult) {
+      setAnalysisError("Website analysis result is required");
+      return;
+    }
     
+    setAnalysisError(null);
     setSelectedPlatform(platform || "all");
-    const result = await analyzeAudience(analysisResult, platform);
     
-    // Update the campaign context with the analysis result
-    if (result) {
-      setAudienceAnalysisResult(result);
-      if (cacheInfo) {
-        setAudienceCacheInfo(cacheInfo);
+    try {
+      const result = await analyzeAudience(analysisResult, platform);
+      
+      // Update the campaign context with the analysis result
+      if (result) {
+        setAudienceAnalysisResult(result);
+        if (cacheInfo) {
+          setAudienceCacheInfo(cacheInfo);
+        }
+      } else {
+        setAnalysisError("Failed to analyze audience");
       }
+    } catch (error) {
+      console.error("Error analyzing audience:", error);
+      setAnalysisError(error instanceof Error ? error.message : "An unexpected error occurred");
     }
   };
 
   // Run initial analysis when component mounts
   useEffect(() => {
     if (analysisResult && !audienceResult && !isAnalyzing) {
-      handleAnalyze();
+      handleAnalyze().catch(err => {
+        console.error("Error in initial audience analysis:", err);
+        setAnalysisError(err instanceof Error ? err.message : "Failed to analyze audience");
+      });
     }
   }, [analysisResult, audienceResult, isAnalyzing]);
 
@@ -86,6 +102,12 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
         </CardHeader>
         
         <CardContent className="pt-4">
+          {analysisError && (
+            <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-md">
+              <p className="text-sm">Error: {analysisError}</p>
+            </div>
+          )}
+          
           {analysisResult && (
             <AudienceAnalysisPanel
               websiteData={analysisResult}
@@ -107,7 +129,11 @@ const AudienceAnalysisStep: React.FC<AudienceAnalysisStepProps> = ({
               Step 4 of 7
             </span>
             
-            <Button onClick={handleNextClick} className="flex items-center" disabled={!audienceResult}>
+            <Button 
+              onClick={handleNextClick} 
+              className="flex items-center" 
+              disabled={!audienceResult}
+            >
               Next Step
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>

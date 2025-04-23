@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,13 @@ export interface AudienceAnalysisResult {
   fromCache?: boolean;
   cachedAt?: string;
   language?: string;
+  demographics?: any;
+  interests?: any;
+  painPoints?: any;
+  decisionFactors?: any;
+  marketSize?: any;
+  competitors?: any;
+  geolocation?: any;
 }
 
 export interface AudienceCacheInfo {
@@ -28,7 +36,10 @@ export const useAudienceAnalysis = () => {
     websiteData: WebsiteAnalysisResult,
     platform?: string
   ): Promise<AudienceAnalysisResult | null> => {
+    // Limpar estados antes de iniciar uma nova análise
     setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setCacheInfo(null);
     
     try {
       if (!websiteData) {
@@ -51,21 +62,36 @@ export const useAudienceAnalysis = () => {
         throw error;
       }
 
+      // Validar o objeto retornado
+      if (!data || typeof data !== 'object') {
+        throw new Error("Invalid response from audience analysis function");
+      }
+
       console.log('Audience analysis result:', data);
       
+      // Incluir todos os campos estruturados retornados da API
       const processedData: AudienceAnalysisResult = {
         success: true,
         platform: platform || 'all',
         analysisText: data.data || "",
         fromCache: data.fromCache || false,
         cachedAt: data.cachedAt,
-        language: language
+        language: language,
+        // Incluir campos estruturados opcionais
+        demographics: data.demographics,
+        interests: data.interests,
+        painPoints: data.painPoints,
+        decisionFactors: data.decisionFactors,
+        marketSize: data.marketSize,
+        competitors: data.competitors,
+        geolocation: data.geolocation
       };
       
       setAnalysisResult(processedData);
       
-      if (data.fromCache) {
-        // Calculate expiration date (30 days from cached date)
+      // Verificar se data.fromCache e data.cachedAt existem antes de criar o objeto Date
+      if (data.fromCache && data.cachedAt) {
+        // Calcular expiration date (30 dias após a data de cache)
         const cachedAt = new Date(data.cachedAt);
         const expiresAt = new Date(cachedAt);
         expiresAt.setDate(expiresAt.getDate() + 30);
@@ -96,7 +122,7 @@ export const useAudienceAnalysis = () => {
       console.error('Error in analyzeAudience:', error);
       toast({
         title: "Analysis Failed",
-        description: error.message || "Failed to analyze audience. Please try again.",
+        description: error?.message || String(error) || "Failed to analyze audience. Please try again.",
         variant: "destructive",
       });
       return null;
@@ -110,6 +136,7 @@ export const useAudienceAnalysis = () => {
     isAnalyzing,
     analysisResult,
     setAnalysisResult,
-    cacheInfo
+    cacheInfo,
+    setCacheInfo // Adicionando o setter para acesso externo, se necessário
   };
 };
