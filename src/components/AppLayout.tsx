@@ -4,6 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SidebarNavigation from "@/components/navigation/SidebarNavigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   
-  console.log("AppLayout rendering with activePage:", activePage, "withSidebar:", withSidebar); // Add logging
+  console.log("AppLayout rendering with activePage:", activePage, "withSidebar:", withSidebar);
   
   // If withSidebar is false, just return the children without the sidebar
   if (!withSidebar) {
@@ -31,18 +32,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }
   
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-background dark:bg-gray-900">
-      <TooltipProvider>
-        <SidebarNavigation activePage={activePage} />
-      </TooltipProvider>
+    <SidebarProvider>
+      <div className="h-screen w-full flex overflow-hidden bg-background dark:bg-gray-900">
+        <TooltipProvider>
+          <SidebarNavigation />
+        </TooltipProvider>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="w-full h-full overflow-y-auto p-6">
-          {children}
-        </div>
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden flex flex-col">
+          <div className="w-full h-full overflow-y-auto p-6">
+            {children}
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 

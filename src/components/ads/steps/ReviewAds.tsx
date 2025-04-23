@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, CheckCircle, Edit } from "lucide-react";
+import { CheckCircle, Edit } from "lucide-react";
 import GoogleAdCard from "@/components/campaign/ad-preview/google/GoogleAdCard";
 import InstagramPreview from "@/components/campaign/ad-preview/meta/instagram-preview/InstagramPreview";
 
@@ -110,7 +110,12 @@ export const ReviewAds = ({ ads, onApprove, onBack }: ReviewAdsProps) => {
                   <div className="p-4">
                     {/* Preview based on platform */}
                     {platform === "google" && (
-                      <GoogleAdCard ad={ad} />
+                      <GoogleAdCard 
+                        ad={ad} 
+                        index={index} 
+                        domain="example.com" 
+                        onUpdateAd={(updatedAd) => handleUpdate(platform, index, updatedAd)} 
+                      />
                     )}
                     {platform === "meta" && (
                       <InstagramPreview

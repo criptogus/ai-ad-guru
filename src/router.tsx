@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
@@ -8,8 +9,19 @@ import {
   Navigate
 } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { MainLayout } from '@/layouts/MainLayout';
-import { Loading } from '@/components/ui/loading/Loading';
+import AppLayout from '@/components/AppLayout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Spinner } from 'lucide-react';
+
+// Loading component
+const Loading = () => (
+  <Card className="w-full h-full flex items-center justify-center">
+    <CardContent className="p-12">
+      <Spinner className="h-8 w-8 animate-spin" />
+      <p className="mt-2 text-center">Carregando...</p>
+    </CardContent>
+  </Card>
+);
 
 // Lazy load components for route-based code splitting
 const HomePage = lazy(() => import('@/pages/HomePage'));
@@ -17,38 +29,34 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
 const ConnectionsPage = lazy(() => import('@/pages/ConnectionsPage'));
-const CampaignCreatePage = lazy(() => import('@/pages/CampaignCreatePage'));
+const CreateCampaignPage = lazy(() => import('@/pages/CreateCampaignPage'));
 const CampaignsPage = lazy(() => import('@/pages/CampaignsPage'));
-const CampaignDetailsPage = lazy(() => import('@/pages/CampaignDetailsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
-const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
-const SecurityLogsPage = lazy(() => import('@/pages/SecurityLogsPage'));
 
 // Import the new page
 import AdManagerPage from "@/pages/AdManagerPage";
 
 // ProtectedRoute component to handle authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
-  if (loading) {
-    return <Loading />;
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
-  return user ? <MainLayout><Suspense fallback={<Loading />}>{children}</Suspense></MainLayout> : <Navigate to="/login" />;
+  return <AppLayout><Suspense fallback={<Loading />}>{children}</Suspense></AppLayout>;
 };
 
 // PublicRoute component to restrict access to authenticated users
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
-  if (loading) {
-    return <Loading />;
+  if (user) {
+    return <Navigate to="/" />;
   }
 
-  return !user ? <Suspense fallback={<Loading />}>{children}</Suspense> : <Navigate to="/" />;
+  return <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 
 // Router configuration
@@ -60,13 +68,9 @@ const router = createBrowserRouter(
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-      <Route path="/campaign/create" element={<ProtectedRoute><CampaignCreatePage /></ProtectedRoute>} />
+      <Route path="/campaign/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-      <Route path="/campaigns/:id" element={<ProtectedRoute><CampaignDetailsPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-      <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
-      <Route path="/security-logs" element={<ProtectedRoute><SecurityLogsPage /></ProtectedRoute>} />
       
       {/* Add the new route to the routes array */}
       <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
