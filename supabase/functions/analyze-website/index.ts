@@ -223,7 +223,7 @@ serve(async (req) => {
       5. Keywords (5-10 relevant keywords)
       6. Call to Action phrases (2-4 phrases)
       7. Unique Selling Points (3-5 points)
-      8. Industry category
+      8. Industry category - This must be a standard industry category like "Education", "Health", "Finance", "Technology", "Retail", "Marketing", "Real Estate", etc. Do NOT use terms like "professional" or adjectives here - only use industry vertical categories.
       
       Website Title: ${websiteData.title}
       Website Description: ${websiteData.description}
@@ -247,6 +247,7 @@ serve(async (req) => {
       }
       
       If you can't determine something, make an educated guess based on the available content.
+      For the "industry" field, ONLY use a standard industry category name (like "Education", "Healthcare", "Technology", etc.) NOT descriptive adjectives.
       Do not include explanations, just the JSON object.
       Respond in the primary language of the website content.
     `;

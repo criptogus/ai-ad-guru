@@ -54,10 +54,10 @@ const EditableAnalysisText: React.FC<EditableAnalysisTextProps> = ({
         <Textarea
           value={editedText}
           onChange={(e) => setEditedText(e.target.value)}
-          className="min-h-[500px] p-4 border-0 rounded-none focus-visible:ring-0"
+          className="min-h-[500px] p-4 border-0 rounded-none focus-visible:ring-0 dark:bg-gray-900 dark:text-gray-100"
         />
       ) : (
-        <ScrollArea className="h-[500px]">
+        <ScrollArea className="h-[500px] w-full">
           <div 
             className="prose prose-sm max-w-none dark:prose-invert p-6"
             dangerouslySetInnerHTML={{ __html: formattedHtml }}
