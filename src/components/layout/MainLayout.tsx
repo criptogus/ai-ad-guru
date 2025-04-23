@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import MobileSidebarToggle from "@/components/MobileSidebarToggle";
+import { Sidebar } from "@/components/Sidebar";
+import { MobileSidebarToggle } from "@/components/MobileSidebarToggle";
 import { cn } from "@/lib/utils";
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -13,13 +13,13 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <Sidebar
         isOpen={sidebarOpen}
         isCollapsed={sidebarCollapsed}
-        toggleCollapse={() => setSidebarCollapsed((v) => !v)}
+        toggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onClose={() => setSidebarOpen(false)}
       />
       <MobileSidebarToggle onOpen={() => setSidebarOpen(true)} />
 
       <main className={cn(
-        "flex-1 overflow-y-auto bg-gray-50 dark:bg-background p-6 transition-all duration-300",
+        "flex-1 overflow-y-auto bg-gray-50 dark:bg-background transition-all duration-300 p-4 md:p-6",
         sidebarCollapsed ? "md:ml-16" : "md:ml-64"
       )}>
         {children}
