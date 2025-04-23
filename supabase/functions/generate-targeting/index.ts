@@ -63,12 +63,13 @@ serve(async (req) => {
     console.log("Sending request to OpenAI...");
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns. Respond ONLY with the JSON object requested, without any markdown formatting, explanation text, or code blocks." },
         { role: "user", content: prompt }
       ],
       temperature: 0.7,
+      response_format: { type: "json_object" }
     });
     
     const responseText = response.choices[0].message.content;
@@ -89,7 +90,19 @@ serve(async (req) => {
       const targetingData = JSON.parse(jsonText);
       console.log(`Successfully parsed OpenAI response as JSON: ${JSON.stringify(targetingData, null, 2)}`);
       
-      return new Response(JSON.stringify(targetingData), {
+      // Ensure consistent data structure
+      const formattedData = {
+        language: targetingData.language || "en",
+        country: targetingData.country || "US",
+        ageRange: targetingData.ageRange || "25-54",
+        gender: targetingData.gender || "all",
+        locations: Array.isArray(targetingData.locations) ? targetingData.locations : 
+                  [targetingData.locations || "No locations provided"],
+        interests: Array.isArray(targetingData.interests) ? targetingData.interests :
+                  [targetingData.interests || "No interests provided"]
+      };
+      
+      return new Response(JSON.stringify(formattedData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     } catch (parseError) {
