@@ -2,6 +2,8 @@
 import React from "react";
 import { AudienceAnalysisResult as AudienceResult } from "@/hooks/useAudienceAnalysis";
 import EditableAnalysisText from "./EditableAnalysisText";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AudienceAnalysisResultProps {
   analysisResult: AudienceResult;
@@ -18,6 +20,13 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
   websiteData,
   isAnalyzing
 }) => {
+  // Validar se temos uma análise real da OpenAI ou um placeholder genérico
+  const isGenericText = !analysisResult?.analysisText || 
+    analysisResult.analysisText.length < 50 ||
+    (!analysisResult.analysisText.includes('PÚBLICO-ALVO') && 
+     !analysisResult.analysisText.includes('TARGET AUDIENCE') && 
+     !analysisResult.analysisText.includes('PERFIL DETALLADO'));
+  
   // Format analysis text as HTML if it contains markdown-like syntax
   const formatAnalysisText = (text: string) => {
     if (!text) return '';
@@ -82,7 +91,7 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
   };
 
   // Extract the analysis text from the result
-  const analysisText = analysisResult.analysisText || "";
+  const analysisText = analysisResult?.analysisText || "";
   const formattedText = formatAnalysisText(analysisText);
 
   // Handle text changes if the component is editable
@@ -103,6 +112,13 @@ const AudienceAnalysisResult: React.FC<AudienceAnalysisResultProps> = ({
             <div className="h-4 bg-muted-foreground/20 rounded w-4/6"></div>
           </div>
         </div>
+      ) : isGenericText ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Não foi possível obter uma análise de público-alvo válida da OpenAI. Por favor, tente novamente ou preencha manualmente.
+          </AlertDescription>
+        </Alert>
       ) : (
         <EditableAnalysisText 
           text={analysisText} 

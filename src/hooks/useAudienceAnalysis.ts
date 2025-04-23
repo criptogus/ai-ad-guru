@@ -30,6 +30,7 @@ export const useAudienceAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AudienceAnalysisResult | null>(null);
   const [cacheInfo, setCacheInfo] = useState<AudienceCacheInfo | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const analyzeAudience = async (
@@ -40,6 +41,7 @@ export const useAudienceAnalysis = () => {
     setIsAnalyzing(true);
     setAnalysisResult(null);
     setCacheInfo(null);
+    setAnalysisError(null);
     
     try {
       if (!websiteData) {
@@ -59,15 +61,45 @@ export const useAudienceAnalysis = () => {
 
       if (error) {
         console.error('Error analyzing audience:', error);
+        setAnalysisError(error.message || 'Failed to connect to audience analysis service');
         throw error;
       }
 
       // Validate the returned object
       if (!data || typeof data !== 'object') {
-        throw new Error("Invalid response from audience analysis function");
+        const errorMsg = "Invalid response from audience analysis function";
+        setAnalysisError(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      // Check for API-level error
+      if (!data.success) {
+        const errorMsg = data.error || "API returned an error without details";
+        setAnalysisError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       console.log('Audience analysis result:', data);
+      
+      // Validate that we have actual analysis text
+      if (!data.data || typeof data.data !== 'string' || data.data.trim().length < 50) {
+        const errorMsg = "OpenAI did not return a valid analysis";
+        setAnalysisError(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      // Verificar se o texto tem a estrutura esperada
+      const hasExpectedStructure = 
+        data.data.includes('TARGET AUDIENCE PROFILE') || 
+        data.data.includes('PÚBLICO-ALVO') || 
+        data.data.includes('ANÁLISE DE MERCADO') ||
+        data.data.includes('PERFIL DETALLADO');
+      
+      if (!hasExpectedStructure) {
+        const errorMsg = "Response does not contain the expected analysis structure";
+        setAnalysisError(errorMsg);
+        throw new Error(errorMsg);
+      }
       
       // Include all structured fields returned from the API
       const processedData: AudienceAnalysisResult = {
@@ -103,8 +135,8 @@ export const useAudienceAnalysis = () => {
         });
         
         toast({
-          title: "Using Cached Analysis",
-          description: "Using previously analyzed audience data for this website",
+          title: "Usando análise em cache",
+          description: "Utilizando dados de análise de público previamente analisados para este site",
         });
       } else {
         setCacheInfo({
@@ -112,17 +144,19 @@ export const useAudienceAnalysis = () => {
         });
         
         toast({
-          title: "Analysis Complete",
-          description: `Audience targeting analysis for ${platform || 'all platforms'} completed successfully`,
+          title: "Análise Completa",
+          description: `Análise de público-alvo para ${platform || 'todas as plataformas'} concluída com sucesso`,
         });
       }
       
       return processedData;
     } catch (error: any) {
       console.error('Error in analyzeAudience:', error);
+      setAnalysisError(error?.message || String(error) || "Failed to analyze audience");
+      
       toast({
-        title: "Analysis Failed",
-        description: error?.message || String(error) || "Failed to analyze audience. Please try again.",
+        title: "Falha na Análise",
+        description: error?.message || String(error) || "Falha ao analisar o público-alvo. Tente novamente.",
         variant: "destructive",
       });
       return null;
@@ -137,6 +171,8 @@ export const useAudienceAnalysis = () => {
     analysisResult,
     setAnalysisResult,
     cacheInfo,
-    setCacheInfo // Adding the setter for external access, if needed
+    setCacheInfo,
+    analysisError,
+    setAnalysisError
   };
 };
