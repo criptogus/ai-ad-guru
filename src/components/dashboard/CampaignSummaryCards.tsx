@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Campaign } from "@/models/CampaignTypes";
@@ -22,7 +21,6 @@ interface ExtendedCampaign extends Campaign {
 const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }) => {
   const navigate = useNavigate();
   
-  // Get platform icon
   const getPlatformIcon = (platform: string) => {
     switch(platform?.toLowerCase()) {
       case 'google':
@@ -54,7 +52,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
     }
   };
   
-  // Get status badge style
   const getStatusStyle = (status: string) => {
     switch(status) {
       case "active": return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
@@ -65,7 +62,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
     }
   };
   
-  // Helper function to determine performance trend
   const getPerformanceTrend = (campaign: Campaign) => {
     if (!campaign.performance || campaign.id.includes("3") || campaign.id.includes("6")) {
       return {
@@ -99,7 +95,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
             onClick={() => navigate(`/campaigns/${campaign.id}`)}
           >
             <CardContent className="p-0">
-              {/* Header - More prominence */}
               <div className="p-4 flex items-center justify-between border-b bg-muted/10">
                 <div className="flex items-center gap-3">
                   <div className="bg-muted rounded-full p-2">
@@ -120,7 +115,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                 </div>
               </div>
               
-              {/* Metrics - Now in a grid layout for better space utilization */}
               <div className="p-5">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-5">
                   <div className="flex flex-col">
@@ -177,7 +171,6 @@ const CampaignSummaryCards: React.FC<CampaignSummaryCardsProps> = ({ campaigns }
                   </div>
                 </div>
                 
-                {/* Budget progress */}
                 <div className="mt-4">
                   <div className="flex justify-between mb-1 text-xs">
                     <span>Budget usage</span>

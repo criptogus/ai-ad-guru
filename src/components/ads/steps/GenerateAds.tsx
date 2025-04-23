@@ -80,8 +80,14 @@ export const GenerateAds: React.FC<GenerateAdsProps> = ({ onNext }) => {
       
       setIsGenerating(true);
       
+      // Ensure companyName is always present in the values
+      const generationData = {
+        ...values,
+        companyName: values.companyName || "Default Company Name", // Provide a default if somehow empty
+      };
+      
       // Generate ads via service
-      const generatedAds = await generateAds(values);
+      const generatedAds = await generateAds(generationData);
       
       // Deduct credits
       await deductCredits(creditCost);
