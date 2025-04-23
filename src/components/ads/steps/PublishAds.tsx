@@ -2,8 +2,16 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle, AlertCircle, ArrowRight, RefreshCw } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface PublishAdsProps {
   ads: Record<string, any[]>;
@@ -12,165 +20,254 @@ interface PublishAdsProps {
   onFinish: () => void;
 }
 
-export const PublishAds = ({ ads, campaignData, onBack, onFinish }: PublishAdsProps) => {
-  const [publishing, setPublishing] = useState(false);
-  const [published, setPublished] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export const PublishAds: React.FC<PublishAdsProps> = ({ 
+  ads, 
+  campaignData, 
+  onBack, 
+  onFinish 
+}) => {
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [publishedAds, setPublishedAds] = useState<Record<string, any[]>>({});
+  const { credits, deductCredits } = useCredits();
   
-  const totalAds = Object.values(ads).reduce((total, platformAds) => total + platformAds.length, 0);
-  const platforms = Object.keys(ads);
+  const platformIntegrationStatus = {
+    google: true, // Mocked status for demo
+    meta: true,
+    linkedin: false,
+    microsoft: false
+  };
+  
+  const totalAdsCount = Object.values(ads).reduce(
+    (sum, platformAds) => sum + platformAds.length, 
+    0
+  );
+  
+  const publishCreditCost = 10; // Cost per platform
+  const totalCost = Object.keys(ads).length * publishCreditCost;
   
   const handlePublish = async () => {
-    setPublishing(true);
-    setError(null);
+    if (credits < totalCost) {
+      toast.error("Créditos insuficientes", {
+        description: `Você precisa de ${totalCost} créditos para publicar em ${Object.keys(ads).length} plataformas.`
+      });
+      return;
+    }
     
+    setIsPublishing(true);
+    
+    // Simulate publishing process
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setProgress(currentProgress);
+      
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        completePublishing();
+      }
+    }, 200);
+  };
+  
+  const completePublishing = async () => {
     try {
-      // Simulate API call to publish ads
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // In a real app, this would make API calls to publish the ads
+      // For now, we're just simulating
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Uncomment to simulate error
-      // throw new Error("Falha na publicação do anúncio na plataforma Google Ads. Verifique suas credenciais.");
+      // Deduct credits
+      await deductCredits(totalCost);
       
-      setPublished(true);
-      setPublishing(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao publicar anúncios");
-      setPublishing(false);
+      // Mock successful publishing
+      const published: Record<string, any[]> = {};
+      Object.keys(ads).forEach(platform => {
+        published[platform] = ads[platform].map(ad => ({
+          ...ad,
+          published: true,
+          publishedAt: new Date().toISOString(),
+          externalId: `${platform}-${Math.random().toString(36).substring(2, 10)}`
+        }));
+      });
+      
+      setPublishedAds(published);
+      
+      toast.success("Anúncios publicados com sucesso!", {
+        description: `Foram publicados ${totalAdsCount} anúncios em ${Object.keys(ads).length} plataformas.`
+      });
+      
+      // Wait a moment before finishing
+      setTimeout(() => {
+        onFinish();
+      }, 2000);
+    } catch (error) {
+      console.error("Error publishing ads:", error);
+      toast.error("Erro ao publicar anúncios", {
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado"
+      });
+    } finally {
+      setIsPublishing(false);
     }
   };
   
-  const getCreditUsage = () => {
-    // Calculate how many credits will be used
-    let googleAdsCredits = (ads.google?.length || 0) * 5;
-    let metaAdsCredits = (ads.meta?.length || 0) * 5;
-    let linkedinAdsCredits = (ads.linkedin?.length || 0) * 5;
-    let microsoftAdsCredits = (ads.microsoft?.length || 0) * 5;
-    
-    return {
-      google: googleAdsCredits,
-      meta: metaAdsCredits,
-      linkedin: linkedinAdsCredits,
-      microsoft: microsoftAdsCredits,
-      total: googleAdsCredits + metaAdsCredits + linkedinAdsCredits + microsoftAdsCredits
-    };
-  };
-  
-  const creditUsage = getCreditUsage();
+  // Format campaign name
+  const campaignName = campaignData?.companyName 
+    ? `${campaignData.companyName} - ${new Date().toLocaleDateString('pt-BR')}`
+    : `Nova Campanha - ${new Date().toLocaleDateString('pt-BR')}`;
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Publicar Anúncios</CardTitle>
-        <CardDescription>
-          Você está prestes a publicar {totalAds} anúncios em {platforms.length} plataformas diferentes.
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {error && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Erro</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Publicar Anúncios</CardTitle>
+          <CardDescription>
+            Configure os detalhes finais antes de publicar seus anúncios nas plataformas selecionadas.
+          </CardDescription>
+        </CardHeader>
         
-        {published ? (
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertTitle>Anúncios publicados com sucesso!</AlertTitle>
-            <AlertDescription>
-              Seus anúncios foram publicados nas plataformas selecionadas. Você pode verificar o status nas respectivas plataformas.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Detalhes da Publicação</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {platforms.map(platform => (
-                    <div key={platform} className="flex justify-between items-center py-1 border-b last:border-0">
-                      <div className="font-medium capitalize">{platform}</div>
-                      <div>{ads[platform].length} anúncios</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-base font-medium">Detalhes da Campanha</h3>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Uso de Créditos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {creditUsage.google > 0 && (
-                    <div className="flex justify-between items-center py-1 border-b">
-                      <div>Google Ads ({ads.google.length} anúncios)</div>
-                      <div>{creditUsage.google} créditos</div>
-                    </div>
-                  )}
-                  
-                  {creditUsage.meta > 0 && (
-                    <div className="flex justify-between items-center py-1 border-b">
-                      <div>Meta Ads ({ads.meta.length} anúncios)</div>
-                      <div>{creditUsage.meta} créditos</div>
-                    </div>
-                  )}
-                  
-                  {creditUsage.linkedin > 0 && (
-                    <div className="flex justify-between items-center py-1 border-b">
-                      <div>LinkedIn Ads ({ads.linkedin.length} anúncios)</div>
-                      <div>{creditUsage.linkedin} créditos</div>
-                    </div>
-                  )}
-                  
-                  {creditUsage.microsoft > 0 && (
-                    <div className="flex justify-between items-center py-1 border-b">
-                      <div>Microsoft Ads ({ads.microsoft.length} anúncios)</div>
-                      <div>{creditUsage.microsoft} créditos</div>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between items-center py-1 font-bold">
-                    <div>Total</div>
-                    <div>{creditUsage.total} créditos</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="campaign-name">Nome da Campanha</Label>
+                <Input 
+                  id="campaign-name" 
+                  defaultValue={campaignName} 
+                  disabled={isPublishing}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="budget-type">Tipo de Orçamento</Label>
+                <Select defaultValue="daily" disabled={isPublishing}>
+                  <SelectTrigger id="budget-type">
+                    <SelectValue placeholder="Selecione o tipo de orçamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Diário</SelectItem>
+                    <SelectItem value="lifetime">Total da Campanha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="text-base font-medium">Plataformas Conectadas</h3>
+            <div className="space-y-3">
+              {Object.keys(ads).map(platform => (
+                <div key={platform} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex items-center">
+                    <div className={`w-2 h-2 rounded-full mr-2 ${platformIntegrationStatus[platform as keyof typeof platformIntegrationStatus] ? 'bg-green-500' : 'bg-amber-500'}`} />
+                    <span className="capitalize">{platform}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-sm text-muted-foreground mr-2">
+                      {ads[platform]?.length} anúncios
+                    </span>
+                    {platformIntegrationStatus[platform as keyof typeof platformIntegrationStatus] ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+                        Conectar
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onBack} disabled={publishing || published}>
-          Voltar
-        </Button>
+              ))}
+            </div>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-3">
+            <h3 className="text-base font-medium">Configurações de Publicação</h3>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-optimize">Otimização Automática</Label>
+                <p className="text-sm text-muted-foreground">
+                  A IA otimizará automaticamente seus anúncios com base no desempenho
+                </p>
+              </div>
+              <Switch id="auto-optimize" defaultChecked />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-pause">Pausar Anúncios de Baixo Desempenho</Label>
+                <p className="text-sm text-muted-foreground">
+                  Pausar automaticamente anúncios com CTR abaixo de 1%
+                </p>
+              </div>
+              <Switch id="auto-pause" defaultChecked />
+            </div>
+          </div>
+          
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Atenção</AlertTitle>
+            <AlertDescription>
+              A publicação custará {totalCost} créditos ({publishCreditCost} por plataforma).
+              Você tem atualmente {credits} créditos disponíveis.
+            </AlertDescription>
+          </Alert>
+          
+          {isPublishing && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Publicando anúncios...</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} />
+            </div>
+          )}
+        </CardContent>
         
-        {published ? (
-          <Button onClick={onFinish}>
-            Concluir
-          </Button>
-        ) : (
+        <CardFooter className="flex justify-between">
           <Button 
-            onClick={handlePublish} 
-            disabled={publishing || totalAds === 0}
+            variant="outline" 
+            onClick={onBack}
+            disabled={isPublishing}
           >
-            {publishing ? (
+            Voltar
+          </Button>
+          
+          <Button 
+            onClick={handlePublish}
+            disabled={isPublishing || credits < totalCost}
+          >
+            {isPublishing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Publicando...
               </>
             ) : (
-              "Publicar Anúncios"
+              <>
+                Publicar Anúncios
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </>
             )}
           </Button>
-        )}
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+      
+      {Object.keys(publishedAds).length > 0 && (
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center mb-4">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+              <h3 className="text-lg font-medium text-green-700">Publicação Concluída!</h3>
+            </div>
+            <p className="text-green-700">
+              Todos os {totalAdsCount} anúncios foram publicados com sucesso nas plataformas selecionadas.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

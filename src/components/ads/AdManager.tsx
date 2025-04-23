@@ -6,6 +6,8 @@ import { PublishAds } from "./steps/PublishAds";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import StepIndicator from "@/components/campaign/StepIndicator";
+import { useCredits } from "@/contexts/CreditsContext";
+import { toast } from "sonner";
 
 const AdManager = () => {
   const [step, setStep] = useState(1);
@@ -13,6 +15,7 @@ const AdManager = () => {
   const [approvedAds, setApprovedAds] = useState<Record<string, any[]>>({});
   const [campaignData, setCampaignData] = useState<any>(null);
   const navigate = useNavigate();
+  const { credits } = useCredits();
 
   const steps = [
     { id: 1, name: "Gerar" },
@@ -20,7 +23,17 @@ const AdManager = () => {
     { id: 3, name: "Publicar" }
   ];
 
+  const handleStepChange = (newStep: number) => {
+    // Only allow going back, not forward
+    if (newStep < step) {
+      setStep(newStep);
+    }
+  };
+
   const handleFinish = () => {
+    toast.success("Campanha publicada com sucesso!", {
+      description: "Seus anúncios foram enviados para publicação."
+    });
     // Redirect to campaigns or dashboard
     navigate("/campaigns");
   };
@@ -35,6 +48,19 @@ const AdManager = () => {
             currentStep={step}
           />
         </Card>
+
+        {/* Credit display */}
+        <div className="bg-muted rounded-lg p-3 mb-8 flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm font-medium">Créditos disponíveis:</span>
+            <span className="ml-2 px-2 py-1 bg-primary/10 text-primary rounded-md font-bold">
+              {credits}
+            </span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Geração: 5 créditos | Publicação: 10 créditos
+          </div>
+        </div>
 
         {step === 1 && (
           <GenerateAds
