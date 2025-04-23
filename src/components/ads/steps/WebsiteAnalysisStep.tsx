@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "sonner";
+import { toast } from "sonner";
 import { Loader } from "lucide-react";
 import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,7 +32,6 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     products: campaignData.products || "",
     keywords: campaignData.keywords || ""
   });
-  const toast = useToast;
   const { user } = useAuth();
 
   const handleAnalyze = async () => {
