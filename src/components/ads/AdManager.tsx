@@ -32,14 +32,7 @@ const AdManager = () => {
         
         <Card className="p-4 mb-8">
           <StepIndicator 
-            steps={steps} 
-            currentStep={step} 
-            onStepClick={(id) => {
-              // Only allow going back, not forward
-              if (id < step) {
-                setStep(id);
-              }
-            }} 
+            currentStep={step}
           />
         </Card>
 

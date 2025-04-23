@@ -11,13 +11,13 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
-import { Spinner } from 'lucide-react';
+import { Loader } from 'lucide-react';
 
 // Loading component
 const Loading = () => (
   <Card className="w-full h-full flex items-center justify-center">
     <CardContent className="p-12">
-      <Spinner className="h-8 w-8 animate-spin" />
+      <Loader className="h-8 w-8 animate-spin" />
       <p className="mt-2 text-center">Carregando...</p>
     </CardContent>
   </Card>
