@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 import { getOpenAIClient } from "./openai.ts";
 import { createGoogleAdsPrompt, createMetaAdsPrompt, createLinkedInAdsPrompt, createMicrosoftAdsPrompt } from "./promptCreators.ts";

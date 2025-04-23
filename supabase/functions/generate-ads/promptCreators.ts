@@ -1,4 +1,3 @@
-
 import { WebsiteAnalysisResult } from "./types.ts";
 import { getLanguageFromLocale } from "./utils/languageDetection.ts";
 
@@ -13,8 +12,8 @@ function getLanguageName(langCode: string): string {
     pt: "Português",
     en: "Inglês",
     es: "Espanhol",
-    fr: "Francês",
-    de: "Alemão",
+    fr: "Français",
+    de: "Allemand",
     it: "Italiano"
   };
   return map[langCode.toLowerCase()] || "Português";
