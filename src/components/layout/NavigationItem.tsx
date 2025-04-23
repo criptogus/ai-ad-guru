@@ -1,31 +1,39 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface NavigationItemProps {
   to: string;
   icon: React.ReactNode;
   label: string;
-  active: boolean;
+  active?: boolean;
+  collapsed?: boolean;
+  onClick?: () => void;
 }
 
-export const NavigationItem = ({ to, icon, label, active }: NavigationItemProps) => {
+export const NavigationItem: React.FC<NavigationItemProps> = ({
+  to,
+  icon,
+  label,
+  active = false,
+  collapsed = false,
+  onClick
+}) => {
   return (
-    <Button 
-      asChild 
-      variant="ghost" 
-      className="data-[active=true]:bg-muted focus:bg-secondary justify-start w-full" 
-      data-active={active ? "true" : undefined}
+    <Link
+      to={to}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
+        active 
+          ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground" 
+          : "text-foreground/70 hover:bg-muted dark:text-muted-foreground dark:hover:bg-gray-800/50 dark:hover:text-foreground",
+        collapsed ? "justify-center" : "justify-start"
+      )}
     >
-      <Link to={to} className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none focus:shadow-sm">
-        <div className="flex items-center space-x-2">
-          {icon}
-          <span className="text-sm font-medium leading-none">{label}</span>
-        </div>
-      </Link>
-    </Button>
+      <span className={cn("flex-shrink-0", collapsed ? "w-5 h-5" : "w-5 h-5")}>{icon}</span>
+      {!collapsed && <span>{label}</span>}
+    </Link>
   );
 };
-
-export default NavigationItem;
