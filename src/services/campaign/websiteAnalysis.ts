@@ -4,6 +4,7 @@
  * Analyzes websites to extract information for ad creation
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 
 export interface WebsiteAnalysisParams {
@@ -27,27 +28,34 @@ export interface WebsiteAnalysisResult {
  */
 export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<WebsiteAnalysisResult | null> => {
   try {
-    // This is a placeholder for actual website analysis logic
     console.log('Analyzing website', params.url);
     
-    // In a real implementation, this would call the analyze-website edge function
+    // Call the analyze-website edge function
+    const { data, error } = await supabase.functions.invoke('analyze-website', {
+      body: { url: params.url }
+    });
     
-    // Return placeholder analysis result
-    return {
-      companyName: 'Example Company',
-      businessDescription: 'Example Company provides innovative solutions for businesses in the technology sector.',
-      targetAudience: 'Small to medium-sized technology companies',
-      brandTone: 'Professional, innovative, trustworthy',
-      keywords: ['innovation', 'technology', 'solutions', 'business'],
-      callToAction: ['Contact us today', 'Schedule a demo', 'Learn more'],
-      uniqueSellingPoints: [
-        'Industry-leading technology',
-        '24/7 customer support',
-        'Customizable solutions'
-      ],
-      websiteUrl: params.url
-    };
+    if (error) {
+      console.error('Edge function error:', error);
+      errorLogger.logError(error, 'analyzeWebsite');
+      return null;
+    }
+    
+    if (!data.success) {
+      console.error('Analysis error:', data.error);
+      errorLogger.logError(new Error(data.error || 'Unknown error'), 'analyzeWebsite');
+      return null;
+    }
+    
+    const result = data.data as WebsiteAnalysisResult;
+    
+    // Add the website URL to the result
+    result.websiteUrl = params.url;
+    
+    console.log('Website analysis completed:', result);
+    return result;
   } catch (error) {
+    console.error('Error analyzing website:', error);
     errorLogger.logError(error, 'analyzeWebsite');
     return null;
   }

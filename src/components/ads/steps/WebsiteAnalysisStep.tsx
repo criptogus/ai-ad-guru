@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,12 +52,16 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     setIsAnalyzing(true);
     
     try {
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      console.log('Calling analyzeWebsite with URL:', formattedUrl);
+      
       const result = await analyzeWebsite({
-        url,
+        url: formattedUrl,
         userId: user?.id || "anonymous"
       });
 
       if (result) {
+        console.log('Analysis result received:', result);
         setAnalysisResult(result);
         
         // Update form with the analysis results
@@ -69,6 +74,8 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         });
 
         toast.success("Website analysis completed!");
+      } else {
+        toast.error("Failed to analyze website. Please try again or fill in manually.");
       }
     } catch (error) {
       console.error("Error analyzing website:", error);

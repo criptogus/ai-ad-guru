@@ -3,6 +3,9 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 import { OpenAI } from "https://esm.sh/openai@4.20.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
+import { fetchWebsiteData } from "./websiteDataFetcher.ts";
+import { CacheHandler } from "./cacheHandler.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,37 +24,39 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    // Get Supabase credentials for caching
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    let cacheHandler;
+    if (supabaseUrl && supabaseKey) {
+      cacheHandler = new CacheHandler(supabaseUrl, supabaseKey);
+    }
+
+    // Parse request body
     const { url } = await req.json();
     console.log('Analyzing URL:', url);
 
-    // Fetch website content
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    // Check cache first if available
+    if (cacheHandler) {
+      const cacheResult = await cacheHandler.checkCache(url);
+      if (cacheResult.fromCache) {
+        console.log('Cache hit for URL:', url);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            data: cacheResult.data,
+            fromCache: true, 
+            cachedAt: cacheResult.cachedAt 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-    });
-
-    const html = await response.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    if (!doc) {
-      throw new Error("Failed to parse HTML");
     }
 
-    // Extract relevant content
-    const title = doc.querySelector("title")?.textContent || "";
-    const metaDescription = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
-    const metaKeywords = doc.querySelector('meta[name="keywords"]')?.getAttribute("content") || "";
-    
-    // Get main content (avoiding navigation, footer, etc)
-    let mainContent = "";
-    const contentElements = doc.querySelectorAll("main, article, section, .content, #content");
-    for (let i = 0; i < contentElements.length; i++) {
-      const text = contentElements[i].textContent?.trim();
-      if (text && text.length > 50) {
-        mainContent += text + "\n";
-      }
-      if (mainContent.length > 3000) break; // Limit content size
-    }
+    // If not in cache, fetch website data
+    const websiteData = await fetchWebsiteData(url);
+    console.log('Website data fetched. Title:', websiteData.title);
 
     // Create OpenAI client
     const openai = new OpenAI({
@@ -62,10 +67,11 @@ serve(async (req) => {
     You are an expert business and marketing analyst. Analyze this website content and extract key business information.
     Use the website's original language in your response.
 
-    Title: ${title}
-    Meta Description: ${metaDescription}
-    Keywords: ${metaKeywords}
-    Content: ${mainContent.slice(0, 3000)}
+    Title: ${websiteData.title}
+    Description: ${websiteData.description}
+    Keywords: ${websiteData.keywords}
+    Content: ${websiteData.visibleText.slice(0, 3000)}
+    URL: ${websiteData.url}
 
     Extract and provide:
     1. Company Name
@@ -89,7 +95,8 @@ serve(async (req) => {
     `;
 
     console.log("Sending request to OpenAI...");
-
+    
+    // Make the OpenAI API call
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
@@ -97,21 +104,14 @@ serve(async (req) => {
     });
 
     const analysisResult = JSON.parse(completion.choices[0].message.content);
+    console.log('Analysis completed successfully');
     
-    // Cache the result in the website_analysis_cache table
-    const { data: supabaseUrl } = await Deno.env.get('SUPABASE_URL');
-    const { data: supabaseKey } = await Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      await supabase
-        .from('website_analysis_cache')
-        .upsert({
-          url,
-          analysis_result: analysisResult,
-        });
+    // Store in cache if available
+    if (cacheHandler) {
+      await cacheHandler.cacheResult(url, analysisResult);
     }
 
+    // Return the analysis result
     return new Response(
       JSON.stringify({ success: true, data: analysisResult }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
