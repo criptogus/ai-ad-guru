@@ -34,8 +34,18 @@ Based on this information, please provide:
    - Interests
    - Pain points
    - Decision factors
+   - Market size
+   - Competitors
+   - Geolocation recommendations
 
-Format your response in a clear, structured way. Your analysis should be strategic and specific, not generic.`;
+Format your response in a clear, structured way with the following sections:
+
+1. DETAILED TARGET AUDIENCE PROFILE
+2. STRATEGIC GEOLOCATION
+3. MARKET ANALYSIS
+4. COMPETITIVE ANALYSIS
+
+Your analysis should be strategic and specific, not generic. Use headers and bullet points to organize information.`;
 
   // Add language-specific instructions
   if (language && language !== 'en') {

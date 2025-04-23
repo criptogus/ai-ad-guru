@@ -1,3 +1,4 @@
+
 interface ParsedAnalysis {
   success: boolean;
   platform: string;
@@ -11,6 +12,9 @@ interface ParsedAnalysis {
   interests?: string[];
   painPoints?: string[];
   decisionFactors?: string[];
+  marketSize?: any;
+  competitors?: any;
+  geolocation?: any;
 }
 
 export const parseAnalysisResponse = (responseText: string, platform?: string): ParsedAnalysis => {
@@ -46,6 +50,15 @@ export const parseAnalysisResponse = (responseText: string, platform?: string): 
     // Parse decision factors
     result.decisionFactors = parseListSection(responseText, "decision factors");
     
+    // Parse market size
+    result.marketSize = extractMarketInfo(responseText);
+    
+    // Parse competitors
+    result.competitors = parseListSection(responseText, "competitors");
+    
+    // Parse geolocation
+    result.geolocation = extractLocationInfo(responseText);
+    
     return result;
   } catch (error) {
     console.error("Error parsing analysis response:", error);
@@ -58,6 +71,35 @@ export const parseAnalysisResponse = (responseText: string, platform?: string): 
     };
   }
 };
+
+// Helper function to extract market info
+function extractMarketInfo(text: string): any {
+  // Try to find market size information
+  const marketSizeRegex = /market\s*size[^:]*:\s*([^.]+)/i;
+  const marketMatch = text.match(marketSizeRegex);
+  
+  return marketMatch ? marketMatch[1].trim() : null;
+}
+
+// Helper function to extract location info
+function extractLocationInfo(text: string): any {
+  // Look for the geolocation section
+  const geoSectionRegex = /STRATEGIC GEOLOCATION|GEOLOCALIZAÇÃO ESTRATÉGICA/i;
+  const sectionMatch = text.match(geoSectionRegex);
+  
+  if (sectionMatch) {
+    // Find the section that contains geolocation info
+    const startIndex = sectionMatch.index || 0;
+    const endIndex = text.indexOf("\n\n", startIndex + sectionMatch[0].length);
+    
+    if (startIndex >= 0 && endIndex > startIndex) {
+      const geoSection = text.substring(startIndex, endIndex > 0 ? endIndex : undefined);
+      return geoSection.replace(geoSectionRegex, '').trim();
+    }
+  }
+  
+  return null;
+}
 
 // Helper function to parse demographics section
 function parseDemographics(text: string): { ageGroups: string[], gender: string[], educationLevel: string[], incomeLevel: string[] } {
@@ -152,6 +194,8 @@ function getDefaultItems(sectionName: string): string[] {
       return ["Time Management", "Cost Efficiency", "ROI Tracking", "Ad Performance", "Targeting Accuracy"];
     case "decision factors":
       return ["Price", "Ease of Use", "Support Quality", "Results", "Integration Capabilities"];
+    case "competitors":
+      return ["Top Industry Players", "Similar Solutions", "Indirect Competitors"];
     default:
       return [];
   }
