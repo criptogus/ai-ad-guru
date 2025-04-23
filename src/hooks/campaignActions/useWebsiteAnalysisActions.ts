@@ -5,11 +5,14 @@ import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
 import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { errorLogger } from "@/services/libs/error-handling";
 import { supabase } from "@/integrations/supabase/client";
+import { useCreditsManager } from "@/hooks/useCreditsManager";
+import { toast } from "sonner";
 
 export const useWebsiteAnalysisActions = () => {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [cacheInfo, setCacheInfo] = useState<{fromCache?: boolean; cachedAt?: string; expiresAt?: string} | null>(null);
+  const { checkCreditBalance, consumeCredits } = useCreditsManager();
   
   // Get the current authenticated user
   const getUserId = async () => {
@@ -20,10 +23,22 @@ export const useWebsiteAnalysisActions = () => {
   // Properly implement the website analysis function
   const handleAnalyzeWebsite = async (url: string): Promise<WebsiteAnalysisResult | null> => {
     if (!url || !url.trim()) {
-      toast({
+      uiToast({
         title: "Error",
         description: "Please enter a website URL",
         variant: "destructive",
+      });
+      return null;
+    }
+
+    // Check if user has enough credits for this action
+    const userId = await getUserId();
+    const creditsRequired = 2; // 2 credits for website analysis
+    
+    const hasEnoughCredits = await checkCreditBalance(creditsRequired);
+    if (!hasEnoughCredits) {
+      toast.error("Créditos insuficientes", {
+        description: "Você precisa de 2 créditos para realizar a análise de website."
       });
       return null;
     }
@@ -41,8 +56,37 @@ export const useWebsiteAnalysisActions = () => {
       
       console.log('Calling analyze-website function with URL:', formattedUrl);
       
-      const userId = await getUserId();
+      // Get data from cache first - this doesn't consume credits
+      const { data: cacheData } = await supabase.functions.invoke('analyze-website', {
+        body: { url: formattedUrl, checkCacheOnly: true }
+      });
       
+      if (cacheData?.fromCache) {
+        console.log('Using cached analysis data');
+        setCacheInfo({
+          fromCache: true,
+          cachedAt: cacheData.cachedAt,
+          expiresAt: cacheData.expiresAt
+        });
+        
+        uiToast({
+          title: "Website Analysis",
+          description: "Using cached analysis from previous scan",
+        });
+        
+        return cacheData.data as WebsiteAnalysisResult;
+      }
+      
+      // No cache available - consume credits before proceeding
+      const creditConsumed = await consumeCredits(creditsRequired, "Website analysis");
+      if (!creditConsumed) {
+        toast.error("Erro ao debitar créditos", {
+          description: "Não foi possível debitar os créditos necessários para esta operação."
+        });
+        return null;
+      }
+      
+      // Perform the actual analysis
       const result = await analyzeWebsite({
         url: formattedUrl,
         userId
@@ -67,16 +111,15 @@ export const useWebsiteAnalysisActions = () => {
           expiresAt: (result as any).expiresAt
         });
         
-        toast({
+        uiToast({
           title: "Website Analysis",
           description: "Using cached analysis from previous scan",
         });
       } else {
         setCacheInfo(null);
         
-        toast({
-          title: "Website Analyzed",
-          description: "Successfully analyzed website content",
+        toast.success("Website Analyzed", {
+          description: "Successfully analyzed website content"
         });
       }
       
@@ -86,10 +129,8 @@ export const useWebsiteAnalysisActions = () => {
       
       console.error('Error analyzing website:', error);
       
-      toast({
-        title: "Analysis Failed",
+      toast.error("Analysis Failed", {
         description: error.message || "Failed to analyze website. Please try again.",
-        variant: "destructive",
       });
       
       // Since we're in development, we'll simulate a successful response
@@ -113,9 +154,8 @@ export const useWebsiteAnalysisActions = () => {
           industry: 'Technology'
         };
         
-        toast({
-          title: "Using Demo Data",
-          description: "Using mock data while in development mode",
+        toast.success("Using Demo Data", {
+          description: "Using mock data while in development mode"
         });
         
         return mockResult;

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import StepIndicator from "@/components/campaign/StepIndicator";
 import { useCredits } from "@/contexts/CreditsContext";
@@ -12,6 +12,7 @@ import AudienceMarketStep from "./steps/AudienceMarketStep";
 import CampaignObjectivesStep from "./steps/CampaignObjectivesStep";
 import AdVariationsStep from "./steps/AdVariationsStep";
 import ReviewPublishStep from "./steps/ReviewPublishStep";
+import { useCreditsManager } from "@/hooks/useCreditsManager"; 
 
 const AdManager = () => {
   const [step, setStep] = useState(1);
@@ -38,8 +39,12 @@ const AdManager = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
-  const { credits } = useCredits();
-
+  
+  // Credit system
+  const { credits, refreshCredits } = useCredits();
+  const { checkCreditBalance } = useCreditsManager();
+  const [canPublish, setCanPublish] = useState(true);
+  
   const steps = [
     { id: 1, name: "Análise do Website" },
     { id: 2, name: "Plataformas" },
@@ -49,6 +54,19 @@ const AdManager = () => {
     { id: 6, name: "Variações de Anúncios" },
     { id: 7, name: "Revisar & Publicar" }
   ];
+
+  // Fetch user credits when component mounts
+  useEffect(() => {
+    refreshCredits();
+    
+    // Check if user has enough credits for publication (10 credits)
+    const checkPublishCredits = async () => {
+      const hasEnough = await checkCreditBalance(10);
+      setCanPublish(hasEnough);
+    };
+    
+    checkPublishCredits();
+  }, [refreshCredits, checkCreditBalance]);
 
   const handleStepChange = (newStep: number) => {
     // Only allow going back, not forward through click
@@ -80,12 +98,47 @@ const AdManager = () => {
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    // Check if user has enough credits to publish (10 credits)
+    const hasEnough = await checkCreditBalance(10);
+    
+    if (!hasEnough) {
+      toast.error("Créditos insuficientes", {
+        description: "Você precisa de 10 créditos para publicar a campanha."
+      });
+      return;
+    }
+    
+    // Consume credits for publication
+    const { consumeCredits } = useCreditsManager();
+    const creditConsumed = await consumeCredits(10, "Campaign publication");
+    
+    if (!creditConsumed) {
+      toast.error("Erro ao debitar créditos", {
+        description: "Não foi possível debitar os créditos necessários para publicação."
+      });
+      return;
+    }
+    
     toast.success("Campanha publicada com sucesso!", {
       description: "Seus anúncios foram enviados para publicação."
     });
+    
+    // Update credits display
+    refreshCredits();
+    
     // Redirect to campaigns or dashboard
     navigate("/campaigns");
+  };
+
+  // Calculate the credit costs for each step
+  const getCreditCostForCurrentStep = () => {
+    switch (step) {
+      case 1: return 2;  // Website Analysis
+      case 6: return campaignData.platforms?.length * 5 || 0;  // Ad Generation (5 per platform)
+      case 7: return 10; // Publication
+      default: return 0;
+    }
   };
 
   return (
@@ -110,9 +163,21 @@ const AdManager = () => {
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
-            Análise: 2 créditos | Geração: 5 créditos | Publicação: 10 créditos
+            Análise: 2 créditos | Geração: 5 créditos por plataforma | Publicação: 10 créditos
           </div>
         </div>
+
+        {/* Current step credit cost */}
+        {getCreditCostForCurrentStep() > 0 && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-8">
+            <div className="flex items-center text-blue-800 dark:text-blue-300">
+              <span>Custo desta etapa: </span>
+              <span className="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-md font-bold">
+                {getCreditCostForCurrentStep()} créditos
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Step content */}
         <Card className="p-6">
@@ -177,6 +242,7 @@ const AdManager = () => {
               campaignData={campaignData}
               onBack={handleBack}
               onFinish={handleFinish}
+              canPublish={canPublish}
             />
           )}
         </Card>

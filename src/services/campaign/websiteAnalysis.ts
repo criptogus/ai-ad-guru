@@ -1,4 +1,3 @@
-
 /**
  * Website Analysis Service
  * Analyzes websites to extract information for ad creation
@@ -6,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
+import { toast } from 'sonner';
 
 export interface WebsiteAnalysisParams {
   url: string;
@@ -44,9 +44,12 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       formattedUrl = 'https://' + formattedUrl;
     }
     
-    // Call the analyze-website edge function
+    // Add userId to call for credit tracking purposes
     const { data, error } = await supabase.functions.invoke('analyze-website', {
-      body: { url: formattedUrl }
+      body: { 
+        url: formattedUrl,
+        userId: params.userId
+      }
     });
     
     if (error) {
@@ -72,22 +75,22 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
     if (data.fromCache) {
       console.log('Result from cache, cached at:', data.cachedAt);
       
-      // Log this info for other components to use if needed
-      // You can access this from the component that called this function
-      const cacheInfo: WebsiteAnalysisCache = {
-        fromCache: true,
-        cachedAt: data.cachedAt,
-        expiresAt: data.expiresAt
-      };
-      
-      // You could potentially use the component context to pass this info
-      // or return it as part of an extended result object
+      // Add cache properties to result for other components to use
+      (result as any).fromCache = true;
+      (result as any).cachedAt = data.cachedAt;
+      (result as any).expiresAt = data.expiresAt;
     }
     
     return result;
   } catch (error) {
     console.error('Error analyzing website:', error);
     errorLogger.logError(error, 'analyzeWebsite');
+    
+    // Show error toast
+    toast.error("Website Analysis Error", {
+      description: "Couldn't analyze the website. Please try again later."
+    });
+    
     return null;
   }
 };

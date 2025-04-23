@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 import { normalizeGoogleAd, normalizeMetaAd } from '@/lib/utils';
+import { useCreditsManager } from '@/hooks/useCreditsManager';
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -29,6 +30,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const { generateCampaignAds, isGenerating } = useAdGenerationFlow();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
+  const { checkCreditBalance, consumeCredits } = useCreditsManager();
 
   const handleGenerateAds = async () => {
     if (!platforms || platforms.length === 0) {
@@ -41,6 +43,19 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     
     // Reset error state
     setError(null);
+    
+    // Check if user has enough credits - 5 credits per platform
+    const requiredCredits = platforms.length * 5;
+    const hasEnough = await checkCreditBalance(requiredCredits);
+    
+    if (!hasEnough) {
+      toast({
+        title: "Créditos insuficientes",
+        description: `Você precisa de ${requiredCredits} créditos para gerar anúncios para ${platforms.length} plataformas.`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const results: Record<string, any[]> = {};
@@ -77,8 +92,19 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
 
       toast({
         title: `Gerando anúncios para ${platforms.join(', ')}`,
-        description: `Criando 5 variações de anúncios por plataforma (${platforms.length * 5} créditos).`
+        description: `Criando 5 variações de anúncios por plataforma (${requiredCredits} créditos).`
       });
+
+      // Consume credits for ad generation
+      const creditConsumed = await consumeCredits(requiredCredits, "Ad generation");
+      if (!creditConsumed) {
+        toast({
+          title: "Erro ao debitar créditos",
+          description: "Não foi possível debitar os créditos necessários para esta operação.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       try {
         // Send one request with all platforms

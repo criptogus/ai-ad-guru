@@ -1,196 +1,258 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+// analyze-website edge function
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import { OpenAI } from "https://esm.sh/openai@4.20.1";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
-import { fetchWebsiteData } from "./websiteDataFetcher.ts";
 import { CacheHandler } from "./cacheHandler.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Initialize OpenAI and Cheerio modules
+const cheerio = await import("https://esm.sh/cheerio@1.0.0-rc.12");
+const OpenAI = await import("https://esm.sh/openai@4.8.0");
+
+// Initialize OpenAI client with API key from environment
+const openai = new OpenAI.OpenAI({
+  apiKey: Deno.env.get("OPENAI_API_KEY")
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders
+    });
   }
-
+  
   try {
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    // Get Supabase credentials for caching
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const { url, checkCacheOnly, userId } = await req.json();
     
-    let cacheHandler;
-    if (supabaseUrl && supabaseKey) {
-      cacheHandler = new CacheHandler(supabaseUrl, supabaseKey);
+    if (!url) {
+      return new Response(
+        JSON.stringify({ success: false, error: "URL is required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-
-    // Parse request body
-    const { url } = await req.json();
-    console.log('Analyzing URL:', url);
-
-    // Check cache first if available
-    if (cacheHandler) {
-      const cacheResult = await cacheHandler.checkCache(url);
-      if (cacheResult.fromCache) {
-        console.log('Cache hit for URL:', url);
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            data: cacheResult.data,
-            fromCache: true, 
-            cachedAt: cacheResult.cachedAt,
-            expiresAt: cacheResult.expiresAt 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+    );
+    
+    // Initialize cache handler
+    const cacheHandler = new CacheHandler(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+    );
+    
+    // Check cache first
+    const cacheResult = await cacheHandler.checkCache(url);
+    
+    // If only checking cache status, return that info
+    if (checkCacheOnly) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          fromCache: cacheResult.fromCache,
+          cachedAt: cacheResult.cachedAt,
+          expiresAt: cacheResult.expiresAt,
+          data: cacheResult.data
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // If we have cached data, return it
+    if (cacheResult.fromCache) {
+      console.log("Returning cached analysis for URL:", url);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          fromCache: true,
+          cachedAt: cacheResult.cachedAt,
+          expiresAt: cacheResult.expiresAt,
+          data: cacheResult.data
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Log credit usage for userId if provided
+    if (userId && userId !== 'anonymous') {
+      console.log("Recording credit usage for user:", userId);
+      
+      try {
+        await supabaseClient
+          .from('credit_logs')
+          .insert([{
+            user_id: userId,
+            action: 'website_analysis',
+            credits_used: 2,
+            context: { url }
+          }]);
+      } catch (error) {
+        console.error("Error logging credit usage:", error);
       }
     }
-
-    // If not in cache, fetch website data
-    const websiteData = await fetchWebsiteData(url);
-    console.log('Website data fetched. Title:', websiteData.title);
-
-    // Create OpenAI client
-    const openai = new OpenAI({
-      apiKey: openaiApiKey,
+    
+    console.log("Fetching and analyzing URL:", url);
+    
+    // Fetch website content
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
     });
-
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
+    }
+    
+    const htmlContent = await response.text();
+    
+    // Use cheerio to parse the HTML
+    const $ = cheerio.load(htmlContent);
+    
+    // Extract main content
+    let contentText = "";
+    
+    // Try to extract from common content selectors
+    const contentSelectors = ['main', 'article', '#content', '.content', '#main', '.main'];
+    for (const selector of contentSelectors) {
+      const element = $(selector);
+      if (element.length > 0) {
+        contentText += element.text() + " ";
+      }
+    }
+    
+    // If no content found from selectors, extract all visible body text
+    if (contentText.trim() === "") {
+      // Remove scripts, styles, and comments
+      $('script, style, noscript, iframe, img').remove();
+      contentText = $('body').text();
+    }
+    
+    // Extract metadata
+    const metaTitle = $('title').text();
+    const metaDescription = $('meta[name="description"]').attr('content') || '';
+    
+    // Extract h1, h2, h3 tags for additional context
+    const headings = [];
+    $('h1, h2, h3').each((_, el) => {
+      const headingText = $(el).text().trim();
+      if (headingText) {
+        headings.push(headingText);
+      }
+    });
+    
+    // Clean up the text
+    contentText = contentText.replace(/\s+/g, ' ').trim();
+    
+    // Prepare the data for analysis
+    const websiteData = {
+      title: metaTitle,
+      description: metaDescription,
+      headings: headings.slice(0, 10).join(' | '), // Limit to first 10 headings
+      content: contentText.substring(0, 5000) // Limit content to 5000 chars
+    };
+    
+    console.log("Extracted website data:", {
+      title: websiteData.title,
+      descriptionLength: websiteData.description.length,
+      headingsCount: headings.length,
+      contentLength: websiteData.content.length
+    });
+    
+    // Analyze the website using OpenAI
     const prompt = `
-    You are an expert business and marketing analyst. Analyze this website content and extract key business information.
-    Use the website's original language in your response.
-
-    Title: ${websiteData.title}
-    Description: ${websiteData.description}
-    Keywords: ${websiteData.keywords}
-    Content: ${websiteData.visibleText.slice(0, 6500)}
-    URL: ${websiteData.url}
-
-    Extract and provide:
-    1. Company Name
-    2. Business Description (2-3 sentences)
-    3. Target Audience
-    4. Brand Tone/Voice
-    5. Unique Selling Points (3-5 points)
-    6. Keywords for Advertising (5-7 keywords)
-    7. Call-to-Action Suggestions (3 variations)
-
-    Return ONLY a JSON object with these exact fields:
-    {
-      "companyName": "string",
-      "businessDescription": "string",
-      "targetAudience": "string",
-      "brandTone": "string",
-      "uniqueSellingPoints": ["string"],
-      "keywords": ["string"],
-      "callToAction": ["string"]
-    }
-    
-    Do not include any other text in your response, just the JSON.
-    If you can't determine a value, use a reasonable guess based on the industry.
+      You are a website analyzer that extracts key business information.
+      
+      Analyze the following website content and extract:
+      1. Company Name
+      2. Company/Business Description (a concise paragraph)
+      3. Target Audience
+      4. Brand Tone (e.g. professional, casual, luxurious)
+      5. Keywords (5-10 relevant keywords)
+      6. Call to Action phrases (2-4 phrases)
+      7. Unique Selling Points (3-5 points)
+      8. Industry category
+      
+      Website Title: ${websiteData.title}
+      Website Description: ${websiteData.description}
+      Headings: ${websiteData.headings}
+      
+      Website Content:
+      ${websiteData.content}
+      
+      Format your response as JSON with these exact keys:
+      {
+        "companyName": "",
+        "companyDescription": "",
+        "businessDescription": "",
+        "targetAudience": "",
+        "brandTone": "",
+        "keywords": [],
+        "callToAction": [],
+        "uniqueSellingPoints": [],
+        "industry": ""
+      }
+      
+      If you can't determine something, make an educated guess based on the available content.
+      Do not include explanations, just the JSON object.
     `;
-
-    console.log("Sending request to OpenAI...");
     
-    // Make the OpenAI API call
+    console.log("Calling OpenAI for website analysis...");
+    
     const completion = await openai.chat.completions.create({
+      messages: [
+        { role: "system", content: "You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format." },
+        { role: "user", content: prompt }
+      ],
       model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
-    });
-
-    // Parse the response and ensure it's valid JSON
-    let analysisResult;
-    try {
-      analysisResult = JSON.parse(completion.choices[0].message.content);
-      console.log('Analysis completed successfully');
-    } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
-      console.log('Raw response:', completion.choices[0].message.content);
-      
-      // Attempt to extract JSON from response if it's wrapped in other text
-      const jsonMatch = completion.choices[0].message.content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          analysisResult = JSON.parse(jsonMatch[0]);
-          console.log('Successfully extracted JSON from response');
-        } catch (e) {
-          throw new Error('Failed to extract valid JSON from OpenAI response');
-        }
-      } else {
-        throw new Error('OpenAI response did not contain valid JSON');
-      }
-    }
-    
-    // Validate result has the expected structure
-    if (!analysisResult.companyName || !analysisResult.businessDescription) {
-      console.warn('OpenAI response missing some required fields', analysisResult);
-      
-      // Try to fill in missing values
-      analysisResult.companyName = analysisResult.companyName || extractCompanyName(websiteData.title);
-      analysisResult.businessDescription = analysisResult.businessDescription || 
-        "Business description not detected. Please update manually.";
-    }
-    
-    // Ensure arrays are actually arrays
-    ['uniqueSellingPoints', 'keywords', 'callToAction'].forEach(field => {
-      if (!Array.isArray(analysisResult[field])) {
-        analysisResult[field] = analysisResult[field] ? 
-          [analysisResult[field]] : 
-          [`${field.charAt(0).toUpperCase() + field.slice(1)} not detected. Please update manually.`];
-      }
+      response_format: { type: "json_object" },
+      temperature: 0.2,
     });
     
-    // Store in cache if available
-    if (cacheHandler) {
-      await cacheHandler.cacheResult(url, analysisResult);
-    }
-
+    // Parse the response
+    const analysisResult = JSON.parse(completion.choices[0].message.content);
+    
+    // Fill in websiteUrl field
+    analysisResult.websiteUrl = url;
+    
+    console.log("Analysis complete:", {
+      companyName: analysisResult.companyName,
+      industryDetected: analysisResult.industry,
+      keywordsCount: analysisResult.keywords.length
+    });
+    
+    // Cache the result
+    await cacheHandler.cacheResult(url, analysisResult);
+    
     // Return the analysis result
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        data: analysisResult,
-        fromCache: false
+      JSON.stringify({
+        success: true,
+        fromCache: false,
+        data: analysisResult
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error analyzing website:", error);
+    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "An unknown error occurred"
+      JSON.stringify({
+        success: false,
+        error: error.message
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }
 });
-
-// Helper function to extract company name from title if needed
-function extractCompanyName(title: string): string {
-  // Remove common title suffixes
-  let name = title.replace(/\s*[|]\s*.+$/, '')
-                 .replace(/\s*[-]\s*.+$/, '')
-                 .replace(/\s*[–]\s*.+$/, '')
-                 .replace(/\s*[:]\s*.+$/, '');
-                 
-  // Further clean up if needed
-  if (name.length > 50) {
-    name = name.substring(0, 50);
-  }
-  
-  return name || "Company name not detected";
-}
