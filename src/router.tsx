@@ -68,8 +68,9 @@ const router = createBrowserRouter(
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
       
-      {/* Redirect from old campaign/create route to the new ad-manager route */}
+      {/* Redirect from old campaign routes to the new ad-manager route */}
       <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
+      <Route path="/create-campaign" element={<Navigate to="/ad-manager" replace />} />
       
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
