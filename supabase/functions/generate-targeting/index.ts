@@ -38,9 +38,9 @@ serve(async (req) => {
     const prompt = `
     Based on the following business description and target audience, provide targeting recommendations for digital advertising campaigns.
 
-    Business Description: ${businessDescription}
+    Business Description: ${businessDescription || "Not provided"}
     
-    Target Audience: ${targetAudience}
+    Target Audience: ${targetAudience || "Not provided"}
     
     Please provide:
     1. A language code (e.g., en, es, pt)
@@ -50,14 +50,14 @@ serve(async (req) => {
     5. Top ${keywordsCount} specific locations (cities or regions)
     6. Top ${keywordsCount} interests or keywords for targeting
     
-    Format your response as a JSON object with the following structure:
+    Format your response as a JSON object with the following structure without any markdown formatting or code blocks:
     {
       "language": "en",
       "country": "US",
       "ageRange": "25-54",
       "gender": "all",
-      "locations": "New York, Los Angeles, Chicago, Miami, Seattle",
-      "interests": "fitness, nutrition, wellness, yoga, meditation"
+      "locations": ["New York", "Los Angeles", "Chicago", "Miami", "Seattle"],
+      "interests": ["fitness", "nutrition", "wellness", "yoga", "meditation"]
     }`;
     
     console.log("Sending request to OpenAI...");
@@ -65,7 +65,7 @@ serve(async (req) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns." },
+        { role: "system", content: "You are a digital marketing specialist that provides targeting recommendations for advertising campaigns. Respond ONLY with the JSON object requested, without any markdown formatting, explanation text, or code blocks." },
         { role: "user", content: prompt }
       ],
       temperature: 0.7,
@@ -75,7 +75,18 @@ serve(async (req) => {
     console.log(`Raw OpenAI response: ${responseText}`);
     
     try {
-      const targetingData = JSON.parse(responseText);
+      // Clean the response text to handle markdown code blocks if present
+      let jsonText = responseText.trim();
+      
+      // Remove markdown code block syntax if present
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/```json\n/, "").replace(/```$/, "");
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/```\n/, "").replace(/```$/, "");
+      }
+      
+      // Parse the cleaned JSON
+      const targetingData = JSON.parse(jsonText);
       console.log(`Successfully parsed OpenAI response as JSON: ${JSON.stringify(targetingData, null, 2)}`);
       
       return new Response(JSON.stringify(targetingData), {
@@ -83,6 +94,25 @@ serve(async (req) => {
       });
     } catch (parseError) {
       console.error("Error parsing OpenAI response:", parseError);
+      
+      // Attempt a more aggressive cleaning of the response
+      try {
+        // Try to extract JSON using regex - find anything that looks like a JSON object
+        const jsonMatch = responseText.match(/{[\s\S]*}/);
+        if (jsonMatch) {
+          const extractedJson = jsonMatch[0];
+          const targetingData = JSON.parse(extractedJson);
+          console.log(`Successfully parsed extracted JSON: ${JSON.stringify(targetingData, null, 2)}`);
+          
+          return new Response(JSON.stringify(targetingData), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+      } catch (secondError) {
+        console.error("Error on second attempt to parse response:", secondError);
+      }
+      
+      // If all parsing attempts fail, return the raw response for debugging
       return new Response(JSON.stringify({ 
         error: "Failed to parse AI response", 
         rawResponse: responseText 

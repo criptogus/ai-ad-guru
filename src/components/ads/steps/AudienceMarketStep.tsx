@@ -92,35 +92,57 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
           const { data, error } = await supabase.functions.invoke('generate-targeting', {
             body: { 
               businessDescription: campaignData.businessDescription || campaignData.companyDescription || '',
-              targetAudience: campaignData.targetAudience || ''
+              targetAudience: campaignData.targetAudience || '',
+              keywordsCount: 5
             }
           });
           
-          if (error) throw new Error(error.message || 'Failed to generate targeting recommendations');
-          
-          if (data) {
-            setAudienceData({
-              audienceProfile: `Faixa etária: ${data.ageRange || '25-54'}, Gênero: ${translateGender(data.gender) || 'todos'}. ${campaignData.audienceProfile || ''}`,
-              geolocation: data.locations || campaignData.geolocation || '',
-              marketAnalysis: campaignData.marketAnalysis || '',
-              competitorInsights: campaignData.competitorInsights || ''
-            });
-            
-            toast.success("Recomendações de público-alvo geradas com sucesso!");
-            return;
+          if (error) {
+            console.error("Error from generate-targeting function:", error);
+            throw new Error(error.message || 'Failed to generate targeting recommendations');
           }
-        } catch (err) {
+          
+          if (!data) {
+            throw new Error('No data returned from targeting function');
+          }
+          
+          // Handle both array and string formats for locations and interests
+          const formatLocations = (locations: any): string => {
+            if (Array.isArray(locations)) {
+              return locations.join(', ');
+            } else if (typeof locations === 'string') {
+              return locations;
+            }
+            return '';
+          };
+          
+          const audienceProfileText = `Faixa etária: ${data.ageRange || '25-54'}, Gênero: ${translateGender(data.gender) || 'todos'}.${campaignData.audienceProfile ? '\n\n' + campaignData.audienceProfile : ''}`;
+          
+          const locations = formatLocations(data.locations);
+          
+          setAudienceData({
+            audienceProfile: audienceProfileText,
+            geolocation: locations || campaignData.geolocation || '',
+            marketAnalysis: campaignData.marketAnalysis || 'Análise de mercado necessária. Por favor, adicione informações relevantes sobre o mercado.',
+            competitorInsights: campaignData.competitorInsights || 'Informações sobre concorrentes necessárias. Por favor, adicione insights sobre os principais concorrentes.'
+          });
+          
+          toast.success("Recomendações de público-alvo geradas com sucesso!");
+          return;
+        } catch (err: any) {
           console.error("Error generating targeting:", err);
-          setAnalysisError("Falha ao gerar recomendações de público-alvo. Tente novamente ou preencha manualmente.");
+          setAnalysisError(`Falha ao gerar recomendações de público-alvo: ${err.message}. Tente novamente ou preencha manualmente.`);
+          throw err;
         }
       } else {
         setAnalysisError("Dados insuficientes para gerar análise de público-alvo. Adicione uma descrição do negócio ou URL do site.");
+        throw new Error("Insufficient data for audience analysis");
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating audience insights:", error);
       if (!analysisError) {
-        setAnalysisError("Erro ao gerar insights de público-alvo.");
+        setAnalysisError(`Erro ao gerar insights de público-alvo: ${error.message || "erro desconhecido"}`);
       }
     } finally {
       setIsGenerating(false);
@@ -212,7 +234,9 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
     // auto-generate on component mount
     if ((analysisResult?.audienceAnalysis || campaignData?.websiteUrl) && 
         !audienceData.audienceProfile && !isGenerating) {
-      generateAudienceInsights();
+      generateAudienceInsights().catch(err => {
+        console.error("Failed to auto-generate audience insights:", err);
+      });
     }
   }, []);
 
@@ -340,3 +364,4 @@ const AudienceMarketStep: React.FC<AudienceMarketStepProps> = ({
 };
 
 export default AudienceMarketStep;
+
