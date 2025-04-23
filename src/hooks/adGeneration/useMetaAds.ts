@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { MetaAd } from './types';
-import { generateMetaAds as apiGenerateMetaAds } from '@/services/api/metaApi';
+import { generateMetaAds } from '@/services/ad/generateMetaAds';
 import { WebsiteAnalysisResult } from '@/hooks/useWebsiteAnalysis';
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,14 +11,14 @@ export const useMetaAds = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const generateMetaAds = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
+  const generateMetaAdsHandler = async (campaignData: WebsiteAnalysisResult): Promise<MetaAd[] | null> => {
     try {
       setIsGenerating(true);
       setError(null);
       console.log("useMetaAds - Generating Meta ads with data:", campaignData);
       
       // Call the API to generate Meta ads
-      const generatedAds = await apiGenerateMetaAds(campaignData);
+      const generatedAds = await generateMetaAds(campaignData);
       
       if (!generatedAds || generatedAds.length === 0) {
         const errorMsg = "Unable to generate Instagram ads";
@@ -57,7 +57,7 @@ export const useMetaAds = () => {
   };
 
   return {
-    generateMetaAds,
+    generateMetaAds: generateMetaAdsHandler,
     metaAds,
     isGenerating,
     error
