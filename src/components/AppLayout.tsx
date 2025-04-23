@@ -19,9 +19,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   
-  console.log("AppLayout rendering with activePage:", activePage, "withSidebar:", withSidebar);
-  
-  // If withSidebar is false, just return the children without the sidebar
+  // Se withSidebar é false, apenas retorna o children sem o sidebar
   if (!withSidebar) {
     return (
       <main className="h-screen w-full overflow-y-auto bg-background dark:bg-gray-900">
