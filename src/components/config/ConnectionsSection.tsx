@@ -37,7 +37,7 @@ const ConnectionsSection: React.FC = () => {
   }, [connections, isLoading]);
 
   return (
-    <div className="max-w-[1280px] mx-auto p-4 sm:p-6">
+    <div className="max-w-[1280px] mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Connect Your Ad Accounts</h2>
         
