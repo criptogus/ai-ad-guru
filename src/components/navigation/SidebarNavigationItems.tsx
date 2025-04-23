@@ -24,7 +24,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
   const location = useLocation();
   const currentPath = location.pathname;
   
-  console.log("Navigation items rendering with activePage:", activePage, "currentPath:", currentPath); // Add logging
+  console.log("Navigation items rendering with activePage:", activePage, "currentPath:", currentPath);
 
   const items = [
     {

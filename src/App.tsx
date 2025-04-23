@@ -14,6 +14,8 @@ import NotFound from "./pages/NotFound";
 import BillingHistoryPage from "@/pages/BillingHistoryPage";
 import ProtectedRoute from './components/ProtectedRoute';
 import { setNavigate } from './hooks/adConnections/utils/navigationUtils';
+import AnalyticsPage from './pages/AnalyticsPage';
+import ConnectionsPage from './pages/ConnectionsPage';
 
 function App() {
   const navigate = useNavigate();
@@ -30,11 +32,13 @@ function App() {
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
       <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
       <Route path="/credits" element={<ProtectedRoute><CreditsInfoPage /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
       <Route path="/billing/history" element={<ProtectedRoute><BillingHistoryPage /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+      <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
