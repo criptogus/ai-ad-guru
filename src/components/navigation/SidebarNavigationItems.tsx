@@ -28,12 +28,7 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
   console.log("Navigation items rendering with activePage:", activePage, "currentPath:", currentPath);
 
   const items = [
-    {
-      name: 'Landing',
-      icon: Home,
-      path: '/',
-      active: currentPath === '/',
-    },
+    // Removed the Landing page navigation item
     {
       name: 'Dashboard',
       icon: LayoutDashboard,
@@ -110,3 +105,4 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
 };
 
 export default SidebarNavigationItems;
+
