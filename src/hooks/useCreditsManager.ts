@@ -31,7 +31,7 @@ export const useCreditsManager = () => {
         return false;
       }
   
-      console.log(`Credit check: Required ${requiredCredits}, Available ${data.balance || 0}`);
+      console.log(`Credit check: Required ${requiredCredits}, Available ${data.credits || 0}`);
       return (data.credits || 0) >= requiredCredits;
     } catch (error) {
       console.error('Unexpected error checking credit balance:', error);

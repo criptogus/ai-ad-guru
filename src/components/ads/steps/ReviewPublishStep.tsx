@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,13 +8,15 @@ import { toast } from "sonner";
 interface ReviewPublishStepProps {
   campaignData: any;
   onBack: () => void;
-  onFinish: () => void;
+  onFinish: () => Promise<void>;
+  canPublish: boolean;
 }
 
 const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
   campaignData,
   onBack,
-  onFinish
+  onFinish,
+  canPublish
 }) => {
   const [isPublishing, setIsPublishing] = useState(false);
   
@@ -135,7 +136,7 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
         </Button>
         <Button 
           onClick={handlePublish}
-          disabled={isPublishing}
+          disabled={isPublishing || !canPublish}
         >
           {isPublishing ? (
             <>
