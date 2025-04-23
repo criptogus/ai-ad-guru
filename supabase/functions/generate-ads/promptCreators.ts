@@ -21,82 +21,70 @@ interface PromptMessages {
   userMessage: string;
 }
 
-export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindTrigger?: string): PromptMessages {
-  const languageInput = campaignData.language || "Portuguese";
-  const language = normalizeLanguage(languageInput);
-  const languageCode = getLanguageFromLocale(language);
+function getLanguageName(langCode: string): string {
+  const map: Record<string, string> = {
+    pt: "Português",
+    en: "Inglês",
+    es: "Espanhol",
+    fr: "Francês",
+    de: "Alemão",
+    it: "Italiano",
+    zh: "Chinês",
+    ja: "Japonês",
+    ko: "Coreano"
+  };
+  return map[langCode.toLowerCase()] || langCode;
+}
 
-  const langInstructions = {
-    pt: {
-      name: "Português",
-      generic_terms: "serviços profissionais, resultados de qualidade",
-      response_lang: "português"
-    },
-    es: {
-      name: "Español",
-      generic_terms: "servicios profesionales, resultados de qualidade",
-      response_lang: "español"
-    },
-    en: {
-      name: "English",
-      generic_terms: "professional services, quality results",
-      response_lang: "English"
-    }
-  }[languageCode];
+export function createGoogleAdsPrompt(
+  campaignData: WebsiteAnalysisResult,
+  mindTrigger?: string
+): PromptMessages {
+  const language = campaignData.language?.toLowerCase() || "en";
+  const readableLanguage = getLanguageName(language);
 
-  const systemMessage = [
-    `Você é um redator publicitário sênior especializado em anúncios de Google Ads.`,
-    `Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.`,
-    `A resposta deve estar COMPLETAMENTE em ${langInstructions.name}.`,
-    `IMPORTANTE:`,
-    `- JAMAIS misture idiomas, seja 100% fiel ao idioma escolhido.`,
-    `- NUNCA use termos genéricos como "${langInstructions.generic_terms}" ou similares.`,
-    `- Use APENAS as informações fornecidas abaixo.`,
-    `- Ignore campos em branco (NÃO invente dados).`,
-    `- Retorne APENAS o JSON formatado conforme o exemplo.`,
-    `- Valide que a resposta esteja no formato JSON usando aspas duplas corretas (não use aspas simples) para cada chave e valor.`,
-    `- NÃO use pontuação incorreta, como pontos no meio de frases ou após vírgulas.`,
-    `- Cada título e descrição deve ter pontuação correta e ser uma frase coerente.`,
-    `- Evite repetir as mesmas informações em diferentes títulos.`,
-  ].join('\n');
+  const systemMessage = `
+You are a senior copywriter specialized in Google Ads.
+Your goal is to write highly converting ads using ONLY the provided information.
+Do NOT invent information. 
+Make sure the entire response is in ${readableLanguage.toUpperCase()} — absolutely no mixed languages.
+Never use generic placeholders like "professional services" unless explicitly stated.
+Only return the response in the format specified.
+`;
 
-  const userMessage = [
-    `Crie 5 anúncios de texto para Google Ads usando exclusivamente os dados abaixo:`,
-    ``,
-    `- Empresa: ${campaignData.companyName}`,
-    `- Website: ${campaignData.websiteUrl}`,
-    `- Produto ou serviço: ${campaignData.product || "Não especificado - não invente"}`,
-    `- Objetivo: ${campaignData.objective || "Não especificado - não invente"}`,
-    `- Público-alvo: ${campaignData.targetAudience || "Não especificado - não invente"}`,
-    `- Tom de voz: ${campaignData.brandTone || "Não especificado - não invente"}`,
-    `- Gatilho mental: ${mindTrigger || "Não especificado - não invente"}`,
-    `- Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) && campaignData.uniqueSellingPoints.length > 0) ? campaignData.uniqueSellingPoints.join(', ') : "Não especificado - não invente"}`,
-    `- Palavras-chave: ${(Array.isArray(campaignData.keywords) && campaignData.keywords.length > 0) ? campaignData.keywords.join(', ') : "Não especificado - não invente"}`,
-    `- Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "Não especificado - não invente"}`,
-    ``,
-    `Requisitos:`,
-    `- Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)`,
-    `- 2 descrições (máx 90 caracteres cada)`,
-    `- Um display_url baseado no site fornecido`,
-    `- APENAS PORTUGUÊS. NÃO MISTURE COM INGLÊS OU OUTRO IDIOMA.`,
-    `- Cada título e descrição deve ser uma frase completa com pontuação correta.`,
-    `- NÃO inclua pontos incorretos, como pontos entre títulos ou após vírgulas.`,
-    `- NÃO usar pontuação em excesso, como pontos em sequência ou vírgulas seguidas de pontos.`,
-    `- NÃO criar dados fictícios ou genéricos`,
-    `- O JSON deve ser válido com aspas duplas para todas as chaves e valores.`,
-    ``,
-    `Formato OBRIGATÓRIO de resposta (JSON):`,
-    `[`,
-    `  {`,
-    `    "headline_1": "...",`,
-    `    "headline_2": "...",`,
-    `    "headline_3": "...",`,
-    `    "description_1": "...",`,
-    `    "description_2": "...",`,
-    `    "display_url": "www.exemplo.com"`,
-    `  }`,
-    `]`
-  ].join('\n');
+  const userMessage = `
+Create 5 Google Ads using ONLY the following campaign information:
+
+- Company: ${campaignData.companyName || "(missing)"}
+- Website: ${campaignData.websiteUrl || "(missing)"}
+- Product/Service: ${campaignData.product || "(missing)"}
+- Objective: ${campaignData.objective || "(missing)"}
+- Target Audience: ${campaignData.targetAudience || "(missing)"}
+- Tone of voice: ${campaignData.brandTone || "(missing)"}
+- Mental Trigger: ${mindTrigger || "(missing)"}
+- Differentials: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(missing)"}
+- Keywords: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(missing)"}
+- Description: ${campaignData.companyDescription || campaignData.businessDescription || "(missing)"}
+
+Rules:
+- Each ad must include 3 headlines (max 30 characters each)
+- 2 descriptions (max 90 characters each)
+- A display_url derived from the provided website
+- NO invented content
+- NO text in any language other than ${readableLanguage}
+
+Return ONLY a JSON array like this:
+[
+  {
+    "headline_1": "...",
+    "headline_2": "...",
+    "headline_3": "...",
+    "description_1": "...",
+    "description_2": "...",
+    "display_url": "www.example.com"
+  }
+]
+`;
 
   return { systemMessage, userMessage };
 }
