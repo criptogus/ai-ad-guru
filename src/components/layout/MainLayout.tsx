@@ -19,7 +19,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <MobileSidebarToggle onOpen={() => setSidebarOpen(true)} />
 
       <main className={cn(
-        "flex-1 overflow-y-auto bg-gray-50 dark:bg-background transition-all duration-300 p-4 md:p-6",
+        "flex-1 overflow-y-auto bg-gray-50 dark:bg-background transition-all duration-300 p-4",
         sidebarCollapsed ? "md:ml-16" : "md:ml-64"
       )}>
         {children}
