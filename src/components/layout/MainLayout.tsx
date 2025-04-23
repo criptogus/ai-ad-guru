@@ -24,8 +24,8 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
         className={cn(
           "flex-1 h-screen overflow-y-auto p-4 md:p-6",
           sidebarCollapsed
-            ? "md:pl-16" // compensação lateral para sidebar colapsado
-            : "md:pl-64" // compensação lateral para sidebar expandido
+            ? "md:pl-12" // Reduced side padding for collapsed sidebar
+            : "md:pl-16" // Reduced side padding for expanded sidebar
         )}
       >
         {children}
