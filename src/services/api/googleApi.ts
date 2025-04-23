@@ -134,23 +134,66 @@ export const generateGoogleAds = async (
       return fixedText;
     };
     
+    // Função melhorada para corrigir a pontuação
+    const fixPunctuation = (text: string): string => {
+      if (!text) return "";
+      
+      // Remove pontos em locais incorretos (ex: depois de vírgulas)
+      let fixedText = text.replace(/,\./g, ',');
+      
+      // Remove pontos duplicados
+      fixedText = fixedText.replace(/\.{2,}/g, '.');
+      
+      // Remove espaços antes de pontuação
+      fixedText = fixedText.replace(/\s+([,.!?;:])/g, '$1');
+      
+      // Adiciona espaço após pontuação se seguido por uma letra
+      fixedText = fixedText.replace(/([,.!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2');
+      
+      // Remove pontuação duplicada
+      fixedText = fixedText.replace(/([,.!?;:])\1+/g, '$1');
+      
+      // Remove espaços duplicados
+      fixedText = fixedText.replace(/\s+/g, ' ').trim();
+      
+      // Se o texto não terminar com pontuação, adiciona ponto final
+      if (!/[.!?]$/.test(fixedText)) {
+        fixedText = fixedText + '.';
+      }
+      
+      return fixedText;
+    };
+    
     // Validar e normalizar os anúncios
     const validatedAds = adsToProcess.map((ad: any) => {
-      const headline1 = fixTextSpacing(detectAndFixEnglish(ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || ''));
-      const headline2 = fixTextSpacing(detectAndFixEnglish(ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || ''));
-      const headline3 = fixTextSpacing(detectAndFixEnglish(ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || ''));
-      const description1 = fixTextSpacing(detectAndFixEnglish(ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || ''));
-      const description2 = fixTextSpacing(detectAndFixEnglish(ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || ''));
+      const headline1Raw = ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '';
+      const headline2Raw = ad.headline_2 || ad.headline2 || ad.headlineTwo || ad.title2 || '';
+      const headline3Raw = ad.headline_3 || ad.headline3 || ad.headlineThree || ad.title3 || '';
+      const description1Raw = ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || '';
+      const description2Raw = ad.description_2 || ad.description2 || ad.descriptionTwo || ad.desc2 || '';
+      
+      // Aplicar correções de idioma e pontuação
+      const headline1 = fixPunctuation(detectAndFixEnglish(headline1Raw));
+      const headline2 = fixPunctuation(detectAndFixEnglish(headline2Raw));
+      const headline3 = fixPunctuation(detectAndFixEnglish(headline3Raw));
+      const description1 = fixPunctuation(detectAndFixEnglish(description1Raw));
+      const description2 = fixPunctuation(detectAndFixEnglish(description2Raw));
       
       // Log detalhado para debug
-      console.log('Anúncio normalizado:', { 
+      console.log('Anúncio processado:', { 
         original: {
-          headline1: ad.headline_1 || ad.headline1 || ad.headlineOne || ad.title1 || '',
-          description1: ad.description_1 || ad.description1 || ad.descriptionOne || ad.desc1 || ''
+          headline1: headline1Raw,
+          headline2: headline2Raw,
+          headline3: headline3Raw,
+          description1: description1Raw,
+          description2: description2Raw
         },
-        normalizado: {
+        corrigido: {
           headline1, 
-          description1
+          headline2,
+          headline3,
+          description1,
+          description2
         }
       });
       

@@ -34,7 +34,7 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
     },
     es: {
       name: "Español",
-      generic_terms: "servicios profesionales, resultados de calidad",
+      generic_terms: "servicios profesionales, resultados de qualidade",
       response_lang: "español"
     },
     en: {
@@ -55,6 +55,9 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
     `- Ignore campos em branco (NÃO invente dados).`,
     `- Retorne APENAS o JSON formatado conforme o exemplo.`,
     `- Valide que a resposta esteja no formato JSON usando aspas duplas corretas (não use aspas simples) para cada chave e valor.`,
+    `- NÃO use pontuação incorreta, como pontos no meio de frases ou após vírgulas.`,
+    `- Cada título e descrição deve ter pontuação correta e ser uma frase coerente.`,
+    `- Evite repetir as mesmas informações em diferentes títulos.`,
   ].join('\n');
 
   const userMessage = [
@@ -75,7 +78,10 @@ export function createGoogleAdsPrompt(campaignData: WebsiteAnalysisResult, mindT
     `- Cada anúncio deve ter 3 títulos (máx 30 caracteres cada)`,
     `- 2 descrições (máx 90 caracteres cada)`,
     `- Um display_url baseado no site fornecido`,
-    `- NÃO incluir texto em inglês ou outro idioma que não seja ${langInstructions.response_lang}`,
+    `- APENAS PORTUGUÊS. NÃO MISTURE COM INGLÊS OU OUTRO IDIOMA.`,
+    `- Cada título e descrição deve ser uma frase completa com pontuação correta.`,
+    `- NÃO inclua pontos incorretos, como pontos entre títulos ou após vírgulas.`,
+    `- NÃO usar pontuação em excesso, como pontos em sequência ou vírgulas seguidas de pontos.`,
     `- NÃO criar dados fictícios ou genéricos`,
     `- O JSON deve ser válido com aspas duplas para todas as chaves e valores.`,
     ``,
@@ -108,7 +114,7 @@ export function createLinkedInAdsPrompt(campaignData: WebsiteAnalysisResult, min
     },
     es: {
       name: "Español",
-      generic_terms: "servicios profesionales, resultados de calidad",
+      generic_terms: "servicios profesionales, resultados de qualidade",
       response_lang: "español"
     },
     en: {
