@@ -1,9 +1,13 @@
 
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { fetchWebsiteData } from "./websiteDataFetcher.ts";
-import { analyzeWebsiteWithAI } from "./aiAnalyzer.ts";
-import { corsHeaders, handleResponse } from "./utils.ts";
-import { CacheHandler } from "./cacheHandler.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+import { OpenAI } from "https://esm.sh/openai@4.20.1";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -12,96 +16,115 @@ serve(async (req) => {
   }
 
   try {
-    // Get OpenAI API key from environment variable
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
-      console.error('OPENAI_API_KEY is not set');
-      return handleResponse({ 
-        success: false, 
-        error: "OpenAI API key is not configured" 
-      }, 500);
+      throw new Error('OpenAI API key not configured');
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const { url } = await req.json();
+    console.log('Analyzing URL:', url);
+
+    // Fetch website content
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    if (!doc) {
+      throw new Error("Failed to parse HTML");
+    }
+
+    // Extract relevant content
+    const title = doc.querySelector("title")?.textContent || "";
+    const metaDescription = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
+    const metaKeywords = doc.querySelector('meta[name="keywords"]')?.getAttribute("content") || "";
     
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase configuration missing');
-      return handleResponse({ 
-        success: false, 
-        error: "Database connection failed" 
-      }, 500);
+    // Get main content (avoiding navigation, footer, etc)
+    let mainContent = "";
+    const contentElements = doc.querySelectorAll("main, article, section, .content, #content");
+    for (let i = 0; i < contentElements.length; i++) {
+      const text = contentElements[i].textContent?.trim();
+      if (text && text.length > 50) {
+        mainContent += text + "\n";
+      }
+      if (mainContent.length > 3000) break; // Limit content size
     }
+
+    // Create OpenAI client
+    const openai = new OpenAI({
+      apiKey: openaiApiKey,
+    });
+
+    const prompt = `
+    You are an expert business and marketing analyst. Analyze this website content and extract key business information.
+    Use the website's original language in your response.
+
+    Title: ${title}
+    Meta Description: ${metaDescription}
+    Keywords: ${metaKeywords}
+    Content: ${mainContent.slice(0, 3000)}
+
+    Extract and provide:
+    1. Company Name
+    2. Business Description (2-3 sentences)
+    3. Target Audience
+    4. Brand Tone/Voice
+    5. Unique Selling Points (3-5 points)
+    6. Keywords for Advertising (5-7 keywords)
+    7. Call-to-Action Suggestions (3 variations)
+
+    Return ONLY a JSON object with these exact fields:
+    {
+      "companyName": "string",
+      "businessDescription": "string",
+      "targetAudience": "string",
+      "brandTone": "string",
+      "uniqueSellingPoints": ["string"],
+      "keywords": ["string"],
+      "callToAction": ["string"]
+    }
+    `;
+
+    console.log("Sending request to OpenAI...");
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7
+    });
+
+    const analysisResult = JSON.parse(completion.choices[0].message.content);
     
-    // Initialize cache handler
-    const cacheHandler = new CacheHandler(supabaseUrl, supabaseKey);
-    console.log("OpenAI API key found, length:", openaiApiKey.length);
-
-    // Parse request body
-    const requestData = await req.json();
-    const { url } = requestData;
+    // Cache the result in the website_analysis_cache table
+    const { data: supabaseUrl } = await Deno.env.get('SUPABASE_URL');
+    const { data: supabaseKey } = await Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    if (!url) {
-      return handleResponse({ 
-        success: false, 
-        error: "URL is required" 
-      }, 400);
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      await supabase
+        .from('website_analysis_cache')
+        .upsert({
+          url,
+          analysis_result: analysisResult,
+        });
     }
 
-    console.log(`Analyzing website: ${url}`);
+    return new Response(
+      JSON.stringify({ success: true, data: analysisResult }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
-    // Check cache first
-    const { data: cachedResult, fromCache, cachedAt } = await cacheHandler.checkCache(url);
-    
-    // If we have a valid cached result, return it
-    if (cachedResult && fromCache) {
-      return handleResponse({ 
-        success: true, 
-        data: cachedResult,
-        fromCache: true,
-        cachedAt
-      }, 200);
-    }
-
-    // Step 1: Fetch website content
-    let websiteData;
-    try {
-      websiteData = await fetchWebsiteData(url);
-      console.log("Successfully fetched website data");
-    } catch (error) {
-      console.error("Error fetching website data:", error);
-      return handleResponse({
-        success: false,
-        error: `Failed to fetch website data: ${error.message || "Unknown error"}`
-      }, 500);
-    }
-
-    // Step 2: Analyze website with OpenAI
-    try {
-      console.log("Analyzing website data with OpenAI...");
-      const websiteAnalysis = await analyzeWebsiteWithAI(websiteData, openaiApiKey);
-      
-      console.log("Website analysis completed successfully");
-      console.log("Detected language:", websiteAnalysis.language || "en");
-      
-      // Cache the analysis result
-      await cacheHandler.cacheResult(url, websiteAnalysis, websiteAnalysis.language || "en");
-      
-      return handleResponse({ success: true, data: websiteAnalysis }, 200);
-    } catch (openAiError) {
-      console.error("OpenAI API error:", openAiError);
-      return handleResponse({ 
-        success: false, 
-        error: `Error communicating with AI service: ${openAiError.message || "Unknown error"}`,
-        details: JSON.stringify(openAiError)
-      }, 500);
-    }
   } catch (error) {
-    console.error("Error in analyze-website function:", error.message);
-    return handleResponse({ 
-      success: false, 
-      error: error.message || "An error occurred while analyzing the website" 
-    }, 500);
+    console.error('Error:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });

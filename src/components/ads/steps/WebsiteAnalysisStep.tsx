@@ -36,7 +36,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
   const handleAnalyze = async () => {
     if (!url) {
-      toast.error("Por favor, insira uma URL válida");
+      toast.error("Please enter a valid URL");
       return;
     }
 
@@ -44,14 +44,13 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     try {
       new URL(url.startsWith('http') ? url : `https://${url}`);
     } catch (e) {
-      toast.error("URL inválida. Use o formato: exemplo.com");
+      toast.error("Invalid URL format. Use format: example.com");
       return;
     }
 
     setIsAnalyzing(true);
     
     try {
-      // Analyze the website using the service
       const result = await analyzeWebsite({
         url,
         userId: user?.id || "anonymous"
@@ -69,13 +68,11 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           keywords: result.keywords?.join(", ") || ""
         });
 
-        toast.success("Análise concluída com sucesso!");
-      } else {
-        toast.error("Falha na análise. Tente novamente ou preencha manualmente.");
+        toast.success("Website analysis completed!");
       }
     } catch (error) {
       console.error("Error analyzing website:", error);
-      toast.error("Erro ao analisar o website.");
+      toast.error("Failed to analyze website. Please try again or fill in manually.");
     } finally {
       setIsAnalyzing(false);
     }
