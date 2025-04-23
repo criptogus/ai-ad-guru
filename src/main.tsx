@@ -9,6 +9,7 @@ import { CreditsProvider } from "@/contexts/CreditsContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App'
 import './index.css'
 
@@ -25,21 +26,23 @@ const queryClient = new QueryClient({
 // Only use one Router, not both
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <CreditsProvider>
-              <CampaignProvider>
-                <LanguageProvider>
-                  <App />
-                  <Toaster position="top-center" richColors />
-                </LanguageProvider>
-              </CampaignProvider>
-            </CreditsProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <CreditsProvider>
+                <CampaignProvider>
+                  <LanguageProvider>
+                    <App />
+                    <Toaster position="top-center" richColors />
+                  </LanguageProvider>
+                </CampaignProvider>
+              </CreditsProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>
 )
