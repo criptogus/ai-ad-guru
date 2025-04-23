@@ -79,21 +79,21 @@ export const GenerateAds: React.FC<GenerateAdsProps> = ({ onNext }) => {
       
       setIsGenerating(true);
       
-      // Ensure companyName and websiteUrl are always present
       const generationData = {
         ...values,
         companyName: values.companyName || "Default Company Name", 
-        websiteUrl: values.websiteUrl || "https://example.com", // Add a default website URL
+        websiteUrl: values.websiteUrl || "https://example.com",
         companyDescription: values.companyDescription || "",
         objective: values.objective || "awareness",
         targetAudience: values.targetAudience || "",
-        brandTone: values.brandTone || "professional"
+        brandTone: values.brandTone || "professional",
+        platforms: values.platforms && values.platforms.length > 0 
+          ? values.platforms 
+          : ["google"]
       };
       
-      // Generate ads via service
       const generatedAds = await generateAds(generationData);
       
-      // Deduct credits
       await deductCredits(creditCost);
       
       toast.success("Anúncios gerados com sucesso!", {
