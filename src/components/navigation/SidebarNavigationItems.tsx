@@ -10,7 +10,8 @@ import {
   Megaphone,
   Compass,
   LogOut,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -27,6 +28,12 @@ const SidebarNavigationItems: React.FC<SidebarNavigationItemsProps> = ({ collaps
   console.log("Navigation items rendering with activePage:", activePage, "currentPath:", currentPath);
 
   const items = [
+    {
+      name: 'Landing',
+      icon: Home,
+      path: '/',
+      active: currentPath === '/',
+    },
     {
       name: 'Dashboard',
       icon: LayoutDashboard,

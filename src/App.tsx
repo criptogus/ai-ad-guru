@@ -16,6 +16,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { setNavigate } from './hooks/adConnections/utils/navigationUtils';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
+import LandingPage from './pages/LandingPage';
+import HomePage from './pages/HomePage';
 
 function App() {
   const navigate = useNavigate();
@@ -27,7 +29,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/auth" replace />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/home" element={<HomePage />} />
       <Route path="/auth" element={<Authentication />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
