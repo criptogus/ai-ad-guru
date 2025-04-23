@@ -1,223 +1,191 @@
 
 import React, { useState } from "react";
-import { publishAds } from "@/services/ads/publishService";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, CheckCircle, Info, Loader2, Send } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { publishAds, trackAdPublicationCredits } from "@/services/ads/publishService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { Loader2 } from "lucide-react";
 
 interface PublishAdsProps {
   ads: Record<string, any[]>;
   campaignData: any;
   onBack: () => void;
-  onFinish?: () => void;
+  onFinish: () => void;
 }
 
 export const PublishAds = ({ ads, campaignData, onBack, onFinish }: PublishAdsProps) => {
-  const [loading, setLoading] = useState(false);
-  const [published, setPublished] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [results, setResults] = useState<Record<string, {success: number, error: number}>>({});
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [publishing, setPublishing] = useState<Record<string, boolean>>({});
+  const [published, setPublished] = useState<Record<string, any>>({});
+  const [error, setError] = useState<Record<string, string>>({});
 
-  const totalAds = Object.values(ads).reduce((total, platformAds) => total + platformAds.length, 0);
+  const platforms = Object.keys(ads).filter(platform => ads[platform].length > 0);
   
-  const handlePublish = async () => {
+  const calculateTotalAds = () => {
+    return platforms.reduce((total, platform) => total + ads[platform].length, 0);
+  };
+
+  const calculateTotalCost = () => {
+    const platformCost: Record<string, number> = {
+      google: 2,
+      meta: 3,
+      linkedin: 5,
+      microsoft: 2
+    };
+
+    return platforms.reduce((total, platform) => {
+      return total + (ads[platform].length * (platformCost[platform] || 2));
+    }, 0);
+  };
+
+  const handlePublish = async (platform: string) => {
+    setPublishing(prev => ({ ...prev, [platform]: true }));
+    setError(prev => ({ ...prev, [platform]: "" }));
+    
     try {
-      setLoading(true);
-      setProgress(0);
-      
-      let currentProgress = 0;
-      const progressIncrement = 100 / totalAds;
-      const publishResults: Record<string, {success: number, error: number}> = {};
-      
-      // Publish ads for each platform
-      for (const platform of Object.keys(ads)) {
-        publishResults[platform] = { success: 0, error: 0 };
-        
-        for (const ad of ads[platform]) {
-          try {
-            await publishAds({ 
-              platform, 
-              ad, 
-              campaignData 
-            });
-            
-            publishResults[platform].success++;
-          } catch (error) {
-            console.error(`Error publishing ad for ${platform}:`, error);
-            publishResults[platform].error++;
-          }
-          
-          // Update progress
-          currentProgress += progressIncrement;
-          setProgress(Math.min(Math.round(currentProgress), 100));
-          
-          // Small delay to show progress
-          await new Promise(r => setTimeout(r, 400));
-        }
+      // Handle each ad in the platform
+      const results = [];
+      for (const ad of ads[platform]) {
+        const result = await publishAds({ 
+          platform, 
+          ad, 
+          campaignData 
+        });
+        results.push(result);
       }
       
-      setResults(publishResults);
-      setPublished(true);
-      
-      const totalSuccess = Object.values(publishResults)
-        .reduce((sum, result) => sum + result.success, 0);
-      
-      if (totalSuccess === totalAds) {
-        toast({
-          title: "Publicação concluída",
-          description: `Todos os ${totalAds} anúncios foram publicados com sucesso`,
-        });
-      } else {
-        toast({
-          variant: "default",
-          title: "Publicação parcial",
-          description: `${totalSuccess} de ${totalAds} anúncios foram publicados com sucesso`,
-        });
+      // Track credit usage if user is available
+      if (user) {
+        await trackAdPublicationCredits(
+          user.id,
+          platform, 
+          ads[platform].length
+        );
       }
       
-    } catch (err: any) {
+      setPublished(prev => ({ 
+        ...prev, 
+        [platform]: results 
+      }));
+      
       toast({
+        title: "Anúncios publicados",
+        description: `${ads[platform].length} anúncios publicados no ${getPlatformName(platform)}`,
+      });
+    } catch (err: any) {
+      setError(prev => ({ 
+        ...prev, 
+        [platform]: err.message || "Erro ao publicar anúncios" 
+      }));
+      
+      toast({
+        title: "Erro ao publicar",
+        description: `Não foi possível publicar os anúncios no ${getPlatformName(platform)}`,
         variant: "destructive",
-        title: "Erro na publicação",
-        description: err.message || "Ocorreu um erro ao publicar os anúncios",
       });
     } finally {
-      setLoading(false);
-      setProgress(100);
+      setPublishing(prev => ({ ...prev, [platform]: false }));
     }
   };
 
-  const getPlatformDisplayName = (platform: string) => {
-    switch (platform) {
-      case "google": return "Google Ads";
-      case "meta": return "Meta/Instagram";
-      case "linkedin": return "LinkedIn";
-      case "microsoft": return "Microsoft";
-      default: return platform;
+  const handlePublishAll = async () => {
+    for (const platform of platforms) {
+      await handlePublish(platform);
     }
+    
+    toast({
+      title: "Processo finalizado",
+      description: "Todos os anúncios foram processados",
+    });
+  };
+
+  const getPlatformName = (platform: string) => {
+    const names: Record<string, string> = {
+      google: "Google Ads",
+      meta: "Meta Ads (Facebook/Instagram)",
+      linkedin: "LinkedIn Ads",
+      microsoft: "Microsoft Ads"
+    };
+    return names[platform] || platform;
+  };
+
+  const isAllPublished = () => {
+    return platforms.every(platform => published[platform]);
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">3. Publicar Anúncios</CardTitle>
-      </CardHeader>
+    <Card className="p-6">
+      <h2 className="text-xl font-bold mb-4">Publicar Anúncios</h2>
       
-      <CardContent className="space-y-4">
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertTitle>Revisão final</AlertTitle>
-          <AlertDescription>
-            Você está prestes a publicar {totalAds} anúncios nas plataformas selecionadas.
-            Esta ação pode consumir créditos da sua conta.
-          </AlertDescription>
-        </Alert>
-
-        <div className="border rounded-lg p-4">
-          <h3 className="font-medium mb-3">Resumo dos anúncios a serem publicados:</h3>
-          <ScrollArea className="h-52">
-            {Object.entries(ads).map(([platform, platformAds]) => (
-              <div key={platform} className="mb-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium">{getPlatformDisplayName(platform)}</h4>
-                  <Badge variant="outline">{platformAds.length} anúncios</Badge>
-                </div>
-                <Separator className="my-2" />
-                <ul className="space-y-1">
-                  {platformAds.map((ad, index) => (
-                    <li key={index} className="text-sm">
-                      Anúncio {index + 1}: {getAdTitle(platform, ad)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </ScrollArea>
+      <div className="mb-6 p-4 bg-muted rounded-md">
+        <h3 className="font-semibold mb-2">Resumo da publicação</h3>
+        <div className="flex justify-between mb-2">
+          <span>Total de anúncios:</span>
+          <Badge>{calculateTotalAds()} anúncios</Badge>
         </div>
-
-        {loading && (
-          <div className="space-y-2">
-            <Progress value={progress} className="w-full" />
-            <p className="text-sm text-center text-muted-foreground">
-              Publicando anúncios ({progress}%)
-            </p>
-          </div>
-        )}
-
-        {published && (
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <h3 className="font-medium mb-3">Resultados da publicação:</h3>
-            <div className="space-y-2">
-              {Object.entries(results).map(([platform, result]) => (
-                <div key={platform} className="flex justify-between items-center">
-                  <span>{getPlatformDisplayName(platform)}</span>
-                  <div className="flex gap-3">
-                    <Badge variant="success" className="bg-green-100 text-green-800">
-                      {result.success} publicados
-                    </Badge>
-                    {result.error > 0 && (
-                      <Badge variant="destructive">
-                        {result.error} falhas
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
+        <div className="flex justify-between">
+          <span>Custo em créditos:</span>
+          <Badge variant="secondary">{calculateTotalCost()} créditos</Badge>
+        </div>
+      </div>
       
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onBack} disabled={loading}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+      <div className="space-y-4 mb-6">
+        {platforms.map(platform => (
+          <div key={platform} className="border rounded-md p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold">{getPlatformName(platform)}</h3>
+              <Badge>{ads[platform].length} anúncios</Badge>
+            </div>
+            
+            {error[platform] && (
+              <div className="text-red-500 text-sm mb-2">{error[platform]}</div>
+            )}
+            
+            <Button 
+              onClick={() => handlePublish(platform)} 
+              disabled={publishing[platform] || !!published[platform]}
+              className="w-full"
+            >
+              {publishing[platform] ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Publicando...
+                </>
+              ) : published[platform] ? (
+                "Publicado ✓"
+              ) : (
+                `Publicar no ${getPlatformName(platform)}`
+              )}
+            </Button>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex justify-between mt-6">
+        <Button variant="outline" onClick={onBack}>
+          Voltar para revisão
         </Button>
         
-        {!published ? (
-          <Button onClick={handlePublish} disabled={loading || totalAds === 0}>
-            {loading ? (
+        {!isAllPublished() ? (
+          <Button onClick={handlePublishAll} disabled={Object.values(publishing).some(v => v)}>
+            {Object.values(publishing).some(v => v) ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Publicando...
               </>
             ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Publicar Anúncios
-              </>
+              "Publicar todos"
             )}
           </Button>
         ) : (
           <Button onClick={onFinish}>
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Concluído
+            Finalizar
           </Button>
         )}
-      </CardFooter>
+      </div>
     </Card>
   );
 };
-
-// Helper function to extract a title from different ad types
-function getAdTitle(platform: string, ad: any): string {
-  switch (platform) {
-    case "google":
-      return ad.headline1 || ad.headline_1 || "Anúncio Google";
-    case "meta":
-      return ad.headline || ad.title || "Anúncio Instagram";
-    case "linkedin":
-      return ad.headline || ad.title || "Anúncio LinkedIn";
-    case "microsoft":
-      return ad.headline1 || ad.headline_1 || "Anúncio Microsoft";
-    default:
-      return "Anúncio";
-  }
-}

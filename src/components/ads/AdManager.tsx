@@ -5,7 +5,7 @@ import { ReviewAds } from "./steps/ReviewAds";
 import { PublishAds } from "./steps/PublishAds";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { StepIndicator } from "@/components/campaign/StepIndicator";
+import StepIndicator from "@/components/campaign/StepIndicator";
 
 const AdManager = () => {
   const [step, setStep] = useState(1);
@@ -45,7 +45,7 @@ const AdManager = () => {
 
         {step === 1 && (
           <GenerateAds
-            onNext={(ads, data) => {
+            onNext={(ads: Record<string, any[]>, data: any) => {
               setGeneratedAds(ads);
               setCampaignData(data);
               setStep(2);
@@ -56,7 +56,7 @@ const AdManager = () => {
         {step === 2 && (
           <ReviewAds
             ads={generatedAds}
-            onApprove={(approved) => {
+            onApprove={(approved: Record<string, any[]>) => {
               setApprovedAds(approved);
               setStep(3);
             }}

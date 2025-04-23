@@ -1,11 +1,19 @@
+
 import React from "react";
-import { LucideIcon } from "lucide-react";
-import { Home, LayoutDashboard, Users, Settings, FileText } from "lucide-react";
+import { 
+  Home, 
+  LayoutDashboard, 
+  Users, 
+  Settings, 
+  FileText,
+  TargetIcon,
+  BarChart3
+} from "lucide-react";
 
 interface NavItem {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: React.ElementType;
   isNew?: boolean;
 }
 
@@ -23,7 +31,7 @@ const SidebarNavigationItems: NavItem[] = [
   {
     title: "Campanhas",
     href: "/campaigns",
-    icon: <LucideIcon name="FileText" />,
+    icon: FileText,
   },
   {
     title: "Conexões",
@@ -35,11 +43,10 @@ const SidebarNavigationItems: NavItem[] = [
     href: "/settings",
     icon: Settings,
   },
-  // Add a new item for the Ad Manager
   {
     title: "Gerenciador de Anúncios",
     href: "/ad-manager",
-    icon: <LucideIcon name="FileText" />,
+    icon: BarChart3,
     isNew: true,
   },
 ];
