@@ -18,6 +18,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
+import SupportPage from './pages/SupportPage';
 
 function App() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function App() {
       <Route path="/billing/history" element={<ProtectedRoute><BillingHistoryPage /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
       <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
+      <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
