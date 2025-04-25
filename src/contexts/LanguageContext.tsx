@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { en, es, pt } from '@/locales';
 
 // Define the language types
@@ -11,6 +11,7 @@ interface LanguageContextType {
   currentLanguage: Language;
   changeLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  translations: TranslationDictionary;
 }
 
 // Create the context with default values
@@ -18,6 +19,7 @@ const LanguageContext = createContext<LanguageContextType>({
   currentLanguage: 'en',
   changeLanguage: () => {},
   t: (key) => key,
+  translations: {}
 });
 
 // Create the provider component
@@ -40,19 +42,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
   
   const [currentLanguage, setCurrentLanguage] = useState<Language>(getInitialLanguage());
-  const [translations, setTranslations] = useState<TranslationDictionary>(
-    currentLanguage === 'es' ? es :
-    currentLanguage === 'pt' ? pt : en
-  );
+  
+  // Memoize translations for performance
+  const translations = useMemo(() => {
+    console.log("Computing translations for:", currentLanguage);
+    return currentLanguage === 'es' ? es :
+           currentLanguage === 'pt' ? pt : en;
+  }, [currentLanguage]);
 
-  // Update translations when language changes
+  // Update document and localStorage when language changes
   useEffect(() => {
-    console.log("Setting language to:", currentLanguage);
-    
-    setTranslations(
-      currentLanguage === 'es' ? es :
-      currentLanguage === 'pt' ? pt : en
-    );
+    console.log("Language changed effect triggered:", currentLanguage);
     
     // Only attempt to access localStorage in browser environment
     if (typeof window !== 'undefined') {
@@ -78,9 +78,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translations[key];
   };
 
+  // Memoize context value to prevent unnecessary renders
+  const contextValue = useMemo(() => ({
+    currentLanguage,
+    changeLanguage,
+    t,
+    translations
+  }), [currentLanguage, translations]);
+
   // Provide the context
   return (
-    <LanguageContext.Provider value={{ currentLanguage, changeLanguage, t }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

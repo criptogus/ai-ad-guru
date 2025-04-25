@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { NavigationItem } from "@/components/layout/NavigationItem";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface SidebarNavigationProps {
   isOpen: boolean;
@@ -31,11 +32,13 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 }) => {
   const location = useLocation();
   const { t, currentLanguage } = useLanguage();
-
-  // Force re-render when language changes
+  // Force component to re-render when language changes
+  const [, setRenderKey] = useState(0);
+  
   useEffect(() => {
-    // This dependency will trigger a re-render when language changes
-    console.log("Language changed to:", currentLanguage);
+    console.log("SidebarNavigation - Language changed to:", currentLanguage);
+    // Force re-render
+    setRenderKey(prevKey => prevKey + 1);
   }, [currentLanguage]);
 
   const navigationItems = [
@@ -94,6 +97,9 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           />
         ))}
       </nav>
+
+      {/* Language Switcher */}
+      {!isCollapsed && <LanguageSwitcher />}
 
       {/* Footer */}
       {!isCollapsed && (
