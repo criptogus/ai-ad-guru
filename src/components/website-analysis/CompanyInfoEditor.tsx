@@ -15,14 +15,14 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
   analysisResult,
   onTextChange
 }) => {
-  // Standard industry categories
+  // Standard industry categories (ensure this matches the list in analyze-website edge function)
   const industries = [
     "Education", "Healthcare", "Technology", "Finance", "Retail", 
     "Manufacturing", "Marketing", "Real Estate", "Travel", "Food & Beverage",
     "Consulting", "Entertainment", "Energy", "Agriculture", "Arts",
     "Automotive", "Media", "Pharmaceuticals", "Telecommunications", "Transportation",
     "Professional Services", "Non-Profit", "Government", "Sports", "Fitness",
-    "Beauty", "Fashion", "Home Improvement", "Legal", "Logistics"
+    "Beauty", "Fashion"
   ];
 
   // Common brand tone options
@@ -31,6 +31,9 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
     "Luxurious", "Empathetic", "Educational", "Inspirational", "Casual"
   ];
 
+  // Current industry value from analysis (ensure proper capitalization)
+  const currentIndustry = analysisResult?.industry || "";
+  
   return (
     <div className="space-y-4">
       <div>
@@ -56,7 +59,7 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
           value={analysisResult.businessDescription || analysisResult.companyDescription || ''}
           onChange={(e) => {
             const value = e.target.value;
-            onTextChange('businessDescription' as keyof WebsiteAnalysisResult, value);
+            onTextChange('businessDescription', value);
             onTextChange('companyDescription' as keyof WebsiteAnalysisResult, value);
           }}
           className="w-full resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
@@ -71,16 +74,16 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
       
       <div>
         <Label htmlFor="industry" className="block text-sm font-medium mb-1">
-          Industry
+          Industry / Segment
         </Label>
         <Select
-          value={analysisResult.industry || ''}
-          onValueChange={(value) => onTextChange('industry' as keyof WebsiteAnalysisResult, value)}
+          value={currentIndustry.toLowerCase()}
+          onValueChange={(value) => onTextChange('industry', value)}
         >
           <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
             <SelectValue placeholder="Select industry" />
           </SelectTrigger>
-          <SelectContent className="dark:bg-gray-800">
+          <SelectContent className="dark:bg-gray-800 max-h-[300px]">
             {industries.map((industry) => (
               <SelectItem key={industry.toLowerCase()} value={industry.toLowerCase()}>
                 {industry}
@@ -88,6 +91,9 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          If the detected industry isn't correct, please select the most appropriate one
+        </p>
       </div>
       
       <div>
@@ -95,8 +101,8 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
           Brand Tone
         </Label>
         <Select
-          value={analysisResult.brandTone || ''}
-          onValueChange={(value) => onTextChange('brandTone' as keyof WebsiteAnalysisResult, value)}
+          value={analysisResult.brandTone?.toLowerCase() || ''}
+          onValueChange={(value) => onTextChange('brandTone', value)}
         >
           <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
             <SelectValue placeholder="Select brand tone" />
@@ -118,7 +124,7 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
         <Textarea
           id="target-audience"
           value={analysisResult.targetAudience || ''}
-          onChange={(e) => onTextChange('targetAudience' as keyof WebsiteAnalysisResult, e.target.value)}
+          onChange={(e) => onTextChange('targetAudience', e.target.value)}
           className="w-full resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           rows={3}
           placeholder="Describe the target audience demographics, interests, and pain points"

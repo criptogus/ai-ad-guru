@@ -38,49 +38,91 @@ export class CacheHandler {
       console.log(`Checking cache for URL: ${normalizedUrl} (hash: ${urlHash})`);
       
       // Check if we have a cached analysis for this URL
-      const { data, error } = await this.supabaseClient
-        .from('website_analysis_cache')
-        .select('*')
-        .eq('url_hash', urlHash)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+      try {
+        // Check if the table exists first
+        const { data: tableData, error: tableError } = await this.supabaseClient
+          .from('website_analysis_cache')
+          .select('created_at')
+          .limit(1);
       
-      if (error) {
-        console.log(`Cache check error for URL ${normalizedUrl}: ${error.message}`);
+        if (tableError) {
+          if (tableError.message.includes('does not exist')) {
+            console.log('Cache table does not exist, creating it');
+            // Create the cache table
+            await this.createCacheTable();
+            return { fromCache: false };
+          }
+          throw tableError;
+        }
+      
+        // Table exists, check for our URL
+        const { data, error } = await this.supabaseClient
+          .from('website_analysis_cache')
+          .select('*')
+          .eq('url', normalizedUrl)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+        
+        if (error) {
+          console.log(`Cache check error for URL ${normalizedUrl}: ${error.message}`);
+          return { fromCache: false };
+        }
+        
+        if (!data) {
+          console.log(`No cache found for URL: ${normalizedUrl}`);
+          return { fromCache: false };
+        }
+        
+        // Check if the cache entry is still valid (less than 30 days old)
+        const cacheDate = new Date(data.created_at);
+        const now = new Date();
+        const diffDays = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (diffDays > 30) {
+          console.log(`Cache expired for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
+          return { fromCache: false };
+        }
+        
+        console.log(`Cache hit for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
+        
+        // Calculate expiration date (30 days from cache date)
+        const expiresAt = new Date(cacheDate);
+        expiresAt.setDate(expiresAt.getDate() + 30);
+        
+        return {
+          fromCache: true,
+          data: data.analysis_result,
+          cachedAt: data.created_at,
+          expiresAt: expiresAt.toISOString()
+        };
+      } catch (error) {
+        console.error(`Specific error checking cache: ${error.message}`);
         return { fromCache: false };
       }
-      
-      if (!data) {
-        console.log(`No cache found for URL: ${normalizedUrl}`);
-        return { fromCache: false };
-      }
-      
-      // Check if the cache entry is still valid (less than 30 days old)
-      const cacheDate = new Date(data.created_at);
-      const now = new Date();
-      const diffDays = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (diffDays > 30) {
-        console.log(`Cache expired for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
-        return { fromCache: false };
-      }
-      
-      console.log(`Cache hit for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
-      
-      // Calculate expiration date (30 days from cache date)
-      const expiresAt = new Date(cacheDate);
-      expiresAt.setDate(expiresAt.getDate() + 30);
-      
-      return {
-        fromCache: true,
-        data: data.analysis_result,
-        cachedAt: data.created_at,
-        expiresAt: expiresAt.toISOString()
-      };
     } catch (error) {
       console.error(`Error checking cache: ${error.message}`);
       return { fromCache: false };
+    }
+  }
+  
+  /**
+   * Create the cache table if it doesn't exist
+   */
+  private async createCacheTable() {
+    try {
+      // Create the table via raw SQL
+      const { error } = await this.supabaseClient.rpc('create_website_analysis_cache_table');
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log("Successfully created website_analysis_cache table");
+      return true;
+    } catch (error) {
+      console.error(`Failed to create cache table: ${error.message}`);
+      return false;
     }
   }
   
@@ -92,17 +134,13 @@ export class CacheHandler {
       // Normalize URL for consistent cache storage
       const normalizedUrl = this.normalizeUrl(url);
       
-      // Hash the URL to use as a cache key
-      const urlHash = await this.hashUrl(normalizedUrl);
-      
-      console.log(`Caching result for URL: ${normalizedUrl} (hash: ${urlHash})`);
+      console.log(`Caching result for URL: ${normalizedUrl}`);
       
       // Store the analysis result in the cache table
       const { error } = await this.supabaseClient
         .from('website_analysis_cache')
         .insert({
           url: normalizedUrl,
-          url_hash: urlHash,
           analysis_result: result
         });
       

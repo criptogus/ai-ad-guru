@@ -200,33 +200,19 @@ serve(async (req) => {
     });
     
     // Define standard industry categories to guide the AI
-    const standardIndustries = `
-      Standard Industry Categories:
-      - Education (schools, universities, e-learning, training)
-      - Healthcare (hospitals, clinics, medical services)
-      - Technology (software, hardware, IT services)
-      - Finance (banking, insurance, investments)
-      - Retail (e-commerce, stores, consumer goods)
-      - Manufacturing (production, factories)
-      - Marketing (agencies, advertising)
-      - Real Estate (property, construction)
-      - Travel (tourism, hospitality, hotels)
-      - Food & Beverage (restaurants, catering)
-      - Consulting (business services, professional advice)
-      - Entertainment (media, events)
-      - Energy (oil, gas, renewables)
-      - Agriculture (farming, food production)
-      - Arts (creative services, design)
-      - Automotive (vehicles, transportation)
-      - Media (publishing, broadcasting)
-      - Pharmaceuticals (medicine, research)
-      - Telecommunications (communication services)
-      - Transportation (logistics, shipping)
-    `;
+    const standardIndustries = [
+      "Education", "Healthcare", "Technology", "Finance", "Retail", 
+      "Manufacturing", "Marketing", "Real Estate", "Travel", "Food & Beverage",
+      "Consulting", "Entertainment", "Energy", "Agriculture", "Arts",
+      "Automotive", "Media", "Pharmaceuticals", "Telecommunications", "Transportation",
+      "Professional Services", "Non-Profit", "Government", "Sports", "Fitness",
+      "Beauty", "Fashion"
+    ].join(", ");
     
     // Create a prompt that respects the detected language
     let systemPrompt = `You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.
-    When identifying the industry category, you MUST choose one from the standard industry list and NOT use descriptive adjectives or qualities.`;
+    When identifying the industry category, you MUST choose one from this standard industry list: ${standardIndustries}.
+    DO NOT use descriptive adjectives or qualities for the industry field.`;
     
     // Use the detected language for the analysis prompt
     if (detectedLanguage === "pt") {
@@ -239,8 +225,6 @@ serve(async (req) => {
     
     // Analyze the website using OpenAI
     const prompt = `
-      You are a website analyzer that extracts key business information.
-      
       Analyze the following website content and extract:
       1. Company Name
       2. Company/Business Description (a concise paragraph)
@@ -250,10 +234,7 @@ serve(async (req) => {
       6. Call to Action phrases (2-4 phrases)
       7. Unique Selling Points (3-5 points)
       8. Industry category - You MUST select from this standard list of industries:
-         Education, Healthcare, Technology, Finance, Retail, Manufacturing, Marketing, Real Estate,
-         Travel, Food & Beverage, Consulting, Entertainment, Energy, Agriculture, Arts, Automotive,
-         Media, Pharmaceuticals, Telecommunications, Transportation, Professional Services, Non-Profit,
-         Government, Sports, Fitness, Beauty, Fashion
+         ${standardIndustries}
       
       IMPORTANT: For the industry field, ONLY choose ONE standard industry category name from the list above.
       DO NOT use descriptive terms like "professional" or "inspirational" for the industry field.
@@ -301,6 +282,13 @@ serve(async (req) => {
     // Parse the response
     const analysisResult = JSON.parse(completion.choices[0].message.content);
     
+    // Ensure the industry field is properly formatted and comes from the standard list
+    if (!standardIndustries.toLowerCase().includes(analysisResult.industry.toLowerCase())) {
+      console.log(`Invalid industry detected: "${analysisResult.industry}", setting to default`);
+      const closestMatch = findClosestIndustry(analysisResult.industry, standardIndustries.split(", "));
+      analysisResult.industry = closestMatch;
+    }
+    
     // Fill in websiteUrl field and ensure language is set
     analysisResult.websiteUrl = url;
     analysisResult.language = detectedLanguage;
@@ -339,3 +327,103 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to find the closest industry from the standard list
+function findClosestIndustry(input: string, industries: string[]): string {
+  if (!input) return "Professional Services";
+  
+  const inputLower = input.toLowerCase();
+  
+  // Direct matches
+  for (const industry of industries) {
+    if (inputLower === industry.toLowerCase()) {
+      return industry;
+    }
+  }
+  
+  // Partial matches
+  for (const industry of industries) {
+    if (inputLower.includes(industry.toLowerCase())) {
+      return industry;
+    }
+  }
+  
+  // Common fallback mappings
+  const fallbackMap: Record<string, string> = {
+    "tech": "Technology", 
+    "software": "Technology",
+    "it": "Technology",
+    "digital": "Technology",
+    "bank": "Finance",
+    "financial": "Finance",
+    "insurance": "Finance",
+    "hospital": "Healthcare",
+    "medical": "Healthcare",
+    "clinic": "Healthcare",
+    "doctor": "Healthcare",
+    "school": "Education",
+    "university": "Education",
+    "college": "Education",
+    "training": "Education",
+    "ecommerce": "Retail",
+    "store": "Retail",
+    "shop": "Retail",
+    "marketing": "Marketing",
+    "advertisement": "Marketing",
+    "ads": "Marketing",
+    "property": "Real Estate",
+    "housing": "Real Estate",
+    "travel": "Travel",
+    "tourism": "Travel",
+    "hotel": "Travel",
+    "food": "Food & Beverage",
+    "restaurant": "Food & Beverage",
+    "consult": "Consulting",
+    "advisor": "Consulting",
+    "movie": "Entertainment",
+    "game": "Entertainment",
+    "music": "Entertainment",
+    "oil": "Energy",
+    "gas": "Energy",
+    "power": "Energy",
+    "electricity": "Energy",
+    "farm": "Agriculture",
+    "art": "Arts",
+    "design": "Arts",
+    "creative": "Arts",
+    "car": "Automotive",
+    "vehicle": "Automotive",
+    "news": "Media",
+    "publishing": "Media",
+    "drug": "Pharmaceuticals",
+    "medicine": "Pharmaceuticals",
+    "telecom": "Telecommunications",
+    "logistics": "Transportation",
+    "shipping": "Transportation",
+    "delivery": "Transportation",
+    "legal": "Professional Services",
+    "law": "Professional Services",
+    "accounting": "Professional Services",
+    "nonprofit": "Non-Profit",
+    "charity": "Non-Profit",
+    "government": "Government",
+    "public": "Government",
+    "sport": "Sports",
+    "fitness": "Fitness",
+    "gym": "Fitness",
+    "beauty": "Beauty",
+    "cosmetic": "Beauty",
+    "fashion": "Fashion",
+    "clothing": "Fashion",
+    "apparel": "Fashion"
+  };
+  
+  for (const [key, value] of Object.entries(fallbackMap)) {
+    if (inputLower.includes(key)) {
+      return value;
+    }
+  }
+  
+  // Default fallback if nothing matches
+  return "Professional Services";
+}
