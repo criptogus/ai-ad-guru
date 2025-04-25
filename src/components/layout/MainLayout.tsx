@@ -10,7 +10,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="relative h-screen w-full flex bg-background dark:bg-gray-900">
-      {/* Sidebar fixed na lateral */}
+      {/* Sidebar fixed on the side */}
       <SidebarNavigation 
         isOpen={sidebarOpen}
         isCollapsed={sidebarCollapsed}
@@ -20,7 +20,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       
       <MobileSidebarToggle onOpen={() => setSidebarOpen(true)} />
 
-      {/* Main content area com compensação para sidebar */}
+      {/* Main content area with compensation for sidebar */}
       <main
         className={cn(
           "flex-1 h-screen overflow-y-auto p-4 md:p-6",

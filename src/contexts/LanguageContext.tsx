@@ -47,6 +47,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Update translations when language changes
   useEffect(() => {
+    console.log("Setting language to:", currentLanguage);
+    
     setTranslations(
       currentLanguage === 'es' ? es :
       currentLanguage === 'pt' ? pt : en
@@ -63,12 +65,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Change language function
   const changeLanguage = (lang: Language) => {
+    console.log("Changing language to:", lang);
     setCurrentLanguage(lang);
   };
 
   // Translation function
   const t = (key: string): string => {
-    return translations[key] || key;
+    if (!translations[key]) {
+      console.warn(`Translation key not found: ${key}`);
+      return key;
+    }
+    return translations[key];
   };
 
   // Provide the context

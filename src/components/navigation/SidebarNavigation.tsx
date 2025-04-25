@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { NavigationItem } from "@/components/layout/NavigationItem";
 import {
@@ -30,7 +30,13 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onClose
 }) => {
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
+
+  // Force re-render when language changes
+  useEffect(() => {
+    // This dependency will trigger a re-render when language changes
+    console.log("Language changed to:", currentLanguage);
+  }, [currentLanguage]);
 
   const navigationItems = [
     { title: t('nav.home'), icon: Home, href: "/" },
