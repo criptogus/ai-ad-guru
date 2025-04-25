@@ -12,7 +12,8 @@ export const Stepper: React.FC<StepperProps> = ({
 }) => {
   return (
     <div className="w-full">
-      <div className="flex justify-between mb-2">
+      {/* Steps indicators */}
+      <div className="flex items-center justify-between mb-4">
         {Array.from({ length: totalSteps }).map((_, index) => (
           <div key={index} className="flex flex-col items-center">
             <div 
@@ -32,13 +33,17 @@ export const Stepper: React.FC<StepperProps> = ({
                 index + 1
               )}
             </div>
+            
+            {/* Connector line between steps */}
             {index < totalSteps - 1 && (
-              <div className="hidden sm:block w-full h-1 bg-gray-200 dark:bg-gray-700 flex-1" />
+              <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 flex-grow mx-2"></div>
             )}
           </div>
         ))}
       </div>
-      <div className="hidden sm:flex justify-between text-xs mt-1">
+      
+      {/* Step labels */}
+      <div className="hidden sm:grid grid-cols-7 text-xs">
         <div className="text-center">Website</div>
         <div className="text-center">Platforms</div>
         <div className="text-center">Triggers</div>
