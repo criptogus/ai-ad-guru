@@ -210,73 +210,174 @@ serve(async (req) => {
       "Beauty", "Fashion"
     ].join(", ");
     
-    // Create a prompt that respects the detected language
-    let systemPrompt = `You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.
-    When identifying the industry category, you MUST choose one from this standard industry list: ${standardIndustries}.
-    DO NOT use descriptive adjectives or qualities for the industry field.
-    For example, use "Education" not "Educational" or "Professional Education".
-    Use "Healthcare" not "Health Services" or "Medical Care".`;
+    // Create language-specific prompts
+    let systemPrompt = "";
     
-    // Use the detected language for the analysis prompt
     if (detectedLanguage === "pt") {
-      systemPrompt += " Responda em português.";
+      systemPrompt = `Você é uma IA especializada em analisar sites e extrair informações de negócios. Responda apenas com o formato JSON solicitado.
+      Ao identificar a categoria da indústria, você DEVE escolher uma desta lista padrão: ${standardIndustries}.
+      NÃO use adjetivos descritivos ou qualidades para o campo da indústria.
+      Por exemplo, use "Education" não "Educational" ou "Professional Education".
+      Use "Healthcare" não "Health Services" ou "Medical Care".
+      Responda em português do Brasil.`;
     } else if (detectedLanguage === "es") {
-      systemPrompt += " Responde en español.";
-    } else if (detectedLanguage === "fr") {
-      systemPrompt += " Répondez en français.";
+      systemPrompt = `Eres una IA especializada en analizar sitios web y extraer información empresarial. Responde solo con el formato JSON solicitado.
+      Al identificar la categoría de la industria, DEBES elegir una de esta lista estándar: ${standardIndustries}.
+      NO uses adjetivos descriptivos o cualidades para el campo de la industria.
+      Por ejemplo, usa "Education" no "Educational" o "Professional Education".
+      Usa "Healthcare" no "Health Services" o "Medical Care".
+      Responde en español.`;
+    } else {
+      systemPrompt = `You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.
+      When identifying the industry category, you MUST choose one from this standard industry list: ${standardIndustries}.
+      DO NOT use descriptive adjectives or qualities for the industry field.
+      For example, use "Education" not "Educational" or "Professional Education".
+      Use "Healthcare" not "Health Services" or "Medical Care".`;
     }
     
-    // Analyze the website using OpenAI
-    const prompt = `
-      Analyze the following website content and extract:
-      1. Company Name
-      2. Company/Business Description (a concise paragraph)
-      3. Target Audience
-      4. Brand Tone (e.g. professional, casual, luxurious)
-      5. Keywords (5-10 relevant keywords)
-      6. Call to Action phrases (2-4 phrases)
-      7. Unique Selling Points (3-5 points)
-      8. Industry category - You MUST select from this standard list of industries:
-         ${standardIndustries}
-      
-      IMPORTANT: For the industry field, ONLY choose ONE standard industry category name from the list above.
-      DO NOT use descriptive terms like "professional" or "inspirational" for the industry field.
-      For example, if it's a school website, use "Education" not "Educational" or "Professional".
-      If it's a healthcare website, use "Healthcare" not "Health Services" or "Medical Care".
-      
-      Website Title: ${websiteData.title}
-      Website Description: ${websiteData.description}
-      Headings: ${websiteData.headings}
-      
-      Website Content:
-      ${websiteData.content}
-      
-      Format your response as JSON with these exact keys:
-      {
-        "companyName": "",
-        "companyDescription": "",
-        "businessDescription": "",
-        "targetAudience": "",
-        "brandTone": "",
-        "keywords": [],
-        "callToAction": [],
-        "uniqueSellingPoints": [],
-        "industry": "",
-        "language": "${detectedLanguage}"
-      }
-      
-      If you can't determine something, make an educated guess based on the available content.
-      For the "industry" field, ONLY use a standard industry category name from the list provided.
-      Do not include explanations, just the JSON object.
-      Respond in the primary language of the website content.
-    `;
+    // Create language-specific prompt text
+    let promptText = "";
+    
+    if (detectedLanguage === "pt") {
+      promptText = `
+        Analise o conteúdo do site a seguir e extraia:
+        1. Nome da Empresa
+        2. Descrição da Empresa/Negócio (um parágrafo conciso)
+        3. Público-Alvo
+        4. Tom da Marca (ex: profissional, casual, luxuoso)
+        5. Palavras-chave (5-10 palavras-chave relevantes)
+        6. Frases de Chamada para Ação (2-4 frases)
+        7. Pontos Únicos de Venda (3-5 pontos)
+        8. Categoria da indústria - Você DEVE selecionar desta lista padrão:
+           ${standardIndustries}
+        
+        IMPORTANTE: Para o campo da indústria, escolha APENAS UMA categoria da lista acima.
+        NÃO use termos descritivos como "profissional" ou "inspirador" para o campo da indústria.
+        Por exemplo, se for um site escolar, use "Education" e não "Educational" ou "Professional".
+        Se for um site de saúde, use "Healthcare" e não "Health Services" ou "Medical Care".
+        
+        Título do Site: ${websiteData.title}
+        Descrição do Site: ${websiteData.description}
+        Cabeçalhos: ${websiteData.headings}
+        
+        Conteúdo do Site:
+        ${websiteData.content}
+        
+        Formate sua resposta como JSON com estas chaves exatas:
+        {
+          "companyName": "",
+          "companyDescription": "",
+          "businessDescription": "",
+          "targetAudience": "",
+          "brandTone": "",
+          "keywords": [],
+          "callToAction": [],
+          "uniqueSellingPoints": [],
+          "industry": "",
+          "language": "${detectedLanguage}"
+        }
+        
+        Se você não conseguir determinar algo, faça uma estimativa educada com base no conteúdo disponível.
+        Para o campo "industry", use APENAS o nome da categoria padrão da lista fornecida.
+        Não inclua explicações, apenas o objeto JSON.
+        Responda no idioma principal do conteúdo do site.
+      `;
+    } else if (detectedLanguage === "es") {
+      promptText = `
+        Analiza el siguiente contenido del sitio web y extrae:
+        1. Nombre de la Empresa
+        2. Descripción de la Empresa/Negocio (un párrafo conciso)
+        3. Público Objetivo
+        4. Tono de la Marca (ej: profesional, casual, lujoso)
+        5. Palabras Clave (5-10 palabras clave relevantes)
+        6. Frases de Llamada a la Acción (2-4 frases)
+        7. Puntos Únicos de Venta (3-5 puntos)
+        8. Categoría de industria - DEBES seleccionar de esta lista estándar:
+           ${standardIndustries}
+        
+        IMPORTANTE: Para el campo de industria, elige SOLO UNA categoría de la lista anterior.
+        NO uses términos descriptivos como "profesional" o "inspirador" para el campo de industria.
+        Por ejemplo, si es un sitio web escolar, usa "Education" no "Educational" o "Professional".
+        Si es un sitio web de salud, usa "Healthcare" no "Health Services" o "Medical Care".
+        
+        Título del Sitio Web: ${websiteData.title}
+        Descripción del Sitio Web: ${websiteData.description}
+        Encabezados: ${websiteData.headings}
+        
+        Contenido del Sitio Web:
+        ${websiteData.content}
+        
+        Formatea tu respuesta como JSON con estas claves exactas:
+        {
+          "companyName": "",
+          "companyDescription": "",
+          "businessDescription": "",
+          "targetAudience": "",
+          "brandTone": "",
+          "keywords": [],
+          "callToAction": [],
+          "uniqueSellingPoints": [],
+          "industry": "",
+          "language": "${detectedLanguage}"
+        }
+        
+        Si no puedes determinar algo, haz una suposición educada basada en el contenido disponible.
+        Para el campo "industry", usa SOLO un nombre de categoría estándar de la lista proporcionada.
+        No incluyas explicaciones, solo el objeto JSON.
+        Responde en el idioma principal del contenido del sitio web.
+      `;
+    } else {
+      promptText = `
+        Analyze the following website content and extract:
+        1. Company Name
+        2. Company/Business Description (a concise paragraph)
+        3. Target Audience
+        4. Brand Tone (e.g. professional, casual, luxurious)
+        5. Keywords (5-10 relevant keywords)
+        6. Call to Action phrases (2-4 phrases)
+        7. Unique Selling Points (3-5 points)
+        8. Industry category - You MUST select from this standard list of industries:
+           ${standardIndustries}
+        
+        IMPORTANT: For the industry field, ONLY choose ONE standard industry category name from the list above.
+        DO NOT use descriptive terms like "professional" or "inspirational" for the industry field.
+        For example, if it's a school website, use "Education" not "Educational" or "Professional".
+        If it's a healthcare website, use "Healthcare" not "Health Services" or "Medical Care".
+        
+        Website Title: ${websiteData.title}
+        Website Description: ${websiteData.description}
+        Headings: ${websiteData.headings}
+        
+        Website Content:
+        ${websiteData.content}
+        
+        Format your response as JSON with these exact keys:
+        {
+          "companyName": "",
+          "companyDescription": "",
+          "businessDescription": "",
+          "targetAudience": "",
+          "brandTone": "",
+          "keywords": [],
+          "callToAction": [],
+          "uniqueSellingPoints": [],
+          "industry": "",
+          "language": "${detectedLanguage}"
+        }
+        
+        If you can't determine something, make an educated guess based on the available content.
+        For the "industry" field, ONLY use a standard industry category name from the list provided.
+        Do not include explanations, just the JSON object.
+        Respond in the primary language of the website content.
+      `;
+    }
     
     console.log("Calling OpenAI for website analysis...");
     
     const completion = await openai.chat.completions.create({
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
+        { role: "user", content: promptText }
       ],
       model: "gpt-4o-mini",
       response_format: { type: "json_object" },

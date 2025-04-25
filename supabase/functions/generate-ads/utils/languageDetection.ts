@@ -5,16 +5,23 @@
  * Checks if text contains common English words
  */
 export function isEnglishText(text: string): boolean {
-  if (!text) return true; // Default to English if empty
+  if (!text) return false; // Changed default to false
   
   // Common English words
   const englishWords = ['the', 'and', 'of', 'to', 'a', 'in', 'for', 'is', 'on', 'that', 'by', 'this', 'with', 'you', 'it'];
   const lowerText = text.toLowerCase();
   
-  return englishWords.some(word => {
+  // Count matches for better confidence
+  let matchCount = 0;
+  englishWords.forEach(word => {
     const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerText);
+    if (regex.test(lowerText)) {
+      matchCount++;
+    }
   });
+  
+  // Return true if we have enough matches (at least 2)
+  return matchCount >= 2;
 }
 
 /**
@@ -27,10 +34,17 @@ export function isPortugueseText(text: string): boolean {
   const portugueseWords = ['de', 'a', 'o', 'que', 'e', 'do', 'da', 'em', 'um', 'para', 'é', 'com', 'não', 'uma', 'os', 'no', 'se', 'na', 'por', 'mais', 'as', 'dos', 'como', 'mas', 'foi', 'ao'];
   const lowerText = text.toLowerCase();
   
-  return portugueseWords.some(word => {
+  // Count matches for better confidence
+  let matchCount = 0;
+  portugueseWords.forEach(word => {
     const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerText);
+    if (regex.test(lowerText)) {
+      matchCount++;
+    }
   });
+  
+  // Return true if we have enough matches (at least 3 for Portuguese)
+  return matchCount >= 3;
 }
 
 /**
@@ -43,10 +57,17 @@ export function isSpanishText(text: string): boolean {
   const spanishWords = ['de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'un', 'por', 'con', 'no', 'una', 'su', 'para', 'es', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'del', 'se', 'las'];
   const lowerText = text.toLowerCase();
   
-  return spanishWords.some(word => {
+  // Count matches for better confidence
+  let matchCount = 0;
+  spanishWords.forEach(word => {
     const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerText);
+    if (regex.test(lowerText)) {
+      matchCount++;
+    }
   });
+  
+  // Return true if we have enough matches (at least 3 for Spanish)
+  return matchCount >= 3;
 }
 
 /**
@@ -56,41 +77,77 @@ export function detectLanguagesInAdContent(ad: any): {
   english: boolean, 
   portuguese: boolean, 
   spanish: boolean, 
-  mixed: boolean 
+  mixed: boolean,
+  primaryLanguage: 'en' | 'pt' | 'es' | 'unknown'
 } {
   const allText = [];
   
   // Extract all text content from the ad based on its shape
-  if ('headlines' in ad) {
+  if ('headlines' in ad || 'headline1' in ad || 'headline_1' in ad) {
     // Google ad
-    allText.push(...ad.headlines, ...ad.descriptions);
+    const headlines = [
+      ad.headline1 || ad.headline_1 || ad.headlines?.[0] || '',
+      ad.headline2 || ad.headline_2 || ad.headlines?.[1] || '',
+      ad.headline3 || ad.headline_3 || ad.headlines?.[2] || ''
+    ].filter(Boolean);
+    
+    const descriptions = [
+      ad.description1 || ad.description_1 || ad.descriptions?.[0] || '',
+      ad.description2 || ad.description_2 || ad.descriptions?.[1] || ''
+    ].filter(Boolean);
+    
+    allText.push(...headlines, ...descriptions);
   } else {
     // Meta ad
-    allText.push(ad.primaryText, ad.headline, ad.description);
+    if (ad.primaryText) allText.push(ad.primaryText);
+    if (ad.headline) allText.push(ad.headline);
+    if (ad.description) allText.push(ad.description);
   }
   
-  // Detect languages in each text piece
-  const hasEnglish = allText.some(isEnglishText);
-  const hasPortuguese = allText.some(isPortugueseText);
-  const hasSpanish = allText.some(isSpanishText);
+  // Join all text for more comprehensive analysis
+  const fullText = allText.join(' ');
+  
+  // Detect languages in the combined text for better accuracy
+  const hasEnglish = isEnglishText(fullText);
+  const hasPortuguese = isPortugueseText(fullText);
+  const hasSpanish = isSpanishText(fullText);
   
   // Determine if languages are mixed
   const mixed = (hasEnglish && (hasPortuguese || hasSpanish)) || 
                (hasPortuguese && (hasEnglish || hasSpanish)) || 
                (hasSpanish && (hasEnglish || hasPortuguese));
   
+  // Determine primary language based on presence
+  let primaryLanguage: 'en' | 'pt' | 'es' | 'unknown' = 'unknown';
+  
+  if (hasPortuguese && !hasEnglish && !hasSpanish) {
+    primaryLanguage = 'pt';
+  } else if (hasSpanish && !hasEnglish && !hasPortuguese) {
+    primaryLanguage = 'es';
+  } else if (hasEnglish && !hasPortuguese && !hasSpanish) {
+    primaryLanguage = 'en';
+  } else if (hasPortuguese && (hasEnglish || hasSpanish)) {
+    // If mixed but Portuguese is present, prioritize it
+    primaryLanguage = 'pt';
+  } else if (hasSpanish) {
+    primaryLanguage = 'es';
+  } else if (hasEnglish) {
+    primaryLanguage = 'en';
+  }
+  
   return {
     english: hasEnglish,
     portuguese: hasPortuguese,
     spanish: hasSpanish,
-    mixed
+    mixed,
+    primaryLanguage
   };
 }
 
 /**
  * Returns language code based on language detection or fallback
  */
-export function detectLanguageCode(text: string | undefined, fallback = 'en'): 'en' | 'pt' | 'es' {
+export function detectLanguageCode(text: string | undefined, fallback = 'pt'): 'en' | 'pt' | 'es' {
   if (!text) return fallback as 'en' | 'pt' | 'es';
   
   // Check the text for specific language markers
@@ -106,7 +163,7 @@ export function detectLanguageCode(text: string | undefined, fallback = 'en'): '
  * Detect language from a locale string like pt-BR, en-US
  */
 export function getLanguageFromLocale(locale: string | undefined): 'en' | 'pt' | 'es' {
-  if (!locale) return 'en';
+  if (!locale) return 'pt'; // Default to Portuguese
   
   const lang = locale.split('-')[0].toLowerCase();
   

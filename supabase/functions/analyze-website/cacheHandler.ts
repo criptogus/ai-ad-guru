@@ -102,11 +102,35 @@ export class CacheHandler {
   // Ensure the cache table exists
   private async ensureCacheTableExists(): Promise<void> {
     try {
-      // Call the SQL function that creates the table if it doesn't exist
-      const { error } = await this.client.rpc("create_website_analysis_cache_table");
+      // Create the website_analysis_cache table if it doesn't exist using direct SQL
+      const { error } = await this.client.rpc("create_cache_table_if_not_exists");
       
       if (error) {
-        console.error("Error ensuring cache table exists:", error);
+        // If the RPC function doesn't exist, create the table directly with SQL query
+        console.error("Error calling RPC function, trying direct SQL:", error);
+        
+        // Try to create the table directly with a SQL query
+        const { error: sqlError } = await this.client.from('website_analysis_cache').select('count(*)');
+        
+        if (sqlError && sqlError.code === '42P01') { // Table doesn't exist error code
+          // Create the table
+          const { error: createError } = await this.client.rpc('exec_sql', {
+            query_string: `
+              CREATE TABLE IF NOT EXISTS public.website_analysis_cache (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                url TEXT NOT NULL UNIQUE,
+                analysis_result JSONB NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+              );
+              CREATE INDEX IF NOT EXISTS idx_website_analysis_cache_url ON public.website_analysis_cache(url);
+            `
+          });
+          
+          if (createError) {
+            console.error("Error creating cache table with direct SQL:", createError);
+          }
+        }
       }
     } catch (error) {
       console.error("Error ensuring cache table exists:", error);
