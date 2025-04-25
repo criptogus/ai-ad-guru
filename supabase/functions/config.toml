@@ -9,5 +9,7 @@ entrypoints = [
   "ad-account-auth/index.ts",
   "webhook-handler/index.ts",
   "generate-banner-image/index.ts",
-  "create-oauth-states/index.ts"
+  "create-oauth-states/index.ts",
+  "analyze-website/index.ts",
+  "get-analysis-cache-status/index.ts"
 ]

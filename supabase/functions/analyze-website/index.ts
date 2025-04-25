@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { scrapeWebsite } from "./websiteScraper.ts";
+import { fetchWebsiteData } from "./websiteDataFetcher.ts";
 import { analyzeWebsiteWithAI } from "./aiAnalyzer.ts";
 import { CacheHandler } from "./cacheHandler.ts";
 
@@ -75,11 +75,11 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set in environment variables');
     }
 
-    // Step 1: Scrape the website content
-    console.log(`Scraping website: ${url}`);
-    const websiteData = await scrapeWebsite(url);
+    // Step 1: Fetch the website content
+    console.log(`Fetching website: ${url}`);
+    const websiteData = await fetchWebsiteData(url);
     if (!websiteData) {
-      throw new Error('Failed to scrape website data');
+      throw new Error('Failed to fetch website data');
     }
 
     // Step 2: Analyze the content with OpenAI
