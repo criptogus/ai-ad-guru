@@ -4,6 +4,34 @@ export const pt = {
   'nav.dashboard': 'Painel',
   'nav.signin': 'Entrar',
   'nav.getStarted': 'Começar',
+  'nav.home': 'Início',
+  'nav.campaigns': 'Campanhas',
+  'nav.connections': 'Conexões',
+  'nav.adManager': 'Gerenciador de Anúncios',
+  'nav.metaAdGenerator': 'Gerador de Anúncios Meta',
+  'nav.settings': 'Configurações',
+  
+  // Ad Manager
+  'adManager.title': 'Criador de Campanhas com IA',
+  'adManager.creditsAvailable': 'Créditos disponíveis',
+  'adManager.credits': 'créditos',
+  'adManager.currentStepCost': 'Custo desta etapa',
+  'adManager.creditUsage.analysis': 'Análise',
+  'adManager.creditUsage.generation': 'Geração',
+  'adManager.creditUsage.publication': 'Publicação',
+  'adManager.errors.insufficientCredits': 'Créditos insuficientes',
+  'adManager.errors.creditsNeeded': 'Você precisa de 10 créditos para publicar a campanha.',
+  'adManager.errors.creditDebitError': 'Erro ao debitar créditos',
+  'adManager.errors.creditDebitDescription': 'Não foi possível debitar os créditos necessários para publicação.',
+  'adManager.success.campaignPublished': 'Campanha publicada com sucesso!',
+  'adManager.success.campaignPublishedDescription': 'Seus anúncios foram enviados para publicação.',
+  'adManager.step.websiteAnalysis': 'Análise do Website',
+  'adManager.step.platforms': 'Plataformas',
+  'adManager.step.mindTrigger': 'Gatilho Mental',
+  'adManager.step.audienceMarket': 'Público & Mercado',
+  'adManager.step.objectives': 'Objetivos',
+  'adManager.step.adVariations': 'Variações de Anúncios',
+  'adManager.step.reviewPublish': 'Revisar & Publicar',
   
   // Hero Section
   'hero.title': 'Crie e Otimize Anúncios Que Realmente Convertem',
@@ -58,4 +86,17 @@ export const pt = {
   // Roadmap
   'roadmap.title': 'Roadmap do Produto',
   'roadmap.subtitle': 'Nossa visão para o futuro da publicidade impulsionada por IA',
+
+  // Website Analysis
+  'website.analysis.title': 'Análise do Website',
+  'website.analysis.description': 'Insira a URL do seu site para que nossa IA o analise e extraia informações relevantes para sua campanha.',
+  'website.analysis.button': 'Analisar Site',
+  'website.analysis.analyzing': 'Analisando...',
+  'website.analysis.error': 'Erro na análise',
+  'website.analysis.company': 'Nome da Empresa',
+  'website.analysis.business': 'Descrição do Negócio',
+  'website.analysis.industry': 'Indústria/Segmento',
+  'website.analysis.audience': 'Público Alvo',
+  'website.analysis.brandTone': 'Tom de Marca',
+  'website.analysis.continue': 'Continuar',
 };

@@ -3,8 +3,6 @@ import {
   LayoutDashboard,
   ClipboardList,
   Share2,
-  Layers,
-  BarChart,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -14,15 +12,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import React from "react";
-
-const menuItems = [
-  { name: "Home", icon: Home, path: "/" },
-  { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { name: "Campanhas", icon: ClipboardList, path: "/campaigns" },
-  { name: "Conexões", icon: Share2, path: "/connections" },
-  { name: "Gerenciador de Anúncios", icon: BarChart3, path: "/ad-manager" },
-  { name: "Configurações", icon: Settings, path: "/settings" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Sidebar = ({
   isOpen,
@@ -36,6 +26,16 @@ export const Sidebar = ({
   onClose: () => void;
 }) => {
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { name: t('nav.home'), icon: Home, path: "/" },
+    { name: t('nav.dashboard'), icon: LayoutDashboard, path: "/dashboard" },
+    { name: t('nav.campaigns'), icon: ClipboardList, path: "/campaigns" },
+    { name: t('nav.connections'), icon: Share2, path: "/connections" },
+    { name: t('nav.adManager'), icon: BarChart3, path: "/ad-manager" },
+    { name: t('nav.settings'), icon: Settings, path: "/settings" },
+  ];
 
   return (
     <aside className={cn(

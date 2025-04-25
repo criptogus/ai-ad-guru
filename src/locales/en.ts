@@ -4,6 +4,34 @@ export const en = {
   'nav.dashboard': 'Dashboard',
   'nav.signin': 'Sign In',
   'nav.getStarted': 'Get Started',
+  'nav.home': 'Home',
+  'nav.campaigns': 'Campaigns',
+  'nav.connections': 'Connections',
+  'nav.adManager': 'Ad Manager',
+  'nav.metaAdGenerator': 'Meta Ad Generator',
+  'nav.settings': 'Settings',
+  
+  // Ad Manager
+  'adManager.title': 'AI Campaign Creator',
+  'adManager.creditsAvailable': 'Available Credits',
+  'adManager.credits': 'credits',
+  'adManager.currentStepCost': 'This step cost',
+  'adManager.creditUsage.analysis': 'Analysis',
+  'adManager.creditUsage.generation': 'Generation',
+  'adManager.creditUsage.publication': 'Publication',
+  'adManager.errors.insufficientCredits': 'Insufficient Credits',
+  'adManager.errors.creditsNeeded': 'You need 10 credits to publish the campaign.',
+  'adManager.errors.creditDebitError': 'Error debiting credits',
+  'adManager.errors.creditDebitDescription': 'Unable to debit the credits needed for publication.',
+  'adManager.success.campaignPublished': 'Campaign Published Successfully',
+  'adManager.success.campaignPublishedDescription': 'Your ads have been sent for publication.',
+  'adManager.step.websiteAnalysis': 'Website Analysis',
+  'adManager.step.platforms': 'Platforms',
+  'adManager.step.mindTrigger': 'Mind Trigger',
+  'adManager.step.audienceMarket': 'Audience & Market',
+  'adManager.step.objectives': 'Objectives',
+  'adManager.step.adVariations': 'Ad Variations',
+  'adManager.step.reviewPublish': 'Review & Publish',
   
   // Hero Section
   'hero.title': 'Create & Optimize Ads That Actually Convert',
@@ -58,4 +86,17 @@ export const en = {
   // Roadmap
   'roadmap.title': 'Product Roadmap',
   'roadmap.subtitle': 'Our vision for the future of AI-powered advertising',
+
+  // Website Analysis
+  'website.analysis.title': 'Website Analysis',
+  'website.analysis.description': 'Enter your website URL to have our AI analyze it and extract relevant information for your campaign.',
+  'website.analysis.button': 'Analyze Site',
+  'website.analysis.analyzing': 'Analyzing...',
+  'website.analysis.error': 'Analysis Error',
+  'website.analysis.company': 'Company Name',
+  'website.analysis.business': 'Business Description',
+  'website.analysis.industry': 'Industry/Segment',
+  'website.analysis.audience': 'Target Audience',
+  'website.analysis.brandTone': 'Brand Tone',
+  'website.analysis.continue': 'Continue',
 };

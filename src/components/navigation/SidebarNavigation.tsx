@@ -6,8 +6,6 @@ import {
   LayoutDashboard,
   ClipboardList,
   Share2,
-  Layers,
-  BarChart,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -16,16 +14,7 @@ import {
   Image
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navigationItems = [
-  { title: "Home", icon: Home, href: "/" },
-  { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { title: "Campanhas", icon: ClipboardList, href: "/campaigns" },
-  { title: "Conexões", icon: Share2, href: "/connections" },
-  { title: "Gerenciador de Anúncios", icon: BarChart3, href: "/ad-manager" },
-  { title: "Meta Ad Generator", icon: Image, href: "/tools/meta-ad-generator" },
-  { title: "Configurações", icon: Settings, href: "/settings" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SidebarNavigationProps {
   isOpen: boolean;
@@ -41,6 +30,17 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onClose
 }) => {
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const navigationItems = [
+    { title: t('nav.home'), icon: Home, href: "/" },
+    { title: t('nav.dashboard'), icon: LayoutDashboard, href: "/dashboard" },
+    { title: t('nav.campaigns'), icon: ClipboardList, href: "/campaigns" },
+    { title: t('nav.connections'), icon: Share2, href: "/connections" },
+    { title: t('nav.adManager'), icon: BarChart3, href: "/ad-manager" },
+    { title: t('nav.metaAdGenerator'), icon: Image, href: "/tools/meta-ad-generator" },
+    { title: t('nav.settings'), icon: Settings, href: "/settings" },
+  ];
 
   const isActive = (path: string) => {
     if (path === "/") {

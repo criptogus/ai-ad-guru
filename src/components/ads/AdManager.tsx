@@ -13,6 +13,7 @@ import CampaignObjectivesStep from "./steps/CampaignObjectivesStep";
 import AdVariationsStep from "./steps/AdVariationsStep";
 import ReviewPublishStep from "./steps/ReviewPublishStep";
 import { useCreditsManager } from "@/hooks/useCreditsManager"; 
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AdManager = () => {
   const [step, setStep] = useState(1);
@@ -39,6 +40,7 @@ const AdManager = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
   
   // Credit system
   const { credits, refreshCredits } = useCredits();
@@ -46,13 +48,13 @@ const AdManager = () => {
   const [canPublish, setCanPublish] = useState(true);
   
   const steps = [
-    { id: 1, name: "Análise do Website" },
-    { id: 2, name: "Plataformas" },
-    { id: 3, name: "Gatilho Mental" },
-    { id: 4, name: "Público & Mercado" },
-    { id: 5, name: "Objetivos" },
-    { id: 6, name: "Variações de Anúncios" },
-    { id: 7, name: "Revisar & Publicar" }
+    { id: 1, name: t('adManager.step.websiteAnalysis') },
+    { id: 2, name: t('adManager.step.platforms') },
+    { id: 3, name: t('adManager.step.mindTrigger') },
+    { id: 4, name: t('adManager.step.audienceMarket') },
+    { id: 5, name: t('adManager.step.objectives') },
+    { id: 6, name: t('adManager.step.adVariations') },
+    { id: 7, name: t('adManager.step.reviewPublish') }
   ];
 
   // Fetch user credits when component mounts
@@ -103,8 +105,8 @@ const AdManager = () => {
     const hasEnough = await checkCreditBalance(10);
     
     if (!hasEnough) {
-      toast.error("Créditos insuficientes", {
-        description: "Você precisa de 10 créditos para publicar a campanha."
+      toast.error(t('adManager.errors.insufficientCredits'), {
+        description: t('adManager.errors.creditsNeeded')
       });
       return;
     }
@@ -114,14 +116,14 @@ const AdManager = () => {
     const creditConsumed = await consumeCredits(10, "Campaign publication");
     
     if (!creditConsumed) {
-      toast.error("Erro ao debitar créditos", {
-        description: "Não foi possível debitar os créditos necessários para publicação."
+      toast.error(t('adManager.errors.creditDebitError'), {
+        description: t('adManager.errors.creditDebitDescription')
       });
       return;
     }
     
-    toast.success("Campanha publicada com sucesso!", {
-      description: "Seus anúncios foram enviados para publicação."
+    toast.success(t('adManager.success.campaignPublished'), {
+      description: t('adManager.success.campaignPublishedDescription')
     });
     
     // Update credits display
@@ -144,7 +146,7 @@ const AdManager = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-5xl mx-auto mb-8">
-        <h1 className="text-2xl font-bold mb-4">Criador de Campanhas com IA</h1>
+        <h1 className="text-2xl font-bold mb-6">{t('adManager.title')}</h1>
         
         <Card className="p-4 mb-8">
           <StepIndicator 
@@ -155,25 +157,25 @@ const AdManager = () => {
         </Card>
 
         {/* Credit display */}
-        <div className="bg-muted rounded-lg p-3 mb-8 flex items-center justify-between">
+        <div className="bg-muted rounded-lg p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center">
-            <span className="text-sm font-medium">Créditos disponíveis:</span>
+            <span className="text-sm font-medium">{t('adManager.creditsAvailable')}:</span>
             <span className="ml-2 px-2 py-1 bg-primary/10 text-primary rounded-md font-bold">
               {credits}
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
-            Análise: 2 créditos | Geração: 5 créditos por plataforma | Publicação: 10 créditos
+            {t('adManager.creditUsage.analysis')}: 2 | {t('adManager.creditUsage.generation')}: 5 | {t('adManager.creditUsage.publication')}: 10
           </div>
         </div>
 
         {/* Current step credit cost */}
         {getCreditCostForCurrentStep() > 0 && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-8">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-8">
             <div className="flex items-center text-blue-800 dark:text-blue-300">
-              <span>Custo desta etapa: </span>
+              <span>{t('adManager.currentStepCost')}: </span>
               <span className="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-md font-bold">
-                {getCreditCostForCurrentStep()} créditos
+                {getCreditCostForCurrentStep()} {t('adManager.credits')}
               </span>
             </div>
           </div>
