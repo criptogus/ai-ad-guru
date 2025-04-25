@@ -4,6 +4,7 @@ import { validateAnalysisResult, normalizeArrayFields } from "./utils.ts";
 
 export class CacheHandler {
   private client;
+  private CACHE_EXPIRATION_DAYS = 30; // 30 days cache expiration
   
   constructor(supabaseUrl: string, serviceRoleKey: string) {
     // Initialize the Supabase client with service role key
@@ -40,7 +41,7 @@ export class CacheHandler {
       // Calculate the expiration date (30 days after creation)
       const cachedAt = new Date(data.created_at);
       const expiresAt = new Date(cachedAt);
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      expiresAt.setDate(expiresAt.getDate() + this.CACHE_EXPIRATION_DAYS);
       
       // If the cache entry has expired, return not found
       if (new Date() > expiresAt) {
