@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { SidebarNavigation } from "@/components/navigation/SidebarNavigation";
+import { SidebarNavigation } from "@/components/navigation";
 import { MobileSidebarToggle } from "@/components/MobileSidebarToggle";
 import { cn } from "@/lib/utils";
 
