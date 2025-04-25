@@ -55,17 +55,24 @@ Formato do anúncio:
   - Um URL de exibição baseado no website da empresa
 
 Formato da resposta (JSON):
-[
-  {
-    "headline_1": "...",
-    "headline_2": "...",
-    "headline_3": "...",
-    "description_1": "...",
-    "description_2": "...",
-    "display_url": "www.exemplo.com.br"
-  }
-]
+{
+  "ads": [
+    {
+      "headline_1": "...",
+      "headline_2": "...",
+      "headline_3": "...",
+      "description_1": "...",
+      "description_2": "...",
+      "display_url": "www.exemplo.com.br"
+    }
+  ]
+}
+
+IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
 `;
+
+  console.log("📝 Google Ads System Message:", systemMessage);
+  console.log("📝 Google Ads User Message:", userMessage);
 
   return { systemMessage, userMessage };
 }
@@ -113,15 +120,22 @@ Requisitos:
 - O JSON deve ser válido com aspas duplas para todas as chaves e valores.
 
 Formato OBRIGATÓRIO de resposta (JSON):
-[
-  {
-    "headline": "...",
-    "primaryText": "...",
-    "description": "...",
-    "image_prompt": "Foto profissional mostrando..."
-  }
-]
+{
+  "ads": [
+    {
+      "headline": "...",
+      "primaryText": "...",
+      "description": "...",
+      "image_prompt": "Foto profissional mostrando..."
+    }
+  ]
+}
+
+IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
 `;
+
+  console.log("📝 LinkedIn Ads System Message:", systemMessage);
+  console.log("📝 LinkedIn Ads User Message:", userMessage);
 
   return { systemMessage, userMessage };
 }
@@ -160,17 +174,24 @@ Formato:
 - URL de exibição deve ser baseado no website fornecido
 
 Formato JSON:
-[
-  {
-    "headline_1": "...",
-    "headline_2": "...",
-    "headline_3": "...",
-    "description_1": "...",
-    "description_2": "...",
-    "display_url": "www.exemplo.com.br"
-  }
-]
+{
+  "ads": [
+    {
+      "headline_1": "...",
+      "headline_2": "...",
+      "headline_3": "...",
+      "description_1": "...",
+      "description_2": "...",
+      "display_url": "www.exemplo.com.br"
+    }
+  ]
+}
+
+IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
 `;
+
+  console.log("📝 Microsoft Ads System Message:", systemMessage);
+  console.log("📝 Microsoft Ads User Message:", userMessage);
 
   return { systemMessage, userMessage };
 }
@@ -217,18 +238,25 @@ Para CADA anúncio, você deve fornecer:
 - "headline": um título conciso e original (máx. 1 frase, pontuação correta)
 - "primaryText": um texto principal persuasivo e emocional (estilo legenda do Instagram, frases completas, revisado, pontuação correta)
 - "description": uma breve descrição de apoio (frase adequada, pontuação)
-- "image_prompt": uma descrição detalhada da imagem (mín. 20 palavras), sem texto ou logotipos na imagem, APENAS conteúdo visual, especifique público-alvo/ambiente/iluminação conforme relevante (formato FEED/STORY)
+- "image_prompt": uma descrição detalhada da imagem (mín. 20 palavras), sem texto ou logotipos na imagem, APENAS conteúdo visual, específico para Instagram/Facebook
 
-RETORNE APENAS este JSON, não explique ou comente:
-[
-  {
-    "headline": "...",
-    "primaryText": "...",
-    "description": "...",
-    "image_prompt": "..."
-  }
-]
+Formato JSON (OBRIGATÓRIO):
+{
+  "ads": [
+    {
+      "headline": "...",
+      "primaryText": "...",
+      "description": "...",
+      "image_prompt": "..."
+    }
+  ]
+}
+
+IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
 `;
+
+  console.log("📝 Meta Ads System Message:", systemMessage);
+  console.log("📝 Meta Ads User Message:", userMessage);
 
   return { systemMessage, userMessage };
 }

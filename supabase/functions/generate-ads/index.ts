@@ -93,6 +93,14 @@ serve(async (req) => {
   try {
     const { platform, campaignData, mindTrigger, temperature = 0.7, systemInstructions } = await req.json();
 
+    // Log what's being received from the client
+    console.log("📥 Received request for ad generation:");
+    console.log(`Platform: ${platform}`);
+    console.log("Campaign data:", JSON.stringify(campaignData, null, 2));
+    console.log(`Mind Trigger: ${mindTrigger}`);
+    console.log(`Temperature: ${temperature}`);
+    console.log(`System Instructions: ${systemInstructions}`);
+
     const userId = await getUserIdFromJWT(req);
     if (!userId) {
       return new Response(JSON.stringify({
@@ -158,8 +166,8 @@ serve(async (req) => {
       keywords: campaignData.keywords || []
     };
     
-    console.log("Processing ad generation with normalized data:", JSON.stringify(normalizedData, null, 2));
-    console.log("Language settings:", {
+    console.log("🔄 Processing ad generation with normalized data:", JSON.stringify(normalizedData, null, 2));
+    console.log("🌐 Language settings:", {
       language: normalizedData.language,
       languageName: normalizedData.languageName,
       forcePortuguese: normalizedData.forcePortuguese
@@ -168,6 +176,7 @@ serve(async (req) => {
     // Additional system instructions to force Portuguese
     const ptSystemInstructions = "Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês. Texto deve ser 100% em português brasileiro.";
     const combinedInstructions = systemInstructions ? `${ptSystemInstructions} ${systemInstructions}` : ptSystemInstructions;
+    console.log("📝 Combined instructions:", combinedInstructions);
 
     let adsJson;
     let platformName;
@@ -176,26 +185,32 @@ serve(async (req) => {
       // Pass language forcing parameters to all generators
       switch (platform) {
         case "google":
+          console.log("🚀 Initiating Google Ads generation...");
           adsJson = await generateGoogleAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Google Ads";
           break;
         case "meta":
         case "instagram":
+          console.log("🚀 Initiating Meta/Instagram Ads generation...");
           adsJson = await generateMetaAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Meta/Instagram Ads";
           break;
         case "linkedin":
+          console.log("🚀 Initiating LinkedIn Ads generation...");
           adsJson = await generateLinkedInAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "LinkedIn Ads";
           break;
         case "microsoft":
         case "bing":
+          console.log("🚀 Initiating Microsoft/Bing Ads generation...");
           adsJson = await generateMicrosoftAds(normalizedData, mindTrigger, combinedInstructions);
           platformName = "Microsoft/Bing Ads";
           break;
         default:
           throw new Error(`Unsupported platform: ${platform}`);
       }
+
+      console.log("📊 Generated ads result:", JSON.stringify(adsJson, null, 2));
 
       if (!adsJson || !Array.isArray(adsJson) || adsJson.length === 0) {
         throw new Error(`No valid ads generated for platform: ${platform}`);
@@ -216,6 +231,8 @@ serve(async (req) => {
       }
 
       const afterBalance = await getUserCreditBalance(supabaseAdmin, userId);
+      
+      console.log("✅ Successfully generated ads, returning to client");
 
       return new Response(
         JSON.stringify({
@@ -226,7 +243,7 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } catch (error) {
-      console.error(`Error generating ads for ${platform}:`, error);
+      console.error(`❌ Error generating ads for ${platform}:`, error);
 
       return new Response(
         JSON.stringify({
@@ -237,7 +254,7 @@ serve(async (req) => {
       );
     }
   } catch (error) {
-    console.error("Error in generate-ads function:", error);
+    console.error("❌ Error in generate-ads function:", error);
 
     return new Response(
       JSON.stringify({
