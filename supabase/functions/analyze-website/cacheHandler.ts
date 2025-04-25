@@ -1,197 +1,135 @@
 
-/**
- * Website Analysis Cache Handler
- * Handles caching and retrieval of website analysis results
- */
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
-
-interface CacheResult {
-  fromCache: boolean;
-  data?: any;
-  cachedAt?: string;
-  expiresAt?: string;
-}
+import { validateAnalysisResult, normalizeArrayFields } from "./utils.ts";
 
 export class CacheHandler {
-  private supabaseUrl: string;
-  private supabaseKey: string;
-  private supabaseClient: any;
+  private client;
   
-  constructor(supabaseUrl: string, supabaseKey: string) {
-    this.supabaseUrl = supabaseUrl;
-    this.supabaseKey = supabaseKey;
-    this.supabaseClient = createClient(supabaseUrl, supabaseKey);
+  constructor(supabaseUrl: string, serviceRoleKey: string) {
+    // Initialize the Supabase client with service role key
+    this.client = createClient(supabaseUrl, serviceRoleKey);
   }
   
-  /**
-   * Check if a URL has been cached recently
-   */
-  async checkCache(url: string): Promise<CacheResult> {
+  // Check cache for existing analysis of this URL
+  async checkCache(url: string): Promise<{ 
+    fromCache: boolean; 
+    cachedAt?: string; 
+    expiresAt?: string;
+    data?: any;
+  }> {
     try {
-      // Normalize URL for consistent cache checking
+      // Create the cache table if it doesn't exist
+      await this.ensureCacheTableExists();
+      
+      // Normalize the URL for consistent cache lookups
       const normalizedUrl = this.normalizeUrl(url);
+      console.log("Checking cache for URL:", normalizedUrl);
       
-      // Hash the URL to use as a cache key
-      const urlHash = await this.hashUrl(normalizedUrl);
+      // Query the cache table
+      const { data, error } = await this.client
+        .from("website_analysis_cache")
+        .select("*")
+        .eq("url", normalizedUrl)
+        .single();
       
-      console.log(`Checking cache for URL: ${normalizedUrl} (hash: ${urlHash})`);
-      
-      // Check if we have a cached analysis for this URL
-      try {
-        // Check if the table exists first
-        const { data: tableData, error: tableError } = await this.supabaseClient
-          .from('website_analysis_cache')
-          .select('created_at')
-          .limit(1);
-      
-        if (tableError) {
-          if (tableError.message.includes('does not exist')) {
-            console.log('Cache table does not exist, creating it');
-            // Create the cache table
-            await this.createCacheTable();
-            return { fromCache: false };
-          }
-          throw tableError;
-        }
-      
-        // Table exists, check for our URL
-        const { data, error } = await this.supabaseClient
-          .from('website_analysis_cache')
-          .select('*')
-          .eq('url', normalizedUrl)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
-        
-        if (error) {
-          console.log(`Cache check error for URL ${normalizedUrl}: ${error.message}`);
-          return { fromCache: false };
-        }
-        
-        if (!data) {
-          console.log(`No cache found for URL: ${normalizedUrl}`);
-          return { fromCache: false };
-        }
-        
-        // Check if the cache entry is still valid (less than 30 days old)
-        const cacheDate = new Date(data.created_at);
-        const now = new Date();
-        const diffDays = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60 * 24);
-        
-        if (diffDays > 30) {
-          console.log(`Cache expired for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
-          return { fromCache: false };
-        }
-        
-        console.log(`Cache hit for URL: ${normalizedUrl} (${diffDays.toFixed(1)} days old)`);
-        
-        // Calculate expiration date (30 days from cache date)
-        const expiresAt = new Date(cacheDate);
-        expiresAt.setDate(expiresAt.getDate() + 30);
-        
-        return {
-          fromCache: true,
-          data: data.analysis_result,
-          cachedAt: data.created_at,
-          expiresAt: expiresAt.toISOString()
-        };
-      } catch (error) {
-        console.error(`Specific error checking cache: ${error.message}`);
+      if (error || !data) {
+        console.log("No cache entry found:", error?.message || "No data");
         return { fromCache: false };
       }
+      
+      // Calculate the expiration date (30 days after creation)
+      const cachedAt = new Date(data.created_at);
+      const expiresAt = new Date(cachedAt);
+      expiresAt.setDate(expiresAt.getDate() + 30);
+      
+      // If the cache entry has expired, return not found
+      if (new Date() > expiresAt) {
+        console.log("Cache entry expired");
+        return { fromCache: false };
+      }
+      
+      console.log("Cache hit! Returning cached analysis from:", data.created_at);
+      
+      return {
+        fromCache: true,
+        cachedAt: cachedAt.toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        data: data.analysis_result
+      };
     } catch (error) {
-      console.error(`Error checking cache: ${error.message}`);
+      console.error("Error checking cache:", error);
       return { fromCache: false };
     }
   }
   
-  /**
-   * Create the cache table if it doesn't exist
-   */
-  private async createCacheTable() {
-    try {
-      // Create the table via raw SQL
-      const { error } = await this.supabaseClient.rpc('create_website_analysis_cache_table');
-      
-      if (error) {
-        throw error;
-      }
-      
-      console.log("Successfully created website_analysis_cache table");
-      return true;
-    } catch (error) {
-      console.error(`Failed to create cache table: ${error.message}`);
-      return false;
-    }
-  }
-  
-  /**
-   * Store analysis result in cache
-   */
+  // Cache analysis result for future use
   async cacheResult(url: string, result: any): Promise<void> {
     try {
-      // Normalize URL for consistent cache storage
+      if (!validateAnalysisResult(result)) {
+        console.error("Invalid analysis result, not caching");
+        return;
+      }
+      
+      // Create the cache table if it doesn't exist
+      await this.ensureCacheTableExists();
+      
+      // Normalize array fields
+      const normalizedResult = normalizeArrayFields(result);
+      
+      // Normalize the URL for consistent cache lookups
       const normalizedUrl = this.normalizeUrl(url);
       
-      console.log(`Caching result for URL: ${normalizedUrl}`);
-      
-      // Store the analysis result in the cache table
-      const { error } = await this.supabaseClient
-        .from('website_analysis_cache')
-        .insert({
+      // Insert or update the cache entry
+      const { error } = await this.client
+        .from("website_analysis_cache")
+        .upsert({
           url: normalizedUrl,
-          analysis_result: result
+          analysis_result: normalizedResult,
+          created_at: new Date().toISOString()
         });
       
       if (error) {
-        console.error(`Error caching result: ${error.message}`);
-        throw error;
+        console.error("Error caching result:", error);
+        return;
       }
       
-      console.log(`Successfully cached result for URL: ${normalizedUrl}`);
+      console.log("Successfully cached analysis for URL:", normalizedUrl);
     } catch (error) {
-      console.error(`Failed to cache result: ${error.message}`);
+      console.error("Error caching result:", error);
     }
   }
   
-  /**
-   * Normalize URL for consistent cache lookups
-   */
+  // Ensure the cache table exists
+  private async ensureCacheTableExists(): Promise<void> {
+    try {
+      // Call the SQL function that creates the table if it doesn't exist
+      const { error } = await this.client.rpc("create_website_analysis_cache_table");
+      
+      if (error) {
+        console.error("Error ensuring cache table exists:", error);
+      }
+    } catch (error) {
+      console.error("Error ensuring cache table exists:", error);
+    }
+  }
+  
+  // Normalize URL for consistent cache lookup
   private normalizeUrl(url: string): string {
-    // Remove trailing slash if present
-    let normalizedUrl = url.trim();
-    
-    // Ensure URL has a protocol
-    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-      normalizedUrl = 'https://' + normalizedUrl;
+    try {
+      // Parse the URL
+      const parsedUrl = new URL(url);
+      
+      // Get hostname and pathname (remove trailing slash)
+      let normalizedUrl = parsedUrl.hostname + parsedUrl.pathname.replace(/\/$/, "");
+      
+      // Remove www. prefix if present
+      normalizedUrl = normalizedUrl.replace(/^www\./, "");
+      
+      return normalizedUrl.toLowerCase();
+    } catch (error) {
+      // If URL parsing fails, just return the original string
+      console.warn("URL normalization failed, using original:", url);
+      return url.toLowerCase();
     }
-    
-    // Remove trailing slash if present
-    if (normalizedUrl.endsWith('/')) {
-      normalizedUrl = normalizedUrl.slice(0, -1);
-    }
-    
-    // Convert to lowercase for case-insensitive matching
-    normalizedUrl = normalizedUrl.toLowerCase();
-    
-    return normalizedUrl;
-  }
-  
-  /**
-   * Create a hash of the URL for use as a cache key
-   */
-  private async hashUrl(url: string): Promise<string> {
-    // Create a simple hash from the URL string
-    // For a production system, consider using crypto APIs for better hashing
-    const encoder = new TextEncoder();
-    const data = encoder.encode(url);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    
-    // Convert hash to hex string
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    return hashHex;
   }
 }

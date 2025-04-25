@@ -34,6 +34,20 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
   // Current industry value from analysis (ensure proper capitalization)
   const currentIndustry = analysisResult?.industry || "";
   
+  // Function to get the standardized industry value
+  const getStandardIndustryValue = (industryValue: string): string => {
+    if (!industryValue) return "";
+    
+    const matchedIndustry = industries.find(
+      industry => industry.toLowerCase() === industryValue.toLowerCase()
+    );
+    
+    return matchedIndustry ? matchedIndustry.toLowerCase() : "";
+  };
+  
+  // Get standardized industry value for select
+  const standardizedIndustryValue = getStandardIndustryValue(currentIndustry);
+  
   return (
     <div className="space-y-4">
       <div>
@@ -77,7 +91,7 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
           Industry / Segment
         </Label>
         <Select
-          value={currentIndustry.toLowerCase()}
+          value={standardizedIndustryValue}
           onValueChange={(value) => onTextChange('industry', value)}
         >
           <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">

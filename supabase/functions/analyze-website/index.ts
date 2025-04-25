@@ -3,6 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.31.0";
 import { CacheHandler } from "./cacheHandler.ts";
+import { validateAnalysisResult, normalizeArrayFields } from "./utils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -166,7 +167,7 @@ serve(async (req) => {
     `;
     
     const languageDetection = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -212,7 +213,9 @@ serve(async (req) => {
     // Create a prompt that respects the detected language
     let systemPrompt = `You are an AI specialized in analyzing websites and extracting business information. Respond only with the requested JSON format.
     When identifying the industry category, you MUST choose one from this standard industry list: ${standardIndustries}.
-    DO NOT use descriptive adjectives or qualities for the industry field.`;
+    DO NOT use descriptive adjectives or qualities for the industry field.
+    For example, use "Education" not "Educational" or "Professional Education".
+    Use "Healthcare" not "Health Services" or "Medical Care".`;
     
     // Use the detected language for the analysis prompt
     if (detectedLanguage === "pt") {
@@ -239,6 +242,7 @@ serve(async (req) => {
       IMPORTANT: For the industry field, ONLY choose ONE standard industry category name from the list above.
       DO NOT use descriptive terms like "professional" or "inspirational" for the industry field.
       For example, if it's a school website, use "Education" not "Educational" or "Professional".
+      If it's a healthcare website, use "Healthcare" not "Health Services" or "Medical Care".
       
       Website Title: ${websiteData.title}
       Website Description: ${websiteData.description}
@@ -274,7 +278,7 @@ serve(async (req) => {
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       response_format: { type: "json_object" },
       temperature: 0.2,
     });
