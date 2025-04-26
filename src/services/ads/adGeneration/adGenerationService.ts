@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { CampaignPromptData } from './types/promptTypes';
+import { CampaignPromptData } from './types';
 import { 
   GeneratedAdContent, 
   GoogleAd, 
