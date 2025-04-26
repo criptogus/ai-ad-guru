@@ -5,7 +5,7 @@
   export * from './linkedin';
   export * from './microsoft';
 
-  // Only export uniquely named generation services, to avoid naming conflicts
+  // Export ad generation services
   export { 
     generateAds,
     generateLinkedInAdsContent,

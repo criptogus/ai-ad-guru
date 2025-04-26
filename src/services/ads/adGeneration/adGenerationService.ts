@@ -1,11 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPromptData } from './types/promptTypes';
-import { GeneratedAdContent, 
-         GoogleAd, 
-         MetaAd,
-         LinkedInAd,
-         MicrosoftAd } from './types';
+import { 
+  GeneratedAdContent, 
+  GoogleAd, 
+  MetaAd,
+  LinkedInAd,
+  MicrosoftAd 
+} from './types';
 import { toast } from 'sonner';
 
 /**
@@ -98,6 +100,102 @@ export async function generateAds(
     
     // Return whatever we've managed to generate
     return result;
+  }
+}
+
+/**
+ * Generate LinkedIn Ads content
+ */
+export async function generateLinkedInAdsContent(
+  campaignData: CampaignPromptData,
+  mindTrigger?: string
+): Promise<LinkedInAd[]> {
+  console.log('Generating LinkedIn ads content with data:', campaignData);
+  
+  try {
+    // Prepare the data with platform specific options
+    const requestData = {
+      platform: 'linkedin',
+      campaignData: {
+        ...campaignData,
+        mindTrigger: mindTrigger || campaignData.mindTrigger,
+        platforms: ['linkedin']
+      }
+    };
+    
+    // Call the Edge Function
+    const { data, error } = await supabase.functions.invoke('generate-ads', {
+      body: requestData
+    });
+    
+    if (error) {
+      console.error('Error generating LinkedIn ads:', error);
+      toast.error('Error generating LinkedIn ads', {
+        description: error.message || 'Unknown error'
+      });
+      return [];
+    }
+    
+    if (!data?.success || !data.data || !Array.isArray(data.data)) {
+      console.error('Invalid LinkedIn ads data returned:', data);
+      toast.error('Failed to generate LinkedIn ads');
+      return [];
+    }
+    
+    console.log(`Generated ${data.data.length} LinkedIn ads:`, data.data);
+    return data.data as LinkedInAd[];
+  } catch (error) {
+    console.error('Error in generateLinkedInAdsContent:', error);
+    toast.error('Error generating LinkedIn ads');
+    return [];
+  }
+}
+
+/**
+ * Generate Microsoft Ads content
+ */
+export async function generateMicrosoftAdsContent(
+  campaignData: CampaignPromptData,
+  mindTrigger?: string
+): Promise<MicrosoftAd[]> {
+  console.log('Generating Microsoft ads content with data:', campaignData);
+  
+  try {
+    // Prepare the data with platform specific options
+    const requestData = {
+      platform: 'microsoft',
+      campaignData: {
+        ...campaignData,
+        mindTrigger: mindTrigger || campaignData.mindTrigger,
+        platforms: ['microsoft']
+      }
+    };
+    
+    // Call the Edge Function
+    const { data, error } = await supabase.functions.invoke('generate-ads', {
+      body: requestData
+    });
+    
+    if (error) {
+      console.error('Error generating Microsoft ads:', error);
+      toast.error('Error generating Microsoft ads', {
+        description: error.message || 'Unknown error'
+      });
+      return [];
+    }
+    
+    if (!data?.success || !data.data || !Array.isArray(data.data)) {
+      console.error('Invalid Microsoft ads data returned:', data);
+      toast.error('Failed to generate Microsoft ads');
+      return [];
+    }
+    
+    console.log(`Generated ${data.data.length} Microsoft ads:`, data.data);
+    return data.data as MicrosoftAd[];
+  } catch (error) {
+    console.error('Error in generateMicrosoftAdsContent:', error);
+    toast.error('Error generating Microsoft ads');
+    return [];
   }
 }
 
