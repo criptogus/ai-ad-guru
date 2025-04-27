@@ -1,26 +1,24 @@
 
 export interface CampaignPromptData {
-  companyName?: string;
-  websiteUrl?: string;
+  companyName: string;
+  websiteUrl: string;
+  objective: string;
+  targetAudience: string;
   product?: string;
-  industry?: string;
-  targetAudience?: string;
-  objective?: string;
   brandTone?: string;
+  differentials?: string[] | string;
   mindTrigger?: string;
   mindTriggers?: Record<string, string>;
-  differentials?: string[] | string;
   companyDescription?: string;
   keywords?: string[] | string;
   callToAction?: string[] | string;
   language?: string;
-  // ✅ Added platforms property
   platforms?: string[];
+  industry?: string;
 }
 
-// ✅ Re-adding PromptMessages interface
+// Re-adding PromptMessages interface
 export interface PromptMessages {
   systemMessage: string;
   userMessage: string;
 }
-

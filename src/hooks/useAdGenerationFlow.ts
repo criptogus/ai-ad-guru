@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
-import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
+import { CampaignPromptData } from '@/services/ads/adGeneration/types';
 import { GeneratedAdContent } from '@/services/ads/adGeneration/types';
 import { sanitizePromptData } from '@/services/ads/adGeneration/sanitizePromptData';
 import { toast } from 'sonner';
@@ -25,7 +25,7 @@ export const useAdGenerationFlow = () => {
       setIsGenerating(true);
 
       // 🔒 Sanitize campaign data before prompt
-      const promptData: CampaignPromptData = sanitizePromptData(data);
+      const promptData: CampaignPromptData = sanitizePromptData(data) as CampaignPromptData;
       console.log('Sanitized prompt data:', JSON.stringify(promptData, null, 2));
 
       toast.loading('Gerando anúncios...', {
