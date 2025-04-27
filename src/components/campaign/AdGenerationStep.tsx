@@ -70,6 +70,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         product: campaignData.product || analysisResult?.product || '',
         targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
+        mindTrigger: campaignData.mindTrigger || '',
         mindTriggers: mindTriggers,
         language: 'pt_BR',
         industry: campaignData.industry || analysisResult?.industry || '',

@@ -1,8 +1,7 @@
 
 import { useState } from 'react';
 import { generateAds } from '@/services/ads/adGeneration/adGenerationService';
-import { CampaignPromptData } from '@/services/ads/adGeneration/types';
-import { GeneratedAdContent } from '@/services/ads/adGeneration/types';
+import { CampaignPromptData, GeneratedAdContent } from '@/services/ads/adGeneration/types';
 import { sanitizePromptData } from '@/services/ads/adGeneration/sanitizePromptData';
 import { toast } from 'sonner';
 

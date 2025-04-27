@@ -22,8 +22,8 @@ export interface GeneratedAdContent {
   meta: any[];
   linkedin: any[];
   microsoft: any[];
-  [key: string]: any[];
   
+  // Also include the legacy format for backward compatibility
   google_ads?: any[];
   meta_ads?: any[];
   instagram_ads?: any[];
@@ -85,3 +85,6 @@ export interface PromptMessages {
   systemMessage: string;
   userMessage: string;
 }
+
+// Re-export types from promptTypes.ts
+export * from './promptTypes';
