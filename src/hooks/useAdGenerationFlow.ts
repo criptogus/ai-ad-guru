@@ -25,7 +25,7 @@ export const useAdGenerationFlow = () => {
       setIsGenerating(true);
 
       // 🔒 Sanitize campaign data before prompt
-      const promptData: CampaignPromptData = sanitizePromptData(data) as CampaignPromptData;
+      const promptData: CampaignPromptData = sanitizePromptData(data);
       console.log('Sanitized prompt data:', JSON.stringify(promptData, null, 2));
 
       toast.loading('Gerando anúncios...', {

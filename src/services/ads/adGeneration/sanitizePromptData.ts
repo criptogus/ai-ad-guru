@@ -1,5 +1,5 @@
 
-import { CampaignPromptData } from "./types/promptTypes";
+import { CampaignPromptData } from "./types";
 
 export function sanitizePromptData(data: CampaignPromptData): CampaignPromptData {
   return {

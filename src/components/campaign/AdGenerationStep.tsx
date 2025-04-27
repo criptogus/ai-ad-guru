@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useAdGenerationFlow } from '@/hooks/useAdGenerationFlow';
-import { CampaignPromptData } from '@/services/ads/adGeneration/types/promptTypes';
+import { CampaignPromptData } from '@/services/ads/adGeneration/types';
 import { CampaignData } from '@/hooks/useCampaignState';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -41,10 +40,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       return;
     }
     
-    // Reset error state
     setError(null);
     
-    // Check if user has enough credits - 5 credits per platform
     const requiredCredits = platforms.length * 5;
     const hasEnough = await checkCreditBalance(requiredCredits);
     
@@ -61,14 +58,11 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       const results: Record<string, any[]> = {};
       let hasAnySuccessfulPlatform = false;
 
-      // Properly prepare mind triggers for all platforms
       const mindTriggers: Record<string, string> = {};
       platforms.forEach(platform => {
         mindTriggers[platform] = campaignData.mindTriggers?.[platform] || '';
       });
 
-      // Generate ads for all selected platforms at once
-      // Create a comprehensive prompt data object with all available context
       const promptData: CampaignPromptData = {
         companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
         websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
@@ -76,9 +70,8 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         product: campaignData.product || analysisResult?.product || '',
         targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
-        // Important: Pass the complete mindTriggers object for all platforms
         mindTriggers: mindTriggers,
-        language: 'pt_BR', // Force Portuguese
+        language: 'pt_BR',
         industry: campaignData.industry || analysisResult?.industry || '',
         platforms: platforms,
         companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
@@ -87,15 +80,11 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         keywords: analysisResult?.keywords || []
       };
 
-      // Log full data being sent to prompt builder
-      console.log('🧠 Sending unified prompt data:', JSON.stringify(promptData, null, 2));
-
       toast({
         title: `Gerando anúncios para ${platforms.join(', ')}`,
         description: `Criando 5 variações de anúncios por plataforma (${requiredCredits} créditos).`
       });
 
-      // Consume credits for ad generation
       const creditConsumed = await consumeCredits(requiredCredits, "Ad generation");
       if (!creditConsumed) {
         toast({
@@ -107,11 +96,9 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
       }
 
       try {
-        // Send one request with all platforms
         const ads = await generateCampaignAds(promptData);
         
         if (ads) {
-          // Process returned ads for each platform
           platforms.forEach(platform => {
             if (platform === 'google' && ads.google_ads) {
               results[platform] = ads.google_ads.map(ad => normalizeGoogleAd(ad));
@@ -127,7 +114,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
               hasAnySuccessfulPlatform = true;
             } else {
               console.warn(`No ${platform} ads data received`);
-              // Create fallback ads if generation returns empty
               results[platform] = generateFallbackAds(platform, promptData);
               hasAnySuccessfulPlatform = true;
               
@@ -140,7 +126,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           });
         } else {
           console.warn(`No ads data received, using fallbacks`);
-          // Create fallback ads for all platforms
           platforms.forEach(platform => {
             results[platform] = generateFallbackAds(platform, promptData);
           });
@@ -161,7 +146,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             description: `Anúncios criados para: ${Object.keys(results).join(", ")}`
           });
           
-          // Automatically move to the next step after successful generation
           if (onNext) {
             onNext();
           }
@@ -175,7 +159,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         }
       } catch (error: any) {
         console.error(`❌ Failed to generate ads:`, error);
-        // Create fallback ads on error for all platforms
         platforms.forEach(platform => {
           results[platform] = generateFallbackAds(platform, promptData);
         });
@@ -188,7 +171,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
           });
           
-          // Still move to next step with fallback ads
           if (onNext) {
             onNext();
           }
@@ -212,7 +194,6 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     }
   };
 
-  // Generate fallback ads when API fails
   const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
     const companyName = promptData.companyName || 'Sua Empresa';
     const industry = promptData.industry || 'serviços profissionais';
@@ -220,19 +201,16 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     const objective = promptData.objective || 'awareness';
     const description = promptData.companyDescription || `${companyName} fornece serviços de ${industry} de qualidade`;
     
-    // Create complete sentences for descriptions
     const createCompleteDescription = (text: string, maxLength = 90) => {
       const truncated = text.substring(0, maxLength);
       return truncated.endsWith('.') ? truncated : truncated + '.';
     };
     
-    // Get language-specific call to action
     const getCallToAction = () => {
       return objective === 'conversion' ? 'Compre Agora' : 
              objective === 'consideration' ? 'Saiba Mais' : 'Descubra Hoje';
     };
     
-    // Get descriptive text
     const getServiceDescription = () => {
       return `Oferecemos ${industry} de alta qualidade para ${targetAudience}.`;
     };

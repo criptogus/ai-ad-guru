@@ -6,7 +6,7 @@ export interface CampaignPromptData {
   targetAudience: string;
   product?: string;
   brandTone?: string;
-  differentials?: string[];
+  differentials?: string[] | string;
   mindTrigger?: string;
   mindTriggers?: Record<string, string>;
   language?: string;
@@ -23,6 +23,12 @@ export interface GeneratedAdContent {
   linkedin: any[];
   microsoft: any[];
   [key: string]: any[];
+  
+  google_ads?: any[];
+  meta_ads?: any[];
+  instagram_ads?: any[];
+  linkedin_ads?: any[];
+  microsoft_ads?: any[];
 }
 
 export interface GoogleAd {
