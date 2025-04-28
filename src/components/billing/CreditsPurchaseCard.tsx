@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,10 +25,12 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
   );
   
   useEffect(() => {
+    // Update state when user data changes
     if (user?.receivedFreeCredits) {
       setHasClaimedFreeCredits(true);
     }
-  }, [user]);
+    console.log("CreditsPurchaseCard rendered with user:", userId ? "exists" : "missing", "credits:", currentCredits);
+  }, [user, userId, currentCredits]);
   
   const handleClaimFreeCredits = async () => {
     if (!userId) {
@@ -92,19 +95,26 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setIsProcessing(true);
       setProcessingPack(packId);
       
+      console.log(`Initiating purchase: ${amount} credits for $${price} (${packId})`);
+      
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
           userId,
           planId: packId,
+          amount,
+          price,
+          productName: `${amount} Credits Pack`,
           returnUrl: `${window.location.origin}/billing?success=true`,
         },
       });
       
       if (error) {
+        console.error("Checkout session error:", error);
         throw new Error(error.message);
       }
       
       if (!data?.url) {
+        console.error("No checkout URL returned:", data);
         throw new Error("Failed to create checkout session");
       }
       
@@ -114,6 +124,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
         sessionId: data.sessionId,
       }));
       
+      console.log("Redirecting to Stripe checkout:", data.url);
       window.location.href = data.url;
       
     } catch (error) {
@@ -128,6 +139,8 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setProcessingPack(null);
     }
   };
+
+  console.log("Rendering credit purchase card with user ID:", userId, "claimed free credits:", hasClaimedFreeCredits);
   
   return (
     <Card>
