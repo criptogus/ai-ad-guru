@@ -32,7 +32,7 @@ export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) =>
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Fetch the user's credits when the component mounts or the user changes
+  // Buscar créditos do usuário quando o componente monta ou quando o usuário muda
   useEffect(() => {
     const fetchCredits = async () => {
       if (!user) {
@@ -44,9 +44,8 @@ export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) =>
       try {
         setLoading(true);
         setError(null);
+        console.log("Buscando saldo de créditos para usuário:", user.id);
 
-        // This is a mock implementation since we don't have the actual database structure
-        // In a real app, you would fetch the user's credits from your database
         const { data, error } = await supabase
           .from('profiles')
           .select('credits')
@@ -54,71 +53,108 @@ export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) =>
           .single();
 
         if (error) {
-          console.error('Error fetching credits:', error);
-          setError('Failed to load credits');
-          // Set mock credits for now
-          setCredits(100);
+          console.error('Erro ao buscar créditos:', error);
+          setError('Falha ao carregar créditos');
+          // Definir créditos padrão como fallback
+          setCredits(0);
         } else if (data) {
-          setCredits(data.credits);
+          console.log("Saldo de créditos atualizado:", data.credits);
+          setCredits(data.credits || 0);
         } else {
-          // Set default credits if no data is found
-          setCredits(100);
+          console.warn("Nenhum perfil encontrado para o usuário");
+          setCredits(0);
         }
       } catch (err) {
-        console.error('Unexpected error fetching credits:', err);
-        setError('An unexpected error occurred');
-        // Set mock credits for now
-        setCredits(100);
+        console.error('Erro inesperado ao buscar créditos:', err);
+        setError('Ocorreu um erro inesperado');
+        setCredits(0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchCredits();
+    
+    // Configurar um listener para atualizações na tabela de créditos
+    const setupCreditsListener = async () => {
+      if (!user) return;
+      
+      try {
+        const creditsChannel = supabase
+          .channel('credit-changes')
+          .on(
+            'postgres_changes',
+            { 
+              event: 'INSERT',
+              schema: 'public',
+              table: 'credit_ledger',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('Atualização de créditos detectada:', payload);
+              refreshCredits();
+            }
+          )
+          .subscribe();
+          
+        return () => {
+          supabase.removeChannel(creditsChannel);
+        };
+      } catch (err) {
+        console.error('Erro ao configurar listener de créditos:', err);
+      }
+    };
+    
+    setupCreditsListener();
   }, [user]);
 
-  // Function to deduct credits from the user's account
+  // Função para debitar créditos da conta do usuário
   const deductCredits = async (amount: number): Promise<boolean> => {
     if (!user) {
-      toast.error('Please login to use credits');
+      toast.error('Por favor, faça login para usar créditos');
       return false;
     }
 
-    // Check if the user has enough credits
+    // Verificar se o usuário tem créditos suficientes
     if (credits < amount && amount > 0) {
-      toast.error('Not enough credits', {
-        description: 'Please purchase more credits to continue'
+      toast.error('Créditos insuficientes', {
+        description: 'Por favor, adquira mais créditos para continuar'
       });
       return false;
     }
 
     try {
       setError(null);
+      console.log(`Debitando ${amount} créditos para usuário ${user.id}`);
 
-      // In a real app, you would update the user's credits in your database
-      // and handle any concurrency issues
+      // Inserir entrada no credit_ledger
       const { error } = await supabase
-        .from('profiles')
-        .update({ credits: credits - amount })
-        .eq('id', user.id);
+        .from('credit_ledger')
+        .insert({ 
+          user_id: user.id, 
+          change: -amount,
+          reason: 'manual_debit',
+          ref_id: 'via_context_api'
+        });
 
       if (error) {
-        console.error('Error updating credits:', error);
-        setError('Failed to update credits');
+        console.error('Erro ao atualizar créditos:', error);
+        setError('Falha ao atualizar créditos');
         return false;
       }
 
-      // Update the local state
+      // Atualizar estado local
       setCredits(prev => prev - amount);
+      console.log(`${amount} créditos debitados com sucesso. Novo saldo: ${credits - amount}`);
       return true;
     } catch (err) {
-      console.error('Unexpected error updating credits:', err);
-      setError('An unexpected error occurred');
+      console.error('Erro inesperado ao atualizar créditos:', err);
+      setError('Ocorreu um erro inesperado');
       return false;
     }
   };
 
-  // Function to refresh the user's credits
+  // Função para atualizar os créditos do usuário
   const refreshCredits = async (): Promise<void> => {
     if (!user) {
       setCredits(0);
@@ -128,6 +164,7 @@ export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) =>
     try {
       setLoading(true);
       setError(null);
+      console.log("Atualizando saldo de créditos para usuário:", user.id);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -136,18 +173,30 @@ export const CreditsProvider: React.FC<CreditsProviderProps> = ({ children }) =>
         .single();
 
       if (error) {
-        console.error('Error refreshing credits:', error);
-        setError('Failed to refresh credits');
+        console.error('Erro ao atualizar créditos:', error);
+        setError('Falha ao atualizar créditos');
       } else if (data) {
-        setCredits(data.credits);
+        console.log("Saldo de créditos atualizado:", data.credits);
+        setCredits(data.credits || 0);
       }
     } catch (err) {
-      console.error('Unexpected error refreshing credits:', err);
-      setError('An unexpected error occurred');
+      console.error('Erro inesperado ao atualizar créditos:', err);
+      setError('Ocorreu um erro inesperado');
     } finally {
       setLoading(false);
     }
   };
+
+  // Configurar um intervalo para atualizar créditos periodicamente
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      refreshCredits();
+    }, 60000); // Atualizar a cada minuto
+    
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <CreditsContext.Provider

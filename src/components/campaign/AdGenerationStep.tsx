@@ -33,6 +33,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { checkCreditBalance, consumeCredits } = useCreditsManager();
   const { currentLanguage } = useLanguage();
+  const [isCheckingCredits, setIsCheckingCredits] = useState(false);
 
   const handleGenerateAds = async () => {
     if (!platforms || platforms.length === 0) {
@@ -44,20 +45,26 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
     }
     
     setError(null);
-    
-    const requiredCredits = platforms.length * 5;
-    const hasEnough = await checkCreditBalance(requiredCredits);
-    
-    if (!hasEnough) {
-      toast({
-        title: "Créditos insuficientes",
-        description: `Você precisa de ${requiredCredits} créditos para gerar anúncios para ${platforms.length} plataformas.`,
-        variant: "destructive",
-      });
-      return;
-    }
+    setIsCheckingCredits(true);
     
     try {
+      // Cálculo do custo de créditos
+      const requiredCredits = platforms.length * 5;
+      console.log(`Verificando créditos: Necessário ${requiredCredits} para ${platforms.length} plataformas`);
+      
+      const hasEnough = await checkCreditBalance(requiredCredits);
+      setIsCheckingCredits(false);
+      
+      if (!hasEnough) {
+        console.error(`Créditos insuficientes: necessário ${requiredCredits}`);
+        toast({
+          title: "Créditos insuficientes",
+          description: `Você precisa de ${requiredCredits} créditos para gerar anúncios para ${platforms.length} plataformas.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const results: Record<string, any[]> = {};
       let hasAnySuccessfulPlatform = false;
 
@@ -66,10 +73,11 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         mindTriggers[platform] = campaignData.mindTriggers?.[platform] || '';
       });
 
-      // Determine which language to use (first from the analysis result, then from campaign data, then from context)
+      // Determinar o idioma a usar
       const adLanguage = analysisResult?.language || campaignData.language || currentLanguage || 'pt';
-      console.log(`Using language for ads: ${adLanguage}`);
+      console.log(`Usando idioma para anúncios: ${adLanguage}`);
 
+      // Preparar dados para prompt
       const promptData: CampaignPromptData = {
         companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
         websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
@@ -93,8 +101,12 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         description: `Criando 5 variações de anúncios por plataforma (${requiredCredits} créditos).`
       });
 
-      const creditConsumed = await consumeCredits(requiredCredits, "Ad generation");
+      // Consumir créditos ANTES de gerar os anúncios
+      console.log(`Consumindo ${requiredCredits} créditos para geração de anúncios`);
+      const creditConsumed = await consumeCredits(requiredCredits, "Geração de anúncios");
+      
       if (!creditConsumed) {
+        console.error("Erro ao debitar créditos para geração de anúncios");
         toast({
           title: "Erro ao debitar créditos",
           description: "Não foi possível debitar os créditos necessários para esta operação.",
@@ -103,7 +115,10 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         return;
       }
 
+      console.log("Créditos debitados com sucesso, gerando anúncios...");
+      
       try {
+        // Gerar anúncios
         const ads = await generateCampaignAds(promptData);
         
         if (ads) {
@@ -124,7 +139,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           });
 
           if (hasAnySuccessfulPlatform) {
-            console.log("Generated ad results:", results);
+            console.log("Anúncios gerados com sucesso:", results);
             onAdsGenerated(results);
             toast({
               title: "Anúncios gerados com sucesso",
@@ -135,6 +150,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             }
           } else {
             setError("Nenhum anúncio foi gerado para as plataformas selecionadas.");
+            console.error("Erro: nenhum anúncio gerado");
             toast({
               title: "Erro ao gerar anúncios",
               description: "Nenhum anúncio foi gerado para as plataformas selecionadas.",
@@ -143,7 +159,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
           }
         }
       } catch (err: any) {
-        console.error("Error in ad generation:", err);
+        console.error("Erro na geração de anúncios:", err);
         setError(err?.message || "Erro ao gerar anúncios");
         toast({
           title: "Erro ao gerar anúncios",
@@ -152,13 +168,14 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         });
       }
     } catch (err: any) {
-      console.error("Error in handling ad generation:", err);
+      console.error("Erro no processo de geração:", err);
       setError(err?.message || "Erro no processo de geração");
       toast({
         title: "Erro no processo",
         description: err?.message || "Ocorreu um erro durante o processo de geração dos anúncios.",
         variant: "destructive",
       });
+      setIsCheckingCredits(false);
     }
   };
 
@@ -199,14 +216,14 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             <div className="flex justify-center mt-4">
               <Button 
                 onClick={handleGenerateAds}
-                disabled={isGenerating || platforms.length === 0}
+                disabled={isGenerating || isCheckingCredits || platforms.length === 0}
                 size="lg"
                 className="w-full md:w-auto"
               >
-                {isGenerating ? (
+                {isGenerating || isCheckingCredits ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando Anúncios...
+                    {isCheckingCredits ? 'Verificando créditos...' : 'Gerando Anúncios...'}
                   </>
                 ) : (
                   'Gerar Anúncios'
