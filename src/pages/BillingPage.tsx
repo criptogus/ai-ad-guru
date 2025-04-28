@@ -67,14 +67,9 @@ const BillingPage: React.FC = () => {
     }
   };
   
-  // Show loading state while auth is initializing and not in a payment verification flow
-  if (authLoading && !isPaymentVerification) {
-    return <LoadingState />;
-  }
-  
   return (
     <AppLayout activePage="billing">
-      {getContent()}
+      {authLoading && !isPaymentVerification ? <LoadingState /> : getContent()}
     </AppLayout>
   );
 };

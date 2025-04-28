@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
 
 export const useCreditsVerification = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { refreshCredits } = useCredits();
   const [checking, setChecking] = useState(false);
   const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
@@ -35,7 +35,7 @@ export const useCreditsVerification = () => {
       
       if (data?.received_free_credits !== user.receivedFreeCredits) {
         // Update local user data if needed
-        await user.refreshUser?.();
+        await refreshUser();
         await refreshCredits();
       }
     } catch (error) {
@@ -59,7 +59,7 @@ export const useCreditsVerification = () => {
       if (error) throw error;
       
       if (data?.success) {
-        await user.refreshUser?.();
+        await refreshUser();
         await refreshCredits();
         setHasClaimedFreeCredits(true);
         return true;
