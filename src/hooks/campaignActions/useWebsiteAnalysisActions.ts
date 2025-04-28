@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCreditsManager } from "@/hooks/useCreditsManager";
 import { toast } from "sonner";
 import { OpenAICacheService } from "@/services/credits/openaiCache";
+import { CreditTransactionManager } from "@/services/credits/transactionManager";
 
 export const useWebsiteAnalysisActions = () => {
   const { toast: uiToast } = useToast();
@@ -100,20 +101,30 @@ export const useWebsiteAnalysisActions = () => {
         const creditsRequired = 2; // 2 credits for website analysis
         let hasEnoughCredits;
         try {
-          hasEnoughCredits = await checkCreditBalance(creditsRequired);
+          // Use the more robust credit check function
+          const creditCheck = await CreditTransactionManager.checkCredits(userId, creditsRequired);
+          hasEnoughCredits = creditCheck.hasEnough;
+          
+          if (!hasEnoughCredits) {
+            toast.error("Insufficient credits", {
+              description: `You need ${creditsRequired} credits for website analysis. You have ${creditCheck.current} credits.`
+            });
+            setIsAnalyzing(false);
+            return null;
+          }
         } catch (creditCheckError) {
           console.error("Error checking credit balance:", creditCheckError);
-          errorLogger.logError(creditCheckError, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.creditCheck');
-          toast.error("Erro ao verificar créditos", {
-            description: "Não foi possível verificar seu saldo de créditos."
-          });
-          setIsAnalyzing(false);
-          return null;
-        }
-        
-        if (!hasEnoughCredits) {
-          toast.error("Créditos insuficientes", {
-            description: "Você precisa de 2 créditos para realizar a análise de website."
+          errorLogger.logError({
+            error: creditCheckError,
+            userId,
+            creditsRequired,
+            operation: "website_analysis_credit_check"
+          }, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.creditCheck');
+          
+          toast.error("Error checking credits", {
+            description: creditCheckError instanceof Error 
+              ? creditCheckError.message 
+              : "Failed to verify your credit balance"
           });
           setIsAnalyzing(false);
           return null;
@@ -122,7 +133,7 @@ export const useWebsiteAnalysisActions = () => {
         console.log(`User ${userId} has enough credits for analysis. Required: ${creditsRequired}`);
       }
       
-      // Define the credit deduction function
+      // Define the credit deduction function with improved error handling
       const deductCreditsFunction = async () => {
         // Skip deduction if we're using cached results
         if (hasCachedAnalysis) {
@@ -132,15 +143,14 @@ export const useWebsiteAnalysisActions = () => {
         // Otherwise deduct credits
         const creditsRequired = 2;
         try {
-          const creditConsumed = await consumeCredits(creditsRequired, "Website analysis");
-          if (!creditConsumed) {
-            console.error("Failed to deduct credits for website analysis");
-            errorLogger.logError(new Error("Credit deduction failed"), 'useWebsiteAnalysisActions.deductCreditsFunction');
-            toast.error("Erro ao debitar créditos", {
-              description: "Não foi possível debitar os créditos necessários para esta operação."
-            });
-            return false;
-          }
+          // Use the more robust transaction manager
+          const result = await CreditTransactionManager.deductCredits({
+            userId,
+            amount: creditsRequired,
+            action: "website_analysis", 
+            metadata: { url: formattedUrl }
+          });
+          
           console.log(`Successfully deducted ${creditsRequired} credits for website analysis`);
           return true;
         } catch (error) {
@@ -151,7 +161,14 @@ export const useWebsiteAnalysisActions = () => {
             creditsRequired,
             operation: "website_analysis"
           }, 'useWebsiteAnalysisActions.deductCreditsFunction');
-          throw new Error(`Failed to deduct credits: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          
+          toast.error("Error deducting credits", {
+            description: error instanceof Error 
+              ? error.message 
+              : "Failed to deduct credits for this operation"
+          });
+          
+          return false;
         }
       };
       
@@ -196,6 +213,17 @@ export const useWebsiteAnalysisActions = () => {
         } else {
           setCacheInfo(null);
           
+          // If this is a new analysis, let's cache it for future use
+          try {
+            await OpenAICacheService.cacheResponse(analysisParams, result);
+            console.log('Analysis result cached successfully');
+          } catch (cacheError) {
+            console.error('Failed to cache analysis result:', cacheError);
+            // Non-critical error, just log it
+            errorLogger.logWarning('Failed to cache website analysis', 
+              'useWebsiteAnalysisActions.handleAnalyzeWebsite.cacheResult');
+          }
+          
           toast.success("Website Analyzed", {
             description: "Successfully analyzed website content"
           });
@@ -204,7 +232,28 @@ export const useWebsiteAnalysisActions = () => {
         return result;
       } catch (analysisError) {
         console.error("Error in website analysis:", analysisError);
-        errorLogger.logError(analysisError, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.analysis');
+        errorLogger.logError({
+          error: analysisError,
+          url: formattedUrl,
+          userId,
+          operation: "website_analysis_processing"
+        }, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.analysis');
+        
+        // If we already deducted credits but analysis failed, let's refund them
+        if (!hasCachedAnalysis) {
+          try {
+            await CreditTransactionManager.refundCredits({
+              userId,
+              amount: 2, // Refund the 2 credits we deducted
+              action: "website_analysis_refund",
+              metadata: { reason: "analysis_failed", url: formattedUrl }
+            });
+            console.log('Credits refunded due to analysis failure');
+          } catch (refundError) {
+            console.error('Failed to refund credits:', refundError);
+            errorLogger.logError(refundError, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.refund');
+          }
+        }
         
         throw analysisError;
       }

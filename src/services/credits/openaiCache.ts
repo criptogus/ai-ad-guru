@@ -1,14 +1,14 @@
 
-/**
- * OpenAI Cache Service
- * Implements 30-day caching for OpenAI responses to reduce costs
- */
-
 import { supabase } from '@/integrations/supabase/client';
+import { errorLogger } from '@/services/libs/error-handling';
 import crypto from 'crypto';
-import { toast } from 'sonner';
+
+interface CacheParams {
+  [key: string]: any;
+}
 
 interface CacheEntry {
+  id: string;
   key: string;
   response: any;
   expiration: string;
@@ -19,163 +19,156 @@ export class OpenAICacheService {
   /**
    * Generate a cache key from input parameters
    */
-  static generateCacheKey(inputObject: any): string {
-    const inputString = JSON.stringify(inputObject);
+  static generateCacheKey(params: CacheParams): string {
+    const inputString = JSON.stringify(params);
     return crypto.createHash('sha256').update(inputString).digest('hex');
   }
 
   /**
-   * Get cached response if it exists and is valid
+   * Check if a response is cached for the given parameters
    */
-  static async getCachedResponse(key: string): Promise<any | null> {
+  static async hasCachedResponse(params: CacheParams): Promise<boolean> {
     try {
-      console.log('Looking for cached OpenAI response with key:', key);
+      const cacheKey = this.generateCacheKey(params);
+      console.log('Checking for cached response with key:', cacheKey);
       
       const { data, error } = await supabase
         .from('openai_cache')
-        .select('response, expiration')
-        .eq('key', key)
+        .select('id, expiration')
+        .eq('key', cacheKey)
         .gt('expiration', new Date().toISOString())
-        .single();
-      
-      if (error || !data) {
-        console.log('No valid cache entry found');
-        return null;
-      }
-      
-      console.log('Found valid cached response, expiring at:', data.expiration);
-      return data.response;
-    } catch (error) {
-      console.error('Error retrieving from cache:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Store a response in the cache with 30-day expiration
-   */
-  static async storeResponse(key: string, response: any): Promise<boolean> {
-    try {
-      // Calculate expiration date (30 days from now)
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 30);
-      
-      console.log('Storing OpenAI response in cache, expires:', expirationDate.toISOString());
-      
-      const { error } = await supabase
-        .from('openai_cache')
-        .upsert({
-          key,
-          response,
-          expiration: expirationDate.toISOString()
-        });
+        .maybeSingle();
       
       if (error) {
-        console.error('Error storing in cache:', error);
+        console.error('Error checking OpenAI cache:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'check_cache'
+        }, 'OpenAICacheService.hasCachedResponse');
         return false;
       }
       
-      console.log('Successfully cached OpenAI response');
-      return true;
+      return !!data;
     } catch (error) {
-      console.error('Error storing in cache:', error);
+      console.error('Error in hasCachedResponse:', error);
+      errorLogger.logError(error, 'OpenAICacheService.hasCachedResponse');
       return false;
     }
   }
 
   /**
-   * Check if we have a cached response for the given parameters
+   * Retrieve a cached response
    */
-  static async hasCachedResponse(inputParams: any): Promise<boolean> {
+  static async getCachedResponse<T>(params: CacheParams): Promise<{ data: T | null; fromCache: boolean; cachedAt?: string; expiresAt?: string }> {
     try {
-      const cacheKey = this.generateCacheKey(inputParams);
-      const cachedResponse = await this.getCachedResponse(cacheKey);
-      return cachedResponse !== null;
-    } catch (error) {
-      console.error('Error checking cache status:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Cached API handler - wrapper for OpenAI calls
-   * Returns cached response if available, otherwise calls the API and caches the result
-   * 
-   * @param inputParams - Parameters for the OpenAI call
-   * @param apiFn - Function that makes the actual API call
-   * @param skipCache - Optional flag to skip cache and force a fresh API call
-   * @param deductCredits - Optional function to handle credit deduction
-   */
-  static async cachedApiCall<T>(
-    inputParams: any, 
-    apiFn: (params: any) => Promise<T>,
-    skipCache: boolean = false,
-    deductCredits?: () => Promise<boolean>
-  ): Promise<T> {
-    try {
-      // Generate cache key from input parameters
-      const cacheKey = this.generateCacheKey(inputParams);
+      const cacheKey = this.generateCacheKey(params);
+      console.log('Getting cached response with key:', cacheKey);
       
-      // Try to get from cache first (unless skipCache is true)
-      if (!skipCache) {
-        const cachedResponse = await this.getCachedResponse(cacheKey);
-        if (cachedResponse) {
-          console.log('Using cached OpenAI response');
-          return cachedResponse as T;
-        }
-      }
-      
-      // No cache hit or skipCache is true, deduct credits before API call
-      if (deductCredits) {
-        console.log('Deducting credits before API call');
-        const creditSuccess = await deductCredits();
-        if (!creditSuccess) {
-          console.error('Failed to deduct credits');
-          throw new Error('Failed to deduct credits: Insufficient credits or system error');
-        }
-      }
-      
-      // Call the API
-      console.log('No cache hit or forced refresh, calling OpenAI API');
-      const response = await apiFn(inputParams);
-      
-      // Store in cache asynchronously (don't wait for it)
-      this.storeResponse(cacheKey, response)
-        .catch(err => console.error('Failed to store response in cache:', err));
-      
-      return response;
-    } catch (error) {
-      console.error('Error in cached API call:', error);
-      // Make sure we provide detailed error information
-      if (error instanceof Error) {
-        throw error;
-      } else {
-        throw new Error('Unknown error during API call');
-      }
-    }
-  }
-
-  /**
-   * Clean up expired cache entries
-   */
-  static async cleanExpiredEntries(): Promise<number> {
-    try {
-      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('openai_cache')
-        .delete()
-        .lt('expiration', now)
-        .select('count');
+        .select('response, created_at, expiration')
+        .eq('key', cacheKey)
+        .gt('expiration', new Date().toISOString())
+        .maybeSingle();
       
       if (error) {
-        console.error('Error cleaning expired cache entries:', error);
-        return 0;
+        console.error('Error retrieving from OpenAI cache:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'get_cache'
+        }, 'OpenAICacheService.getCachedResponse');
+        return { data: null, fromCache: false };
       }
       
-      return data?.length || 0;
+      if (data) {
+        console.log('Cache hit! Using cached response from:', data.created_at);
+        return { 
+          data: data.response as T,
+          fromCache: true,
+          cachedAt: data.created_at,
+          expiresAt: data.expiration
+        };
+      }
+      
+      return { data: null, fromCache: false };
     } catch (error) {
-      console.error('Error cleaning expired cache:', error);
-      return 0;
+      console.error('Error in getCachedResponse:', error);
+      errorLogger.logError(error, 'OpenAICacheService.getCachedResponse');
+      return { data: null, fromCache: false };
+    }
+  }
+
+  /**
+   * Store a response in the cache
+   */
+  static async cacheResponse(params: CacheParams, response: any, expirationDays: number = 30): Promise<boolean> {
+    try {
+      const cacheKey = this.generateCacheKey(params);
+      console.log('Caching response with key:', cacheKey);
+      
+      // Calculate expiration date
+      const expiration = new Date();
+      expiration.setDate(expiration.getDate() + expirationDays);
+      
+      const { error } = await supabase
+        .from('openai_cache')
+        .insert({
+          key: cacheKey,
+          response,
+          expiration: expiration.toISOString()
+        });
+      
+      if (error) {
+        console.error('Error caching OpenAI response:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'cache_response'
+        }, 'OpenAICacheService.cacheResponse');
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error in cacheResponse:', error);
+      errorLogger.logError(error, 'OpenAICacheService.cacheResponse');
+      return false;
+    }
+  }
+
+  /**
+   * Get and cache response if not cached yet
+   */
+  static async getOrCreateCachedResponse<T>(
+    params: CacheParams, 
+    fetchFunction: () => Promise<T>
+  ): Promise<{ data: T | null; fromCache: boolean; cachedAt?: string; expiresAt?: string }> {
+    // Try to get from cache first
+    const cachedResult = await this.getCachedResponse<T>(params);
+    
+    if (cachedResult.fromCache && cachedResult.data) {
+      return cachedResult;
+    }
+    
+    // If not in cache, fetch and cache
+    try {
+      const response = await fetchFunction();
+      
+      if (response) {
+        await this.cacheResponse(params, response);
+        return { data: response, fromCache: false };
+      }
+      
+      return { data: null, fromCache: false };
+    } catch (error) {
+      console.error('Error fetching data for cache:', error);
+      errorLogger.logError(error, 'OpenAICacheService.getOrCreateCachedResponse');
+      return { data: null, fromCache: false };
     }
   }
 }
