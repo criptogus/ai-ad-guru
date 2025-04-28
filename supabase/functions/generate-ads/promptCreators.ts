@@ -14,23 +14,41 @@ function getLanguageName(langCode: string): string {
     en: "Inglês",
     es: "Espanhol",
     fr: "Français",
-    de: "Allemand",
+    de: "Deutsch",
     it: "Italiano"
   };
   return map[langCode.toLowerCase()] || "Português";
 }
 
-// Google Ads prompt creator with consistent Portuguese language enforcement
+// Function to ensure industry terms are in correct language
+function getIndustryLanguageDirective(langCode: string): string {
+  if (langCode.startsWith('pt')) {
+    return "IMPORTANTE: Use os nomes de indústria/segmento em português. Por exemplo: 'Tecnologia' em vez de 'Technology', 'Saúde' em vez de 'Healthcare', 'Educação' em vez de 'Education', etc.";
+  } else if (langCode.startsWith('es')) {
+    return "IMPORTANTE: Use los nombres de industria/sector en español. Por ejemplo: 'Tecnología' en vez de 'Technology', 'Salud' en vez de 'Healthcare', 'Educación' en vez de 'Education', etc.";
+  } else if (langCode === 'fr') {
+    return "IMPORTANT: Utilisez les noms d'industrie/segment en français. Par exemple: 'Technologie' au lieu de 'Technology', 'Santé' au lieu de 'Healthcare', 'Éducation' au lieu de 'Education', etc.";
+  }
+  return "";
+}
+
+// Google Ads prompt creator with consistent language enforcement
 export function createGoogleAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
+  // Default to Portuguese
+  const language = campaignData.language || "pt";
+  const languageName = getLanguageName(language);
+  const industryDirective = getIndustryLanguageDirective(language);
+  
   const systemMessage = `
 Você é um especialista em redação publicitária para anúncios Google Ads.
-IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
+IMPORTANTE: Responda APENAS em ${languageName}. Não use NENHUMA palavra em outro idioma.
 Seu papel é escrever anúncios que geram cliques, usando APENAS os dados fornecidos abaixo.
-NUNCA invente nada. NUNCA misture idiomas. Sua resposta deve ser 100% em português brasileiro.
+NUNCA invente nada. NUNCA misture idiomas. Sua resposta deve ser 100% em ${languageName}.
 Evite termos genéricos como "serviço profissional" a menos que apareçam explicitamente.
+${industryDirective}
 Retorne apenas o JSON de saída no formato exato abaixo.
 `;
 
@@ -47,6 +65,7 @@ Escreva 5 anúncios Google Ads usando os dados abaixo:
 - Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
 - Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
 - Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
+- Indústria/Segmento: ${campaignData.industry || "(não fornecido)"}
 
 Formato do anúncio:
 - Cada anúncio deve ter:
@@ -68,7 +87,8 @@ Formato da resposta (JSON):
   ]
 }
 
-IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
+IMPORTANTE: Anúncios DEVEM estar em ${languageName}. NÃO use palavras em outros idiomas.
+IMPORTANTE: Todos os nomes de indústria/segmento DEVEM estar em ${languageName}.
 `;
 
   console.log("📝 Google Ads System Message:", systemMessage);
@@ -77,18 +97,24 @@ IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em 
   return { systemMessage, userMessage };
 }
 
-// LinkedIn Ads prompt creator with consistent Portuguese language enforcement
+// LinkedIn Ads prompt creator with consistent language enforcement
 export function createLinkedInAdsPrompt(
   campaignData: WebsiteAnalysisResult, 
   mindTrigger?: string
 ): PromptMessages {
+  // Default to Portuguese
+  const language = campaignData.language || "pt";
+  const languageName = getLanguageName(language);
+  const industryDirective = getIndustryLanguageDirective(language);
+  
   const systemMessage = `
 Você é um redator publicitário sênior especializado em anúncios para LinkedIn.
 Sua tarefa é criar anúncios altamente conversivos e NUNCA INVENTAR INFORMAÇÕES NÃO FORNECIDAS.
-IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
-A resposta deve estar COMPLETAMENTE em português brasileiro.
+IMPORTANTE: Responda APENAS em ${languageName}. Não use NENHUMA palavra em outro idioma.
+A resposta deve estar COMPLETAMENTE em ${languageName}.
+${industryDirective}
 IMPORTANTE:
-- JAMAIS misture idiomas, seja 100% fiel ao português brasileiro.
+- JAMAIS misture idiomas, seja 100% fiel ao ${languageName}.
 - NUNCA use termos genéricos como "serviços profissionais" ou similares.
 - Use APENAS as informações fornecidas abaixo.
 - Ignore campos em branco (NÃO invente dados).
@@ -109,13 +135,14 @@ Crie 5 anúncios para LinkedIn usando exclusivamente os dados abaixo:
 - Diferenciais: ${(Array.isArray(campaignData.uniqueSellingPoints) && campaignData.uniqueSellingPoints.length > 0) ? campaignData.uniqueSellingPoints.join(', ') : "Não especificado - não invente"}
 - Palavras-chave: ${(Array.isArray(campaignData.keywords) && campaignData.keywords.length > 0) ? campaignData.keywords.join(', ') : "Não especificado - não invente"}
 - Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "Não especificado - não invente"}
+- Indústria/Segmento: ${campaignData.industry || "Não especificado - não invente"}
 
 Requisitos:
 - Cada anúncio deve ter um título atraente
 - Texto principal profissional e persuasivo
 - Descrição complementar
 - Sugestão de imagem (sem texto sobreposto)
-- NÃO incluir texto em inglês ou outro idioma que não seja português brasileiro
+- NÃO incluir texto em inglês ou outro idioma que não seja ${languageName}
 - NÃO criar dados fictícios ou genéricos
 - O JSON deve ser válido com aspas duplas para todas as chaves e valores.
 
@@ -131,7 +158,8 @@ Formato OBRIGATÓRIO de resposta (JSON):
   ]
 }
 
-IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
+IMPORTANTE: Anúncios DEVEM estar em ${languageName}. NÃO use palavras em outros idiomas.
+IMPORTANTE: Todos os nomes de indústria/segmento DEVEM estar em ${languageName}.
 `;
 
   console.log("📝 LinkedIn Ads System Message:", systemMessage);
@@ -140,15 +168,21 @@ IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em 
   return { systemMessage, userMessage };
 }
 
-// Microsoft Ads prompt creator with consistent Portuguese language enforcement
+// Microsoft Ads prompt creator with consistent language enforcement
 export function createMicrosoftAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
+  // Default to Portuguese
+  const language = campaignData.language || "pt";
+  const languageName = getLanguageName(language);
+  const industryDirective = getIndustryLanguageDirective(language);
+  
   const systemMessage = `
 Você é um especialista em anúncios Microsoft/Bing. Escreva anúncios de pesquisa otimizados para conversões, usando APENAS os dados de campanha fornecidos.
-IMPORTANTE: Responda APENAS em português do Brasil. Não use NENHUMA palavra em inglês.
-NÃO invente nenhum dado. Use apenas o idioma português brasileiro.
+IMPORTANTE: Responda APENAS em ${languageName}. Não use NENHUMA palavra em outro idioma.
+NÃO invente nenhum dado. Use apenas ${languageName}.
+${industryDirective}
 Seja direto, persuasivo e informativo.
 NUNCA misture idiomas ou use termos genéricos.
 Retorne APENAS os anúncios no formato JSON mostrado abaixo.
@@ -167,6 +201,7 @@ Crie 5 anúncios Bing para Microsoft Advertising:
 - Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
 - Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
 - Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
+- Indústria/Segmento: ${campaignData.industry || "(não fornecido)"}
 
 Formato:
 - 3 títulos (máximo 30 caracteres)
@@ -187,7 +222,8 @@ Formato JSON:
   ]
 }
 
-IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
+IMPORTANTE: Anúncios DEVEM estar em ${languageName}. NÃO use palavras em outros idiomas.
+IMPORTANTE: Todos os nomes de indústria/segmento DEVEM estar em ${languageName}.
 `;
 
   console.log("📝 Microsoft Ads System Message:", systemMessage);
@@ -196,20 +232,25 @@ IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em 
   return { systemMessage, userMessage };
 }
 
-// Meta Ads prompt creator with consistent Portuguese language enforcement
+// Meta Ads prompt creator with consistent language enforcement
 export function createMetaAdsPrompt(
   campaignData: WebsiteAnalysisResult,
   mindTrigger?: string
 ): PromptMessages {
+  // Default to Portuguese
+  const language = campaignData.language || "pt";
+  const languageName = getLanguageName(language);
+  const industryDirective = getIndustryLanguageDirective(language);
+  
   const systemMessage = `
 Você é um redator publicitário especializado em anúncios Meta/Instagram.
 Sua função é escrever anúncios altamente eficazes e CONVERSIVOS usando APENAS as informações fornecidas.
 
 DIRETRIZES ESTRITAS DE IDIOMA:
-- ABSOLUTAMENTE SEM mistura de idiomas: Use APENAS PORTUGUÊS BRASILEIRO, nunca combine com inglês ou qualquer outro idioma.
-- Você DEVE escrever 100% em PORTUGUÊS BRASILEIRO.
-- Se o idioma é português (pt ou pt-br), escreva APENAS em português brasileiro formal.
-- NUNCA use inglês, spanglish ou qualquer tradução; o anúncio completo deve estar em PORTUGUÊS BRASILEIRO.
+- ABSOLUTAMENTE SEM mistura de idiomas: Use APENAS ${languageName}, nunca combine com outros idiomas.
+- Você DEVE escrever 100% em ${languageName}.
+${industryDirective}
+- NUNCA use inglês, spanglish ou qualquer tradução; o anúncio completo deve estar em ${languageName}.
 - Nunca use espaços reservados genéricos ou crie suposições sobre informações ausentes!
 
 PONTUAÇÃO/FORMATAÇÃO:
@@ -233,6 +274,7 @@ Com base APENAS nestes detalhes, crie 5 variações de anúncios Meta/Instagram:
 - Diferenciais: ${Array.isArray(campaignData.uniqueSellingPoints) ? campaignData.uniqueSellingPoints.join(', ') : campaignData.uniqueSellingPoints || "(não fornecido)"}
 - Palavras-chave: ${Array.isArray(campaignData.keywords) ? campaignData.keywords.join(', ') : campaignData.keywords || "(não fornecido)"}
 - Descrição: ${campaignData.companyDescription || campaignData.businessDescription || "(não fornecido)"}
+- Indústria/Segmento: ${campaignData.industry || "(não fornecido)"}
 
 Para CADA anúncio, você deve fornecer:
 - "headline": um título conciso e original (máx. 1 frase, pontuação correta)
@@ -252,7 +294,8 @@ Formato JSON (OBRIGATÓRIO):
   ]
 }
 
-IMPORTANTE: Anúncios DEVEM estar em português do Brasil. NÃO use palavras em inglês.
+IMPORTANTE: Anúncios DEVEM estar em ${languageName}. NÃO use palavras em outros idiomas.
+IMPORTANTE: Todos os nomes de indústria/segmento DEVEM estar em ${languageName}.
 `;
 
   console.log("📝 Meta Ads System Message:", systemMessage);

@@ -14,10 +14,13 @@ export const createAudienceAnalysisPrompt = (
   // Determine likely country context from website data or default to Brazil
   const countryContext = determineCountryContext(websiteData);
   
-  // Build the base prompt with language awareness
+  // Get language name for explicit instruction
+  const languageName = getLanguageName(language);
+  
+  // Build the base prompt with explicit language instruction
   const basePrompt = `Act as a highly experienced Senior Marketing and New Business Analyst AI with deep expertise in strategic market analysis, consumer behavior, competitive positioning, and business development. Your task is to deliver a comprehensive, data-driven, and actionable report based on the provided company information, adhering to the highest standards of clarity, objectivity, and strategic insight.
 
-IMPORTANT: Respond ONLY in ${getLanguageName(language)} language. Do not mix languages or include any text in other languages.
+VERY IMPORTANT LANGUAGE INSTRUCTION: Respond ONLY in ${languageName} language. All industry names, market segments, and audience descriptors must be in ${languageName}. Do not mix languages or include any text in other languages.
 
 VERY IMPORTANT: This analysis should be specifically focused on ${countryContext}. All geographic recommendations, competitor analysis, and market insights should be relevant to this geographic context. Do NOT recommend locations outside ${countryContext} unless explicitly stated in the company information.
 
@@ -37,32 +40,34 @@ The report must address the following sections with precision and depth, leverag
 
 Structure your report with the following four main sections:
 
-1. PUBLIC TARGET PROFILE (PERFIL DO PÚBLICO-ALVO)
+1. PUBLIC TARGET PROFILE ${language === 'pt' ? '(PERFIL DO PÚBLICO-ALVO)' : language === 'es' ? '(PERFIL DEL PÚBLICO OBJETIVO)' : ''}
 - Demographics: Age range, gender distribution, income level, education, and relevant professions
 - Psychographics: Core desires, values, motivations, and pain points related to the company's offerings
 - Lifestyle: Daily habits, hobbies, media consumption patterns, and social affiliations
 - Concerns: Key worries or challenges related to the industry or product category
 - Social Groups: Specific communities or subcultures likely to engage with the brand
 
-2. GEOLOCATION ANALYSIS (ANÁLISE DE GEOLOCALIZAÇÃO)
+2. GEOLOCATION ANALYSIS ${language === 'pt' ? '(ANÁLISE DE GEOLOCALIZAÇÃO)' : language === 'es' ? '(ANÁLISIS DE GEOLOCALIZACIÓN)' : ''}
 - Primary Markets: Key cities, regions, or countries where the target audience is concentrated - SPECIFICALLY IN ${countryContext}
 - Market Accessibility: Factors that make these locations viable for targeting
 - Growth Potential: Emerging regions or underserved areas with high potential
 - Challenges: Local barriers and strategies to mitigate them
 
-3. MARKET ANALYSIS (ANÁLISE DE MERCADO)
+3. MARKET ANALYSIS ${language === 'pt' ? '(ANÁLISE DE MERCADO)' : language === 'es' ? '(ANÁLISIS DE MERCADO)' : ''}
 - Market Overview: Size, growth rate, and key trends shaping the industry in ${countryContext}
-- Oceano Azul (Blue Ocean): Identify untapped or underserved market segments
-- Oceano Vermelho (Red Ocean): Describe the saturated, highly competitive segments
+- ${language === 'pt' ? 'Oceano Azul' : language === 'es' ? 'Océano Azul' : 'Blue Ocean'}: Identify untapped or underserved market segments
+- ${language === 'pt' ? 'Oceano Vermelho' : language === 'es' ? 'Océano Rojo' : 'Red Ocean'}: Describe the saturated, highly competitive segments
 - Growth Opportunities: Specific areas for expansion
 - Niche Markets: Micro-segments with unique needs that can be targeted
 
-4. COMPETITOR INSIGHTS (INSIGHTS DOS CONCORRENTES)
+4. COMPETITOR INSIGHTS ${language === 'pt' ? '(INSIGHTS DOS CONCORRENTES)' : language === 'es' ? '(INSIGHTS DE COMPETIDORES)' : ''}
 - Key Competitors: Identify 3-5 primary competitors (direct and indirect) IN ${countryContext}
-- Diferenciais Competitivos: Analyze each competitor's unique strengths and weaknesses
-- Posicionamento de Mercado: Describe how competitors position themselves
-- Oportunidades: Gaps in competitors' offerings that can be exploited
-- Ameaças: Risks posed by competitors' actions and external factors
+- ${language === 'pt' ? 'Diferenciais Competitivos' : language === 'es' ? 'Diferenciales Competitivos' : 'Competitive Differentiators'}: Analyze each competitor's unique strengths and weaknesses
+- ${language === 'pt' ? 'Posicionamento de Mercado' : language === 'es' ? 'Posicionamiento de Mercado' : 'Market Positioning'}: Describe how competitors position themselves
+- ${language === 'pt' ? 'Oportunidades' : language === 'es' ? 'Oportunidades' : 'Opportunities'}: Gaps in competitors' offerings that can be exploited
+- ${language === 'pt' ? 'Ameaças' : language === 'es' ? 'Amenazas' : 'Threats'}: Risks posed by competitors' actions and external factors
+
+FINAL REMINDER: Your complete analysis MUST be written in ${languageName} only. All industry terms, market segments, and other information must be in ${languageName}.
 
 For each section, provide specific, actionable insights rather than generic statements. Base your analysis exclusively on the provided information - DO NOT invent or assume facts not present in the data. If information is limited, clearly state where you've made reasonable inferences based on the available context.
 

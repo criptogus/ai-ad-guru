@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { GoogleAd, MetaAd } from '@/hooks/adGeneration/types';
 import { normalizeGoogleAd, normalizeMetaAd } from '@/lib/utils';
 import { useCreditsManager } from '@/hooks/useCreditsManager';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AdGenerationStepProps {
   analysisResult: any;
@@ -30,6 +32,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const { checkCreditBalance, consumeCredits } = useCreditsManager();
+  const { currentLanguage } = useLanguage();
 
   const handleGenerateAds = async () => {
     if (!platforms || platforms.length === 0) {
@@ -63,6 +66,10 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         mindTriggers[platform] = campaignData.mindTriggers?.[platform] || '';
       });
 
+      // Determine which language to use (first from the analysis result, then from campaign data, then from context)
+      const adLanguage = analysisResult?.language || campaignData.language || currentLanguage || 'pt';
+      console.log(`Using language for ads: ${adLanguage}`);
+
       const promptData: CampaignPromptData = {
         companyName: campaignData.companyName || analysisResult?.companyName || campaignData.name || 'Your Company',
         websiteUrl: campaignData.targetUrl || campaignData.websiteUrl || analysisResult?.websiteUrl || '',
@@ -72,7 +79,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
         mindTrigger: campaignData.mindTriggers?.['default'] || '',
         mindTriggers: mindTriggers,
-        language: 'pt_BR',
+        language: adLanguage,
         industry: campaignData.industry || analysisResult?.industry || '',
         platforms: platforms,
         companyDescription: campaignData.description || analysisResult?.companyDescription || analysisResult?.businessDescription || '',
@@ -113,201 +120,111 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
             } else if (platform === 'microsoft' && ads.microsoft_ads) {
               results[platform] = ads.microsoft_ads.map(ad => normalizeGoogleAd(ad));
               hasAnySuccessfulPlatform = true;
-            } else {
-              console.warn(`No ${platform} ads data received`);
-              results[platform] = generateFallbackAds(platform, promptData);
-              hasAnySuccessfulPlatform = true;
-              
-              toast({
-                variant: "destructive",
-                title: `Usando anúncios alternativos para ${platform}`,
-                description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
-              });
             }
           });
-        } else {
-          console.warn(`No ads data received, using fallbacks`);
-          platforms.forEach(platform => {
-            results[platform] = generateFallbackAds(platform, promptData);
-          });
-          hasAnySuccessfulPlatform = true;
-          
-          toast({
-            variant: "destructive",
-            title: `Usando anúncios alternativos`,
-            description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
-          });
-        }
-        
-        if (hasAnySuccessfulPlatform) {
-          console.log("✅ Final generated ads: ", results);
-          onAdsGenerated(results);
-          toast({
-            title: "Variações de anúncios geradas!",
-            description: `Anúncios criados para: ${Object.keys(results).join(", ")}`
-          });
-          
-          if (onNext) {
-            onNext();
+
+          if (hasAnySuccessfulPlatform) {
+            console.log("Generated ad results:", results);
+            onAdsGenerated(results);
+            toast({
+              title: "Anúncios gerados com sucesso",
+              description: `Foram criadas ${Object.values(results).flat().length} variações de anúncios.`
+            });
+            if (onNext) {
+              onNext();
+            }
+          } else {
+            setError("Nenhum anúncio foi gerado para as plataformas selecionadas.");
+            toast({
+              title: "Erro ao gerar anúncios",
+              description: "Nenhum anúncio foi gerado para as plataformas selecionadas.",
+              variant: "destructive",
+            });
           }
-        } else {
-          setError("Falha ao gerar anúncios para qualquer plataforma. Por favor, tente novamente.");
-          toast({
-            variant: "destructive",
-            title: "Falha na geração de anúncios",
-            description: "Não foi possível gerar anúncios. Verifique seus dados e tente novamente."
-          });
         }
-      } catch (error: any) {
-        console.error(`❌ Failed to generate ads:`, error);
-        platforms.forEach(platform => {
-          results[platform] = generateFallbackAds(platform, promptData);
+      } catch (err: any) {
+        console.error("Error in ad generation:", err);
+        setError(err?.message || "Erro ao gerar anúncios");
+        toast({
+          title: "Erro ao gerar anúncios",
+          description: err?.message || "Ocorreu um erro durante a geração dos anúncios.",
+          variant: "destructive",
         });
-        
-        if (Object.keys(results).length > 0) {
-          onAdsGenerated(results);
-          toast({
-            variant: "destructive",
-            title: `Usando anúncios alternativos`,
-            description: "Criamos anúncios padrão. Você pode editá-los na próxima etapa."
-          });
-          
-          if (onNext) {
-            onNext();
-          }
-        } else {
-          setError(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
-          toast({
-            variant: "destructive",
-            title: "Falha na geração de anúncios",
-            description: error instanceof Error ? error.message : "Algo deu errado. Tente novamente."
-          });
-        }
       }
-    } catch (error: any) {
-      console.error("❌ Failed to generate ads:", error);
-      setError(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
+    } catch (err: any) {
+      console.error("Error in handling ad generation:", err);
+      setError(err?.message || "Erro no processo de geração");
       toast({
+        title: "Erro no processo",
+        description: err?.message || "Ocorreu um erro durante o processo de geração dos anúncios.",
         variant: "destructive",
-        title: "Falha na geração de anúncios",
-        description: error instanceof Error ? error.message : "Algo deu errado. Tente novamente."
       });
     }
   };
 
-  const generateFallbackAds = (platform: string, promptData: CampaignPromptData) => {
-    const companyName = promptData.companyName || 'Sua Empresa';
-    const industry = promptData.industry || 'serviços profissionais';
-    const targetAudience = promptData.targetAudience || 'clientes potenciais';
-    const objective = promptData.objective || 'awareness';
-    const description = promptData.companyDescription || `${companyName} fornece serviços de ${industry} de qualidade`;
-    
-    const createCompleteDescription = (text: string, maxLength = 90) => {
-      const truncated = text.substring(0, maxLength);
-      return truncated.endsWith('.') ? truncated : truncated + '.';
-    };
-    
-    const getCallToAction = () => {
-      return objective === 'conversion' ? 'Compre Agora' : 
-             objective === 'consideration' ? 'Saiba Mais' : 'Descubra Hoje';
-    };
-    
-    const getServiceDescription = () => {
-      return `Oferecemos ${industry} de alta qualidade para ${targetAudience}.`;
-    };
-    
-    if (platform === 'google' || platform === 'microsoft') {
-      const cta = getCallToAction();
-      const serviceDesc = getServiceDescription();
-      
-      return Array(5).fill(null).map((_, i) => ({
-        headline1: `${companyName} - ${industry}`,
-        headline2: `${cta} ${i+1}`,
-        headline3: cta,
-        description1: createCompleteDescription(serviceDesc),
-        description2: createCompleteDescription(description.substring(0, 80) || 
-          `${companyName} é especialista em ${industry}, atendendo ${targetAudience} com excelência.`),
-        displayPath: promptData.websiteUrl || 'exemplo.com.br',
-        path1: 'servicos',
-        path2: 'info',
-        siteLinks: []
-      }));
-    } else if (platform === 'meta' || platform === 'linkedin') {
-      const cta = getCallToAction();
-      return Array(5).fill(null).map((_, i) => ({
-        headline: `${companyName} - Especialistas em ${industry}`,
-        primaryText: createCompleteDescription(
-          `${description.substring(0, 100) || `${companyName} oferece soluções inovadoras de ${industry}.`} 
-          Nossa equipe está pronta para ajudar ${targetAudience} a alcançar seus objetivos.`, 
-          150
-        ),
-        description: createCompleteDescription(
-          `Serviços de qualidade para ${targetAudience}. ${cta}!`, 
-          80
-        ),
-        imagePrompt: `Imagem profissional de ${industry} para ${companyName}, mostrando pessoas representando ${targetAudience}, em um ambiente moderno com atmosfera ${promptData.brandTone || 'profissional'}`,
-        format: 'feed'
-      }));
-    }
-    
-    return [];
-  };
-
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Gerar Conteúdo de Anúncios</h3>
-          <p className="text-muted-foreground">
-            Usaremos IA para criar 5 variações de anúncios convincentes para cada plataforma selecionada, com base nos detalhes da sua campanha.
-            Esta operação usará 5 créditos por plataforma da sua conta.
-          </p>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">Geração de Anúncios</h3>
+        <p className="text-muted-foreground">
+          Gere anúncios otimizados para todas as plataformas selecionadas.
+        </p>
+      </div>
 
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Erro</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erro na geração de anúncios</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          <div className="rounded-md bg-blue-50 p-4 mb-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">Informações de Geração de Anúncios</h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>Empresa: {campaignData.companyName || analysisResult?.companyName || campaignData.name}</p>
-                  <p>Objetivo: {campaignData.objective || 'Não especificado'}</p>
-                  <p>Plataformas:</p>
-                  <ul className="list-disc ml-4 text-sm text-gray-700 dark:text-gray-300">
-                    {platforms.map((platform) => (
-                      <li key={platform}>
-                        <strong>{platform}:</strong> Gatilho Mental: {campaignData.mindTriggers?.[platform] || 'Nenhum'}
-                      </li>
-                    ))}
-                  </ul>
-                  <p>Público-Alvo: {campaignData.targetAudience || analysisResult?.targetAudience || 'Não especificado'}</p>
-                </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium">Plataformas selecionadas</h4>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {platforms.map(platform => (
+                  <div key={platform} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm">
+                    {platform === 'google' && 'Google Ads'}
+                    {platform === 'meta' && 'Meta Ads'}
+                    {platform === 'linkedin' && 'LinkedIn Ads'}
+                    {platform === 'microsoft' && 'Microsoft Ads'}
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
 
-          <Button 
-            onClick={handleGenerateAds} 
-            disabled={isGenerating || platforms.length === 0}
-            className="w-full"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando Anúncios...
-              </>
-            ) : (
-              `Gerar Conteúdo de Anúncios (${platforms.length * 5} créditos)`
-            )}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex justify-center mt-4">
+              <Button 
+                onClick={handleGenerateAds}
+                disabled={isGenerating || platforms.length === 0}
+                size="lg"
+                className="w-full md:w-auto"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Gerando Anúncios...
+                  </>
+                ) : (
+                  'Gerar Anúncios'
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="text-sm text-muted-foreground">
+        <p>
+          *A geração de anúncios consumirá 5 créditos por plataforma.
+          {platforms.length > 0 && ` Total de créditos para esta operação: ${platforms.length * 5}.`}
+        </p>
+      </div>
+    </div>
   );
 };
+
+export default AdGenerationStep;

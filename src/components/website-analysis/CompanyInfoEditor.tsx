@@ -95,6 +95,17 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
     return item;
   };
 
+  // Handle industry change with proper language translation
+  const handleIndustryChange = (value: string) => {
+    // When user selects a value, we store both the original (English) value and set language information
+    onTextChange('industry', value);
+    
+    // Explicitly set the language to ensure consistent processing
+    onTextChange('language' as keyof WebsiteAnalysisResult, currentLanguage);
+    
+    console.log(`Industry selected: ${value} in language: ${currentLanguage}`);
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -147,7 +158,7 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
         </Label>
         <Select
           value={analysisResult.industry?.toLowerCase() || ''}
-          onValueChange={(value) => onTextChange('industry', value)}
+          onValueChange={(value) => handleIndustryChange(value)}
         >
           <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
             <SelectValue placeholder={getLabel("Select industry", "Selecione a indústria", "Seleccione la industria")} />
@@ -167,6 +178,32 @@ const CompanyInfoEditor: React.FC<CompanyInfoEditorProps> = ({
             "If the detected industry isn't correct, please select the most appropriate one",
             "Se a indústria detectada não estiver correta, selecione a mais apropriada",
             "Si la industria detectada no es correcta, seleccione la más apropiada"
+          )}
+        </p>
+      </div>
+      
+      <div>
+        <Label htmlFor="language" className="block text-sm font-medium mb-1">
+          {getLabel("Language", "Idioma", "Idioma")}
+        </Label>
+        <Select
+          value={analysisResult.language || currentLanguage}
+          onValueChange={(value) => onTextChange('language', value)}
+        >
+          <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+            <SelectValue placeholder={getLabel("Select language", "Selecione o idioma", "Seleccione el idioma")} />
+          </SelectTrigger>
+          <SelectContent className="dark:bg-gray-800">
+            <SelectItem value="pt">Português</SelectItem>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="es">Español</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          {getLabel(
+            "Select the language for generated ads",
+            "Selecione o idioma para os anúncios gerados",
+            "Seleccione el idioma para los anuncios generados"
           )}
         </p>
       </div>

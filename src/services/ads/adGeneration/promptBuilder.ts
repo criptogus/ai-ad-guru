@@ -10,6 +10,32 @@ function fieldOrDoNotInvent(val: any, notProvidedMsg = "Not provided — do not 
   return val;
 }
 
+// Helper to get language name
+function getLanguageName(langCode: string): string {
+  const languageMap: Record<string, string> = {
+    'en': 'English',
+    'es': 'Spanish',
+    'es-ES': 'Spanish',
+    'pt': 'Portuguese',
+    'pt-BR': 'Brazilian Portuguese',
+    'fr': 'French',
+    'fr-FR': 'French',
+    'de': 'German',
+    'de-DE': 'German',
+    'it': 'Italian',
+    'it-IT': 'Italian',
+    'nl': 'Dutch',
+    'nl-NL': 'Dutch',
+    'zh': 'Chinese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'ru': 'Russian',
+    'ar': 'Arabic'
+  };
+  
+  return languageMap[langCode] || 'English';
+}
+
 // ------ Unified Prompt Builder ------
 export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): PromptMessages => {
   // Get platform-specific mind trigger from the mindTriggers object or fallback
@@ -19,19 +45,23 @@ export const buildUnifiedPrompt = (data: CampaignPromptData, platform: string): 
   
   // Get the language or default to English
   const language = data.language || 'en';
+  const languageName = getLanguageName(language);
   
   // System message with language adaptation
   let systemMessage = `You are a senior copywriter and creative director in a world-class advertising agency. You write high-performing ads that strictly follow client briefings. NEVER invent company context or features. Do NOT mention things not included in the data.`;
   
-  // Add language instruction
+  // Add explicit language instruction
+  systemMessage += `\n\nVERY IMPORTANT: You MUST write your response ONLY in ${languageName}. This includes ALL industry terms, market segments, and every aspect of the response.`;
+  
+  // Add language-specific instructions
   if (language === 'pt' || language === 'pt-BR') {
-    systemMessage += ` Você deve escrever em português do Brasil.`;
+    systemMessage += ` Você deve escrever TODOS os elementos em português do Brasil, incluindo nomes de indústrias e segmentos de mercado.`;
   } else if (language === 'es' || language === 'es-ES') {
-    systemMessage += ` Debes escribir en español.`;
+    systemMessage += ` Debes escribir TODOS los elementos en español, incluyendo nombres de industrias y segmentos de mercado.`;
   } else if (language === 'fr' || language === 'fr-FR') {
-    systemMessage += ` Vous devez écrire en français.`;
+    systemMessage += ` Vous devez écrire TOUS les éléments en français, y compris les noms d'industries et de segments de marché.`;
   } else {
-    systemMessage += ` Write in English.`;
+    systemMessage += ` Write ALL elements in English, including industry names and market segments.`;
   }
 
   // Build platform-specific instructions
@@ -109,10 +139,12 @@ Call to Action: ${fieldOrDoNotInvent(
     Array.isArray(data.callToAction) ? data.callToAction[0] : data.callToAction
 )}
 
-LANGUAGE: ${language || 'English'}
-Respond using this language: ${language || 'English'}
+VERY IMPORTANT: All response content MUST be in ${languageName} ONLY.
+Output language: ${languageName}
 
 ${platformInstructions}
+
+LANGUAGE REMINDER: Remember to provide ALL industry names, segment names, and other terminology in ${languageName}.
 
 Format the output as a JSON array with 5 objects, strictly following this format:
 ${jsonSchema}
