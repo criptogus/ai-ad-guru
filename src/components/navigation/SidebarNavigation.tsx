@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { NavigationItem } from "@/components/layout/NavigationItem";
@@ -37,6 +38,24 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     console.log("SidebarNavigation - Language changed to:", currentLanguage);
     setRenderKey(prevKey => prevKey + 1);
   }, [currentLanguage]);
+
+  // Define navigationItems using the translation function
+  const navigationItems = [
+    { title: t('nav.home'), icon: Home, href: "/" },
+    { title: t('nav.dashboard'), icon: LayoutDashboard, href: "/dashboard" },
+    { title: t('nav.campaigns'), icon: ClipboardList, href: "/campaigns" },
+    { title: t('nav.connections'), icon: Share2, href: "/connections" },
+    { title: t('nav.adManager'), icon: BarChart3, href: "/ad-manager" },
+    { title: t('nav.settings'), icon: Settings, href: "/settings" }
+  ];
+
+  // Define the isActive function to determine if a navigation item is active
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <aside className={cn(
