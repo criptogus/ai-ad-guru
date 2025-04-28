@@ -26,15 +26,12 @@ export default defineConfig(({ mode }) => ({
       context: 'window',
       external: [],
       onwarn(warning, warn) {
-        // Ignore certain warnings that break the build
+        // Ignore certain warnings
         if (warning.code === 'MISSING_NODE_BUILTINS') return;
         if (warning.code === 'SOURCEMAP_ERROR') return;
+        if (warning.message && warning.message.includes('rollup-linux')) return;
         if (warning.message && warning.message.includes('@rollup/rollup-')) return;
         warn(warning);
-      },
-      // Force avoiding native extensions completely
-      treeshake: {
-        moduleSideEffects: false,
       }
     },
     commonjsOptions: {

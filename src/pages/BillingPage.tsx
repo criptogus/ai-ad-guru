@@ -35,6 +35,9 @@ const BillingPage: React.FC = () => {
   // Check if we're coming from a payment verification flow
   const isPaymentVerification = !!sessionId;
 
+  // Combinando os estados de loading em um único controlador
+  const isLoading = authLoading || pageLoading;
+
   // Check Stripe connection on mount - mas não bloqueia a UI
   useEffect(() => {
     const checkStripeConnection = async () => {
@@ -50,8 +53,6 @@ const BillingPage: React.FC = () => {
 
         if (!result.success) {
           console.warn('Stripe connection issue:', result.message);
-        } else {
-          console.log('Stripe connection successful:', result.message);
         }
       } catch (err) {
         console.error('Failed to check Stripe connection:', err);
@@ -76,22 +77,11 @@ const BillingPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [authLoading]);
-  
+
   // Toggle developer tools visibility
   const toggleDevTools = () => {
     setShowDevTools(!showDevTools);
   };
-  
-  // For debugging
-  useEffect(() => {
-    console.log('BillingPage state:', {
-      authLoading,
-      pageLoading,
-      isAuthenticated,
-      stripeChecked: stripeConnectionStatus.checked,
-      stripeSuccess: stripeConnectionStatus.success
-    });
-  }, [authLoading, pageLoading, isAuthenticated, stripeConnectionStatus]);
   
   // Helper function to get the correct content
   const renderContent = () => {
@@ -129,9 +119,6 @@ const BillingPage: React.FC = () => {
       return <div className="p-8 text-center">Ocorreu um erro. Por favor, tente novamente ou entre em contato com o suporte.</div>;
     }
   };
-  
-  // Simplify loading condition to reduce flicker
-  const isLoading = authLoading || pageLoading;
   
   return (
     <AppLayout activePage="billing">

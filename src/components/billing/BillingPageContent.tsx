@@ -43,12 +43,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const [hasPendingPurchase, setHasPendingPurchase] = useState(false);
   
   const { checking, processing, hasClaimedFreeCredits } = useCreditsVerification();
-  
-  // For debugging
-  const [debugInfo, setDebugInfo] = useState({
-    userLoaded: !!user,
-    creditsLoading: true
-  });
 
   const state = location.state as { from?: string; requiredCredits?: number } | null;
   const fromCampaign = state?.from === 'campaign';
@@ -62,15 +56,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       const checkSubscription = async () => {
         if (user) {
           try {
-            console.log("Checking subscription status in BillingPageContent");
             const hasSubscription = await checkSubscriptionStatus();
-            
-            setDebugInfo(prev => ({
-              ...prev,
-              userLoaded: !!user,
-              subscriptionChecked: true
-            }));
-            
             if (hasSubscription) {
               const returnPath = sessionStorage.getItem('returnAfterBilling');
               if (returnPath) {
@@ -81,25 +67,11 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
           } catch (error) {
             console.error("Error checking subscription status:", error);
           } finally {
-            // Adding a small delay to ensure UI consistency
+            // Simulando tempo de carregamento para os créditos
             setTimeout(() => {
               setLoadingCredits(false);
-              setDebugInfo(prev => ({
-                ...prev,
-                creditsLoading: false
-              }));
-            }, 300);
+            }, 600);
           }
-        } else {
-          // If user is not available, still update loading state
-          setTimeout(() => {
-            setLoadingCredits(false);
-            setDebugInfo(prev => ({
-              ...prev,
-              creditsLoading: false,
-              userLoadError: "No user available"
-            }));
-          }, 300);
         }
       };
       
@@ -107,11 +79,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
     } catch (error) {
       console.error("Error in billing page effect:", error);
       setLoadingCredits(false);
-      setDebugInfo(prev => ({
-        ...prev,
-        creditsLoading: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      }));
     }
   }, [user, checkSubscriptionStatus, navigate]);
   
@@ -142,33 +109,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       );
     }
     return null;
-  };
-
-  const renderCreditPurchaseSection = () => {
-    if (loadingCredits) {
-      // Skeleton para o card de compra enquanto carrega
-      return (
-        <Card className="p-6">
-          <Skeleton className="h-8 w-64 mb-4" />
-          <Skeleton className="h-5 w-full mb-3" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-64 rounded-xl" />
-          </div>
-        </Card>
-      );
-    }
-    
-    if (user) {
-      return <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />;
-    }
-    
-    return (
-      <Card className="p-6">
-        <p className="text-center">Erro ao carregar informações do usuário. Por favor, tente novamente.</p>
-      </Card>
-    );
   };
 
   return (
@@ -253,16 +193,21 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
       )}
       
       <div className="space-y-8">
-        {renderCreditPurchaseSection()}
-        
-        {/* Debug only in development */}
-        {process.env.NODE_ENV === 'development' && showDevTools && (
-          <Card className="p-4 mt-4">
-            <h3 className="font-medium mb-2">Debug Info</h3>
-            <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
+        {loadingCredits ? (
+          // Skeleton para o card de compra enquanto carrega
+          <Card className="p-6">
+            <Skeleton className="h-8 w-64 mb-4" />
+            <Skeleton className="h-5 w-full mb-3" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <Skeleton className="h-64 rounded-xl" />
+              <Skeleton className="h-64 rounded-xl" />
+              <Skeleton className="h-64 rounded-xl" />
+            </div>
           </Card>
+        ) : (
+          user && (
+            <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
+          )
         )}
       </div>
     </div>

@@ -1,63 +1,47 @@
 
-/**
- * Test stripe connection - checks if the Stripe API is accessible
- */
-
 import { supabase } from '@/integrations/supabase/client';
-import { errorLogger } from '@/services/libs/error-handling';
 
-interface StripeConnectionResult {
+/**
+ * Tests the connection to Stripe API via an Edge Function
+ * @returns Promise with connection test result
+ */
+export const testStripeConnection = async (): Promise<{
   success: boolean;
   message: string;
   apiVersion?: string;
-  timestamp?: number;
-}
-
-export const testStripeConnection = async (): Promise<StripeConnectionResult> => {
+}> => {
   try {
-    console.log('Running Stripe connection test...');
+    console.log('Testing Stripe API connection...');
     
     const { data, error } = await supabase.functions.invoke('test-stripe-connection', {
-      body: {}
+      body: { test: true }
     });
     
     if (error) {
       console.error('Error testing Stripe connection:', error);
       return {
         success: false,
-        message: `Error connecting to Stripe: ${error.message}`,
-        timestamp: Date.now()
+        message: `Connection failed: ${error.message || 'Unknown error'}`
       };
     }
     
-    if (!data || !data.success) {
+    if (!data?.success) {
       return {
         success: false,
-        message: data?.message || 'Unknown error testing Stripe connection',
-        apiVersion: data?.apiVersion,
-        timestamp: Date.now()
+        message: data?.message || 'Connection test failed without specific error'
       };
     }
     
     return {
       success: true,
-      message: data.message || 'Successfully connected to Stripe API',
-      apiVersion: data.apiVersion,
-      timestamp: Date.now()
+      message: data.message || 'Connection successful',
+      apiVersion: data.apiVersion
     };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? 
-      error.message : 
-      'Unknown error occurred testing Stripe connection';
-      
-    errorLogger.logError(error, 'testStripeConnection');
-    
-    console.error('Exception in testStripeConnection:', errorMessage);
-    
+  } catch (err: any) {
+    console.error('Exception testing Stripe connection:', err);
     return {
       success: false,
-      message: errorMessage,
-      timestamp: Date.now()
+      message: `Exception: ${err.message || 'Unknown error'}`
     };
   }
 };
