@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import SidebarCreditDisplay from "@/components/credits/SidebarCreditDisplay";
 
 interface SidebarNavigationProps {
   isOpen: boolean;
@@ -94,6 +95,9 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           />
         ))}
       </nav>
+
+      {/* Credits Display */}
+      <SidebarCreditDisplay collapsed={isCollapsed} />
 
       {!isCollapsed && <LanguageSwitcher />}
 

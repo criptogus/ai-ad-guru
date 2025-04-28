@@ -22,25 +22,10 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      // Force pure JavaScript implementation
       context: 'globalThis',
-      treeshake: {
-        moduleSideEffects: false,
-      },
       output: {
         format: 'es',
-        hoistTransitiveImports: false,
       }
     },
-    commonjsOptions: {
-      transformMixedEsModules: true,
-      requireReturnsDefault: 'auto'
-    }
-  },
-  // Define environment variables that will prevent native module usage
-  define: {
-    'process.env.ROLLUP_NATIVE': '"false"',
-    'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
-    'process.env.ROLLUP_PURE_JS': '"true"'
   },
 }));
