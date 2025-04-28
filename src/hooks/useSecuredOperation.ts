@@ -38,8 +38,9 @@ export function useSecuredOperation() {
 
       if (!creditCheck.hasEnough) {
         console.error(`Insufficient credits: needed ${options.requiredCredits}, has ${creditCheck.current}`);
+        const missingCredits = options.requiredCredits - creditCheck.current;
         toast.error('Insufficient credits', {
-          description: `You need ${creditCheck.deficit} more credits to perform this action.`
+          description: `You need ${missingCredits} more credits to perform this action.`
         });
         return null;
       }
