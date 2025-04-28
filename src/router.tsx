@@ -1,16 +1,12 @@
 
 import React, { lazy, Suspense } from 'react';
 import {
-  Route,
-  Routes,
-  Outlet,
-  Navigate,
   RouterProvider,
-  createBrowserRouter,
-  useLocation
+  createBrowserRouter
 } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader } from 'lucide-react';
 
@@ -38,88 +34,177 @@ const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const AdManagerPage = lazy(() => import('@/pages/AdManagerPage'));
 const OAuthCallbackHandler = lazy(() => import('@/components/config/OAuthCallbackHandler'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
 
-// ProtectedRoute component to handle authentication
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-
-  if (!user) {
-    return <Navigate to="/auth/login" />;
-  }
-
-  return <Suspense fallback={<Loading />}>{children}</Suspense>;
-};
-
-// PublicRoute component to restrict access to authenticated users
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-
-  if (user) {
-    return <Navigate to="/dashboard" />;
-  }
-
-  return <Suspense fallback={<Loading />}>{children}</Suspense>;
-};
-
-// Define the routes configuration
-const routes = [
+// Create the router
+const router = createBrowserRouter([
+  // Public routes
   {
     path: "/",
-    element: <Outlet />,
-    children: [
-      { path: "/", element: <HomePage /> },
-      { path: "/pricing", element: <PricingPage /> },
-      {
-        path: "/auth",
-        children: [
-          { path: "login", element: <PublicRoute><Authentication /></PublicRoute> },
-          { path: "register", element: <PublicRoute><Authentication /></PublicRoute> },
-          { index: true, element: <Navigate to="/auth/login" replace /> },
-        ],
-      },
-      { path: "/callback", element: <OAuthCallbackHandler /> },
-      { 
-        path: "/dashboard", 
-        element: <ProtectedRoute><AppLayout activePage="dashboard"><DashboardPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/campaigns", 
-        element: <ProtectedRoute><AppLayout activePage="campaigns"><CampaignsPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/connections", 
-        element: <ProtectedRoute><AppLayout activePage="connections"><ConnectionsPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/settings", 
-        element: <ProtectedRoute><AppLayout activePage="settings"><SettingsPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/analytics", 
-        element: <ProtectedRoute><AppLayout activePage="analytics"><AnalyticsPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/billing", 
-        element: <ProtectedRoute><AppLayout activePage="billing"><BillingPage /></AppLayout></ProtectedRoute> 
-      },
-      { 
-        path: "/ad-manager", 
-        element: <ProtectedRoute><AppLayout activePage="ad-manager"><AdManagerPage /></AppLayout></ProtectedRoute> 
-      },
-      // Redirect legacy routes
-      { path: "/create-campaign", element: <Navigate to="/ad-manager" replace /> },
-      { path: "/campaign/create", element: <Navigate to="/ad-manager" replace /> },
-      // 404 handling
-      { path: "/not-found", element: <NotFoundPage /> },
-      { path: "*", element: <NotFound /> },
-    ],
+    element: <Suspense fallback={<Loading />}><LandingPage /></Suspense>
   },
-];
+  {
+    path: "/pricing",
+    element: <Suspense fallback={<Loading />}><PricingPage /></Suspense>
+  },
+  // Auth routes
+  {
+    path: "/auth",
+    children: [
+      {
+        path: "login",
+        element: <Suspense fallback={<Loading />}><Authentication /></Suspense>
+      },
+      {
+        path: "register",
+        element: <Suspense fallback={<Loading />}><Authentication /></Suspense>
+      },
+      {
+        index: true,
+        element: <Navigate to="/auth/login" replace />
+      }
+    ]
+  },
+  {
+    path: "/callback",
+    element: <Suspense fallback={<Loading />}><OAuthCallbackHandler /></Suspense>
+  },
+  // Protected routes with MainLayout
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="dashboard">
+                <DashboardPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "campaigns",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="campaigns">
+                <CampaignsPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "connections",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="connections">
+                <ConnectionsPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "settings",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="settings">
+                <SettingsPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "analytics",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="analytics">
+                <AnalyticsPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "billing",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="billing">
+                <BillingPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      },
+      {
+        path: "ad-manager",
+        element: (
+          <RequireAuth>
+            <Suspense fallback={<Loading />}>
+              <AppLayout activePage="ad-manager">
+                <AdManagerPage />
+              </AppLayout>
+            </Suspense>
+          </RequireAuth>
+        )
+      }
+    ]
+  },
+  // Redirect legacy routes
+  {
+    path: "/create-campaign",
+    element: <Navigate to="/ad-manager" replace />
+  },
+  {
+    path: "/campaign/create",
+    element: <Navigate to="/ad-manager" replace />
+  },
+  // 404 handling
+  {
+    path: "/not-found",
+    element: <Suspense fallback={<Loading />}><NotFoundPage /></Suspense>
+  },
+  {
+    path: "*",
+    element: <Suspense fallback={<Loading />}><NotFound /></Suspense>
+  }
+]);
 
-// Create browser router
-const router = createBrowserRouter(routes);
+// RequireAuth component
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const location = useLocation();
 
-// Router component to provide the router
+  if (!user) {
+    // Redirect to the login page if not authenticated
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// NavigationControl to handle navigation
+function Navigate({ to, state, replace }: { to: string; state?: any; replace?: boolean }) {
+  const navigate = useNavigate();
+  
+  React.useEffect(() => {
+    navigate(to, { state, replace });
+  }, [navigate, to, state, replace]);
+  
+  return null;
+}
+
+// Export the Router component that provides the router
 export const Router = () => {
   return <RouterProvider router={router} />;
 };

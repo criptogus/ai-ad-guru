@@ -9,7 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 import { HelmetProvider } from 'react-helmet-async';
-import App from './App';
+import { Router } from './router';
 import './index.css'
 
 // Create a client for React Query
@@ -31,7 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <CreditsProvider>
               <CampaignProvider>
                 <LanguageProvider>
-                  <App />
+                  <Router />
                   <Toaster position="top-center" richColors />
                 </LanguageProvider>
               </CampaignProvider>
