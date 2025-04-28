@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import RegisterForm from '@/components/auth/RegisterForm';
+import RegisterForm from '@/components/auth/register/RegisterForm';
 
 const SignupPage: React.FC = () => {
   // Create dummy handlers to satisfy the component's props

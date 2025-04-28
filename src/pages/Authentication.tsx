@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
-import RegisterForm from '@/components/auth/RegisterForm';
+import RegisterForm from '@/components/auth/register/RegisterForm';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +13,6 @@ const Authentication: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const defaultTab = location.pathname.includes('register') ? 'register' : 'login';
 
-  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       navigate('/dashboard');
@@ -45,7 +43,6 @@ const Authentication: React.FC = () => {
     }
   };
 
-  // If already authenticated and not loading, return null (the useEffect will redirect)
   if (isAuthenticated && !isLoading) {
     return null;
   }
