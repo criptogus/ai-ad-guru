@@ -54,7 +54,7 @@ const Authentication: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-gray-100 dark:from-background dark:to-gray-900">
       <div className="w-full max-w-md p-8 space-y-8 rounded-lg shadow-lg bg-card">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome to Lovable</h1>
+          <h1 className="text-3xl font-bold">Welcome to Zero Digital Agency</h1>
           <p className="mt-2 text-muted-foreground">
             AI-powered ad management platform
           </p>

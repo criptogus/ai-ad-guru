@@ -70,7 +70,11 @@ const router = createBrowserRouter(
       <Route path="/pricing" element={<PricingPage />} />
       
       {/* Auth routes */}
-      <Route path="/auth" element={<PublicRoute><AuthPage /></PublicRoute>} />
+      <Route path="/auth" element={<AuthPage />}>
+        <Route path="login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route index element={<Navigate to="/auth/login" replace />} />
+      </Route>
       
       {/* OAuth callback route */}
       <Route path="/callback" element={<OAuthCallbackHandler />} />
