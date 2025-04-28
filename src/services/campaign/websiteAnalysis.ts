@@ -194,8 +194,8 @@ export const getAnalysisCacheStatus = async (url: string): Promise<{ exists: boo
     if (cachedResult.data) {
       return {
         exists: true,
-        cachedAt: cachedResult.cachedAt,
-        expiresAt: cachedResult.expiresAt
+        cachedAt: cachedResult.cachedAt || undefined,
+        expiresAt: cachedResult.expiresAt || undefined
       };
     }
     
