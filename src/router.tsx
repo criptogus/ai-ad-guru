@@ -3,7 +3,7 @@ import React, { lazy, Suspense } from 'react';
 import {
   RouterProvider,
   createBrowserRouter,
-  Navigate,
+  Navigate as ReactRouterNavigate,
   useLocation,
   useNavigate
 } from 'react-router-dom';
@@ -64,7 +64,7 @@ const router = createBrowserRouter([
       },
       {
         index: true,
-        element: <Navigate to="/auth/login" replace />
+        element: <ReactRouterNavigate to="/auth/login" replace />
       }
     ]
   },
@@ -166,11 +166,11 @@ const router = createBrowserRouter([
   // Redirect legacy routes
   {
     path: "/create-campaign",
-    element: <Navigate to="/ad-manager" replace />
+    element: <ReactRouterNavigate to="/ad-manager" replace />
   },
   {
     path: "/campaign/create",
-    element: <Navigate to="/ad-manager" replace />
+    element: <ReactRouterNavigate to="/ad-manager" replace />
   },
   // 404 handling
   {
@@ -190,14 +190,14 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     // Redirect to the login page if not authenticated
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <ReactRouterNavigate to="/auth/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
 }
 
-// NavigationControl to handle navigation
-function Navigate({ to, state, replace }: { to: string; state?: any; replace?: boolean }) {
+// NavigationControl to handle navigation (renamed from Navigate to avoid conflicts)
+function NavigationControl({ to, state, replace }: { to: string; state?: any; replace?: boolean }) {
   const navigate = useNavigate();
   
   React.useEffect(() => {
