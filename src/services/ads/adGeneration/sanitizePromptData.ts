@@ -10,7 +10,7 @@ export function sanitizePromptData(data: CampaignPromptData): CampaignPromptData
     targetAudience: data.targetAudience?.trim() || "general audience",
     brandTone: data.brandTone?.trim() || "professional",
     industry: data.industry?.trim() || "general",
-    language: data.language?.trim() || "english",
+    language: data.language?.trim() || "pt-BR",
     companyDescription: data.companyDescription?.trim() || "",
     
     // Mind triggers
@@ -36,11 +36,11 @@ export function sanitizePromptData(data: CampaignPromptData): CampaignPromptData
       ? data.callToAction.map(c => c.trim())
       : typeof data.callToAction === "string"
         ? [data.callToAction.trim()]
-        : ["Learn More"],
+        : ["Saiba Mais"],
 
     // Platforms
     platforms: Array.isArray(data.platforms) && data.platforms.length > 0
       ? data.platforms
-      : ["google"] // fallback default
+      : ["google"]
   };
 }

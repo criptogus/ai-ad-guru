@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   CampaignPromptData,
@@ -16,12 +15,17 @@ import { toast } from 'sonner';
 export async function generateAds(
   campaignData: CampaignPromptData
 ): Promise<GeneratedAdContent> {
-  // Initialize result object
+  // Initialize result object with all required properties
   const result: GeneratedAdContent = {
     google: [],
     meta: [],
     linkedin: [],
-    microsoft: []
+    microsoft: [],
+    google_ads: [],
+    meta_ads: [],
+    instagram_ads: [],
+    linkedin_ads: [],
+    microsoft_ads: []
   };
 
   console.log('Generating ads with campaign data:', campaignData);
