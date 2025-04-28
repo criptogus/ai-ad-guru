@@ -205,7 +205,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       )}
       
       {analysisResult?.fromCache && (
-        <Alert variant="info" className="mt-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
+        <Alert className="mt-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Using Cached Analysis</AlertTitle>
           <AlertDescription>
