@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
@@ -36,13 +37,14 @@ const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const AdManagerPage = lazy(() => import('@/pages/AdManagerPage'));
+const OAuthCallbackHandler = lazy(() => import('@/components/config/OAuthCallbackHandler'));
 
 // ProtectedRoute component to handle authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth/login" />;
   }
 
   return <AppLayout><Suspense fallback={<Loading />}>{children}</Suspense></AppLayout>;
@@ -72,6 +74,9 @@ const router = createBrowserRouter(
         <Route path="register" element={<RegisterPage />} />
         <Route index element={<Navigate to="/auth/login" replace />} />
       </Route>
+      
+      {/* OAuth callback route */}
+      <Route path="/callback" element={<OAuthCallbackHandler />} />
 
       {/* Protected routes */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

@@ -1,5 +1,5 @@
 
-import { crawlSite } from './crawler';
+import { crawlSite } from './linkCrawler';
 
 // Start URL should be your local development server
 const startUrl = 'http://localhost:5173'; // Vite's default port
@@ -13,4 +13,3 @@ crawlSite(startUrl, {
   console.error('Crawler failed:', error);
   process.exit(1);
 });
-
