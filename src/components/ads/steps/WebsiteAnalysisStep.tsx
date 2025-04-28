@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { useSecuredOperation } from '@/hooks/useSecuredOperation';
 
 interface WebsiteAnalysisStepProps {
   campaignData: any;
@@ -38,8 +38,8 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [languageDetected, setLanguageDetected] = useState<string | null>(null);
   const { user } = useAuth();
+  const { executeSecured, isProcessing: isSecureProcessing } = useSecuredOperation();
 
-  // Helper to get language display name
   const getLanguageDisplayName = (code?: string): string => {
     if (!code) return "Unknown";
     
@@ -58,8 +58,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     
     return languages[code.toLowerCase().split('-')[0]] || code;
   };
-  
-  // Update language when analysis result changes
+
   useEffect(() => {
     if (analysisResult?.language) {
       setLanguageDetected(analysisResult.language);
@@ -74,13 +73,11 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       return;
     }
 
-    // Format URL for proper validation
     let formattedUrl = url;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       formattedUrl = `https://${url}`;
     }
 
-    // Validate URL format
     try {
       new URL(formattedUrl);
     } catch (e) {
@@ -92,12 +89,20 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     setIsAnalyzing(true);
     
     try {
-      console.log('Calling analyzeWebsite with URL:', formattedUrl);
-      
-      const result = await analyzeWebsite({
-        url: formattedUrl,
-        userId: user?.id || "anonymous"
-      });
+      const result = await executeSecured(
+        async () => {
+          console.log('Calling analyzeWebsite with URL:', formattedUrl);
+          return analyzeWebsite({
+            url: formattedUrl,
+            userId: user?.id || "anonymous"
+          });
+        },
+        {
+          action: 'website_analysis',
+          requiredCredits: 2,
+          metadata: { url: formattedUrl }
+        }
+      );
 
       if (result) {
         console.log('Analysis result received:', result);
@@ -108,7 +113,6 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           console.log(`Language detected: ${result.language} (${getLanguageDisplayName(result.language)})`);
         }
         
-        // Update form with the analysis results
         setFormData({
           businessName: result.companyName || "",
           businessType: result.businessDescription || "",
@@ -118,15 +122,10 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         });
 
         toast.success("Website analysis completed!");
-      } else {
-        throw new Error("No result returned from analysis");
       }
     } catch (error: any) {
       console.error("Error analyzing website:", error);
       setAnalysisError(error?.message || "Failed to analyze website. Please try again or fill in manually.");
-      toast.error("Analysis Failed", {
-        description: error?.message || "Failed to analyze website. Please try again or fill in manually."
-      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -138,7 +137,6 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   };
 
   const handleNext = () => {
-    // Prepare data for the next step
     const keywordsArray = formData.keywords.split(",").map(k => k.trim()).filter(Boolean);
     const productsArray = formData.products.split(",").map(p => p.trim()).filter(Boolean);
     
@@ -149,7 +147,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       industry: formData.industry,
       products: productsArray,
       keywords: keywordsArray,
-      language: languageDetected // Add detected language to the data
+      language: languageDetected
     });
   };
 
@@ -184,7 +182,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         />
         <Button 
           onClick={handleAnalyze} 
-          disabled={isAnalyzing || !url}
+          disabled={isAnalyzing || !url || isSecureProcessing}
           className="whitespace-nowrap"
         >
           {isAnalyzing ? (
