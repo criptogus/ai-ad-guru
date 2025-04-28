@@ -23,16 +23,16 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Main content area with compensation for sidebar */}
       <main
         className={cn(
-          "flex-1 h-screen overflow-y-auto p-4 md:p-6",
-          sidebarCollapsed
-            ? "md:ml-16" // Reduced side padding for collapsed sidebar
-            : "md:ml-64" // Proper margin for expanded sidebar
+          "flex-1 h-screen overflow-y-auto p-4",
+          sidebarCollapsed 
+            ? "md:ml-16" // Reduced side margin for collapsed sidebar
+            : "md:ml-64" // Standard margin for expanded sidebar
         )}
       >
         {children}
       </main>
     </div>
   );
-};
+}
 
 export default MainLayout;

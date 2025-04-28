@@ -38,22 +38,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     setRenderKey(prevKey => prevKey + 1);
   }, [currentLanguage]);
 
-  const navigationItems = [
-    { title: t('nav.home'), icon: Home, href: "/" },
-    { title: t('nav.dashboard'), icon: LayoutDashboard, href: "/dashboard" },
-    { title: t('nav.campaigns'), icon: ClipboardList, href: "/campaigns" },
-    { title: t('nav.connections'), icon: Share2, href: "/connections" },
-    { title: t('nav.adManager'), icon: BarChart3, href: "/ad-manager" },
-    { title: t('nav.settings'), icon: Settings, href: "/settings" }
-  ];
-
-  const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === path;
-    }
-    return location.pathname.startsWith(path);
-  };
-
   return (
     <aside className={cn(
       "fixed top-0 left-0 z-40 h-screen bg-white dark:bg-[#1A1F2C] border-r shadow-sm transition-all duration-300",
