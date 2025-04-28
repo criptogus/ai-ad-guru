@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -7,6 +6,7 @@ import { errorLogger } from "@/services/libs/error-handling";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreditsManager } from "@/hooks/useCreditsManager";
 import { toast } from "sonner";
+import { OpenAICacheService } from "@/services/credits/openaiCache";
 
 export const useWebsiteAnalysisActions = () => {
   const { toast: uiToast } = useToast();
@@ -16,8 +16,17 @@ export const useWebsiteAnalysisActions = () => {
   
   // Get the current authenticated user
   const getUserId = async () => {
-    const { data } = await supabase.auth.getUser();
-    return data?.user?.id || 'anonymous';
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (!data?.user?.id) {
+        console.error("No authenticated user found");
+        throw new Error("Authentication required");
+      }
+      return data.user.id;
+    } catch (error) {
+      console.error("Error getting authenticated user:", error);
+      throw error;
+    }
   };
   
   // Properly implement the website analysis function
@@ -27,18 +36,6 @@ export const useWebsiteAnalysisActions = () => {
         title: "Error",
         description: "Please enter a website URL",
         variant: "destructive",
-      });
-      return null;
-    }
-
-    // Check if user has enough credits for this action
-    const userId = await getUserId();
-    const creditsRequired = 2; // 2 credits for website analysis
-    
-    const hasEnoughCredits = await checkCreditBalance(creditsRequired);
-    if (!hasEnoughCredits) {
-      toast.error("Créditos insuficientes", {
-        description: "Você precisa de 2 créditos para realizar a análise de website."
       });
       return null;
     }
@@ -54,48 +51,73 @@ export const useWebsiteAnalysisActions = () => {
         formattedUrl = 'https://' + formattedUrl;
       }
       
-      console.log('Calling analyze-website function with URL:', formattedUrl);
+      // Get the authenticated user ID
+      const userId = await getUserId();
+      console.log('Authenticated user ID for credit deduction:', userId);
       
-      // Get data from cache first - this doesn't consume credits
-      const { data: cacheData, error: cacheError } = await supabase.functions.invoke('analyze-website', {
-        body: { url: formattedUrl, checkCacheOnly: true }
-      });
+      // Prepare the analysis parameters
+      const analysisParams = {
+        url: formattedUrl,
+        userId
+      };
       
-      if (cacheError) {
-        console.error('Cache check error:', cacheError);
-        throw new Error(`Cache check failed: ${cacheError.message}`);
-      }
+      // Check if we have a cached analysis
+      const hasCachedAnalysis = await OpenAICacheService.hasCachedResponse(analysisParams);
+      console.log('Has cached analysis:', hasCachedAnalysis);
       
-      if (cacheData?.fromCache) {
-        console.log('Using cached analysis data:', cacheData);
-        setCacheInfo({
-          fromCache: true,
-          cachedAt: cacheData.cachedAt,
-          expiresAt: cacheData.expiresAt
-        });
-        
+      // If cached, we don't need to deduct credits
+      if (hasCachedAnalysis) {
+        console.log('Using cached analysis - no credits will be deducted');
         uiToast({
           title: "Website Analysis",
           description: "Using cached analysis from previous scan",
         });
+      } else {
+        // Check if user has enough credits for this action
+        const creditsRequired = 2; // 2 credits for website analysis
+        const hasEnoughCredits = await checkCreditBalance(creditsRequired);
         
-        return cacheData.data as WebsiteAnalysisResult;
+        if (!hasEnoughCredits) {
+          toast.error("Créditos insuficientes", {
+            description: "Você precisa de 2 créditos para realizar a análise de website."
+          });
+          setIsAnalyzing(false);
+          return null;
+        }
+        
+        console.log(`User ${userId} has enough credits for analysis. Required: ${creditsRequired}`);
       }
       
-      // No cache available - consume credits before proceeding
-      const creditConsumed = await consumeCredits(creditsRequired, "Website analysis");
-      if (!creditConsumed) {
-        toast.error("Erro ao debitar créditos", {
-          description: "Não foi possível debitar os créditos necessários para esta operação."
-        });
-        return null;
-      }
+      // Define the credit deduction function
+      const deductCreditsFunction = async () => {
+        // Skip deduction if we're using cached results
+        if (hasCachedAnalysis) {
+          return true;
+        }
+        
+        // Otherwise deduct credits
+        const creditsRequired = 2;
+        try {
+          const creditConsumed = await consumeCredits(creditsRequired, "Website analysis");
+          if (!creditConsumed) {
+            console.error("Failed to deduct credits for website analysis");
+            toast.error("Erro ao debitar créditos", {
+              description: "Não foi possível debitar os créditos necessários para esta operação."
+            });
+            return false;
+          }
+          console.log(`Successfully deducted ${creditsRequired} credits for website analysis`);
+          return true;
+        } catch (error) {
+          console.error("Error deducting credits:", error);
+          throw new Error(`Failed to deduct credits: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      };
       
-      // Perform the actual analysis
-      const result = await analyzeWebsite({
-        url: formattedUrl,
-        userId
-      });
+      // Perform the actual analysis with caching logic
+      console.log('Calling analyze-website function with URL:', formattedUrl);
+      
+      const result = await analyzeWebsite(analysisParams);
       
       if (!result) {
         throw new Error("Failed to analyze website - no result returned");
@@ -133,9 +155,10 @@ export const useWebsiteAnalysisActions = () => {
       errorLogger.logError(error, 'handleAnalyzeWebsite');
       
       console.error('Error analyzing website:', error);
+      console.error('Detailed error:', error?.response?.data, error?.message);
       
       toast.error("Analysis Failed", {
-        description: error.message || "Failed to analyze website. Please try again.",
+        description: error?.message || "Failed to analyze website. Please try again.",
       });
       
       // Since we're in development, we'll simulate a successful response

@@ -6,6 +6,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import crypto from 'crypto';
+import { toast } from 'sonner';
 
 interface CacheEntry {
   key: string;
@@ -67,9 +68,7 @@ export class OpenAICacheService {
           key,
           response,
           expiration: expirationDate.toISOString()
-        })
-        .select()
-        .single();
+        });
       
       if (error) {
         console.error('Error storing in cache:', error);
@@ -85,26 +84,59 @@ export class OpenAICacheService {
   }
 
   /**
+   * Check if we have a cached response for the given parameters
+   */
+  static async hasCachedResponse(inputParams: any): Promise<boolean> {
+    try {
+      const cacheKey = this.generateCacheKey(inputParams);
+      const cachedResponse = await this.getCachedResponse(cacheKey);
+      return cachedResponse !== null;
+    } catch (error) {
+      console.error('Error checking cache status:', error);
+      return false;
+    }
+  }
+
+  /**
    * Cached API handler - wrapper for OpenAI calls
    * Returns cached response if available, otherwise calls the API and caches the result
+   * 
+   * @param inputParams - Parameters for the OpenAI call
+   * @param apiFn - Function that makes the actual API call
+   * @param skipCache - Optional flag to skip cache and force a fresh API call
+   * @param deductCredits - Optional function to handle credit deduction
    */
   static async cachedApiCall<T>(
     inputParams: any, 
-    apiFn: (params: any) => Promise<T>
+    apiFn: (params: any) => Promise<T>,
+    skipCache: boolean = false,
+    deductCredits?: () => Promise<boolean>
   ): Promise<T> {
     try {
       // Generate cache key from input parameters
       const cacheKey = this.generateCacheKey(inputParams);
       
-      // Try to get from cache first
-      const cachedResponse = await this.getCachedResponse(cacheKey);
-      if (cachedResponse) {
-        console.log('Using cached OpenAI response');
-        return cachedResponse as T;
+      // Try to get from cache first (unless skipCache is true)
+      if (!skipCache) {
+        const cachedResponse = await this.getCachedResponse(cacheKey);
+        if (cachedResponse) {
+          console.log('Using cached OpenAI response');
+          return cachedResponse as T;
+        }
       }
       
-      // No cache hit, call the API
-      console.log('No cache hit, calling OpenAI API');
+      // No cache hit or skipCache is true, deduct credits before API call
+      if (deductCredits) {
+        console.log('Deducting credits before API call');
+        const creditSuccess = await deductCredits();
+        if (!creditSuccess) {
+          console.error('Failed to deduct credits');
+          throw new Error('Failed to deduct credits: Insufficient credits or system error');
+        }
+      }
+      
+      // Call the API
+      console.log('No cache hit or forced refresh, calling OpenAI API');
       const response = await apiFn(inputParams);
       
       // Store in cache asynchronously (don't wait for it)
@@ -114,7 +146,12 @@ export class OpenAICacheService {
       return response;
     } catch (error) {
       console.error('Error in cached API call:', error);
-      throw error;
+      // Make sure we provide detailed error information
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Unknown error during API call');
+      }
     }
   }
 

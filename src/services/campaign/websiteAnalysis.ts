@@ -7,6 +7,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
 import { toast } from 'sonner';
+import { OpenAICacheService } from '@/services/credits/openaiCache';
 
 export interface WebsiteAnalysisParams {
   url: string;
@@ -64,9 +65,28 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       formattedUrl = 'https://' + formattedUrl;
     }
     
-    console.log('Calling edge function with params:', { url: formattedUrl, userId: params.userId });
+    // Use cache if available
+    const cacheKey = `website-analysis-${formattedUrl}`;
+    const cachedResult = await OpenAICacheService.getCachedResponse(cacheKey);
     
-    // Add userId to call for credit tracking purposes
+    if (cachedResult) {
+      console.log('Using cached analysis result');
+      const result = cachedResult as WebsiteAnalysisResult;
+      
+      // Add the website URL to the result
+      result.websiteUrl = formattedUrl;
+      
+      // Add cache information
+      (result as any).fromCache = true;
+      (result as any).cachedAt = cachedResult.cachedAt;
+      (result as any).expiresAt = cachedResult.expiresAt;
+      
+      return result;
+    }
+    
+    console.log('No cache found, calling edge function with params:', { url: formattedUrl, userId: params.userId });
+    
+    // Call the edge function
     const { data, error } = await supabase.functions.invoke('analyze-website', {
       body: { 
         url: formattedUrl,
@@ -122,6 +142,9 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       uniqueSellingPointsCount: result.uniqueSellingPoints.length
     });
     
+    // Cache the result for future use
+    OpenAICacheService.storeResponse(cacheKey, result);
+    
     // Return cache information
     if (data.fromCache) {
       console.log('Result from cache, cached at:', data.cachedAt);
@@ -159,23 +182,14 @@ export const getAnalysisCacheStatus = async (url: string): Promise<{ exists: boo
       formattedUrl = 'https://' + formattedUrl;
     }
     
-    console.log('Checking analysis cache status for', formattedUrl);
+    const cacheKey = `website-analysis-${formattedUrl}`;
+    const cachedResult = await OpenAICacheService.getCachedResponse(cacheKey);
     
-    // Call the edge function with a cache-check parameter
-    const { data, error } = await supabase.functions.invoke('analyze-website', {
-      body: { url: formattedUrl, checkCacheOnly: true }
-    });
-    
-    if (error) {
-      console.error('Edge function error when checking cache:', error);
-      throw error;
-    }
-    
-    if (data?.fromCache) {
+    if (cachedResult) {
       return {
         exists: true,
-        cachedAt: data.cachedAt,
-        expiresAt: data.expiresAt
+        cachedAt: cachedResult.cachedAt,
+        expiresAt: cachedResult.expiresAt
       };
     }
     

@@ -11,72 +11,92 @@ export const useCreditsManager = () => {
   const { user } = useAuth();
   const { refreshCredits } = useCredits();
 
-  // Verificação detalhada do saldo de créditos
+  // Detailed credit balance check
   const checkCreditBalance = useCallback(async (requiredCredits: number) => {
     if (!user?.id) {
-      console.error('Tentativa de verificar créditos sem usuário autenticado');
+      console.error('Attempted to check credits without authenticated user');
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to continue",
+        variant: "destructive",
+      });
       return false;
     }
 
     try {
-      // Obter saldo atualizado diretamente do banco
+      console.log(`Checking credit balance for user ${user.id}, required credits: ${requiredCredits}`);
+      
+      // Get updated balance directly from the database
       const { data, error } = await supabase
         .from('profiles')
         .select('credits')
         .eq('id', user.id)
         .single();
   
-      if (error || !data) {
-        console.error('Erro ao verificar saldo de créditos:', error);
+      if (error) {
+        console.error('Error checking credit balance:', error);
         toast({
-          title: "Erro ao verificar créditos",
-          description: "Não foi possível verificar seu saldo de créditos. Por favor, tente novamente.",
+          title: "Error checking credits",
+          description: "Failed to verify your credit balance. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (!data) {
+        console.error('User profile not found');
+        toast({
+          title: "Profile not found",
+          description: "Your user profile could not be found",
           variant: "destructive",
         });
         return false;
       }
   
-      const disponivel = data.credits || 0;
-      console.log(`Verificação de créditos: Necessário ${requiredCredits}, Disponível ${disponivel}`);
+      const available = data.credits || 0;
+      console.log(`Credit check result: Available=${available}, Required=${requiredCredits}, Sufficient=${available >= requiredCredits}`);
       
-      // Retorna true se tiver créditos suficientes, false caso contrário
-      return disponivel >= requiredCredits;
+      // Return true if there are enough credits, false otherwise
+      return available >= requiredCredits;
     } catch (error) {
-      console.error('Erro inesperado ao verificar saldo de créditos:', error);
+      console.error('Unexpected error checking credit balance:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while checking your credits",
+        variant: "destructive",
+      });
       return false;
     }
   }, [user, toast]);
 
-  // Consumo de créditos com log detalhado
+  // Credit consumption with detailed logging
   const consumeCredits = useCallback(async (amount: number, reason: string, refId?: string) => {
     if (!user?.id) {
-      console.error('Tentativa de consumir créditos sem usuário autenticado');
+      console.error('Attempted to consume credits without authenticated user');
       toast({
-        title: "Autenticação necessária",
-        description: "Você precisa estar logado para continuar",
+        title: "Authentication required",
+        description: "You need to be logged in to continue",
         variant: "destructive",
       });
       return false;
     }
 
-    console.log(`Tentativa de consumir ${amount} créditos para: ${reason}`);
+    console.log(`Attempting to consume ${amount} credits for: ${reason}, user: ${user.id}`);
     
-    // Verificar saldo antes de prosseguir
+    // Check balance before proceeding
     const hasEnough = await checkCreditBalance(amount);
     if (!hasEnough) {
-      console.error(`Créditos insuficientes: necessário ${amount}`);
+      console.error(`Insufficient credits: required ${amount}`);
       toast({
-        title: "Créditos insuficientes",
-        description: `Você precisa de ${amount} créditos para esta operação.`,
+        title: "Insufficient credits",
+        description: `You need ${amount} credits for this operation.`,
         variant: "destructive",
       });
       return false;
     }
 
     try {
-      console.log(`Consumindo ${amount} créditos para: ${reason}`);
-      
-      // Registrar transação no ledger
+      // Record transaction in the ledger
       const { error } = await supabase
         .from('credit_ledger')
         .insert({
@@ -87,36 +107,36 @@ export const useCreditsManager = () => {
         });
   
       if (error) {
-        console.error('Erro ao consumir créditos:', error);
+        console.error('Error consuming credits:', error);
         toast({
-          title: "Erro",
-          description: "Falha ao consumir créditos. Tente novamente.",
+          title: "Error",
+          description: "Failed to consume credits. Please try again.",
           variant: "destructive",
         });
-        return false;
+        throw new Error(`Failed to consume credits: ${error.message}`);
       }
       
-      // Atualizar saldo em contexto
+      // Update balance in context
       await refreshCredits();
       
-      console.log(`${amount} créditos consumidos com sucesso para: ${reason}`);
-      sonnerToast.success(`${amount} créditos utilizados`, {
+      console.log(`Successfully consumed ${amount} credits for: ${reason}`);
+      sonnerToast.success(`${amount} credits used`, {
         description: reason
       });
       
       return true;
     } catch (error) {
-      console.error('Erro inesperado ao consumir créditos:', error);
+      console.error('Unexpected error consuming credits:', error);
       toast({
-        title: "Erro",
-        description: "Falha ao consumir créditos. Tente novamente.",
+        title: "Error",
+        description: "Failed to consume credits. Please try again.",
         variant: "destructive",
       });
-      return false;
+      throw new Error(`Credit consumption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }, [user, toast, checkCreditBalance, refreshCredits]);
 
-  // Obter custo de créditos para uma ação específica
+  // Get credit cost for a specific action
   const getActionCreditCost = useCallback((action: string): number => {
     const creditCosts = {
       'website_analysis': 2,
@@ -127,11 +147,11 @@ export const useCreditsManager = () => {
       'image_generation': 5,
     };
     
-    console.log(`Custo de créditos para ${action}: ${creditCosts[action as keyof typeof creditCosts] || 0}`);
+    console.log(`Credit cost for ${action}: ${creditCosts[action as keyof typeof creditCosts] || 0}`);
     return creditCosts[action as keyof typeof creditCosts] || 0;
   }, []);
 
-  // Verificar histórico de transações
+  // Get transaction history
   const getCreditTransactions = useCallback(async (limit = 10) => {
     if (!user?.id) return [];
     
@@ -144,13 +164,13 @@ export const useCreditsManager = () => {
         .limit(limit);
         
       if (error) {
-        console.error('Erro ao buscar histórico de créditos:', error);
+        console.error('Error fetching credit history:', error);
         return [];
       }
       
       return data || [];
     } catch (error) {
-      console.error('Erro inesperado ao buscar histórico:', error);
+      console.error('Unexpected error fetching history:', error);
       return [];
     }
   }, [user]);
