@@ -38,6 +38,7 @@ const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const AdManagerPage = lazy(() => import('@/pages/AdManagerPage'));
 const OAuthCallbackHandler = lazy(() => import('@/components/config/OAuthCallbackHandler'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // ProtectedRoute component to handle authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -69,11 +70,7 @@ const router = createBrowserRouter(
       <Route path="/pricing" element={<PricingPage />} />
       
       {/* Auth routes */}
-      <Route path="/auth" element={<AuthPage />}>
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route index element={<Navigate to="/auth/login" replace />} />
-      </Route>
+      <Route path="/auth" element={<PublicRoute><AuthPage /></PublicRoute>} />
       
       {/* OAuth callback route */}
       <Route path="/callback" element={<OAuthCallbackHandler />} />
@@ -93,7 +90,7 @@ const router = createBrowserRouter(
       
       {/* 404 handling */}
       <Route path="/not-found" element={<NotFoundPage />} />
-      <Route path="*" element={<Navigate to="/not-found" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Route>
   )
 );
