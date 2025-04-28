@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
-import MainLayout from "@/components/layout/MainLayout";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -37,12 +36,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     );
   }
   
-  // Main layout with sidebar
+  // The sidebar is now managed by MainLayout
   return (
     <TooltipProvider>
-      <MainLayout>
+      <div className="h-screen w-full overflow-y-auto bg-background dark:bg-gray-900">
         {children}
-      </MainLayout>
+      </div>
     </TooltipProvider>
   );
 };

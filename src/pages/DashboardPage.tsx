@@ -11,7 +11,6 @@ import LeaderboardSection from "@/components/dashboard/LeaderboardSection";
 import SmartNotifications from "@/components/dashboard/SmartNotifications";
 import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
 import { useIsMobile } from "@/hooks/use-mobile";
-import AppLayout from "@/components/AppLayout";
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -32,26 +31,24 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <AppLayout activePage="dashboard">
-      <div className="space-y-6">
-        <DashboardHeader user={dashboardUser} />
-        <div className="grid grid-cols-1 gap-6">
-          <SmartNotifications />
-        </div>
-        <div className="grid grid-cols-1 gap-6">
-          <CreditsStatus user={dashboardUser} />
-        </div>
-        <LeaderboardSection campaigns={campaigns} />
-        <BusinessOverview campaigns={campaigns} />
-        <div className="grid grid-cols-1 gap-6">
-          <div className="space-y-6">
-            <CampaignSummaryCards campaigns={campaigns} />
-            <ActiveCampaigns campaigns={campaigns} />
-          </div>
-          <AiInsights />
-        </div>
+    <div className="space-y-6">
+      <DashboardHeader user={dashboardUser} />
+      <div className="grid grid-cols-1 gap-6">
+        <SmartNotifications />
       </div>
-    </AppLayout>
+      <div className="grid grid-cols-1 gap-6">
+        <CreditsStatus user={dashboardUser} />
+      </div>
+      <LeaderboardSection campaigns={campaigns} />
+      <BusinessOverview campaigns={campaigns} />
+      <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-6">
+          <CampaignSummaryCards campaigns={campaigns} />
+          <ActiveCampaigns campaigns={campaigns} />
+        </div>
+        <AiInsights />
+      </div>
+    </div>
   );
 };
 
