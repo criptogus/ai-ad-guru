@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import LoadingState from "@/components/billing/LoadingState";
@@ -14,7 +14,7 @@ import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
 const BillingPage: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const location = useLocation();
-  const [showDevTools, setShowDevTools] = useState(false);
+  const [showDevTools, setShowDevTools] = React.useState(false);
   
   // Extract session ID from URL if present
   const queryParams = new URLSearchParams(location.search);
@@ -34,6 +34,10 @@ const BillingPage: React.FC = () => {
   // Helper function to get the correct content
   const getContent = () => {
     try {
+      if (authLoading) {
+        return <LoadingState />;
+      }
+      
       // If we're verifying a payment, show the verification component
       if (isPaymentVerification) {
         return (
@@ -69,7 +73,7 @@ const BillingPage: React.FC = () => {
   
   return (
     <AppLayout activePage="billing">
-      {authLoading ? <LoadingState /> : getContent()}
+      {getContent()}
     </AppLayout>
   );
 };

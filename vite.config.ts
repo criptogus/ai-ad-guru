@@ -21,11 +21,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // Disable native modules usage to prevent rollup build issues
     rollupOptions: {
-      context: 'globalThis',
-    },
-    commonjsOptions: {
-      include: [],
+      context: 'window',
+      external: [],
     },
   },
 }));
