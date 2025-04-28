@@ -50,7 +50,6 @@ const BillingPage: React.FC = () => {
 
         if (!result.success) {
           console.warn('Stripe connection issue:', result.message);
-          // Don't show a toast here to avoid disrupting the user experience
         }
       } catch (err) {
         console.error('Failed to check Stripe connection:', err);
@@ -65,14 +64,13 @@ const BillingPage: React.FC = () => {
     checkStripeConnection();
   }, []);
 
-  // Add effect to ensure we control page loading state properly
+  // Add effect to ensure we control page loading state properly with enough delay
   useEffect(() => {
-    // Wait until auth is no longer loading before showing page content
     if (!authLoading) {
-      // Small delay to ensure components are ready and avoid flickering
+      // Longer delay to ensure components are ready and prevent flickering
       const timer = setTimeout(() => {
         setPageLoading(false);
-      }, 300);
+      }, 500); // Increased from 300ms to 500ms for more stability
       return () => clearTimeout(timer);
     }
   }, [authLoading]);
@@ -117,13 +115,16 @@ const BillingPage: React.FC = () => {
       return <div className="p-8 text-center">An error occurred. Please try again or contact support.</div>;
     }
   };
+
+  // Define a single unified loading state
+  const isLoading = pageLoading || authLoading;
   
   return (
     <AppLayout activePage="billing">
-      {pageLoading || authLoading ? <LoadingState /> : renderContent()}
+      {isLoading ? <LoadingState /> : renderContent()}
 
       {/* Only show Stripe connection warning to authenticated users who see the main billing page */}
-      {!pageLoading && !authLoading && isAuthenticated && !isPaymentVerification && 
+      {!isLoading && isAuthenticated && !isPaymentVerification && 
        stripeConnectionStatus.checked && !stripeConnectionStatus.success && (
         <div className="fixed bottom-4 right-4 max-w-md p-4 bg-red-50 border border-red-200 rounded-md shadow-lg text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 z-50">
           <h4 className="font-semibold">Stripe Connection Issue</h4>

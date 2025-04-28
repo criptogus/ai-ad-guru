@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
+import { toast } from "sonner";
 
 interface CreditsPurchaseCardProps {
   userId?: string;
@@ -14,7 +16,7 @@ interface CreditsPurchaseCardProps {
 }
 
 const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, currentCredits }) => {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingPack, setProcessingPack] = useState<string | null>(null);
   const { user, refreshUser } = useAuth();
@@ -27,11 +29,41 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     if (user?.receivedFreeCredits) {
       setHasClaimedFreeCredits(true);
     }
-  }, [user]);
+    
+    // Check if received_free_credits column exists in profile
+    const checkClaimStatus = async () => {
+      if (!userId) return;
+      
+      try {
+        console.log("Checking if user has claimed free credits:", userId);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('received_free_credits, credits')
+          .eq('id', userId)
+          .single();
+        
+        if (error) {
+          console.error("Error checking free credits status:", error);
+          if (error.message.includes("column profiles.received_free_credits does not exist")) {
+            console.log("received_free_credits column doesn't exist yet");
+            setHasClaimedFreeCredits(false);
+          }
+          return;
+        }
+        
+        console.log("Free credits status:", data);
+        setHasClaimedFreeCredits(!!data?.received_free_credits);
+      } catch (err) {
+        console.error("Unexpected error checking claim status:", err);
+      }
+    };
+    
+    checkClaimStatus();
+  }, [user, userId]);
   
   const handleClaimFreeCredits = async () => {
     if (!userId) {
-      toast({
+      uiToast({
         title: "Error",
         description: "You need to be logged in to claim free credits",
         variant: "destructive",
@@ -40,6 +72,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     }
     
     try {
+      console.log("Claiming free credits for user:", userId);
       setIsProcessing(true);
       setProcessingPack('free');
       
@@ -47,18 +80,20 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
         body: { userId },
       });
       
+      console.log("Response from claim-free-credits:", data, error);
+      
       if (error) {
         throw new Error(error.message);
       }
       
       if (data?.success) {
-        toast({
-          title: "Success!",
-          description: "15 free credits have been added to your account",
+        toast.success("Success!", {
+          description: "15 free credits have been added to your account"
         });
         
         setHasClaimedFreeCredits(true);
         
+        // Refresh user data to get updated credit count
         await refreshUser();
         await refreshCredits();
       } else {
@@ -67,10 +102,8 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       
     } catch (error) {
       console.error('Error claiming free credits:', error);
-      toast({
-        title: "Failed to Claim Credits",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
+      toast.error("Failed to Claim Credits", {
+        description: error instanceof Error ? error.message : "An unexpected error occurred"
       });
     } finally {
       setIsProcessing(false);
@@ -80,7 +113,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
   
   const handlePurchaseClick = async (amount: number, price: number, packId: string) => {
     if (!userId) {
-      toast({
+      uiToast({
         title: "Error",
         description: "You need to be logged in to purchase credits",
         variant: "destructive",
@@ -118,10 +151,8 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      toast({
-        title: "Purchase Failed",
-        description: error instanceof Error ? error.message : "Failed to create checkout session",
-        variant: "destructive",
+      toast.error("Purchase Failed", {
+        description: error instanceof Error ? error.message : "Failed to create checkout session"
       });
     } finally {
       setIsProcessing(false);

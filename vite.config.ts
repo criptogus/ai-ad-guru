@@ -21,20 +21,23 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Fix Rollup build issues by avoiding platform-specific modules
+    // Avoid platform-specific modules
     rollupOptions: {
       context: 'window',
       external: [],
       onwarn(warning, warn) {
-        // Ignore certain warnings
         if (warning.code === 'MISSING_NODE_BUILTINS') return;
         if (warning.code === 'SOURCEMAP_ERROR') return;
-        if (warning.message && warning.message.includes('@rollup/rollup-linux')) return;
+        // Ignore platform-specific warnings
+        if (warning.message && (
+          warning.message.includes('@rollup/rollup-linux') ||
+          warning.message.includes('@rollup/rollup-darwin') ||
+          warning.message.includes('@rollup/rollup-win32')
+        )) return;
         warn(warning);
       }
     },
     commonjsOptions: {
-      // Prevent issues with platform-specific optional dependencies
       include: [/node_modules/],
       transformMixedEsModules: true
     }
