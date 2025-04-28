@@ -1,19 +1,22 @@
 
-import { NavigateFunction } from 'react-router-dom';
+import { NavigateFunction } from "react-router-dom";
 
-// Store navigate function for later use
-let navigateFunction: NavigateFunction | null = null;
+let navigateFunc: NavigateFunction | null = null;
 
-export function setNavigate(navigate: NavigateFunction) {
-  navigateFunction = navigate;
-}
+export const setNavigate = (navigate: NavigateFunction) => {
+  navigateFunc = navigate;
+};
 
-export function navigate(path: string, options?: { replace?: boolean }) {
-  if (navigateFunction) {
-    navigateFunction(path, options);
+export const navigate = (to: string, options?: { replace?: boolean; state?: any }) => {
+  if (navigateFunc) {
+    navigateFunc(to, options);
   } else {
-    console.error('Navigate function not set');
-    // Fallback
-    window.location.href = path;
+    console.error("Navigation attempted before router was initialized");
+    // Fall back to window location for critical navigations
+    if (options?.replace) {
+      window.location.replace(to);
+    } else {
+      window.location.href = to;
+    }
   }
-}
+};

@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 import { HelmetProvider } from 'react-helmet-async';
+import { BrowserRouter } from 'react-router-dom';
 import { Router } from './router'
 import './index.css'
 
@@ -27,16 +28,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <HelmetProvider>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <CreditsProvider>
-              <CampaignProvider>
-                <LanguageProvider>
-                  <Router />
-                  <Toaster position="top-center" richColors />
-                </LanguageProvider>
-              </CampaignProvider>
-            </CreditsProvider>
-          </AuthProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <CreditsProvider>
+                <CampaignProvider>
+                  <LanguageProvider>
+                    <Router />
+                    <Toaster position="top-center" richColors />
+                  </LanguageProvider>
+                </CampaignProvider>
+              </CreditsProvider>
+            </AuthProvider>
+          </BrowserRouter>
         </QueryClientProvider>
       </ThemeProvider>
     </HelmetProvider>

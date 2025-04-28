@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { navigate } from '../adConnections/utils/navigationUtils';
+import { useNavigate } from 'react-router-dom';
 
 export const useLogoutAction = (
   setUser: (user: any | null) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast: uiToast } = useToast();
+  const navigate = useNavigate();
 
   const logout = async () => {
     try {
