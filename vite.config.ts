@@ -21,10 +21,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Disable native modules usage to prevent rollup build issues
+    // Fix Rollup build issues by avoiding platform-specific modules
     rollupOptions: {
       context: 'window',
       external: [],
+      onwarn(warning, warn) {
+        // Ignore certain warnings
+        if (warning.code === 'MISSING_NODE_BUILTINS') return;
+        warn(warning);
+      }
     },
   },
 }));

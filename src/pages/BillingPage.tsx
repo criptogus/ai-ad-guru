@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import LoadingState from "@/components/billing/LoadingState";
@@ -15,6 +15,7 @@ const BillingPage: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const [showDevTools, setShowDevTools] = React.useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   
   // Extract session ID from URL if present
   const queryParams = new URLSearchParams(location.search);
@@ -26,18 +27,26 @@ const BillingPage: React.FC = () => {
   // Check if we're coming from a payment verification flow
   const isPaymentVerification = !!sessionId;
 
+  // Add effect to ensure we control page loading state properly
+  useEffect(() => {
+    // Wait until auth is no longer loading before showing page content
+    if (!authLoading) {
+      // Small delay to ensure components are ready
+      const timer = setTimeout(() => {
+        setPageLoading(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading]);
+
   // Toggle developer tools visibility
   const toggleDevTools = () => {
     setShowDevTools(!showDevTools);
   };
   
   // Helper function to get the correct content
-  const getContent = () => {
+  const renderContent = () => {
     try {
-      if (authLoading) {
-        return <LoadingState />;
-      }
-      
       // If we're verifying a payment, show the verification component
       if (isPaymentVerification) {
         return (
@@ -73,7 +82,7 @@ const BillingPage: React.FC = () => {
   
   return (
     <AppLayout activePage="billing">
-      {getContent()}
+      {pageLoading || authLoading ? <LoadingState /> : renderContent()}
     </AppLayout>
   );
 };
