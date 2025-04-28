@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
 
 const BillingPage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const [showDevTools, setShowDevTools] = useState(false);
   
@@ -67,13 +67,9 @@ const BillingPage: React.FC = () => {
     }
   };
   
-  // Show loading state while auth is initializing
-  if (isLoading && !isPaymentVerification) {
-    return (
-      <AppLayout activePage="billing">
-        <LoadingState />
-      </AppLayout>
-    );
+  // Show loading state while auth is initializing and not in a payment verification flow
+  if (authLoading && !isPaymentVerification) {
+    return <LoadingState />;
   }
   
   return (

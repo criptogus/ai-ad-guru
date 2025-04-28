@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Beaker, ArrowLeft, History, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import BillingSubscriptionCard from "./BillingSubscriptionCard";
 import CreditsPurchaseCard from "./CreditsPurchaseCard";
 import DevToolsSection from "./DevToolsSection";
 import { 
@@ -82,7 +81,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Billing</h1>
-            <p className="text-muted-foreground">Manage your credits and subscription</p>
+            <p className="text-muted-foreground">Manage your credits and purchases</p>
           </div>
         </div>
         
@@ -153,11 +152,6 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
         {user && (
           <CreditsPurchaseCard userId={user?.id} currentCredits={user?.credits || 0} />
         )}
-        
-        <BillingSubscriptionCard 
-          user={user} 
-          updateUserPaymentStatus={updateUserPaymentStatus} 
-        />
       </div>
     </div>
   );

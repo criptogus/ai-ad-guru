@@ -23,9 +23,6 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       context: 'globalThis', // Add this to fix rollup context issues
-      output: {
-        format: 'es',
-      }
     },
   },
 }));

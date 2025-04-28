@@ -9,7 +9,6 @@ export const useCreditsVerification = () => {
   const { refreshCredits } = useCredits();
   const [checking, setChecking] = useState(false);
   const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
-  // Add the processing state that BillingPageContent is expecting
   const [processing, setProcessing] = useState(false);
   
   useEffect(() => {
@@ -78,7 +77,7 @@ export const useCreditsVerification = () => {
   
   return {
     checking,
-    processing, // Export the processing state
+    processing,
     hasClaimedFreeCredits,
     checkFreeCreditsStatus,
     claimFreeCredits
