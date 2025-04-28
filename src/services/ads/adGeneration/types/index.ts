@@ -18,17 +18,17 @@ export interface CampaignPromptData {
 }
 
 export interface GeneratedAdContent {
-  google: any[];
-  meta: any[];
-  linkedin: any[];
-  microsoft: any[];
+  google: GoogleAd[];
+  meta: MetaAd[];
+  linkedin: LinkedInAd[];
+  microsoft: MicrosoftAd[];
   
   // Also include the legacy format for backward compatibility
-  google_ads?: any[];
-  meta_ads?: any[];
-  instagram_ads?: any[];
-  linkedin_ads?: any[];
-  microsoft_ads?: any[];
+  google_ads?: GoogleAd[];
+  meta_ads?: MetaAd[];
+  instagram_ads?: MetaAd[];
+  linkedin_ads?: LinkedInAd[];
+  microsoft_ads?: MicrosoftAd[];
 }
 
 export interface GoogleAd {
