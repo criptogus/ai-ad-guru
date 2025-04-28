@@ -8,8 +8,8 @@ export const useCreditsVerification = () => {
   const { user, refreshUser } = useAuth();
   const { refreshCredits } = useCredits();
   const [checking, setChecking] = useState(false);
-  const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
   
   useEffect(() => {
     if (user?.id) {
@@ -52,9 +52,12 @@ export const useCreditsVerification = () => {
       setChecking(true);
       setProcessing(true);
       
+      console.log('Claiming free credits for user:', user.id);
       const { data, error } = await supabase.functions.invoke("claim-free-credits", {
         body: { userId: user.id },
       });
+      
+      console.log('Response from claim-free-credits:', data, error);
       
       if (error) throw error;
       

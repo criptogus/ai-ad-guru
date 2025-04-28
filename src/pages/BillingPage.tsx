@@ -69,7 +69,7 @@ const BillingPage: React.FC = () => {
   
   return (
     <AppLayout activePage="billing">
-      {authLoading && !isPaymentVerification ? <LoadingState /> : getContent()}
+      {authLoading ? <LoadingState /> : getContent()}
     </AppLayout>
   );
 };

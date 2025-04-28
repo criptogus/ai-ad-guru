@@ -24,5 +24,8 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       context: 'globalThis',
     },
+    commonjsOptions: {
+      include: [],
+    },
   },
 }));

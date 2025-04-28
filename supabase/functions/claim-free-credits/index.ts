@@ -43,40 +43,30 @@ serve(async (req) => {
       }
     );
 
-    // Check if user already claimed free credits
-    const { data: userData, error: userError } = await supabaseAdmin
+    // First check if the user has already claimed free credits
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from("profiles")
-      .select("id, received_free_credits")
+      .select("id, credits, received_free_credits")
       .eq("id", userId)
       .single();
 
-    if (userError) {
-      // If the field doesn't exist yet, check if the profile exists
-      console.error("Error fetching user data:", userError);
-      
-      const { data: profileData, error: profileError } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .eq("id", userId)
-        .single();
-        
-      if (profileError) {
-        console.error("Error fetching user profile:", profileError);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: "User profile not found" 
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 404,
-          }
-        );
-      }
+    if (profileError) {
+      console.error("Error fetching profile:", profileError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Failed to fetch user profile",
+          error: profileError.message,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
     }
 
     // If user has already claimed free credits, return an error
-    if (userData?.received_free_credits) {
+    if (profileData?.received_free_credits) {
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -91,87 +81,44 @@ serve(async (req) => {
 
     console.log("Attempting to add free credits for user:", userId);
 
-    // Direct update to profiles table
-    const { error: updateCreditsError } = await supabaseAdmin
-      .rpc('add_user_credits', {
-        user_id: userId,
-        amount: 15
-      });
-    
-    if (updateCreditsError) {
-      console.error("Error adding credits via RPC:", updateCreditsError);
-      
-      // Fallback: Try direct update
-      const { data: currentProfile, error: fetchError } = await supabaseAdmin
-        .from("profiles")
-        .select("credits")
-        .eq("id", userId)
-        .single();
-        
-      if (fetchError) {
-        console.error("Error fetching current credits:", fetchError);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: "Error fetching user credits" 
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 500,
-          }
-        );
-      }
-      
-      const currentCredits = currentProfile?.credits || 0;
-      
-      // Update user credits directly
-      const { error: directUpdateError } = await supabaseAdmin
-        .from("profiles")
-        .update({ 
-          credits: currentCredits + 15,
-          received_free_credits: true
-        })
-        .eq("id", userId);
-        
-      if (directUpdateError) {
-        console.error("Error updating user credits directly:", directUpdateError);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: "Error updating user credits" 
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 500,
-          }
-        );
-      }
-      
-      // Try to add credit ledger entry, but don't fail if it doesn't work
-      await supabaseAdmin
-        .from("credit_ledger")
-        .insert({
-          user_id: userId,
-          change: 15,
-          reason: "welcome_credits",
-          ref_id: "free_credits_claim"
-        })
-        .then(res => {
-          if (res.error) {
-            console.warn("Could not add to credit ledger, but credits were added:", res.error);
-          }
-        });
-    } else {
-      // Update received_free_credits flag
-      const { error: updateFlagError } = await supabaseAdmin
-        .from("profiles")
-        .update({ received_free_credits: true })
-        .eq("id", userId);
+    // 1. Update the user's profile with the additional credits
+    const currentCredits = profileData?.credits || 0;
+    const { error: updateError } = await supabaseAdmin
+      .from("profiles")
+      .update({ 
+        credits: currentCredits + 15,
+        received_free_credits: true
+      })
+      .eq("id", userId);
 
-      if (updateFlagError) {
-        console.error("Error updating free credits flag:", updateFlagError);
-        console.warn("Credits were added but flag was not updated");
-      }
+    if (updateError) {
+      console.error("Error updating user profile:", updateError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Failed to update user credits",
+          error: updateError.message
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
+    }
+
+    // 2. Add an entry to the credit_ledger table
+    const { error: ledgerError } = await supabaseAdmin
+      .from("credit_ledger")
+      .insert({
+        user_id: userId,
+        change: 15,
+        reason: "welcome_credits",
+        ref_id: "free_credits_claim"
+      });
+
+    if (ledgerError) {
+      console.warn("Could not add to credit ledger, but credits were added:", ledgerError);
+      // Continue execution even if ledger entry fails - the credits were already added
     }
 
     // Success response
