@@ -85,7 +85,7 @@ export const useWebsiteAnalysisActions = () => {
         userId
       };
       
-      // Check if we have a cached analysis
+      // Check if we have a cached analysis - using the hasCachedResponse method
       const hasCachedAnalysis = await OpenAICacheService.hasCachedResponse(analysisParams);
       console.log('Has cached analysis:', hasCachedAnalysis);
       

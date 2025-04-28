@@ -29,6 +29,37 @@ export class OpenAICacheService {
   }
 
   /**
+   * Check if a response is cached and valid without fetching the full response
+   * This is useful for credit management as we don't need to deduct credits
+   * if there's a valid cached response
+   */
+  static async hasCachedResponse(params: CacheParams): Promise<boolean> {
+    try {
+      console.log('[OpenAICache] Checking if cache exists for', params);
+      const cacheKey = this.generateCacheKey(params);
+      
+      const { count, error } = await supabase
+        .from('openai_cache')
+        .select('id', { count: 'exact', head: true })
+        .eq('key', cacheKey)
+        .gt('expiration', new Date().toISOString());
+      
+      if (error) {
+        console.log('[OpenAICache] Error checking cache existence:', error.message);
+        return false;
+      }
+      
+      const exists = count !== null && count > 0;
+      console.log('[OpenAICache] Cache exists for', cacheKey, ':', exists);
+      return exists;
+    } catch (error) {
+      console.error('[OpenAICache] Error checking cache existence:', error);
+      errorLogger.logError(error, 'OpenAICacheService.hasCachedResponse');
+      return false;
+    }
+  }
+
+  /**
    * Check if a response is cached and valid
    */
   static async getCachedResponse<T>(params: CacheParams): Promise<CachedResponse<T>> {
