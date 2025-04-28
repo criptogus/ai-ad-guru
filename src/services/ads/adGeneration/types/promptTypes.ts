@@ -9,12 +9,12 @@ export interface CampaignPromptData {
   differentials?: string[] | string;
   mindTrigger?: string;
   mindTriggers?: Record<string, string>;
-  companyDescription?: string;
-  keywords?: string[] | string;
-  callToAction?: string[] | string;
   language?: string;
   platforms?: string[];
+  companyDescription?: string;
   industry?: string;
+  keywords?: string[] | string;
+  callToAction?: string[] | string;
 }
 
 // Re-adding PromptMessages interface

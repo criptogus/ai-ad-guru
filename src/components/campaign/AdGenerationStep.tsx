@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ export const AdGenerationStep: React.FC<AdGenerationStepProps> = ({
         product: campaignData.product || analysisResult?.product || '',
         targetAudience: campaignData.targetAudience || analysisResult?.targetAudience || '',
         brandTone: campaignData.brandTone || analysisResult?.brandTone || 'professional',
-        mindTrigger: campaignData.mindTrigger || '',
+        mindTrigger: campaignData.mindTriggers?.['default'] || '',
         mindTriggers: mindTriggers,
         language: 'pt_BR',
         industry: campaignData.industry || analysisResult?.industry || '',

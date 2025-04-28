@@ -13,7 +13,7 @@ export interface CampaignPromptData {
   platforms?: string[];
   companyDescription?: string;
   industry?: string;
-  callToAction?: string | string[];
+  callToAction?: string[] | string;
   keywords?: string[] | string;
 }
 
