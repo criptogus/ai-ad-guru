@@ -1,7 +1,5 @@
-
 import React, { lazy, Suspense } from 'react';
 import {
-  createRoutesFromElements,
   Route,
   Routes,
   Outlet,
