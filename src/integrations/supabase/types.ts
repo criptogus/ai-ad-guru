@@ -195,6 +195,7 @@ export type Database = {
           change: number
           created_at: string
           id: string
+          metadata: Json | null
           reason: string
           ref_id: string | null
           user_id: string
@@ -203,6 +204,7 @@ export type Database = {
           change: number
           created_at?: string
           id?: string
+          metadata?: Json | null
           reason: string
           ref_id?: string | null
           user_id: string
@@ -211,6 +213,7 @@ export type Database = {
           change?: number
           created_at?: string
           id?: string
+          metadata?: Json | null
           reason?: string
           ref_id?: string | null
           user_id?: string
