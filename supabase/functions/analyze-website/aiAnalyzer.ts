@@ -2,10 +2,10 @@
 import { OpenAI } from "https://esm.sh/openai@4.20.1";
 import { validateAnalysisResult, normalizeArrayFields } from "./utils.ts";
 
-// Function to create a prompt for the OpenAI analysis
+// Function to create a prompt for the OpenAI analysis with improved industry classification
 function createAnalysisPrompt(websiteData: any): string {
   return `
-    Analyze the following website data:
+    Analyze the following website data and provide a comprehensive analysis:
     - Title: ${websiteData.title}
     - Description: ${websiteData.description}
     - Keywords: ${websiteData.keywords}
@@ -20,10 +20,16 @@ function createAnalysisPrompt(websiteData: any): string {
     - callToAction: 3 Call-to-Action suggestions (short phrases)
     - uniqueSellingPoints: 3 Unique Selling Points (what makes them different)
     
+    VERY IMPORTANT INSTRUCTIONS FOR INDUSTRY CLASSIFICATION:
+    - industry: Provide a SPECIFIC industry classification (avoid generic terms like "Other", "General", or "Technology")
+    - Use DETAILED industry categories like: Healthcare Technology, E-commerce Retail, Enterprise Software, Digital Marketing Agency, Investment Banking, K-12 Education, etc.
+    - NEVER use vague classifications like "Other", "General", "Various", "Technology" or "Service"
+    - The industry name MUST be in the SAME LANGUAGE as the website content (do not use English if the site is not in English)
+    
     IMPORTANT: Your analysis must be in the SAME LANGUAGE as the content of the website. If the website is in Spanish, your analysis should be in Spanish. If it's in English, respond in English, etc. NEVER translate the content to another language.
     
     Return ONLY a JSON object with these fields and NO additional text. Format as valid JSON like this:
-    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"], "language": "en"}
+    {"companyName": "Example Corp", "businessDescription": "...", "targetAudience": "...", "brandTone": "...", "industry": "Specific Industry Name", "keywords": ["word1", "word2", "word3", "word4", "word5"], "callToAction": ["cta1", "cta2", "cta3"], "uniqueSellingPoints": ["usp1", "usp2", "usp3"], "language": "en"}
     
     Include a "language" field with the ISO code of the language you detected (e.g., "en" for English, "pt" for Portuguese, "es" for Spanish).
     `;
@@ -69,6 +75,9 @@ export async function analyzeWebsiteWithAI(websiteData: any, openaiApiKey: strin
     if (!normalizedAnalysis.language) {
       normalizedAnalysis.language = "en";
     }
+    
+    // Log the industry field specifically for debugging
+    console.log("Industry classification:", normalizedAnalysis.industry, "Language:", normalizedAnalysis.language);
     
     return normalizedAnalysis;
     

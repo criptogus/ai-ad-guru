@@ -33,6 +33,23 @@ export interface WebsiteAnalysisCache {
 }
 
 /**
+ * Helper function to normalize language codes
+ */
+const normalizeLanguageCode = (langCode?: string): string => {
+  if (!langCode) return 'en';
+  
+  // Handle common variations
+  const normalized = langCode.toLowerCase().trim();
+  
+  if (normalized.startsWith('pt')) return 'pt';
+  if (normalized.startsWith('en')) return 'en';
+  if (normalized.startsWith('es')) return 'es';
+  if (normalized.startsWith('fr')) return 'fr';
+  
+  return normalized.split('-')[0]; // Return base language code
+};
+
+/**
  * Analyze a website to extract information
  */
 export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<WebsiteAnalysisResult | null> => {
@@ -86,7 +103,16 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
     // Add the website URL to the result
     result.websiteUrl = formattedUrl;
     
-    console.log('Website analysis completed:', result);
+    // Normalize language code
+    if (result.language) {
+      result.language = normalizeLanguageCode(result.language);
+    }
+    
+    // Log the specific fields we're concerned with
+    console.log('Website analysis results:', {
+      language: result.language,
+      industry: result.industry
+    });
     
     // Return cache information
     if (data.fromCache) {

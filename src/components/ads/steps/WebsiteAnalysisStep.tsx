@@ -1,13 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader, AlertCircle } from "lucide-react";
+import { Loader, AlertCircle, Globe } from "lucide-react";
 import { analyzeWebsite } from "@/services/campaign/websiteAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface WebsiteAnalysisStepProps {
   campaignData: any;
@@ -35,7 +36,35 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     keywords: campaignData.keywords || ""
   });
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [languageDetected, setLanguageDetected] = useState<string | null>(null);
   const { user } = useAuth();
+
+  // Helper to get language display name
+  const getLanguageDisplayName = (code?: string): string => {
+    if (!code) return "Unknown";
+    
+    const languages: Record<string, string> = {
+      'en': "English",
+      'pt': "Portuguese",
+      'es': "Spanish",
+      'fr': "French",
+      'de': "German",
+      'it': "Italian",
+      'nl': "Dutch",
+      'ru': "Russian",
+      'zh': "Chinese",
+      'ja': "Japanese"
+    };
+    
+    return languages[code.toLowerCase().split('-')[0]] || code;
+  };
+  
+  // Update language when analysis result changes
+  useEffect(() => {
+    if (analysisResult?.language) {
+      setLanguageDetected(analysisResult.language);
+    }
+  }, [analysisResult]);
 
   const handleAnalyze = async () => {
     setAnalysisError(null);
@@ -73,6 +102,11 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       if (result) {
         console.log('Analysis result received:', result);
         setAnalysisResult(result);
+        
+        if (result.language) {
+          setLanguageDetected(result.language);
+          console.log(`Language detected: ${result.language} (${getLanguageDisplayName(result.language)})`);
+        }
         
         // Update form with the analysis results
         setFormData({
@@ -114,7 +148,8 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       businessType: formData.businessType, 
       industry: formData.industry,
       products: productsArray,
-      keywords: keywordsArray
+      keywords: keywordsArray,
+      language: languageDetected // Add detected language to the data
     });
   };
 
@@ -122,7 +157,17 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Website Analysis</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Website Analysis</h2>
+        
+        {languageDetected && (
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Globe className="h-3 w-3" />
+            <span>{getLanguageDisplayName(languageDetected)}</span>
+          </Badge>
+        )}
+      </div>
+      
       <p className="text-muted-foreground">
         Enter your website URL so our AI can analyze it and extract relevant information for your campaign.
       </p>
@@ -158,6 +203,18 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           <AlertDescription>{analysisError}</AlertDescription>
         </Alert>
       )}
+      
+      {analysisResult?.fromCache && (
+        <Alert variant="info" className="mt-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Using Cached Analysis</AlertTitle>
+          <AlertDescription>
+            This analysis is from our cache. The data was analyzed previously on {
+              new Date(analysisResult.cachedAt).toLocaleDateString()
+            }
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <div>
@@ -177,13 +234,18 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
         <div>
           <label htmlFor="industry" className="block text-sm font-medium mb-1">
             Industry/Segment
+            {languageDetected && (
+              <span className="text-xs text-muted-foreground ml-2">
+                (detected language: {getLanguageDisplayName(languageDetected)})
+              </span>
+            )}
           </label>
           <Input
             id="industry"
             name="industry"
             value={formData.industry}
             onChange={handleInputChange}
-            placeholder="Ex: Digital Marketing"
+            placeholder={`Ex: ${languageDetected === 'pt' ? 'Marketing Digital' : 'Digital Marketing'}`}
             className="dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
