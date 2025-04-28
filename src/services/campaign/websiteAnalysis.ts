@@ -65,13 +65,17 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       formattedUrl = 'https://' + formattedUrl;
     }
     
-    // Use cache if available
-    const cacheKey = `website-analysis-${formattedUrl}`;
-    const cachedResult = await OpenAICacheService.getCachedResponse(cacheKey);
+    // Use cache if available - create a proper cache params object
+    const cacheParams = { 
+      url: formattedUrl,
+      userId: params.userId
+    };
     
-    if (cachedResult) {
+    const cachedResult = await OpenAICacheService.getCachedResponse<WebsiteAnalysisResult>(cacheParams);
+    
+    if (cachedResult.data) {
       console.log('Using cached analysis result');
-      const result = cachedResult as WebsiteAnalysisResult;
+      const result = cachedResult.data;
       
       // Add the website URL to the result
       result.websiteUrl = formattedUrl;
@@ -143,7 +147,7 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
     });
     
     // Cache the result for future use
-    OpenAICacheService.storeResponse(cacheKey, result);
+    OpenAICacheService.cacheResponse(cacheParams, result);
     
     // Return cache information
     if (data.fromCache) {
@@ -182,10 +186,12 @@ export const getAnalysisCacheStatus = async (url: string): Promise<{ exists: boo
       formattedUrl = 'https://' + formattedUrl;
     }
     
-    const cacheKey = `website-analysis-${formattedUrl}`;
-    const cachedResult = await OpenAICacheService.getCachedResponse(cacheKey);
+    // Create proper cache params object
+    const cacheParams = { url: formattedUrl };
     
-    if (cachedResult) {
+    const cachedResult = await OpenAICacheService.getCachedResponse(cacheParams);
+    
+    if (cachedResult.data) {
       return {
         exists: true,
         cachedAt: cachedResult.cachedAt,
