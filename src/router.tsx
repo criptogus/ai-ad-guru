@@ -25,15 +25,13 @@ const Loading = () => (
 
 // Lazy load components
 const HomePage = lazy(() => import('@/pages/HomePage'));
-const LoginPage = lazy(() => import('@/pages/LoginPage'));
-const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
+const Authentication = lazy(() => import('@/pages/Authentication'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
 const ConnectionsPage = lazy(() => import('@/pages/ConnectionsPage'));
 const CampaignsPage = lazy(() => import('@/pages/CampaignsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
-const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const AdManagerPage = lazy(() => import('@/pages/AdManagerPage'));
@@ -56,7 +54,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
   if (user) {
-    return <Navigate to="/" />;
+    return <Navigate to="/dashboard" />;
   }
 
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
@@ -70,9 +68,9 @@ const router = createBrowserRouter(
       <Route path="/pricing" element={<PricingPage />} />
       
       {/* Auth routes */}
-      <Route path="/auth" element={<AuthPage />}>
-        <Route path="login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-        <Route path="register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      <Route path="/auth">
+        <Route path="login" element={<PublicRoute><Authentication /></PublicRoute>} />
+        <Route path="register" element={<PublicRoute><Authentication /></PublicRoute>} />
         <Route index element={<Navigate to="/auth/login" replace />} />
       </Route>
       
