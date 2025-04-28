@@ -22,13 +22,11 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      // Explicitly disable native extensions
+      // Force pure JavaScript implementation
       context: 'globalThis',
       treeshake: {
         moduleSideEffects: false,
       },
-      // Force using pure JavaScript implementation
-      shimMissingExports: true,
       output: {
         format: 'es',
         hoistTransitiveImports: false,

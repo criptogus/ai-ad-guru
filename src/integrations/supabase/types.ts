@@ -532,7 +532,7 @@ export type Database = {
     Views: {
       credit_balance: {
         Row: {
-          balance: number | null
+          total_credits: number | null
           user_id: string | null
         }
         Relationships: []
