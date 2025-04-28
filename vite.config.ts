@@ -28,8 +28,15 @@ export default defineConfig(({ mode }) => ({
       onwarn(warning, warn) {
         // Ignore certain warnings
         if (warning.code === 'MISSING_NODE_BUILTINS') return;
+        if (warning.code === 'SOURCEMAP_ERROR') return;
+        if (warning.message && warning.message.includes('@rollup/rollup-linux')) return;
         warn(warning);
       }
     },
+    commonjsOptions: {
+      // Prevent issues with platform-specific optional dependencies
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    }
   },
 }));

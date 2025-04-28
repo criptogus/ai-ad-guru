@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { testStripeConnection } from '@/services/billing/stripeConnectionTest';
 import { Loading } from '@/components/ui/loading';
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 const DevToolsSection = ({ updateUserPaymentStatus }) => {
   const { simulateSuccessfulPayment } = useAuth();
@@ -24,7 +25,7 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
     }
   };
 
-  // Add new function for Stripe connection test
+  // Add Stripe connection test component
   const StripeConnectionTest = () => {
     const [testing, setTesting] = useState(false);
     const [result, setResult] = useState<{
@@ -33,17 +34,44 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
       apiVersion?: string;
     }>({});
 
+    // Check connection on component mount
+    useEffect(() => {
+      const checkConnection = async () => {
+        setTesting(true);
+        try {
+          const testResult = await testStripeConnection();
+          setResult(testResult);
+        } catch (error) {
+          console.error('Error in automatic Stripe connection test:', error);
+          setResult({
+            success: false,
+            message: error instanceof Error ? error.message : 'Unknown error occurred'
+          });
+        } finally {
+          setTesting(false);
+        }
+      };
+      
+      checkConnection();
+    }, []);
+
     const handleTestConnection = async () => {
       setTesting(true);
       try {
         const testResult = await testStripeConnection();
         setResult(testResult);
+        if (testResult.success) {
+          toast.success("Successfully connected to Stripe API");
+        } else {
+          toast.error("Failed to connect to Stripe API");
+        }
       } catch (error) {
         console.error('Error in Stripe connection test:', error);
         setResult({
           success: false,
           message: error instanceof Error ? error.message : 'Unknown error occurred'
         });
+        toast.error("Error testing Stripe connection");
       } finally {
         setTesting(false);
       }
@@ -51,7 +79,14 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
 
     return (
       <div className="p-4 border rounded-md mt-4">
-        <h3 className="text-lg font-medium mb-2">Stripe API Connection Test</h3>
+        <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+          Stripe API Connection Test
+          {result.success !== undefined && (
+            result.success ? 
+            <CheckCircle2 className="h-5 w-5 text-green-500" /> : 
+            <AlertCircle className="h-5 w-5 text-red-500" />
+          )}
+        </h3>
         <div className="flex space-x-2 mb-2">
           <Button 
             variant="outline" 
@@ -89,30 +124,34 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
           <CardTitle>Developer Tools</CardTitle>
           <CardDescription>Testing and debugging tools for payments</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button 
-            variant="destructive" 
-            onClick={() => updateUserPaymentStatus(false)}
-          >
-            Cancel Subscription (Dev Only)
-          </Button>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => updateUserPaymentStatus(false)}
+              size="sm"
+            >
+              Cancel Subscription (Dev Only)
+            </Button>
+            
+            <Button 
+              variant="outline"
+              size="sm" 
+              disabled={isSimulating}
+              onClick={handleSimulatePayment}
+            >
+              {isSimulating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Simulating...
+                </>
+              ) : (
+                "Simulate Successful Payment"
+              )}
+            </Button>
+          </div>
           
-          <Button 
-            variant="outline" 
-            disabled={isSimulating}
-            onClick={handleSimulatePayment}
-          >
-            {isSimulating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Simulating...
-              </>
-            ) : (
-              "Simulate Successful Payment"
-            )}
-          </Button>
-          
-          {/* Add the new Stripe connection test component */}
+          {/* Add the Stripe connection test component */}
           <StripeConnectionTest />
         </CardContent>
       </Card>
