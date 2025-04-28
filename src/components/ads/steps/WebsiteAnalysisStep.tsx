@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   }, [analysisResult]);
 
   const handleAnalyze = async () => {
+    console.log("handleAnalyze called with URL:", url);
     setAnalysisError(null);
     
     if (!url) {
@@ -79,8 +81,10 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     }
 
     try {
+      console.log("Validating URL:", formattedUrl);
       new URL(formattedUrl);
     } catch (e) {
+      console.error("URL validation error:", e);
       setAnalysisError("Invalid URL format. Use format: example.com");
       toast.error("Invalid URL format. Use format: example.com");
       return;
@@ -89,6 +93,7 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
     setIsAnalyzing(true);
     
     try {
+      console.log("Starting secured website analysis operation");
       const result = await executeSecured(
         async () => {
           console.log('Calling analyzeWebsite with URL:', formattedUrl);
@@ -103,28 +108,32 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
           metadata: { url: formattedUrl }
         }
       );
+      
+      console.log('Analysis result received:', result);
 
-      if (result) {
-        console.log('Analysis result received:', result);
-        setAnalysisResult(result);
-        
-        if (result.language) {
-          setLanguageDetected(result.language);
-          console.log(`Language detected: ${result.language} (${getLanguageDisplayName(result.language)})`);
-        }
-        
-        setFormData({
-          businessName: result.companyName || "",
-          businessType: result.businessDescription || "",
-          industry: result.industry || "",
-          products: result.uniqueSellingPoints?.join(", ") || "",
-          keywords: result.keywords?.join(", ") || ""
-        });
-
-        toast.success("Website analysis completed!");
+      if (!result) {
+        setAnalysisError("No analysis result returned. Please try again.");
+        return;
       }
+
+      setAnalysisResult(result);
+      
+      if (result.language) {
+        setLanguageDetected(result.language);
+        console.log(`Language detected: ${result.language} (${getLanguageDisplayName(result.language)})`);
+      }
+      
+      setFormData({
+        businessName: result.companyName || "",
+        businessType: result.businessDescription || "",
+        industry: result.industry || "",
+        products: result.uniqueSellingPoints?.join(", ") || "",
+        keywords: result.keywords?.join(", ") || ""
+      });
+
+      toast.success("Website analysis completed!");
     } catch (error: any) {
-      console.error("Error analyzing website:", error);
+      console.error("Error analyzing website:", error, error?.message, error?.stack);
       setAnalysisError(error?.message || "Failed to analyze website. Please try again or fill in manually.");
     } finally {
       setIsAnalyzing(false);
@@ -137,10 +146,11 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
   };
 
   const handleNext = () => {
+    console.log("handleNext called with formData:", formData);
     const keywordsArray = formData.keywords.split(",").map(k => k.trim()).filter(Boolean);
     const productsArray = formData.products.split(",").map(p => p.trim()).filter(Boolean);
     
-    onNext({
+    const updatedData = {
       websiteUrl: url,
       businessName: formData.businessName,
       businessType: formData.businessType, 
@@ -148,7 +158,10 @@ const WebsiteAnalysisStep: React.FC<WebsiteAnalysisStepProps> = ({
       products: productsArray,
       keywords: keywordsArray,
       language: languageDetected
-    });
+    };
+    
+    console.log("Passing data to onNext:", updatedData);
+    onNext(updatedData);
   };
 
   const isFormValid = formData.businessName && formData.businessType && formData.industry;

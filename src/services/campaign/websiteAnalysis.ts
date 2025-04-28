@@ -54,7 +54,7 @@ const normalizeLanguageCode = (langCode?: string): string => {
  */
 export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<WebsiteAnalysisResult | null> => {
   try {
-    console.log('Analyzing website', params.url);
+    console.log('Analyzing website', params.url, 'for user', params.userId);
     
     // Format URL if needed
     let formattedUrl = params.url.trim();
@@ -108,10 +108,18 @@ export const analyzeWebsite = async (params: WebsiteAnalysisParams): Promise<Web
       result.language = normalizeLanguageCode(result.language);
     }
     
+    // Ensure we have valid arrays
+    result.keywords = Array.isArray(result.keywords) ? result.keywords : [];
+    result.callToAction = Array.isArray(result.callToAction) ? result.callToAction : [];
+    result.uniqueSellingPoints = Array.isArray(result.uniqueSellingPoints) ? result.uniqueSellingPoints : [];
+    
     // Log the specific fields we're concerned with
     console.log('Website analysis results:', {
+      companyName: result.companyName,
       language: result.language,
-      industry: result.industry
+      industry: result.industry,
+      keywordsCount: result.keywords.length,
+      uniqueSellingPointsCount: result.uniqueSellingPoints.length
     });
     
     // Return cache information
