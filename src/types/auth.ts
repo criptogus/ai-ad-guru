@@ -7,6 +7,7 @@ export interface CustomUser extends User {
   avatar?: string;
   credits?: number;
   hasPaid?: boolean;
+  receivedFreeCredits?: boolean;
 }
 
 // Define our Profile interface that matches the database structure
@@ -16,6 +17,7 @@ export interface Profile {
   avatar: string | null;
   credits: number;
   has_paid: boolean;
+  received_free_credits: boolean;
   created_at: string;
   updated_at: string;
 }

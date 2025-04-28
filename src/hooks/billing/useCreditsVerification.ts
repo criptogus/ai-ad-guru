@@ -1,61 +1,81 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
 
 export const useCreditsVerification = () => {
-  const [processing, setProcessing] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const { user, refreshUser } = useAuth();
   const { refreshCredits } = useCredits();
-
+  const [checking, setChecking] = useState(false);
+  const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
+  
   useEffect(() => {
-    const verifyPendingPurchase = async () => {
-      try {
-        const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
-        
-        if (!storedPurchaseIntent) {
-          return;
-        }
-        
-        const purchaseData = JSON.parse(storedPurchaseIntent);
-        const { sessionId, timestamp } = purchaseData;
-        
-        // Skip if no session ID or if timestamp is older than 24 hours
-        if (!sessionId || Date.now() - timestamp > 24 * 60 * 60 * 1000) {
-          localStorage.removeItem('credit_purchase_intent');
-          return;
-        }
-        
-        setProcessing(true);
-        
-        // Call verify-payment function
-        const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId }
-        });
-        
-        if (error) {
-          console.error('Error verifying payment:', error);
-          return;
-        }
-        
-        if (data?.verified) {
-          setSuccess(true);
-          await refreshCredits();
-          localStorage.removeItem('credit_purchase_intent');
-        }
-      } catch (err) {
-        console.error('Error in credit verification:', err);
-      } finally {
-        setProcessing(false);
+    if (user?.id) {
+      setHasClaimedFreeCredits(!!user.receivedFreeCredits);
+    }
+  }, [user]);
+  
+  const checkFreeCreditsStatus = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setChecking(true);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('received_free_credits')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      
+      setHasClaimedFreeCredits(!!data?.received_free_credits);
+      
+      if (data?.received_free_credits !== user.receivedFreeCredits) {
+        // Update local user object if the database value is different
+        await refreshUser();
+        await refreshCredits();
       }
-    };
-
-    verifyPendingPurchase();
-  }, [refreshCredits]);
-
+    } catch (error) {
+      console.error('Error checking free credits status:', error);
+    } finally {
+      setChecking(false);
+    }
+  };
+  
+  const claimFreeCredits = async (): Promise<boolean> => {
+    if (!user?.id || hasClaimedFreeCredits) return false;
+    
+    try {
+      setChecking(true);
+      
+      const { data, error } = await supabase.functions.invoke("claim-free-credits", {
+        body: { userId: user.id },
+      });
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        await refreshUser();
+        await refreshCredits();
+        setHasClaimedFreeCredits(true);
+        return true;
+      } else {
+        throw new Error(data?.message || "Failed to claim free credits");
+      }
+    } catch (error) {
+      console.error('Error claiming free credits:', error);
+      return false;
+    } finally {
+      setChecking(false);
+    }
+  };
+  
   return {
-    processing,
-    success
+    checking,
+    hasClaimedFreeCredits,
+    checkFreeCreditsStatus,
+    claimFreeCredits
   };
 };

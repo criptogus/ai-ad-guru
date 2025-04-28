@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import { Plus, Check, Loader2, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface CreditsPurchaseCardProps {
   userId?: string;
@@ -17,8 +18,18 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingPack, setProcessingPack] = useState<string | null>(null);
-  const { user } = useAuth();
-  const hasClaimedFreeCredits = user?.receivedFreeCredits || false;
+  const { user, refreshUser } = useAuth();
+  const { refreshCredits } = useCredits();
+  const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState<boolean>(
+    user?.receivedFreeCredits || false
+  );
+  
+  // Update local state when user data changes
+  useEffect(() => {
+    if (user?.receivedFreeCredits) {
+      setHasClaimedFreeCredits(true);
+    }
+  }, [user]);
   
   const handleClaimFreeCredits = async () => {
     if (!userId) {
@@ -49,8 +60,12 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
           description: "15 free credits have been added to your account",
         });
         
-        // Refresh the page to update credit count
-        window.location.reload();
+        // Update local state
+        setHasClaimedFreeCredits(true);
+        
+        // Refresh user data and credits
+        await refreshUser();
+        await refreshCredits();
       } else {
         throw new Error(data?.message || "Failed to claim free credits");
       }
