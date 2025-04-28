@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
 import { toast as sonnerToast } from 'sonner';
+import { errorLogger } from '@/services/libs/error-handling';
 
 export const useCreditsManager = () => {
   const { toast } = useToast();
@@ -14,7 +15,9 @@ export const useCreditsManager = () => {
   // Detailed credit balance check
   const checkCreditBalance = useCallback(async (requiredCredits: number) => {
     if (!user?.id) {
-      console.error('Attempted to check credits without authenticated user');
+      const authError = new Error('Attempted to check credits without authenticated user');
+      errorLogger.logError(authError, 'useCreditsManager.checkCreditBalance');
+      
       toast({
         title: "Authentication required",
         description: "You need to be logged in to continue",
@@ -35,6 +38,13 @@ export const useCreditsManager = () => {
   
       if (error) {
         console.error('Error checking credit balance:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'fetch_credits'
+        }, 'useCreditsManager.checkCreditBalance');
+        
         toast({
           title: "Error checking credits",
           description: "Failed to verify your credit balance. Please try again.",
@@ -44,7 +54,9 @@ export const useCreditsManager = () => {
       }
       
       if (!data) {
-        console.error('User profile not found');
+        const noProfileError = new Error('User profile not found');
+        errorLogger.logError(noProfileError, 'useCreditsManager.checkCreditBalance');
+        
         toast({
           title: "Profile not found",
           description: "Your user profile could not be found",
@@ -60,6 +72,8 @@ export const useCreditsManager = () => {
       return available >= requiredCredits;
     } catch (error) {
       console.error('Unexpected error checking credit balance:', error);
+      errorLogger.logError(error, 'useCreditsManager.checkCreditBalance');
+      
       toast({
         title: "Error",
         description: "An unexpected error occurred while checking your credits",
@@ -72,7 +86,9 @@ export const useCreditsManager = () => {
   // Credit consumption with detailed logging
   const consumeCredits = useCallback(async (amount: number, reason: string, refId?: string) => {
     if (!user?.id) {
-      console.error('Attempted to consume credits without authenticated user');
+      const authError = new Error('Attempted to consume credits without authenticated user');
+      errorLogger.logError(authError, 'useCreditsManager.consumeCredits');
+      
       toast({
         title: "Authentication required",
         description: "You need to be logged in to continue",
@@ -82,6 +98,13 @@ export const useCreditsManager = () => {
     }
 
     console.log(`Attempting to consume ${amount} credits for: ${reason}, user: ${user.id}`);
+    
+    // Validate credit amount
+    if (amount <= 0) {
+      const invalidAmountError = new Error(`Invalid credit amount: ${amount}`);
+      errorLogger.logError(invalidAmountError, 'useCreditsManager.consumeCredits');
+      return false;
+    }
     
     // Check balance before proceeding
     const hasEnough = await checkCreditBalance(amount);
@@ -108,9 +131,16 @@ export const useCreditsManager = () => {
   
       if (error) {
         console.error('Error consuming credits:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'credit_consumption'
+        }, 'useCreditsManager.consumeCredits');
+        
         toast({
           title: "Error",
-          description: "Failed to consume credits. Please try again.",
+          description: `Failed to consume credits: ${error.message}`,
           variant: "destructive",
         });
         throw new Error(`Failed to consume credits: ${error.message}`);
@@ -127,6 +157,15 @@ export const useCreditsManager = () => {
       return true;
     } catch (error) {
       console.error('Unexpected error consuming credits:', error);
+      errorLogger.logError({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        context: {
+          userId: user.id,
+          amount,
+          reason
+        }
+      }, 'useCreditsManager.consumeCredits');
+      
       toast({
         title: "Error",
         description: "Failed to consume credits. Please try again.",
@@ -165,12 +204,19 @@ export const useCreditsManager = () => {
         
       if (error) {
         console.error('Error fetching credit history:', error);
+        errorLogger.logError({
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          operation: 'fetch_transaction_history'
+        }, 'useCreditsManager.getCreditTransactions');
         return [];
       }
       
       return data || [];
     } catch (error) {
       console.error('Unexpected error fetching history:', error);
+      errorLogger.logError(error, 'useCreditsManager.getCreditTransactions');
       return [];
     }
   }, [user]);

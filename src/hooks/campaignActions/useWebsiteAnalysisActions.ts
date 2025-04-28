@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteAnalysisResult } from "@/hooks/useWebsiteAnalysis";
@@ -17,14 +18,24 @@ export const useWebsiteAnalysisActions = () => {
   // Get the current authenticated user
   const getUserId = async () => {
     try {
-      const { data } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.error("Auth error:", error);
+        errorLogger.logError(error, 'useWebsiteAnalysisActions.getUserId');
+        throw new Error(`Authentication error: ${error.message}`);
+      }
+      
       if (!data?.user?.id) {
         console.error("No authenticated user found");
-        throw new Error("Authentication required");
+        const authError = new Error("Authentication required");
+        errorLogger.logError(authError, 'useWebsiteAnalysisActions.getUserId');
+        throw authError;
       }
       return data.user.id;
     } catch (error) {
       console.error("Error getting authenticated user:", error);
+      errorLogger.logError(error, 'useWebsiteAnalysisActions.getUserId');
       throw error;
     }
   };
@@ -52,8 +63,20 @@ export const useWebsiteAnalysisActions = () => {
       }
       
       // Get the authenticated user ID
-      const userId = await getUserId();
-      console.log('Authenticated user ID for credit deduction:', userId);
+      let userId;
+      try {
+        userId = await getUserId();
+        console.log('Authenticated user ID for credit deduction:', userId);
+      } catch (authError) {
+        console.error('Authentication error:', authError);
+        uiToast({
+          title: "Authentication Error",
+          description: "Please login to continue",
+          variant: "destructive",
+        });
+        setIsAnalyzing(false);
+        return null;
+      }
       
       // Prepare the analysis parameters
       const analysisParams = {
@@ -75,7 +98,18 @@ export const useWebsiteAnalysisActions = () => {
       } else {
         // Check if user has enough credits for this action
         const creditsRequired = 2; // 2 credits for website analysis
-        const hasEnoughCredits = await checkCreditBalance(creditsRequired);
+        let hasEnoughCredits;
+        try {
+          hasEnoughCredits = await checkCreditBalance(creditsRequired);
+        } catch (creditCheckError) {
+          console.error("Error checking credit balance:", creditCheckError);
+          errorLogger.logError(creditCheckError, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.creditCheck');
+          toast.error("Erro ao verificar créditos", {
+            description: "Não foi possível verificar seu saldo de créditos."
+          });
+          setIsAnalyzing(false);
+          return null;
+        }
         
         if (!hasEnoughCredits) {
           toast.error("Créditos insuficientes", {
@@ -101,6 +135,7 @@ export const useWebsiteAnalysisActions = () => {
           const creditConsumed = await consumeCredits(creditsRequired, "Website analysis");
           if (!creditConsumed) {
             console.error("Failed to deduct credits for website analysis");
+            errorLogger.logError(new Error("Credit deduction failed"), 'useWebsiteAnalysisActions.deductCreditsFunction');
             toast.error("Erro ao debitar créditos", {
               description: "Não foi possível debitar os créditos necessários para esta operação."
             });
@@ -110,6 +145,12 @@ export const useWebsiteAnalysisActions = () => {
           return true;
         } catch (error) {
           console.error("Error deducting credits:", error);
+          errorLogger.logError({
+            error,
+            userId,
+            creditsRequired,
+            operation: "website_analysis"
+          }, 'useWebsiteAnalysisActions.deductCreditsFunction');
           throw new Error(`Failed to deduct credits: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
@@ -117,40 +158,57 @@ export const useWebsiteAnalysisActions = () => {
       // Perform the actual analysis with caching logic
       console.log('Calling analyze-website function with URL:', formattedUrl);
       
-      const result = await analyzeWebsite(analysisParams);
-      
-      if (!result) {
-        throw new Error("Failed to analyze website - no result returned");
-      }
-      
-      console.log('Analysis result:', result);
-      
-      // Store the website URL in the result if not already present
-      if (!result.websiteUrl) {
-        result.websiteUrl = formattedUrl;
-      }
-      
-      // Check if the result came from cache
-      if ((result as any).fromCache) {
-        setCacheInfo({
-          fromCache: true,
-          cachedAt: (result as any).cachedAt,
-          expiresAt: (result as any).expiresAt
-        });
+      try {
+        // Try to deduct credits first if not using cache
+        if (!hasCachedAnalysis) {
+          const deductionSuccessful = await deductCreditsFunction();
+          if (!deductionSuccessful) {
+            setIsAnalyzing(false);
+            return null;
+          }
+        }
         
-        uiToast({
-          title: "Website Analysis",
-          description: "Using cached analysis from previous scan",
-        });
-      } else {
-        setCacheInfo(null);
+        const result = await analyzeWebsite(analysisParams);
         
-        toast.success("Website Analyzed", {
-          description: "Successfully analyzed website content"
-        });
+        if (!result) {
+          throw new Error("Failed to analyze website - no result returned");
+        }
+        
+        console.log('Analysis result:', result);
+        
+        // Store the website URL in the result if not already present
+        if (!result.websiteUrl) {
+          result.websiteUrl = formattedUrl;
+        }
+        
+        // Check if the result came from cache
+        if ((result as any).fromCache) {
+          setCacheInfo({
+            fromCache: true,
+            cachedAt: (result as any).cachedAt,
+            expiresAt: (result as any).expiresAt
+          });
+          
+          uiToast({
+            title: "Website Analysis",
+            description: "Using cached analysis from previous scan",
+          });
+        } else {
+          setCacheInfo(null);
+          
+          toast.success("Website Analyzed", {
+            description: "Successfully analyzed website content"
+          });
+        }
+        
+        return result;
+      } catch (analysisError) {
+        console.error("Error in website analysis:", analysisError);
+        errorLogger.logError(analysisError, 'useWebsiteAnalysisActions.handleAnalyzeWebsite.analysis');
+        
+        throw analysisError;
       }
       
-      return result;
     } catch (error: any) {
       errorLogger.logError(error, 'handleAnalyzeWebsite');
       

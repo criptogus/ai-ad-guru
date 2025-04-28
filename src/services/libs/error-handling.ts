@@ -11,6 +11,28 @@ interface ErrorLoggerInterface {
 }
 
 /**
+ * Format error message for consistent reporting
+ */
+const formatErrorDetails = (error: any): string => {
+  if (!error) return 'Unknown error (null)';
+  
+  if (typeof error === 'string') return error;
+  
+  if (error.message) {
+    let details = error.message;
+    
+    // Add additional Supabase details if available
+    if (error.details) details += ` | Details: ${error.details}`;
+    if (error.hint) details += ` | Hint: ${error.hint}`;
+    if (error.code) details += ` | Code: ${error.code}`;
+    
+    return details;
+  }
+  
+  return JSON.stringify(error);
+};
+
+/**
  * Error logger utility for standardized error handling
  */
 export const errorLogger: ErrorLoggerInterface = {
@@ -18,21 +40,42 @@ export const errorLogger: ErrorLoggerInterface = {
    * Log an error with source information
    */
   logError: (error: any, source?: string) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[Error${source ? ` in ${source}` : ''}]: ${errorMessage}`, error);
+    const timestamp = new Date().toISOString();
+    const formattedSource = source ? `[${source}]` : '[unknown]';
+    const errorDetails = formatErrorDetails(error);
+    
+    // Log formatted error to console
+    console.error(`${timestamp} ${formattedSource} Error: ${errorDetails}`);
+    
+    // If it's an Error object, also log the stack trace
+    if (error instanceof Error && error.stack) {
+      console.error(`Stack trace: ${error.stack}`);
+    }
+    
+    // If this is an object with more structured data, log that too
+    if (typeof error === 'object' && error !== null && !(error instanceof Error)) {
+      console.error('Additional error context:', error);
+    }
+    
+    // Here we could also send the error to an external error tracking service
+    // if we had one set up, e.g. Sentry, LogRocket, etc.
   },
   
   /**
    * Log a warning with source information
    */
   logWarning: (message: string, source?: string) => {
-    console.warn(`[Warning${source ? ` in ${source}` : ''}]: ${message}`);
+    const timestamp = new Date().toISOString();
+    const formattedSource = source ? `[${source}]` : '[unknown]';
+    console.warn(`${timestamp} ${formattedSource} Warning: ${message}`);
   },
   
   /**
    * Log information with source information
    */
   logInfo: (message: string, source?: string) => {
-    console.info(`[Info${source ? ` from ${source}` : ''}]: ${message}`);
+    const timestamp = new Date().toISOString();
+    const formattedSource = source ? `[${source}]` : '[unknown]';
+    console.info(`${timestamp} ${formattedSource} Info: ${message}`);
   }
 };
