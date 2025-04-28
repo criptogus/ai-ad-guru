@@ -136,31 +136,29 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
             <TabsTrigger value="credits">Credit Packs</TabsTrigger>
           </TabsList>
           <TabsContent value="credits" className="mt-4">
-            <div className="grid gap-4 md:grid-cols-4">
-              {/* Free Pack */}
-              <Card className={`relative border-2 ${!hasClaimedFreeCredits ? "border-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10" : "border-gray-200 bg-gray-100 dark:bg-gray-800"}`}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs py-1 px-3 rounded-full">
-                  FREE
+            {/* Free Credits Pack - Highlighted at the top */}
+            <div className="mb-6">
+              <Card className={`relative border-2 ${!hasClaimedFreeCredits ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" : "border-gray-200 bg-gray-100/50 dark:bg-gray-800/50"}`}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs py-1 px-4 rounded-full font-medium">
+                  FREE CREDITS
                 </div>
-                <CardHeader>
-                  <CardTitle>15 Credits</CardTitle>
-                  <CardDescription>Starter pack</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-3xl font-bold">$0</div>
-                  <div className="text-sm text-muted-foreground">One-time offer</div>
-                  <ul className="space-y-2 mt-4 text-sm">
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Create ~3 Google ads</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Generate ~3 Instagram images</span>
-                    </li>
-                  </ul>
+                <CardContent className="pt-6 pb-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold">15 Free Credits</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Start creating AI ads without paying</p>
+                    <ul className="space-y-1 mt-2 text-sm">
+                      <li className="flex items-center">
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <span>Create ~3 Google ads</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <span>Generate ~3 Instagram images</span>
+                      </li>
+                    </ul>
+                  </div>
                   <Button 
-                    className="w-full mt-4" 
+                    className="h-10 px-4"
                     onClick={handleClaimFreeCredits}
                     disabled={isProcessing || hasClaimedFreeCredits}
                     variant={hasClaimedFreeCredits ? "outline" : "default"}
@@ -184,7 +182,9 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                   </Button>
                 </CardContent>
               </Card>
+            </div>
 
+            <div className="grid gap-4 md:grid-cols-3">
               {/* Starter Pack */}
               <Card className="relative border-2 hover:border-primary/50">
                 <CardHeader>
