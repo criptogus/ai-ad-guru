@@ -1,6 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import React from 'react';
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Authentication from "./pages/Authentication";
 import DashboardPage from "./pages/DashboardPage";
@@ -20,6 +20,8 @@ import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import SupportPage from './pages/SupportPage';
 import AdManagerPage from "./pages/AdManagerPage";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 function App() {
   const navigate = useNavigate();
@@ -29,26 +31,9 @@ function App() {
     setNavigate(navigate);
   }, [navigate]);
 
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/home" element={<HomePage />} />
-      <Route path="/auth" element={<Authentication />} />
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-      <Route path="/create-campaign" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
-      <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
-      <Route path="/credits" element={<ProtectedRoute><CreditsInfoPage /></ProtectedRoute>} />
-      <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-      <Route path="/billing/history" element={<ProtectedRoute><BillingHistoryPage /></ProtectedRoute>} />
-      <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-      <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-      <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
-      <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
-  );
+  // This component is no longer used for routing
+  // The routing is now handled by router.tsx
+  return <></>;
 }
 
 export default App;

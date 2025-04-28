@@ -1,12 +1,12 @@
 
 import React, { lazy, Suspense } from 'react';
 import {
-  createBrowserRouter,
-  RouterProvider,
-  Route,
   createRoutesFromElements,
+  Route,
+  Routes,
   Outlet,
-  Navigate
+  Navigate,
+  useLocation
 } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
@@ -60,44 +60,42 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<Outlet />}>
-      {/* Public routes */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/pricing" element={<PricingPage />} />
-      
-      {/* Auth routes */}
-      <Route path="/auth">
-        <Route path="login" element={<PublicRoute><Authentication /></PublicRoute>} />
-        <Route path="register" element={<PublicRoute><Authentication /></PublicRoute>} />
-        <Route index element={<Navigate to="/auth/login" replace />} />
-      </Route>
-      
-      {/* OAuth callback route */}
-      <Route path="/callback" element={<OAuthCallbackHandler />} />
-
-      {/* Protected routes */}
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-      <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-      <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-      <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
-
-      {/* Redirect legacy routes */}
-      <Route path="/create-campaign" element={<Navigate to="/ad-manager" replace />} />
-      <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
-      
-      {/* 404 handling */}
-      <Route path="/not-found" element={<NotFoundPage />} />
-      <Route path="*" element={<NotFound />} />
-    </Route>
-  )
-);
-
 // Router component to provide the router
 export const Router = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Outlet />}>
+        {/* Public routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        
+        {/* Auth routes */}
+        <Route path="/auth">
+          <Route path="login" element={<PublicRoute><Authentication /></PublicRoute>} />
+          <Route path="register" element={<PublicRoute><Authentication /></PublicRoute>} />
+          <Route index element={<Navigate to="/auth/login" replace />} />
+        </Route>
+        
+        {/* OAuth callback route */}
+        <Route path="/callback" element={<OAuthCallbackHandler />} />
+
+        {/* Protected routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+        <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+        <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+        <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
+
+        {/* Redirect legacy routes */}
+        <Route path="/create-campaign" element={<Navigate to="/ad-manager" replace />} />
+        <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
+        
+        {/* 404 handling */}
+        <Route path="/not-found" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
 };

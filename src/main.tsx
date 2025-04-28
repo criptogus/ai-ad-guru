@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
 import { Router } from './router'
+import App from './App';
 import './index.css'
 
 // Create a client for React Query
@@ -33,6 +34,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <CreditsProvider>
                 <CampaignProvider>
                   <LanguageProvider>
+                    <App />
                     <Router />
                     <Toaster position="top-center" richColors />
                   </LanguageProvider>

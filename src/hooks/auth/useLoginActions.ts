@@ -2,11 +2,10 @@
 import { useState } from 'react';
 import { loginWithEmail, loginWithGoogle } from '@/services/auth/loginService';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { navigate } from '../adConnections/utils/navigationUtils';
 
 export const useLoginActions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
   
   // Handle login
   const handleLogin = async (email: string, password: string) => {
