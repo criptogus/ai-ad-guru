@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
@@ -23,7 +22,7 @@ const Loading = () => (
   </Card>
 );
 
-// Lazy load components for route-based code splitting
+// Lazy load components
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
@@ -32,9 +31,11 @@ const ConnectionsPage = lazy(() => import('@/pages/ConnectionsPage'));
 const CampaignsPage = lazy(() => import('@/pages/CampaignsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
-
-// Import the ad manager page
-import AdManagerPage from "@/pages/AdManagerPage";
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const AuthPage = lazy(() => import('@/pages/AuthPage'));
+const BillingPage = lazy(() => import('@/pages/BillingPage'));
+const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
+const AdManagerPage = lazy(() => import('@/pages/AdManagerPage'));
 
 // ProtectedRoute component to handle authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -58,29 +59,36 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 
-// Router configuration
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Outlet />}>
-      <Route index element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
       
-      {/* Redirect from old campaign routes to the new ad-manager route */}
-      <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
-      <Route path="/create-campaign" element={<Navigate to="/ad-manager" replace />} />
-      
+      {/* Auth routes */}
+      <Route path="/auth" element={<AuthPage />}>
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route index element={<Navigate to="/auth/login" replace />} />
+      </Route>
+
+      {/* Protected routes */}
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+      <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      
-      {/* Ad Manager route */}
+      <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
       <Route path="/ad-manager" element={<ProtectedRoute><AdManagerPage /></ProtectedRoute>} />
 
-      {/* Explicit 404 route */}
+      {/* Redirect legacy routes */}
+      <Route path="/create-campaign" element={<Navigate to="/ad-manager" replace />} />
+      <Route path="/campaign/create" element={<Navigate to="/ad-manager" replace />} />
+      
+      {/* 404 handling */}
       <Route path="/not-found" element={<NotFoundPage />} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<Navigate to="/not-found" replace />} />
     </Route>
   )
 );

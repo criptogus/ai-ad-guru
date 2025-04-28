@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,9 @@ export const Nav: React.FC = () => {
                 <Button variant="ghost" onClick={() => navigate("/auth/login")}>
                   {t('nav.signin')}
                 </Button>
-                <Button onClick={() => navigate("/auth/register")}>{t('nav.getStarted')}</Button>
+                <Button onClick={() => navigate("/auth/register")}>
+                  {t('nav.getStarted')}
+                </Button>
               </>
             )}
           </div>

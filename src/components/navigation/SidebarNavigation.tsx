@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { NavigationItem } from "@/components/layout/NavigationItem";
@@ -32,12 +31,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 }) => {
   const location = useLocation();
   const { t, currentLanguage } = useLanguage();
-  // Force component to re-render when language changes
   const [, setRenderKey] = useState(0);
   
   useEffect(() => {
     console.log("SidebarNavigation - Language changed to:", currentLanguage);
-    // Force re-render
     setRenderKey(prevKey => prevKey + 1);
   }, [currentLanguage]);
 
@@ -47,8 +44,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { title: t('nav.campaigns'), icon: ClipboardList, href: "/campaigns" },
     { title: t('nav.connections'), icon: Share2, href: "/connections" },
     { title: t('nav.adManager'), icon: BarChart3, href: "/ad-manager" },
-    { title: t('nav.metaAdGenerator'), icon: Image, href: "/tools/meta-ad-generator" },
-    { title: t('nav.settings'), icon: Settings, href: "/settings" },
+    { title: t('nav.settings'), icon: Settings, href: "/settings" }
   ];
 
   const isActive = (path: string) => {
@@ -66,7 +62,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       "md:translate-x-0",
       "dark:border-gray-800"
     )}>
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-4 h-16 border-b dark:border-gray-800">
         {!isCollapsed && <span className="font-bold text-primary">Zero Manager</span>}
         <button 
@@ -83,7 +78,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         </button>
       </div>
 
-      {/* Menu Items */}
       <nav className="space-y-1 mt-4 px-2">
         {navigationItems.map((item) => (
           <NavigationItem
@@ -98,10 +92,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         ))}
       </nav>
 
-      {/* Language Switcher */}
       {!isCollapsed && <LanguageSwitcher />}
 
-      {/* Footer */}
       {!isCollapsed && (
         <div className="absolute bottom-0 w-full text-xs p-4 text-muted-foreground border-t dark:border-gray-800">
           © {new Date().getFullYear()} Zero Ad Manager
