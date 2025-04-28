@@ -15,7 +15,7 @@ import { testStripeConnection } from "@/services/billing/stripeConnectionTest";
 const BillingPage: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const location = useLocation();
-  const [showDevTools, setShowDevTools] = React.useState(false);
+  const [showDevTools, setShowDevTools] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [stripeConnectionStatus, setStripeConnectionStatus] = useState<{
     checked: boolean;
@@ -35,7 +35,10 @@ const BillingPage: React.FC = () => {
   // Check if we're coming from a payment verification flow
   const isPaymentVerification = !!sessionId;
 
-  // Check Stripe connection on mount
+  // Combinando os estados de loading em um único controlador
+  const isLoading = authLoading || pageLoading;
+
+  // Check Stripe connection on mount - mas não bloqueia a UI
   useEffect(() => {
     const checkStripeConnection = async () => {
       try {
@@ -50,7 +53,6 @@ const BillingPage: React.FC = () => {
 
         if (!result.success) {
           console.warn('Stripe connection issue:', result.message);
-          // Don't show a toast here to avoid disrupting the user experience
         }
       } catch (err) {
         console.error('Failed to check Stripe connection:', err);
@@ -65,11 +67,10 @@ const BillingPage: React.FC = () => {
     checkStripeConnection();
   }, []);
 
-  // Add effect to ensure we control page loading state properly
+  // Gerenciamento de estado de loading com timing consistente
   useEffect(() => {
-    // Wait until auth is no longer loading before showing page content
     if (!authLoading) {
-      // Small delay to ensure components are ready and avoid flickering
+      // Delay pequeno para garantir fluidez na transição
       const timer = setTimeout(() => {
         setPageLoading(false);
       }, 300);
@@ -85,7 +86,7 @@ const BillingPage: React.FC = () => {
   // Helper function to get the correct content
   const renderContent = () => {
     try {
-      // If we're verifying a payment, show the verification component
+      // Se estamos verificando um pagamento, mostramos o componente de verificação
       if (isPaymentVerification) {
         return (
           <Card className="max-w-2xl mx-auto">
@@ -99,36 +100,37 @@ const BillingPage: React.FC = () => {
         );
       }
       
-      // If the user is already authenticated, show the billing page
+      // Se o usuário já estiver autenticado, mostramos a página de cobrança
       if (isAuthenticated) {
         return (
           <BillingPageContent
             showDevTools={showDevTools}
             toggleDevTools={toggleDevTools}
+            stripeConnectionStatus={stripeConnectionStatus}
           />
         );
       }
       
-      // If not authenticated and not in payment verification, show login prompt
+      // Se não estiver autenticado e não estiver em verificação de pagamento, mostramos prompt de login
       return <AuthenticationRequired />;
     } catch (error) {
       console.error("Error rendering billing page:", error);
-      toast.error("An error occurred while loading the billing page. Please try again.");
-      return <div className="p-8 text-center">An error occurred. Please try again or contact support.</div>;
+      toast.error("Ocorreu um erro ao carregar a página de cobrança. Por favor, tente novamente.");
+      return <div className="p-8 text-center">Ocorreu um erro. Por favor, tente novamente ou entre em contato com o suporte.</div>;
     }
   };
   
   return (
     <AppLayout activePage="billing">
-      {pageLoading || authLoading ? <LoadingState /> : renderContent()}
+      {isLoading ? <LoadingState /> : renderContent()}
 
-      {/* Only show Stripe connection warning to authenticated users who see the main billing page */}
-      {!pageLoading && !authLoading && isAuthenticated && !isPaymentVerification && 
+      {/* Só mostramos aviso de conexão Stripe para usuários autenticados que veem a página principal de cobrança */}
+      {!isLoading && isAuthenticated && !isPaymentVerification && 
        stripeConnectionStatus.checked && !stripeConnectionStatus.success && (
         <div className="fixed bottom-4 right-4 max-w-md p-4 bg-red-50 border border-red-200 rounded-md shadow-lg text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 z-50">
-          <h4 className="font-semibold">Stripe Connection Issue</h4>
-          <p className="text-sm">{stripeConnectionStatus.message || 'Unable to connect to Stripe API'}</p>
-          <p className="text-xs mt-2">Please check the developer tools for more information.</p>
+          <h4 className="font-semibold">Problema de Conexão Stripe</h4>
+          <p className="text-sm">{stripeConnectionStatus.message || 'Não foi possível conectar à API Stripe'}</p>
+          <p className="text-xs mt-2">Verifique as ferramentas de desenvolvimento para mais informações.</p>
         </div>
       )}
     </AppLayout>

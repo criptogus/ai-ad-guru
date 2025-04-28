@@ -8,7 +8,19 @@ import { testStripeConnection } from '@/services/billing/stripeConnectionTest';
 import { Loading } from '@/components/ui/loading';
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
-const DevToolsSection = ({ updateUserPaymentStatus }) => {
+interface DevToolsSectionProps {
+  updateUserPaymentStatus: (status: boolean) => Promise<void>;
+  stripeConnectionStatus: {
+    checked: boolean;
+    success?: boolean;
+    message?: string;
+  };
+}
+
+const DevToolsSection: React.FC<DevToolsSectionProps> = ({ 
+  updateUserPaymentStatus,
+  stripeConnectionStatus 
+}) => {
   const { simulateSuccessfulPayment } = useAuth();
   const [isSimulating, setIsSimulating] = useState(false);
   
@@ -16,43 +28,31 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
     setIsSimulating(true);
     try {
       await simulateSuccessfulPayment();
-      toast.success("Simulated successful payment!");
+      toast.success("Pagamento simulado com sucesso!");
     } catch (error) {
       console.error("Error simulating payment:", error);
-      toast.error("Failed to simulate payment");
+      toast.error("Falha ao simular pagamento");
     } finally {
       setIsSimulating(false);
     }
   };
 
-  // Add Stripe connection test component
+  // Componente de teste de conexão Stripe
   const StripeConnectionTest = () => {
     const [testing, setTesting] = useState(false);
     const [result, setResult] = useState<{
       success?: boolean;
       message?: string;
       apiVersion?: string;
-    }>({});
+    }>(stripeConnectionStatus);
 
-    // Check connection on component mount
+    // Não verifica automaticamente novamente se já temos o resultado
     useEffect(() => {
-      const checkConnection = async () => {
-        setTesting(true);
-        try {
-          const testResult = await testStripeConnection();
-          setResult(testResult);
-        } catch (error) {
-          console.error('Error in automatic Stripe connection test:', error);
-          setResult({
-            success: false,
-            message: error instanceof Error ? error.message : 'Unknown error occurred'
-          });
-        } finally {
-          setTesting(false);
-        }
-      };
-      
-      checkConnection();
+      if (!stripeConnectionStatus.checked) {
+        handleTestConnection();
+      } else {
+        setResult(stripeConnectionStatus);
+      }
     }, []);
 
     const handleTestConnection = async () => {
@@ -61,17 +61,17 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
         const testResult = await testStripeConnection();
         setResult(testResult);
         if (testResult.success) {
-          toast.success("Successfully connected to Stripe API");
+          toast.success("Conectado com sucesso à API Stripe");
         } else {
-          toast.error("Failed to connect to Stripe API");
+          toast.error("Falha ao conectar à API Stripe");
         }
       } catch (error) {
         console.error('Error in Stripe connection test:', error);
         setResult({
           success: false,
-          message: error instanceof Error ? error.message : 'Unknown error occurred'
+          message: error instanceof Error ? error.message : 'Erro desconhecido'
         });
-        toast.error("Error testing Stripe connection");
+        toast.error("Erro ao testar conexão Stripe");
       } finally {
         setTesting(false);
       }
@@ -80,7 +80,7 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
     return (
       <div className="p-4 border rounded-md mt-4">
         <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-          Stripe API Connection Test
+          Teste de Conexão API Stripe
           {result.success !== undefined && (
             result.success ? 
             <CheckCircle2 className="h-5 w-5 text-green-500" /> : 
@@ -96,10 +96,10 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
             {testing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Testing...
+                Testando...
               </>
             ) : (
-              'Test Stripe Connection'
+              'Testar Conexão Stripe'
             )}
           </Button>
         </div>
@@ -108,9 +108,9 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
           <Loading size="sm" className="py-2" />
         ) : result.success !== undefined ? (
           <div className={`mt-2 p-3 rounded text-sm ${result.success ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'}`}>
-            <p className="font-medium">{result.success ? 'Success' : 'Failed'}</p>
+            <p className="font-medium">{result.success ? 'Sucesso' : 'Falha'}</p>
             <p>{result.message}</p>
-            {result.apiVersion && <p className="text-xs mt-1">API Version: {result.apiVersion}</p>}
+            {result.apiVersion && <p className="text-xs mt-1">Versão da API: {result.apiVersion}</p>}
           </div>
         ) : null}
       </div>
@@ -121,8 +121,8 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
     <div className="space-y-4 mb-6">
       <Card>
         <CardHeader>
-          <CardTitle>Developer Tools</CardTitle>
-          <CardDescription>Testing and debugging tools for payments</CardDescription>
+          <CardTitle>Ferramentas de Desenvolvedor</CardTitle>
+          <CardDescription>Ferramentas de teste e depuração para pagamentos</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
               onClick={() => updateUserPaymentStatus(false)}
               size="sm"
             >
-              Cancel Subscription (Dev Only)
+              Cancelar Assinatura (Apenas Dev)
             </Button>
             
             <Button 
@@ -143,15 +143,15 @@ const DevToolsSection = ({ updateUserPaymentStatus }) => {
               {isSimulating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Simulating...
+                  Simulando...
                 </>
               ) : (
-                "Simulate Successful Payment"
+                "Simular Pagamento Bem-sucedido"
               )}
             </Button>
           </div>
           
-          {/* Add the Stripe connection test component */}
+          {/* Componente de teste de conexão Stripe */}
           <StripeConnectionTest />
         </CardContent>
       </Card>
