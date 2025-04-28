@@ -13,28 +13,17 @@ import CampaignSummaryCards from "@/components/dashboard/CampaignSummaryCards";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AppLayout from "@/components/AppLayout";
 
-// Create an interface that matches what the dashboard components expect
-interface DashboardUser {
-  name: string;
-  credits: number;
-  hasPaid: boolean;
-  id?: string;
-  email?: string;
-}
-
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
   const isMobile = useIsMobile();
   
   React.useEffect(() => {
-    // In a real app, we would fetch campaigns from an API
     const mockCampaigns = generateMockCampaigns(isMobile ? 3 : 5);
     setCampaigns(mockCampaigns);
   }, [isMobile]);
 
-  // Convert CustomUser to DashboardUser with required properties
-  const dashboardUser: DashboardUser = {
+  const dashboardUser = {
     name: user?.name || 'User',
     credits: user?.credits || 0,
     hasPaid: user?.hasPaid || false,
@@ -46,31 +35,19 @@ const DashboardPage: React.FC = () => {
     <AppLayout activePage="dashboard">
       <div className="space-y-6">
         <DashboardHeader user={dashboardUser} />
-        
-        {/* Full width Notifications */}
         <div className="grid grid-cols-1 gap-6">
           <SmartNotifications />
         </div>
-        
-        {/* Credits Status as a solo horizontal column */}
         <div className="grid grid-cols-1 gap-6">
           <CreditsStatus user={dashboardUser} />
         </div>
-        
-        {/* Leaderboard (Top Performing and Needs Attention) */}
         <LeaderboardSection campaigns={campaigns} />
-        
-        {/* Business Overview */}
         <BusinessOverview campaigns={campaigns} />
-        
         <div className="grid grid-cols-1 gap-6">
-          {/* Vertical column for campaigns taking up full width */}
           <div className="space-y-6">
             <CampaignSummaryCards campaigns={campaigns} />
             <ActiveCampaigns campaigns={campaigns} />
           </div>
-          
-          {/* AI Insights at the bottom */}
           <AiInsights />
         </div>
       </div>

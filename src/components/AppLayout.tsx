@@ -20,7 +20,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const { user } = useAuth();
   
   useEffect(() => {
-    // Add a class to the body when in dark mode to help with specific styling
     const isDarkMode = document.documentElement.classList.contains('dark');
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
@@ -29,7 +28,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     }
   }, []);
   
-  // Se withSidebar é false, apenas retorna o children sem o sidebar
+  // If withSidebar is false, only return the children without any layout
   if (!withSidebar) {
     return (
       <main className="h-screen w-full overflow-y-auto bg-background dark:bg-gray-900">
@@ -38,6 +37,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     );
   }
   
+  // Main layout with sidebar
   return (
     <TooltipProvider>
       <MainLayout>
