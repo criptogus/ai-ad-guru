@@ -8,6 +8,7 @@ export interface CustomUser extends User {
   credits?: number;
   hasPaid?: boolean;
   receivedFreeCredits?: boolean;
+  refreshUser?: () => Promise<void>; // Add this method to the type
 }
 
 // Define our Profile interface that matches the database structure
@@ -35,4 +36,5 @@ export interface AuthContextType {
   checkSubscriptionStatus: () => Promise<boolean>;
   session: Session | null;
   setUser: (user: CustomUser | null) => void;
+  refreshUser: () => Promise<void>; // Add this method to the context type
 }

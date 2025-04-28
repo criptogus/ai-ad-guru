@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +23,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     user?.receivedFreeCredits || false
   );
   
-  // Update local state when user data changes
   useEffect(() => {
     if (user?.receivedFreeCredits) {
       setHasClaimedFreeCredits(true);
@@ -45,7 +43,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setIsProcessing(true);
       setProcessingPack('free');
       
-      // Call edge function to claim free credits
       const { data, error } = await supabase.functions.invoke("claim-free-credits", {
         body: { userId },
       });
@@ -60,10 +57,8 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
           description: "15 free credits have been added to your account",
         });
         
-        // Update local state
         setHasClaimedFreeCredits(true);
         
-        // Refresh user data and credits
         await refreshUser();
         await refreshCredits();
       } else {
@@ -97,7 +92,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setIsProcessing(true);
       setProcessingPack(packId);
       
-      // Create a checkout session via edge function
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
           userId,
@@ -114,14 +108,12 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
         throw new Error("Failed to create checkout session");
       }
       
-      // Store purchase intent in localStorage
       localStorage.setItem('credit_purchase_intent', JSON.stringify({
         amount,
         timestamp: Date.now(),
         sessionId: data.sessionId,
       }));
       
-      // Redirect to Stripe checkout
       window.location.href = data.url;
       
     } catch (error) {
@@ -151,7 +143,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
             <TabsTrigger value="credits">Credit Packs</TabsTrigger>
           </TabsList>
           <TabsContent value="credits" className="mt-4">
-            {/* Free Credits Pack - Highlighted at the top */}
             <div className="mb-6">
               <Card className={`relative border-2 ${!hasClaimedFreeCredits ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10" : "border-gray-200 bg-gray-100/50 dark:bg-gray-800/50"}`}>
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs py-1 px-4 rounded-full font-medium">
@@ -200,7 +191,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              {/* Starter Pack */}
               <Card className="relative border-2 hover:border-primary/50">
                 <CardHeader>
                   <CardTitle>100 Credits</CardTitle>
@@ -239,7 +229,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                 </CardContent>
               </Card>
 
-              {/* Popular Pack */}
               <Card className="relative border-2 border-primary">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full">
                   MOST POPULAR
@@ -285,7 +274,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                 </CardContent>
               </Card>
 
-              {/* Pro Pack */}
               <Card className="relative border-2 hover:border-primary/50">
                 <CardHeader>
                   <CardTitle>2000 Credits</CardTitle>

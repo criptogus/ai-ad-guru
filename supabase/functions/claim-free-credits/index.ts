@@ -51,31 +51,49 @@ serve(async (req) => {
       .single();
 
     if (userError) {
-      console.error("Error fetching user data:", userError);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Error fetching user data" 
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
+      // If the field doesn't exist yet, check if the profile exists
+      if (userError.message.includes("does not exist")) {
+        const { data: profileData, error: profileError } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("id", userId)
+          .single();
+          
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              message: "User profile not found" 
+            }),
+            {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 404,
+            }
+          );
         }
-      );
-    }
-
-    if (!userData) {
-      return new Response(
-        JSON.stringify({ success: false, message: "User not found" }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 404,
+        
+        // Profile exists but doesn't have the field yet
+        if (profileData) {
+          console.log("User profile exists but doesn't have received_free_credits field yet");
         }
-      );
+      } else {
+        console.error("Error fetching user data:", userError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: "Error fetching user data" 
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          }
+        );
+      }
     }
 
     // If user has already claimed free credits, return an error
-    if (userData.received_free_credits) {
+    if (userData?.received_free_credits) {
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -93,7 +111,7 @@ serve(async (req) => {
       .from("credit_ledger")
       .insert({
         user_id: userId,
-        change: 15,
+        change: 15, // Adding 15 free credits
         reason: "welcome_credits",
         ref_id: "free_credits_claim"
       });

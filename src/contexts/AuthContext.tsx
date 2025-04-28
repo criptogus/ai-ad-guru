@@ -4,6 +4,8 @@ import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { setupSessionRefresh } from '@/utils/sessionRefresh';
+import { createCustomUserWithProfile } from '@/services/auth/userProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 // Create the context with a default undefined value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkSubscriptionStatus,
     isLoading: actionsLoading 
   } = useAuthActions(user, setUser);
+
+  // Implement the refreshUser method
+  const refreshUser = async () => {
+    try {
+      if (!user?.id) return;
+      
+      // Get current user from Supabase
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (authUser) {
+        // Create a custom user with updated profile data
+        const updatedUser = await createCustomUserWithProfile(authUser);
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
+  };
 
   // Set up session refresh mechanism
   useEffect(() => {
@@ -67,6 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkSubscriptionStatus,
     session,
     setUser,
+    refreshUser,
   };
 
   return (

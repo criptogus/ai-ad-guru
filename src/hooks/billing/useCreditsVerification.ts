@@ -5,10 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
 
 export const useCreditsVerification = () => {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const { refreshCredits } = useCredits();
   const [checking, setChecking] = useState(false);
   const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
+  // Add the processing state that BillingPageContent is expecting
+  const [processing, setProcessing] = useState(false);
   
   useEffect(() => {
     if (user?.id) {
@@ -33,8 +35,8 @@ export const useCreditsVerification = () => {
       setHasClaimedFreeCredits(!!data?.received_free_credits);
       
       if (data?.received_free_credits !== user.receivedFreeCredits) {
-        // Update local user object if the database value is different
-        await refreshUser();
+        // Update local user data if needed
+        await user.refreshUser?.();
         await refreshCredits();
       }
     } catch (error) {
@@ -49,6 +51,7 @@ export const useCreditsVerification = () => {
     
     try {
       setChecking(true);
+      setProcessing(true);
       
       const { data, error } = await supabase.functions.invoke("claim-free-credits", {
         body: { userId: user.id },
@@ -57,7 +60,7 @@ export const useCreditsVerification = () => {
       if (error) throw error;
       
       if (data?.success) {
-        await refreshUser();
+        await user.refreshUser?.();
         await refreshCredits();
         setHasClaimedFreeCredits(true);
         return true;
@@ -69,11 +72,13 @@ export const useCreditsVerification = () => {
       return false;
     } finally {
       setChecking(false);
+      setProcessing(false);
     }
   };
   
   return {
     checking,
+    processing, // Export the processing state
     hasClaimedFreeCredits,
     checkFreeCreditsStatus,
     claimFreeCredits

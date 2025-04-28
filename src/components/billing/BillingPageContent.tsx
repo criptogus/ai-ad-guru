@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const BillingPageContent: React.FC<BillingPageContentProps> = ({
   const [showCreditHistory, setShowCreditHistory] = useState(false);
   const [hasPendingPurchase, setHasPendingPurchase] = useState(false);
   
-  const { processing } = useCreditsVerification();
+  const { checking, processing, hasClaimedFreeCredits } = useCreditsVerification();
 
   const state = location.state as { from?: string; requiredCredits?: number } | null;
   const fromCampaign = state?.from === 'campaign';
