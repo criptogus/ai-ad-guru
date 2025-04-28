@@ -13,7 +13,7 @@ export function sanitizePromptData(data: CampaignPromptData): CampaignPromptData
     language: data.language?.trim() || "pt-BR",
     companyDescription: data.companyDescription?.trim() || "",
     
-    // Mind triggers
+    // Mind triggers - support both formats
     mindTrigger: data.mindTrigger?.trim() || "",
     mindTriggers: data.mindTriggers || {},
 

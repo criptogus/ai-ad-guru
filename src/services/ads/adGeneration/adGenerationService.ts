@@ -78,7 +78,20 @@ export async function generateAds(
           console.log(`Successfully generated ${data.data.length} ads for ${platform}`);
           
           // Map the generated ads to the appropriate platform in the result object
-          result[platform as keyof GeneratedAdContent] = data.data;
+          if (platform === 'google') {
+            result.google = data.data;
+            result.google_ads = data.data;
+          } else if (platform === 'meta') {
+            result.meta = data.data;
+            result.meta_ads = data.data;
+            result.instagram_ads = data.data;
+          } else if (platform === 'linkedin') {
+            result.linkedin = data.data;
+            result.linkedin_ads = data.data;
+          } else if (platform === 'microsoft') {
+            result.microsoft = data.data;
+            result.microsoft_ads = data.data;
+          }
           
           toast.success(`${data.data.length} anúncios gerados para ${getPlatformDisplayName(platform)}`, {
             description: 'Você pode visualizar e personalizar os anúncios agora.'
