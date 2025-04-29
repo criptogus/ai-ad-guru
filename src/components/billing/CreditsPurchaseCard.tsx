@@ -231,7 +231,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
               </Card>
             </div>
 
-            {/* Directly render packs instead of using PackCard */}
+            {/* Diretamente renderizando os pacotes sem usar PackCard */}
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="relative border-2 hover:border-primary/50">
                 <CardHeader>

@@ -21,11 +21,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Avoid platform-specific modules
     rollupOptions: {
       external: [],
       onwarn(warning, warn) {
-        // Skip specific warnings related to platform-specific modules
+        // Ignorar avisos específicos relacionados a módulos específicos de plataforma
         if (
           warning.code === 'MISSING_NODE_BUILTINS' || 
           warning.code === 'SOURCEMAP_ERROR' ||

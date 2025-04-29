@@ -8,7 +8,7 @@ export const useCreditsState = (userId: string | undefined) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch credits when component mounts or when the user changes
+  // Buscar créditos quando o componente monta ou quando o usuário muda
   useEffect(() => {
     const fetchCredits = async () => {
       if (!userId) {
@@ -31,7 +31,7 @@ export const useCreditsState = (userId: string | undefined) => {
         if (error) {
           console.error('Erro ao buscar créditos:', error);
           setError('Falha ao carregar créditos');
-          // Set default credits as fallback
+          // Definir créditos padrão como fallback
           setCredits(0);
         } else if (data) {
           console.log("Saldo de créditos atualizado:", data.credits);
@@ -52,14 +52,14 @@ export const useCreditsState = (userId: string | undefined) => {
     fetchCredits();
   }, [userId]);
 
-  // Function to debit credits from user account
+  // Função para debitar créditos da conta do usuário
   const deductCredits = async (amount: number): Promise<boolean> => {
     if (!userId) {
       toast.error('Por favor, faça login para usar créditos');
       return false;
     }
 
-    // Check if user has enough credits
+    // Verificar se o usuário tem créditos suficientes
     if (credits < amount && amount > 0) {
       toast.error('Créditos insuficientes', {
         description: 'Por favor, adquira mais créditos para continuar'
@@ -71,7 +71,7 @@ export const useCreditsState = (userId: string | undefined) => {
       setError(null);
       console.log(`Debitando ${amount} créditos para usuário ${userId}`);
 
-      // Insert entry in credit_ledger
+      // Inserir entrada no credit_ledger
       const { error } = await supabase
         .from('credit_ledger')
         .insert({ 
@@ -87,7 +87,7 @@ export const useCreditsState = (userId: string | undefined) => {
         return false;
       }
 
-      // Update local state
+      // Atualizar estado local
       setCredits(prev => prev - amount);
       console.log(`${amount} créditos debitados com sucesso. Novo saldo: ${credits - amount}`);
       return true;
@@ -98,7 +98,7 @@ export const useCreditsState = (userId: string | undefined) => {
     }
   };
 
-  // Function to refresh user credits
+  // Função para atualizar créditos do usuário
   const refreshCredits = async (): Promise<void> => {
     if (!userId) {
       setCredits(0);

@@ -21,7 +21,7 @@ const SidebarCreditDisplay: React.FC<SidebarCreditDisplayProps> = ({ collapsed =
     navigate("/billing");
   };
   
-  // Helper to render the credit amount with loading state
+  // Helper para renderizar a quantidade de créditos com estado de carregamento
   const renderCreditAmount = () => {
     if (loading) {
       return <Skeleton className="h-4 w-8" />;
