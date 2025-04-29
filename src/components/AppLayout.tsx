@@ -24,7 +24,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   
   return (
     <TooltipProvider>
-      <div className="h-screen w-full overflow-y-auto bg-background dark:bg-gray-900 p-4">
+      <div className="min-h-screen w-full bg-background dark:bg-gray-900 p-4">
         {children}
       </div>
     </TooltipProvider>

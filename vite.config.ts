@@ -26,14 +26,18 @@ export default defineConfig(({ mode }) => ({
       context: 'window',
       external: [],
       onwarn(warning, warn) {
-        if (warning.code === 'MISSING_NODE_BUILTINS') return;
-        if (warning.code === 'SOURCEMAP_ERROR') return;
-        // Ignore platform-specific warnings
-        if (warning.message && (
-          warning.message.includes('@rollup/rollup-linux') ||
-          warning.message.includes('@rollup/rollup-darwin') ||
-          warning.message.includes('@rollup/rollup-win32')
-        )) return;
+        // Ignore certain warnings
+        if (
+          warning.code === 'MISSING_NODE_BUILTINS' || 
+          warning.code === 'SOURCEMAP_ERROR' ||
+          (warning.message && (
+            warning.message.includes('@rollup/rollup-linux') ||
+            warning.message.includes('@rollup/rollup-darwin') ||
+            warning.message.includes('@rollup/rollup-win32')
+          ))
+        ) {
+          return;
+        }
         warn(warning);
       }
     },
@@ -42,4 +46,10 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true
     }
   },
+  optimizeDeps: {
+    // Force certain dependencies to be pre-bundled
+    include: ['@supabase/supabase-js', 'react', 'react-dom'],
+    // Exclude platform-specific dependencies
+    exclude: []
+  }
 }));

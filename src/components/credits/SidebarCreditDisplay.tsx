@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCredits } from "@/contexts/CreditsContext";
 import { Coins, CreditCard, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SidebarCreditDisplayProps {
   collapsed?: boolean;
@@ -20,6 +21,21 @@ const SidebarCreditDisplay: React.FC<SidebarCreditDisplayProps> = ({ collapsed =
     navigate("/billing");
   };
   
+  // Helper to render the credit amount with loading state
+  const renderCreditAmount = () => {
+    if (loading) {
+      return <Skeleton className="h-4 w-8" />;
+    }
+    return (
+      <span className={cn(
+        "text-sm font-semibold",
+        isLowCredits ? "text-amber-600 dark:text-amber-400" : ""
+      )}>
+        {credits}
+      </span>
+    );
+  };
+  
   if (collapsed) {
     return (
       <div className="px-3 py-2">
@@ -29,7 +45,7 @@ const SidebarCreditDisplay: React.FC<SidebarCreditDisplayProps> = ({ collapsed =
             isLowCredits ? "bg-amber-100 text-amber-900 dark:bg-amber-900/20 dark:text-amber-300" : "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300"
           )}
           onClick={handleBuyCreditsClick}
-          title={`${credits} credits available. Click to buy more.`}
+          title={`${loading ? "Loading..." : credits} credits available. Click to buy more.`}
         >
           <Coins className="h-5 w-5" />
         </button>
@@ -49,12 +65,9 @@ const SidebarCreditDisplay: React.FC<SidebarCreditDisplayProps> = ({ collapsed =
             <span className="text-sm font-medium">Credits</span>
           </div>
           <div className="flex items-center">
-            <span className={cn(
-              "text-sm font-semibold mr-2",
-              isLowCredits ? "text-amber-600 dark:text-amber-400" : ""
-            )}>
-              {loading ? "..." : credits}
-            </span>
+            <div className="min-w-[28px] flex justify-end mr-2">
+              {renderCreditAmount()}
+            </div>
             {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </div>
         </button>

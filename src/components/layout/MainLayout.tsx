@@ -12,7 +12,7 @@ export const MainLayout = () => {
 
   return (
     <NavigationSetup>
-      <div className="relative h-screen w-full flex bg-background dark:bg-gray-900">
+      <div className="relative flex w-full bg-background dark:bg-gray-900">
         <SidebarNavigation 
           isOpen={sidebarOpen}
           isCollapsed={sidebarCollapsed}
@@ -24,7 +24,7 @@ export const MainLayout = () => {
 
         <main
           className={cn(
-            "flex-1 h-screen overflow-y-auto",
+            "flex-1 min-h-screen w-full",
             sidebarCollapsed 
               ? "md:ml-16" // Reduced side margin for collapsed sidebar
               : "md:ml-64" // Standard margin for expanded sidebar

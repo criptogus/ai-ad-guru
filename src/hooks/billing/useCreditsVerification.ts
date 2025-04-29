@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
@@ -8,26 +8,44 @@ import { toast } from 'sonner';
 export const useCreditsVerification = () => {
   const { user, refreshUser } = useAuth();
   const { refreshCredits } = useCredits();
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState(true);  // Start as true to show loading state immediately
   const [processing, setProcessing] = useState(false);
   const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
   
-  useEffect(() => {
-    // Set initial state based on user data
-    if (user?.id) {
-      setHasClaimedFreeCredits(!!user.receivedFreeCredits);
+  // Helper function to ensure the received_free_credits column exists
+  const executeAddReceivedFreeCreditsColumnMigration = useCallback(async () => {
+    try {
+      console.log('Attempting to add received_free_credits column to profiles table');
       
-      // Automatically check status when component mounts
-      checkFreeCreditsStatus();
+      // Execute the function that adds the column if it doesn't exist
+      const { error } = await supabase.rpc('add_column_if_not_exists', {
+        table_name: 'profiles',
+        column_name: 'received_free_credits',
+        column_type: 'boolean'
+      });
+      
+      if (error) {
+        console.error('Error running migration:', error);
+        return false;
+      }
+      
+      console.log('Successfully ensured received_free_credits column exists');
+      return true;
+    } catch (err) {
+      console.error('Error executing migration:', err);
+      return false;
     }
-  }, [user]);
+  }, []);
   
-  const checkFreeCreditsStatus = async () => {
-    if (!user?.id) return;
+  const checkFreeCreditsStatus = useCallback(async () => {
+    if (!user?.id) return false;
     
     try {
       console.log("Checking free credits status for user:", user.id);
       setChecking(true);
+      
+      // First, ensure the column exists
+      await executeAddReceivedFreeCreditsColumnMigration();
       
       const { data, error } = await supabase
         .from('profiles')
@@ -38,15 +56,15 @@ export const useCreditsVerification = () => {
       if (error) {
         console.error('Error checking free credits status:', error);
         
-        // Check if the column doesn't exist
-        if (error.message.includes('column "received_free_credits" does not exist')) {
-          console.log('The received_free_credits column does not exist yet. This is expected for older accounts.');
-          // You might need to run the migration to add this column
-          await executeAddReceivedFreeCreditsColumnMigration();
-          return false;
+        // If the error is not about the column not existing, throw it
+        if (!error.message.includes('column "received_free_credits" does not exist')) {
+          throw error;
         }
         
-        throw error;
+        // The column doesn't exist yet despite our migration attempt
+        console.log('Still having issues with the received_free_credits column. Setting default state.');
+        setHasClaimedFreeCredits(false);
+        return false;
       }
       
       console.log('Free credits status data:', data);
@@ -69,32 +87,47 @@ export const useCreditsVerification = () => {
     } finally {
       setChecking(false);
     }
-  };
+  }, [user, refreshUser, refreshCredits, executeAddReceivedFreeCreditsColumnMigration]);
   
-  // Helper function to ensure the received_free_credits column exists
-  const executeAddReceivedFreeCreditsColumnMigration = async () => {
-    try {
-      console.log('Attempting to add received_free_credits column to profiles table');
+  useEffect(() => {
+    // Set initial state based on user data
+    if (user?.id) {
+      setHasClaimedFreeCredits(!!user.receivedFreeCredits);
       
-      // Execute the function that adds the column if it doesn't exist
-      const { error } = await supabase.rpc('add_column_if_not_exists', {
-        table_name: 'profiles',
-        column_name: 'received_free_credits',
-        column_type: 'boolean'
-      });
-      
-      if (error) {
-        console.error('Error running migration:', error);
-        return false;
-      }
-      
-      console.log('Successfully ensured received_free_credits column exists');
-      return true;
-    } catch (err) {
-      console.error('Error executing migration:', err);
-      return false;
+      // Automatically check status when component mounts
+      checkFreeCreditsStatus();
+    } else {
+      setChecking(false); // Set to false if no user yet
     }
-  };
+  }, [user, checkFreeCreditsStatus]);
+  
+  // Set up a subscription to the profiles table to listen for changes in real time
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const subscription = supabase
+      .channel('credits-changes')
+      .on('postgres_changes', 
+          { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          async (payload) => {
+            console.log('Profile updated:', payload);
+            const newData = payload.new;
+            
+            // If credits or received_free_credits changed, refresh
+            if (newData && (typeof newData.credits !== 'undefined' || typeof newData.received_free_credits !== 'undefined')) {
+              console.log('Credits or free credits status changed, refreshing user data');
+              await refreshUser();
+              await refreshCredits();
+              setHasClaimedFreeCredits(!!newData.received_free_credits);
+            }
+          })
+      .subscribe();
+      
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user?.id, refreshUser, refreshCredits]);
   
   const claimFreeCredits = async (): Promise<boolean> => {
     if (!user?.id || hasClaimedFreeCredits) return false;

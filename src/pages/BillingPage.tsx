@@ -70,7 +70,7 @@ const BillingPage: React.FC = () => {
       // Longer delay to ensure components are ready and prevent flickering
       const timer = setTimeout(() => {
         setPageLoading(false);
-      }, 1000); // Increased from 300ms to 1000ms for more stability
+      }, 1500); // Increased from 1000ms to 1500ms for more stability
       return () => clearTimeout(timer);
     }
   }, [authLoading]);
