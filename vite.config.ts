@@ -33,7 +33,8 @@ export default defineConfig(({ mode }) => ({
           (warning.message && (
             warning.message.includes('@rollup/rollup-linux') ||
             warning.message.includes('@rollup/rollup-darwin') ||
-            warning.message.includes('@rollup/rollup-win32')
+            warning.message.includes('@rollup/rollup-win32') ||
+            warning.message.includes('Cannot find module')
           ))
         ) {
           return;
