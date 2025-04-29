@@ -8,8 +8,14 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:fixed": "node fix-and-build.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prebuild": "cross-env PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true",
+    "prebuild:dev": "cross-env PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true",
+    "fix:puppeteer": "node puppeteer-fix.js",
+    "fix:rollup": "node rollup-fix.js",
+    "fix:all": "npm run fix:puppeteer && npm run fix:rollup"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
