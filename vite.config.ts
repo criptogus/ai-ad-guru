@@ -60,6 +60,7 @@ export default defineConfig(({ mode }) => ({
     'process.env.BROWSER': '"none"',
     'process.env.JS_ONLY': '"true"',
     'process.env.SKIP_BINARY_INSTALL': '"true"',
-    'process.env.BUILD_ONLY_JS': '"true"'
+    'process.env.BUILD_ONLY_JS': '"true"',
+    'process.env.PUPPETEER_EXECUTABLE_PATH': '"/bin/true"'
   },
 }));

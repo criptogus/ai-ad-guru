@@ -36,7 +36,7 @@ export default defineConfig({
     // Comment out Firefox and WebKit for now to avoid download issues
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'node fix-and-build.js && npm run dev',
     port: 8080,
     reuseExistingServer: !process.env.CI,
     env: {
@@ -47,7 +47,8 @@ export default defineConfig({
       ROLLUP_NATIVE: 'false',
       JS_ONLY: 'true',
       SKIP_BINARY_INSTALL: 'true',
-      BUILD_ONLY_JS: 'true'
+      BUILD_ONLY_JS: 'true',
+      PUPPETEER_EXECUTABLE_PATH: '/bin/true'
     }
   },
 });
