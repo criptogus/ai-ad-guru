@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 // Substitua o plugin react-swc pelo react padrão
 import react from "@vitejs/plugin-react"; // <-- Alteração aqui
