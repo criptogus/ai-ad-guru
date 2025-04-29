@@ -1,11 +1,10 @@
 
-// Use simple HTTP client instead of Puppeteer for link crawling
-import axios from 'axios';
+// Use native fetch instead of axios for link crawling
 import { parse as parseHtml } from 'node-html-parser';
 import { LinkCrawler, CrawlerOptions } from './crawler';
 
 export async function crawlSite(startUrl: string, options?: Partial<CrawlerOptions>): Promise<void> {
-  console.log('Starting text-based crawler (Puppeteer-free implementation)');
+  console.log('Starting text-based crawler (browser-free implementation)');
   
   // Create a simplified crawler that doesn't use Puppeteer
   const crawler = new LinkCrawler({
@@ -26,11 +25,11 @@ export async function crawlSite(startUrl: string, options?: Partial<CrawlerOptio
     
     // Simple connectivity test
     try {
-      const response = await axios.get(startUrl);
+      const response = await fetch(startUrl);
       console.log(`✓ Base URL accessible (status: ${response.status})`);
       
       // Parse HTML to find links (simplified)
-      const html = parseHtml(response.data);
+      const html = parseHtml(await response.text());
       const links = html.querySelectorAll('a')
         .map(link => link.getAttribute('href'))
         .filter(href => href && !href.startsWith('#') && !href.startsWith('javascript:'));

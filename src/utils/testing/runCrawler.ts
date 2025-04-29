@@ -2,7 +2,7 @@
 import { crawlSite } from './linkCrawler';
 
 // Start URL should be your local development server
-const startUrl = 'http://localhost:5173'; // Vite's default port
+const startUrl = 'http://localhost:8080'; // Updated to match vite config port
 
 // Run the simplified crawler
 console.log('Running simplified crawler without browser dependencies');

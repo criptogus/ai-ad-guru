@@ -34,14 +34,6 @@ export default defineConfig({
       },
     },
     // Comment out Firefox and WebKit for now to avoid download issues
-    /* {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    }, */
   ],
   webServer: {
     command: 'npm run dev',
@@ -50,9 +42,12 @@ export default defineConfig({
     env: {
       PUPPETEER_SKIP_DOWNLOAD: 'true',
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true',
+      PUPPETEER_SKIP_BROWSER_DOWNLOAD: 'true',
       BROWSER: 'none',
       ROLLUP_NATIVE: 'false',
-      JS_ONLY: 'true'
+      JS_ONLY: 'true',
+      SKIP_BINARY_INSTALL: 'true',
+      BUILD_ONLY_JS: 'true'
     }
   },
 });

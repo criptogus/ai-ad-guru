@@ -1,5 +1,5 @@
 
-// Simple crawler interface that doesn't require Puppeteer
+// Simple crawler interface that doesn't use Puppeteer or any browser-dependent code
 
 export interface CrawlerOptions {
   baseUrl: string;
@@ -25,7 +25,7 @@ export class LinkCrawler {
   // Simplified interface that works without Puppeteer
   async crawl(page: any, startUrl: string) {
     console.log(`Starting simplified crawl from ${startUrl}`);
-    console.log('Puppeteer dependency has been removed for compatibility');
+    console.log('Browser-based crawling disabled for compatibility');
     console.log('This is a placeholder implementation that reports success');
     
     return {

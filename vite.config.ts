@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ['puppeteer', '@puppeteer/browsers'], // Exclude puppeteer from optimization
+    exclude: ['puppeteer', '@puppeteer/browsers', 'chromium'], // Exclude puppeteer from optimization
     force: true, // Force dependencies to be bundled
   },
   build: {
@@ -36,7 +36,12 @@ export default defineConfig(({ mode }) => ({
         format: 'es',
         hoistTransitiveImports: false,
         inlineDynamicImports: true,
-      }
+      },
+      // Prevent loading native modules
+      onwarn(warning, warn) {
+        if (warning.code === 'MISSING_EXPORT') return;
+        warn(warning);
+      },
     },
     commonjsOptions: {
       transformMixedEsModules: true,
@@ -53,6 +58,8 @@ export default defineConfig(({ mode }) => ({
     'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"',
     'process.env.PUPPETEER_SKIP_VALIDATE_CHROMIUM_INSTALLATION': '"true"',
     'process.env.BROWSER': '"none"',
-    'process.env.JS_ONLY': '"true"'
+    'process.env.JS_ONLY': '"true"',
+    'process.env.SKIP_BINARY_INSTALL': '"true"',
+    'process.env.BUILD_ONLY_JS': '"true"'
   },
 }));
