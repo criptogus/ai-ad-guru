@@ -17,20 +17,24 @@ export default defineConfig({
     actionTimeout: 0,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+    },
   },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
+    // Comment out Firefox and WebKit for now to avoid download issues
+    /* {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-    },
+    }, */
   ],
   webServer: {
     command: 'npm run dev',

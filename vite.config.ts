@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['puppeteer'], // Exclude puppeteer from optimization
+  },
   build: {
     rollupOptions: {
       // Force pure JavaScript implementation
@@ -41,6 +44,8 @@ export default defineConfig(({ mode }) => ({
   define: {
     'process.env.ROLLUP_NATIVE': '"false"',
     'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
-    'process.env.ROLLUP_PURE_JS': '"true"'
+    'process.env.ROLLUP_PURE_JS': '"true"',
+    'process.env.PUPPETEER_SKIP_DOWNLOAD': '"true"',
+    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"'
   },
 }));

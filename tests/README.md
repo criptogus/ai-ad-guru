@@ -14,8 +14,9 @@ This directory contains end-to-end tests for the application using Playwright.
 Since you cannot modify package.json directly, you need to install Playwright manually:
 
 ```bash
-npm install -D @playwright/test
-npx playwright install
+# Install Playwright with browser download skipped
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install -D @playwright/test
+# Use system browsers or configure environment variables instead
 ```
 
 ## Running Tests
@@ -23,7 +24,8 @@ npx playwright install
 To run the tests:
 
 ```bash
-npx playwright test
+# Use existing browsers (recommended in constrained environments)
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chrome npx playwright test
 ```
 
 Run specific test file:
@@ -42,7 +44,7 @@ npx playwright test --ui
 
 The Playwright configuration is in `playwright.config.ts`. It:
 
-- Runs tests in Chrome, Firefox, and Safari
+- Runs tests in Chrome only (Firefox and Safari are commented out to avoid download issues)
 - Takes screenshots on failure
 - Starts the dev server automatically
 - Configures appropriate timeouts for stable testing
@@ -59,4 +61,5 @@ The tests use:
 1. For login tests to pass, ensure the test user exists
 2. The tests handle both development and production environments
 3. Adjust selectors if your UI changes
+4. In environments with binary/download restrictions, use system browsers
 
