@@ -22,30 +22,25 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: [],
-      onwarn(warning, warn) {
-        // Ignorar avisos específicos relacionados a módulos específicos de plataforma
-        if (
-          warning.code === 'MISSING_NODE_BUILTINS' || 
-          warning.code === 'SOURCEMAP_ERROR' ||
-          (warning.message && (
-            warning.message.includes('@rollup/rollup-linux') ||
-            warning.message.includes('@rollup/rollup-darwin') ||
-            warning.message.includes('@rollup/rollup-win32') ||
-            warning.message.includes('Cannot find module')
-          ))
-        ) {
-          return;
-        }
-        warn(warning);
+      // Force pure JavaScript implementation
+      context: 'globalThis',
+      treeshake: {
+        moduleSideEffects: false,
+      },
+      output: {
+        format: 'es',
+        hoistTransitiveImports: false,
       }
     },
     commonjsOptions: {
-      include: [/node_modules/],
       transformMixedEsModules: true,
+      requireReturnsDefault: 'auto'
     }
   },
-  optimizeDeps: {
-    include: ['@supabase/supabase-js', 'react', 'react-dom']
-  }
+  // Define environment variables that will prevent native module usage
+  define: {
+    'process.env.ROLLUP_NATIVE': '"false"',
+    'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
+    'process.env.ROLLUP_PURE_JS': '"true"'
+  },
 }));

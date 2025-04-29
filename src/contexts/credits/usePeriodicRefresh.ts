@@ -1,26 +1,14 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 export const usePeriodicRefresh = (userId: string | undefined, refreshCredits: () => Promise<void>) => {
-  const refreshIntervalRef = useRef<number | null>(null);
-  
   useEffect(() => {
     if (!userId) return;
     
-    // Refresh credits on mount
-    refreshCredits();
-    
-    // Set up periodic refresh every 30 seconds
-    refreshIntervalRef.current = window.setInterval(() => {
-      console.log('Periodic credit refresh');
+    const interval = setInterval(() => {
       refreshCredits();
-    }, 30000);
+    }, 60000); // Update every minute
     
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-        refreshIntervalRef.current = null;
-      }
-    };
+    return () => clearInterval(interval);
   }, [userId, refreshCredits]);
 };

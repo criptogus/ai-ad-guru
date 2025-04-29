@@ -39,8 +39,7 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
         name: profile.name,
         avatar: profile.avatar || '',
         credits: profile.credits,
-        hasPaid: profile.has_paid,
-        receivedFreeCredits: profile.received_free_credits
+        hasPaid: profile.has_paid
       };
       
       return customUser;
@@ -52,8 +51,7 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
         name: authUser.user_metadata?.name || 'User',
         avatar: '',
         credits: 0,
-        hasPaid: false,
-        receivedFreeCredits: false
+        hasPaid: false
       };
       
       return customUser;
@@ -66,8 +64,7 @@ export const createCustomUserWithProfile = async (authUser: User): Promise<Custo
       name: authUser.user_metadata?.name || 'User',
       avatar: '',
       credits: 0,
-      hasPaid: false,
-      receivedFreeCredits: false
+      hasPaid: false
     };
     
     return basicUser;

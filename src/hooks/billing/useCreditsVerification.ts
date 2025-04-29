@@ -1,183 +1,83 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCredits } from '@/contexts/CreditsContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useCreditsVerification = () => {
-  const { user, refreshUser } = useAuth();
-  const { refreshCredits } = useCredits();
-  const [checking, setChecking] = useState(true);  // Start as true to show loading state immediately
   const [processing, setProcessing] = useState(false);
-  const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState(false);
-  
-  // Helper function to ensure the received_free_credits column exists
-  const executeAddReceivedFreeCreditsColumnMigration = useCallback(async () => {
-    try {
-      console.log('Attempting to add received_free_credits column to profiles table');
-      
-      // Execute the function that adds the column if it doesn't exist
-      const { error } = await supabase.rpc('add_column_if_not_exists', {
-        table_name: 'profiles',
-        column_name: 'received_free_credits',
-        column_type: 'boolean'
-      });
-      
-      if (error) {
-        console.error('Error running migration:', error);
-        return false;
-      }
-      
-      console.log('Successfully ensured received_free_credits column exists');
-      return true;
-    } catch (err) {
-      console.error('Error executing migration:', err);
-      return false;
-    }
-  }, []);
-  
-  const checkFreeCreditsStatus = useCallback(async () => {
-    if (!user?.id) return false;
-    
-    try {
-      console.log("Checking free credits status for user:", user.id);
-      setChecking(true);
-      
-      // First, ensure the column exists
-      await executeAddReceivedFreeCreditsColumnMigration();
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('received_free_credits')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) {
-        console.error('Error checking free credits status:', error);
-        
-        // If the error is not about the column not existing, throw it
-        if (!error.message.includes('column "received_free_credits" does not exist')) {
-          throw error;
-        }
-        
-        // The column doesn't exist yet despite our migration attempt
-        console.log('Still having issues with the received_free_credits column. Setting default state.');
-        setHasClaimedFreeCredits(false);
-        return false;
-      }
-      
-      console.log('Free credits status data:', data);
-      
-      // Update local state based on database value
-      const hasReceived = !!data?.received_free_credits;
-      setHasClaimedFreeCredits(hasReceived);
-      
-      // If local user state doesn't match database, refresh user data
-      if (hasReceived !== user.receivedFreeCredits) {
-        console.log('Refreshing user data due to mismatch in free credits status');
-        await refreshUser();
-        await refreshCredits();
-      }
-      
-      return hasReceived;
-    } catch (error) {
-      console.error('Error checking free credits status:', error);
-      return false;
-    } finally {
-      setChecking(false);
-    }
-  }, [user, refreshUser, refreshCredits, executeAddReceivedFreeCreditsColumnMigration]);
+  const [verified, setVerified] = useState(false);
+  const { user, setUser } = useAuth();
   
   useEffect(() => {
-    // Set initial state based on user data
-    if (user?.id) {
-      setHasClaimedFreeCredits(!!user.receivedFreeCredits);
-      
-      // Automatically check status when component mounts
-      checkFreeCreditsStatus();
-    } else {
-      setChecking(false); // Set to false if no user yet
-    }
-  }, [user, checkFreeCreditsStatus]);
-  
-  // Set up a subscription to the profiles table to listen for changes in real time
-  useEffect(() => {
-    if (!user?.id) return;
+    const storedPurchaseIntent = localStorage.getItem('credit_purchase_intent');
     
-    const subscription = supabase
-      .channel('credits-changes')
-      .on('postgres_changes', 
-          { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-          async (payload) => {
-            console.log('Profile updated:', payload);
-            const newData = payload.new;
+    if (storedPurchaseIntent && user) {
+      const verifyPurchase = async () => {
+        try {
+          setProcessing(true);
+          
+          // Get the stored purchase intent
+          const purchaseIntent = JSON.parse(storedPurchaseIntent);
+          const { amount, timestamp, sessionId } = purchaseIntent;
+          
+          // Check if the purchase is recent (within 24 hours)
+          const now = Date.now();
+          const isRecent = now - timestamp < 24 * 60 * 60 * 1000;
+          
+          if (!isRecent) {
+            console.log("Purchase intent is too old - ignoring");
+            localStorage.removeItem('credit_purchase_intent');
+            setProcessing(false);
+            return;
+          }
+          
+          // Verify the purchase with the server
+          const { data, error } = await supabase.functions.invoke('verify-credit-purchase', {
+            body: { sessionId }
+          });
+          
+          if (error) {
+            console.error("Error verifying checkout session:", error);
+            toast.error("Failed to verify credit purchase");
+            setProcessing(false);
+            return;
+          }
+          
+          if (data?.success) {
+            console.log(`Adding ${amount} credits to user ${user.id}`);
             
-            // If credits or received_free_credits changed, refresh
-            if (newData && (typeof newData.credits !== 'undefined' || typeof newData.received_free_credits !== 'undefined')) {
-              console.log('Credits or free credits status changed, refreshing user data');
-              await refreshUser();
-              await refreshCredits();
-              setHasClaimedFreeCredits(!!newData.received_free_credits);
+            // Update local user state
+            if (setUser && user) {
+              setUser({
+                ...user,
+                credits: (user.credits || 0) + amount
+              });
             }
-          })
-      .subscribe();
+            
+            toast.success(`${amount} credits have been added to your account!`);
+            setVerified(true);
+            
+            // Clear the purchase intent
+            localStorage.removeItem('credit_purchase_intent');
+          } else {
+            // If payment is pending or unsuccessful
+            console.log("Payment verification status:", data?.message || "Unknown");
+            if (data?.paymentStatus === 'unpaid') {
+              toast.error("Payment incomplete. Please complete your payment to receive credits.");
+            }
+          }
+        } catch (error) {
+          console.error("Error processing credit verification:", error);
+          toast.error("Error verifying your purchase");
+        } finally {
+          setProcessing(false);
+        }
+      };
       
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user?.id, refreshUser, refreshCredits]);
-  
-  const claimFreeCredits = async (): Promise<boolean> => {
-    if (!user?.id || hasClaimedFreeCredits) return false;
-    
-    try {
-      setChecking(true);
-      setProcessing(true);
-      
-      // First, make sure the column exists
-      await executeAddReceivedFreeCreditsColumnMigration();
-      
-      console.log('Claiming free credits for user:', user.id);
-      const { data, error } = await supabase.functions.invoke("claim-free-credits", {
-        body: { userId: user.id },
-      });
-      
-      console.log('Response from claim-free-credits:', data, error);
-      
-      if (error) throw error;
-      
-      if (data?.success) {
-        toast.success('Free credits claimed!', {
-          description: `${data.creditsAdded || 15} credits have been added to your account.`
-        });
-        
-        // Refresh user data to get updated credit count
-        await refreshUser();
-        await refreshCredits();
-        setHasClaimedFreeCredits(true);
-        return true;
-      } else {
-        throw new Error(data?.message || "Failed to claim free credits");
-      }
-    } catch (error) {
-      console.error('Error claiming free credits:', error);
-      toast.error('Failed to claim free credits', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred'
-      });
-      return false;
-    } finally {
-      setChecking(false);
-      setProcessing(false);
+      verifyPurchase();
     }
-  };
+  }, [user, setUser]);
   
-  return {
-    checking,
-    processing,
-    hasClaimedFreeCredits,
-    checkFreeCreditsStatus,
-    claimFreeCredits
-  };
+  return { processing, verified };
 };

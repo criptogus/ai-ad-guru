@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import LoadingState from "@/components/billing/LoadingState";
@@ -10,20 +10,11 @@ import AppLayout from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { usePaymentVerification } from "@/hooks/billing/usePaymentVerification";
-import { testStripeConnection } from "@/services/billing/stripeConnectionTest";
 
 const BillingPage: React.FC = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-  const [showDevTools, setShowDevTools] = React.useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [stripeConnectionStatus, setStripeConnectionStatus] = useState<{
-    checked: boolean;
-    success?: boolean;
-    message?: string;
-  }>({
-    checked: false
-  });
+  const [showDevTools, setShowDevTools] = useState(false);
   
   // Extract session ID from URL if present
   const queryParams = new URLSearchParams(location.search);
@@ -35,53 +26,13 @@ const BillingPage: React.FC = () => {
   // Check if we're coming from a payment verification flow
   const isPaymentVerification = !!sessionId;
 
-  // Check Stripe connection on mount
-  useEffect(() => {
-    const checkStripeConnection = async () => {
-      try {
-        console.log('Checking Stripe API connection...');
-        const result = await testStripeConnection();
-        
-        setStripeConnectionStatus({
-          checked: true,
-          success: result.success,
-          message: result.message
-        });
-
-        if (!result.success) {
-          console.warn('Stripe connection issue:', result.message);
-        }
-      } catch (err) {
-        console.error('Failed to check Stripe connection:', err);
-        setStripeConnectionStatus({
-          checked: true,
-          success: false,
-          message: err instanceof Error ? err.message : 'Unknown error checking Stripe connection'
-        });
-      }
-    };
-    
-    checkStripeConnection();
-  }, []);
-
-  // Add effect to ensure we control page loading state properly with enough delay
-  useEffect(() => {
-    if (!authLoading) {
-      // Longer delay to ensure components are ready and prevent flickering
-      const timer = setTimeout(() => {
-        setPageLoading(false);
-      }, 1500); // Increased from 1000ms to 1500ms for more stability
-      return () => clearTimeout(timer);
-    }
-  }, [authLoading]);
-
   // Toggle developer tools visibility
   const toggleDevTools = () => {
     setShowDevTools(!showDevTools);
   };
   
   // Helper function to get the correct content
-  const renderContent = () => {
+  const getContent = () => {
     try {
       // If we're verifying a payment, show the verification component
       if (isPaymentVerification) {
@@ -115,23 +66,19 @@ const BillingPage: React.FC = () => {
       return <div className="p-8 text-center">An error occurred. Please try again or contact support.</div>;
     }
   };
-
-  // Define a single unified loading state
-  const isLoading = pageLoading || authLoading;
+  
+  // Show loading state while auth is initializing
+  if (isLoading && !isPaymentVerification) {
+    return (
+      <AppLayout activePage="billing">
+        <LoadingState />
+      </AppLayout>
+    );
+  }
   
   return (
     <AppLayout activePage="billing">
-      {isLoading ? <LoadingState /> : renderContent()}
-
-      {/* Only show Stripe connection warning to authenticated users who see the main billing page */}
-      {!isLoading && isAuthenticated && !isPaymentVerification && 
-       stripeConnectionStatus.checked && !stripeConnectionStatus.success && (
-        <div className="fixed bottom-4 right-4 max-w-md p-4 bg-red-50 border border-red-200 rounded-md shadow-lg text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 z-50">
-          <h4 className="font-semibold">Stripe Connection Issue</h4>
-          <p className="text-sm">{stripeConnectionStatus.message || 'Unable to connect to Stripe API'}</p>
-          <p className="text-xs mt-2">Please check the developer tools for more information.</p>
-        </div>
-      )}
+      {getContent()}
     </AppLayout>
   );
 };

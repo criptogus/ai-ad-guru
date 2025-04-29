@@ -6,42 +6,29 @@ export const useCreditsListener = (userId: string | undefined, refreshCredits: (
   useEffect(() => {
     if (!userId) return;
     
-    console.log('Setting up real-time listener for credit changes');
-    
-    // Set up a real-time listener for credit changes
-    const subscription = supabase
-      .channel('credit_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'credit_ledger',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Credit change detected:', payload);
-          refreshCredits();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Profile updated:', payload);
-          refreshCredits();
-        }
-      )
-      .subscribe();
-    
-    return () => {
-      console.log('Unsubscribing from credit changes');
-      subscription.unsubscribe();
-    };
+    try {
+      const creditsChannel = supabase
+        .channel('credit-changes')
+        .on(
+          'postgres_changes',
+          { 
+            event: 'INSERT',
+            schema: 'public',
+            table: 'credit_ledger',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('Atualização de créditos detectada:', payload);
+            refreshCredits();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(creditsChannel);
+      };
+    } catch (err) {
+      console.error('Erro ao configurar listener de créditos:', err);
+    }
   }, [userId, refreshCredits]);
 };
