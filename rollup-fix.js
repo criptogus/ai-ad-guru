@@ -7,17 +7,23 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Set environment variables
+process.env.ROLLUP_PURE_JS = 'true';
+process.env.ROLLUP_NATIVE = 'false';
+
+console.log('Starting Rollup fix...');
+
 // Caminho para o arquivo do Rollup que está causando o erro
 const rollupNativePath = path.resolve('./node_modules/rollup/dist/native.js');
 
 try {
   if (fs.existsSync(rollupNativePath)) {
-    let content = fs.readFileSync(rollupNativePath, 'utf8');
-    
-    // Verificar se o patch já foi aplicado
-    if (!content.includes('ROLLUP_PATCH_APPLIED')) {
-      // Modificar o arquivo para evitar o erro de módulo não encontrado
-      content = `// ROLLUP_PATCH_APPLIED
+    // Completely replace the native.js file with a mock implementation
+    const mockContent = `// ROLLUP_PATCH_APPLIED
+/**
+ * This is a mock implementation to avoid native module errors
+ */
+
 const mockNative = {
   isSupported: false,
   getDefaultExports() {
@@ -25,14 +31,18 @@ const mockNative = {
   }
 };
 
-// Mock da importação nativa que está falhando
+// Export the mock implementation
 module.exports = mockNative;
 `;
-      
-      fs.writeFileSync(rollupNativePath, content);
-      console.log('Patched Rollup native module');
-    }
+    
+    // Write the mock content to the file
+    fs.writeFileSync(rollupNativePath, mockContent);
+    console.log('Replaced Rollup native module with mock implementation');
+  } else {
+    console.warn('Warning: Rollup native.js file not found');
   }
 } catch (err) {
   console.error('Error patching Rollup:', err);
 }
+
+console.log('Rollup fix completed');
