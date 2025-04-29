@@ -1,102 +1,63 @@
-
-// vite.config.js
+// vite.config.js - Versão ultrassimplificada
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import fs from 'fs';
 import path from 'path';
-import { componentTagger } from "lovable-tagger";
 
-// Aplicar correções no início
-try {
-  // Fix para Puppeteer
-  process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
-  process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-  process.env.PUPPETEER_SKIP_VALIDATE_CHROMIUM_INSTALLATION = 'true';
-  process.env.PUPPETEER_PRODUCT = 'none';
-  process.env.BROWSER = 'none';
-  
-  // Fix para Rollup
-  const rollupNativePath = path.resolve('./node_modules/rollup/dist/native.js');
-  if (fs.existsSync(rollupNativePath)) {
-    fs.writeFileSync(rollupNativePath, `
-// ROLLUP_PATCH_APPLIED
-/**
- * This is a mock implementation to avoid native module errors
- */
+// Definir variáveis de ambiente críticas
+process.env.SWC_BINARY_PLATFORM = 'browser';
+process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
+process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 
-const mockNative = {
-  isSupported: false,
-  getDefaultExports() {
-    return {};
-  }
-};
-
-// Export the mock implementation
-module.exports = mockNative;
-`);
-    console.log('Patched Rollup native module');
-  }
-} catch (err) {
-  console.warn('Failed to apply fixes:', err);
-}
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
+  // Configuração mínima para fazer o build funcionar
   server: {
-    host: "::",
+    host: '::',
     port: 8080,
   },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+  
+  // Não usamos plugins que dependam de módulos nativos
+  plugins: [],
+  
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(process.cwd(), './src'),
     },
   },
+  
+  // Configurações para evitar dependências problemáticas
   optimizeDeps: {
-    exclude: ['puppeteer', '@puppeteer/browsers', 'chromium'], // Exclude puppeteer from optimization
-    force: true, // Force dependencies to be bundled
+    exclude: ['puppeteer', '@puppeteer/browsers', 'chromium', '@swc/core', '@rollup/rollup-linux-x64-gnu'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
   },
+  
   build: {
-    target: 'esnext', // Using modern target for better compatibility
+    // Configurações básicas de build
+    target: 'esnext',
+    
+    // Evitar usar recursos avançados problemáticos
+    minify: 'terser',
+    sourcemap: true,
+    
     rollupOptions: {
-      // Force pure JavaScript implementation
-      context: 'globalThis',
-      treeshake: {
-        moduleSideEffects: false,
-      },
-      output: {
-        format: 'es',
-        hoistTransitiveImports: false,
-        inlineDynamicImports: true,
-      },
-      // Prevent loading native modules
+      external: ['@rollup/rollup-linux-x64-gnu', '@swc/core-linux-x64-gnu'],
       onwarn(warning, warn) {
-        if (warning.code === 'MISSING_EXPORT') return;
+        // Ignorar avisos específicos
+        if (warning.code === 'MISSING_EXPORT' || 
+            warning.code === 'MISSING_EXTERNAL_DEPENDENCY' ||
+            warning.code === 'UNRESOLVED_IMPORT') {
+          return;
+        }
         warn(warning);
       },
     },
-    commonjsOptions: {
-      transformMixedEsModules: true,
-      requireReturnsDefault: 'auto',
-      extensions: ['.js', '.jsx', '.ts', '.tsx']
-    }
   },
-  // Define environment variables that will prevent native module usage
+  
+  // Definições de ambiente para evitar módulos nativos
   define: {
-    'process.env.ROLLUP_NATIVE': '"false"',
-    'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
-    'process.env.ROLLUP_PURE_JS': '"true"',
-    'process.env.PUPPETEER_SKIP_DOWNLOAD': '"true"',
-    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"',
-    'process.env.PUPPETEER_SKIP_VALIDATE_CHROMIUM_INSTALLATION': '"true"',
-    'process.env.BROWSER': '"none"',
-    'process.env.JS_ONLY': '"true"',
-    'process.env.SKIP_BINARY_INSTALL': '"true"',
-    'process.env.BUILD_ONLY_JS': '"true"',
-    'process.env.PUPPETEER_EXECUTABLE_PATH': '"/bin/true"'
+    'process.env.ROLLUP_NATIVE': JSON.stringify('false'),
+    'process.env.PUPPETEER_SKIP_DOWNLOAD': JSON.stringify('true'),
+    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': JSON.stringify('true'),
+    'process.env.SWC_BINARY_PLATFORM': JSON.stringify('browser'),
   },
-}));
+});
