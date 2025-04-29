@@ -1,11 +1,14 @@
-// vite.config.js - Vanilla extremamente básico
+// vite.config.js - Versão extremamente simplificada
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // Quase sem configurações, apenas o mínimo necessário
+  // Configuração mínima absoluta
   build: {
-    // Para o modo de desenvolvimento
     minify: false,
-    sourcemap: true,
+    rollupOptions: {
+      // Desativar todos os plugins e recursos do Rollup
+      treeshake: false,
+      plugins: []
+    }
   }
 });
