@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Check, Loader2, Gift } from "lucide-react";
+import { Loader2, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
 import { toast } from "sonner";
+import PackCard from "./PackCard";
 
 interface CreditsPurchaseCardProps {
   userId?: string;
@@ -194,11 +196,11 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                     <p className="text-sm text-muted-foreground mt-1">Start creating AI ads without paying</p>
                     <ul className="space-y-1 mt-2 text-sm">
                       <li className="flex items-center">
-                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <div className="mr-2 h-4 w-4 text-green-500">✓</div>
                         <span>Create ~3 Google ads</span>
                       </li>
                       <li className="flex items-center">
-                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                        <div className="mr-2 h-4 w-4 text-green-500">✓</div>
                         <span>Generate ~3 Instagram images</span>
                       </li>
                     </ul>
@@ -216,7 +218,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
                       </>
                     ) : hasClaimedFreeCredits ? (
                       <>
-                        <Check className="mr-2 h-4 w-4" />
+                        <div className="mr-2 h-4 w-4">✓</div>
                         Already Claimed
                       </>
                     ) : (

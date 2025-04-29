@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
       context: 'window',
       external: [],
       onwarn(warning, warn) {
-        // Ignore certain warnings
+        // Ignore specific warnings related to platform-specific modules
         if (
           warning.code === 'MISSING_NODE_BUILTINS' || 
           warning.code === 'SOURCEMAP_ERROR' ||
