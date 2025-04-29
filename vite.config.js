@@ -1,3 +1,4 @@
+
 // vite.config.js - Versão extremamente simplificada
 import { defineConfig } from 'vite';
 
