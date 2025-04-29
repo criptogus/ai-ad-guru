@@ -23,10 +23,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Avoid platform-specific modules
     rollupOptions: {
-      context: 'window',
       external: [],
       onwarn(warning, warn) {
-        // Ignore specific warnings related to platform-specific modules
+        // Skip specific warnings related to platform-specific modules
         if (
           warning.code === 'MISSING_NODE_BUILTINS' || 
           warning.code === 'SOURCEMAP_ERROR' ||
@@ -48,9 +47,6 @@ export default defineConfig(({ mode }) => ({
     }
   },
   optimizeDeps: {
-    // Force certain dependencies to be pre-bundled
-    include: ['@supabase/supabase-js', 'react', 'react-dom'],
-    // Exclude platform-specific dependencies
-    exclude: []
+    include: ['@supabase/supabase-js', 'react', 'react-dom']
   }
 }));
