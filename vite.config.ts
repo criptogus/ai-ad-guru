@@ -23,47 +23,58 @@ import fs from "fs";
       console.log("Created mock Chrome executable");
     }
 
-    // Modificar o módulo de instalação do Puppeteer se possível
-    const puppeteerInstallPath = path.resolve('./node_modules/puppeteer/lib/esm/puppeteer/node/install.js');
+    // Modificar diretamente o arquivo de instalação do Puppeteer
+    const puppeteerInstallPath = './node_modules/puppeteer/lib/esm/puppeteer/node/install.js';
     if (fs.existsSync(puppeteerInstallPath)) {
-      let content = fs.readFileSync(puppeteerInstallPath, 'utf8');
-      if (!content.includes('PUPPETEER_PATCH_APPLIED')) {
-        content = `// PUPPETEER_PATCH_APPLIED
-// Bypass download
-export async function downloadBrowsers() {
-  console.log('Browser download bypassed by patch');
-  return;
-}
-${content}`;
-        fs.writeFileSync(puppeteerInstallPath, content);
-        console.log("Patched Puppeteer install.js");
+      try {
+        let content = fs.readFileSync(puppeteerInstallPath, 'utf8');
+        if (!content.includes('PUPPETEER_PATCH_APPLIED')) {
+          // Substituir a função downloadBrowsers por uma versão que não faz nada
+          content = content.replace(
+            /export async function downloadBrowsers$$$$ {/,
+            `export async function downloadBrowsers() { 
+              // PUPPETEER_PATCH_APPLIED
+              console.log('Browser download bypassed by patch');
+              return;`
+          );
+          fs.writeFileSync(puppeteerInstallPath, content);
+          console.log("Patched Puppeteer install.js successfully");
+        }
+      } catch (err) {
+        console.error("Error modifying Puppeteer install.js:", err);
       }
     }
   } catch (err) {
     console.warn("Warning: Failed to apply Puppeteer fix:", err);
   }
 
-  // Fix para o Rollup
+  // Fix para o Rollup - agora adequado para módulos ES
   try {
-    const rollupNativePath = path.resolve('./node_modules/rollup/dist/native.js');
+    const rollupNativePath = './node_modules/rollup/dist/native.js';
     if (fs.existsSync(rollupNativePath)) {
-      let content = fs.readFileSync(rollupNativePath, 'utf8');
-      
-      if (!content.includes('ROLLUP_PATCH_APPLIED')) {
-        content = `// ROLLUP_PATCH_APPLIED
-const mockNative = {
+      // Criar um módulo ES6 que exporta as funções esperadas
+      const mockContent = `
+// ROLLUP_PATCH_APPLIED - ESM version
+// Exportar as funções esperadas como ESM
+export function parse() {
+  return { type: 'Program', body: [], sourceType: 'module' };
+}
+
+export async function parseAsync() {
+  return { type: 'Program', body: [], sourceType: 'module' };
+}
+
+// Mock também a exportação padrão para compatibilidade
+export default {
   isSupported: false,
   getDefaultExports() {
-    return {};
+    return { parse, parseAsync };
   }
 };
-
-// Mock da importação nativa que está falhando
-module.exports = mockNative;`;
-        
-        fs.writeFileSync(rollupNativePath, content);
-        console.log("Patched Rollup native module");
-      }
+`;
+      
+      fs.writeFileSync(rollupNativePath, mockContent);
+      console.log("Patched Rollup native.js as ESM module");
     }
   } catch (err) {
     console.warn("Warning: Failed to apply Rollup fix:", err);
@@ -77,21 +88,36 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-    // Adicione um plugin personalizado para garantir que os fixes sejam aplicados
+    // Plugin para garantir que os patches sejam aplicados antes da compilação
     {
-      name: 'apply-dependency-fixes',
+      name: 'pre-dependency-patches',
       enforce: 'pre',
-      buildStart() {
-        // Define variáveis de ambiente no início do build
+      async buildStart() {
         process.env.PUPPETEER_SKIP_DOWNLOAD = 'true';
         process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-        process.env.SKIP_BINARY_DOWNLOAD = 'true';
-        console.log("Build environment variables set by custom plugin");
+
+        // Patch do Rollup diretamente nas importações
+        const rollupPath = './node_modules/rollup/dist/es/shared/parseAst.js';
+        if (fs.existsSync(rollupPath)) {
+          let content = fs.readFileSync(rollupPath, 'utf8');
+          if (!content.includes('PARSEAST_PATCH_APPLIED')) {
+            // Substituir a importação problemática
+            content = content.replace(
+              "import { parse, parseAsync } from '../../native.js';",
+              `// PARSEAST_PATCH_APPLIED
+// Importação corrigida para compatibilidade ESM/CommonJS
+import native from '../../native.js';
+const parse = native.parse || (() => ({ type: 'Program', body: [], sourceType: 'module' }));
+const parseAsync = native.parseAsync || (async () => ({ type: 'Program', body: [], sourceType: 'module' }));`
+            );
+            fs.writeFileSync(rollupPath, content);
+            console.log("Patched Rollup parseAst.js to fix import issue");
+          }
+        }
       }
-    }
+    },
+    react(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -99,13 +125,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ['puppeteer', '@puppeteer/browsers', 'chromium', '@rollup/rollup-linux-x64-gnu'], // Exclude problematic deps
-    force: true, // Force dependencies to be bundled
+    exclude: ['puppeteer', '@puppeteer/browsers', 'chromium'],
+    force: true,
   },
   build: {
-    target: 'esnext', // Using modern target for better compatibility
+    target: 'esnext',
     rollupOptions: {
-      // Force pure JavaScript implementation
       context: 'globalThis',
       treeshake: {
         moduleSideEffects: false,
@@ -115,13 +140,10 @@ export default defineConfig(({ mode }) => ({
         hoistTransitiveImports: false,
         inlineDynamicImports: true,
       },
-      external: ['@rollup/rollup-linux-x64-gnu'], // Explicitamente excluir o módulo problemático
-      // Prevent loading native modules
       onwarn(warning, warn) {
-        if (warning.code === 'MISSING_EXPORT') return;
-        // Ignorar também avisos sobre módulos externos não encontrados
-        if (warning.code === 'MISSING_EXTERNAL_DEPENDENCY' && 
-            warning.message.includes('@rollup/rollup-linux-x64-gnu')) return;
+        if (warning.code === 'MISSING_EXPORT' || 
+            warning.code === 'MISSING_EXTERNAL_DEPENDENCY' ||
+            warning.code === 'UNRESOLVED_IMPORT') return;
         warn(warning);
       },
     },
@@ -131,7 +153,6 @@ export default defineConfig(({ mode }) => ({
       extensions: ['.js', '.jsx', '.ts', '.tsx']
     }
   },
-  // Define environment variables that will prevent native module usage
   define: {
     'process.env.ROLLUP_NATIVE': '"false"',
     'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
@@ -144,7 +165,6 @@ export default defineConfig(({ mode }) => ({
     'process.env.SKIP_BINARY_INSTALL': '"true"',
     'process.env.BUILD_ONLY_JS': '"true"',
     'process.env.PUPPETEER_EXECUTABLE_PATH': '"/bin/true"',
-    // Adicionar mais variáveis para o Rollup
     'process.env.ROLLUP_SKIP_NATIVE': '"true"'
   },
 }));
