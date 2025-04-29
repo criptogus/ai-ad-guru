@@ -1,240 +1,230 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 
-// CORS headers for the response
+// Define CORS headers for browser requests
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Debug helper
-const log = (message: string, data?: any) => {
-  if (data) {
-    console.log(`[CLAIM-FREE-CREDITS] ${message}:`, data);
-  } else {
-    console.log(`[CLAIM-FREE-CREDITS] ${message}`);
-  }
-};
-
-serve(async (req) => {
-  // Handle CORS preflight request
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+// Handle preflight OPTIONS request
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    log("Function started");
-    
-    // Get the request body
-    const body = await req.json();
-    const { userId } = body;
-
-    log("Request body", { userId });
+    // Parse request body
+    const requestBody = await req.json();
+    const { userId, creditsToAdd = 15 } = requestBody;
 
     if (!userId) {
-      log("Missing user ID");
       return new Response(
-        JSON.stringify({ success: false, message: "Missing user ID" }),
+        JSON.stringify({
+          success: false,
+          message: 'User ID is required',
+        }),
         {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
         }
       );
     }
 
-    // Initialize Supabase client with admin privileges
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
-    log("Checking if user has claimed free credits");
+    console.log(`Processing free credits claim for user: ${userId}`);
     
-    // First check if the user has already claimed free credits
-    const { data: profileData, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("id, credits, received_free_credits")
-      .eq("id", userId)
-      .single();
-
-    if (profileError) {
-      log("Error fetching profile", profileError);
-      
-      // Check if error is due to missing column
-      if (profileError.message.includes("column profiles.received_free_credits does not exist")) {
-        log("'received_free_credits' column doesn't exist - adding it");
-        
-        // First check if user already has credits from a previous operation
-        const { data: userData } = await supabaseAdmin
-          .from("profiles")
-          .select("id, credits")
-          .eq("id", userId)
-          .single();
-        
-        // If we got user data despite error, proceed with adding column and update
-        if (userData) {
-          log("User found, updating profile with received_free_credits column", userData);
-          
-          // Update the profile with received_free_credits column
-          const { error: alterError } = await supabaseAdmin.rpc('add_column_if_not_exists', {
-            table_name: 'profiles',
-            column_name: 'received_free_credits',
-            column_type: 'boolean'
-          });
-          
-          if (alterError) {
-            log("Error adding column", alterError);
-            throw new Error(`Failed to add received_free_credits column: ${alterError.message}`);
-          }
-          
-          // Continue with the credit update after adding the column
-          const currentCredits = userData.credits || 0;
-          
-          log("Updating user with free credits", { 
-            userId,
-            currentCredits, 
-            newCredits: currentCredits + 15 
-          });
-          
-          const { error: updateError } = await supabaseAdmin
-            .from("profiles")
-            .update({ 
-              credits: currentCredits + 15,
-              received_free_credits: true
-            })
-            .eq("id", userId);
-            
-          if (updateError) {
-            log("Error updating profile with credits", updateError);
-            throw new Error(`Failed to update user credits: ${updateError.message}`);
-          }
-          
-          // Add to credit_ledger
-          await addCreditLedgerEntry(supabaseAdmin, userId);
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: "15 free credits have been added to your account" 
-            }),
-            {
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200,
-            }
-          );
-        } else {
-          // If no user found, return error
-          throw new Error("User profile not found");
-        }
-      } else {
-        // For other errors besides missing column
-        throw new Error(`Failed to fetch user profile: ${profileError.message}`);
-      }
-    }
-
-    // If user has already claimed free credits, return an error
-    if (profileData?.received_free_credits) {
-      log("Free credits already claimed", { profileData });
+    // Get the Supabase client using the environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables');
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Free credits have already been claimed" 
+        JSON.stringify({
+          success: false,
+          message: 'Server configuration error',
         }),
         {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        }
-      );
-    }
-
-    log("Adding free credits for user", { userId, currentCredits: profileData?.credits });
-
-    // 1. Update the user's profile with the additional credits
-    const currentCredits = profileData?.credits || 0;
-    const { error: updateError } = await supabaseAdmin
-      .from("profiles")
-      .update({ 
-        credits: currentCredits + 15,
-        received_free_credits: true
-      })
-      .eq("id", userId);
-
-    if (updateError) {
-      log("Error updating user profile", updateError);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Failed to update user credits",
-          error: updateError.message
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
         }
       );
     }
-
-    // 2. Add an entry to the credit_ledger table
-    await addCreditLedgerEntry(supabaseAdmin, userId);
-
-    // Success response
-    log("Successfully added free credits");
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // First, check if the user has already claimed free credits
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('credits, received_free_credits')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      // Check if the error is because the column doesn't exist
+      if (userError.message.includes('column "received_free_credits" does not exist')) {
+        console.log('The received_free_credits column does not exist yet. Adding it.');
+        
+        // Attempt to add the column
+        const addColumnResult = await supabase.rpc('add_column_if_not_exists', {
+          table_name: 'profiles',
+          column_name: 'received_free_credits',
+          column_type: 'boolean'
+        });
+        
+        if (addColumnResult.error) {
+          console.error('Error adding column:', addColumnResult.error);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: 'Database schema error',
+              details: addColumnResult.error.message,
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 500,
+            }
+          );
+        }
+        
+        // Now try to get the user data again, but only select credits this time
+        const { data: retryData, error: retryError } = await supabase
+          .from('profiles')
+          .select('credits')
+          .eq('id', userId)
+          .single();
+        
+        if (retryError) {
+          console.error('Error fetching user profile after column addition:', retryError);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: 'Failed to retrieve user information',
+              details: retryError.message,
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 500,
+            }
+          );
+        }
+        
+        // We can proceed with the user data we have
+        userData.credits = retryData.credits;
+        // received_free_credits is assumed to be false since we just created the column
+        userData.received_free_credits = false;
+      } else {
+        console.error('Error fetching user profile:', userError);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Failed to retrieve user information',
+            details: userError.message,
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        );
+      }
+    }
+    
+    console.log('User data retrieved:', userData);
+    
+    // Check if the user has already claimed free credits
+    if (userData.received_free_credits) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'You have already claimed your free credits',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+    
+    // Begin a transaction to update the user's credits and mark as received
+    const currentCredits = userData.credits || 0;
+    const newCreditTotal = currentCredits + creditsToAdd;
+    
+    // Insert entry in credit_ledger
+    const { error: ledgerError } = await supabase
+      .from('credit_ledger')
+      .insert({
+        user_id: userId,
+        change: creditsToAdd,
+        reason: 'free_credits',
+        ref_id: 'welcome_bonus'
+      });
+    
+    if (ledgerError) {
+      console.error('Error updating credit ledger:', ledgerError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Failed to update credit ledger',
+          details: ledgerError.message,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+    
+    // Update the user's profile with new credits total and mark as received
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        credits: newCreditTotal,
+        received_free_credits: true
+      })
+      .eq('id', userId);
+    
+    if (updateError) {
+      console.error('Error updating user profile:', updateError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Failed to update user credits',
+          details: updateError.message,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
+    }
+    
+    // Return success response
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "15 free credits have been added to your account" 
+      JSON.stringify({
+        success: true,
+        message: `${creditsToAdd} free credits have been added to your account`,
+        creditsAdded: creditsToAdd,
+        newTotal: newCreditTotal,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
+    
   } catch (error) {
-    log("Error claiming free credits", error);
+    console.error('Unexpected error:', error);
+    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        message: error instanceof Error ? error.message : "An unexpected error occurred" 
+      JSON.stringify({
+        success: false,
+        message: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       }
     );
   }
 });
-
-// Helper function to add credit ledger entry
-async function addCreditLedgerEntry(supabase, userId) {
-  try {
-    const { error: ledgerError } = await supabase
-      .from("credit_ledger")
-      .insert({
-        user_id: userId,
-        change: 15,
-        reason: "welcome_credits",
-        ref_id: "free_credits_claim"
-      });
-
-    if (ledgerError) {
-      console.warn("Could not add to credit ledger, but credits were added:", ledgerError);
-      // Continue execution even if ledger entry fails - the credits were already added
-    }
-    return true;
-  } catch (error) {
-    console.error("Error adding ledger entry:", error);
-    return false;
-  }
-}
-
-// Helper function to add column if it doesn't exist
-// Note: This will be called via RPC function that needs to exist in the database

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +29,6 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setHasClaimedFreeCredits(true);
     }
     
-    // Check if received_free_credits column exists in profile
     const checkClaimStatus = async () => {
       if (!userId) return;
       
@@ -51,7 +49,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
           return;
         }
         
-        console.log("Free credits status:", data);
+        console.log("Free credits status data:", data);
         setHasClaimedFreeCredits(!!data?.received_free_credits);
       } catch (err) {
         console.error("Unexpected error checking claim status:", err);
@@ -77,7 +75,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setProcessingPack('free');
       
       const { data, error } = await supabase.functions.invoke("claim-free-credits", {
-        body: { userId },
+        body: { userId, creditsToAdd: 15 },
       });
       
       console.log("Response from claim-free-credits:", data, error);
@@ -88,12 +86,11 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       
       if (data?.success) {
         toast.success("Success!", {
-          description: "15 free credits have been added to your account"
+          description: `${data.creditsAdded || 15} free credits have been added to your account`
         });
         
         setHasClaimedFreeCredits(true);
         
-        // Refresh user data to get updated credit count
         await refreshUser();
         await refreshCredits();
       } else {
