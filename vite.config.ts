@@ -21,9 +21,11 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ['puppeteer'], // Exclude puppeteer from optimization
+    exclude: ['puppeteer', '@puppeteer/browsers'], // Exclude puppeteer from optimization
+    force: true, // Force dependencies to be bundled
   },
   build: {
+    target: 'esnext', // Using modern target for better compatibility
     rollupOptions: {
       // Force pure JavaScript implementation
       context: 'globalThis',
@@ -33,11 +35,13 @@ export default defineConfig(({ mode }) => ({
       output: {
         format: 'es',
         hoistTransitiveImports: false,
+        inlineDynamicImports: true,
       }
     },
     commonjsOptions: {
       transformMixedEsModules: true,
-      requireReturnsDefault: 'auto'
+      requireReturnsDefault: 'auto',
+      extensions: ['.js', '.jsx', '.ts', '.tsx']
     }
   },
   // Define environment variables that will prevent native module usage
@@ -46,6 +50,9 @@ export default defineConfig(({ mode }) => ({
     'process.env.SKIP_OPTIONAL_DEPENDENCY_CHECK': '"true"',
     'process.env.ROLLUP_PURE_JS': '"true"',
     'process.env.PUPPETEER_SKIP_DOWNLOAD': '"true"',
-    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"'
+    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"',
+    'process.env.PUPPETEER_SKIP_VALIDATE_CHROMIUM_INSTALLATION': '"true"',
+    'process.env.BROWSER': '"none"',
+    'process.env.JS_ONLY': '"true"'
   },
 }));

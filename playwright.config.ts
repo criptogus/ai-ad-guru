@@ -19,12 +19,19 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     launchOptions: {
       executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+      headless: true,
     },
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }
+      },
     },
     // Comment out Firefox and WebKit for now to avoid download issues
     /* {
@@ -40,5 +47,12 @@ export default defineConfig({
     command: 'npm run dev',
     port: 8080,
     reuseExistingServer: !process.env.CI,
+    env: {
+      PUPPETEER_SKIP_DOWNLOAD: 'true',
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true',
+      BROWSER: 'none',
+      ROLLUP_NATIVE: 'false',
+      JS_ONLY: 'true'
+    }
   },
 });

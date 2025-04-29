@@ -45,9 +45,21 @@ npx playwright test --ui
 The Playwright configuration is in `playwright.config.ts`. It:
 
 - Runs tests in Chrome only (Firefox and Safari are commented out to avoid download issues)
+- Uses system Chrome if available via the PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH env variable
 - Takes screenshots on failure
 - Starts the dev server automatically
 - Configures appropriate timeouts for stable testing
+
+## Browser Environment Variables
+
+To avoid download issues, the following environment variables can be set:
+
+```bash
+export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+export PUPPETEER_SKIP_DOWNLOAD=true
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+```
 
 ## Test Data
 
@@ -62,5 +74,3 @@ The tests use:
 2. The tests handle both development and production environments
 3. Adjust selectors if your UI changes
 4. In environments with binary/download restrictions, use system browsers
-
-
