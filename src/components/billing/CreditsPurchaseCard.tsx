@@ -23,33 +23,32 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
   const [hasClaimedFreeCredits, setHasClaimedFreeCredits] = useState<boolean>(
     user?.receivedFreeCredits || false
   );
-  
+
+  const loadingUser = !user || typeof currentCredits !== "number";
+
   useEffect(() => {
     if (user?.receivedFreeCredits) {
       setHasClaimedFreeCredits(true);
     }
-    
+
     const checkClaimStatus = async () => {
       if (!userId) return;
       
       try {
-        console.log("Checking if user has claimed free credits:", userId);
         const { data, error } = await supabase
           .from('profiles')
           .select('received_free_credits, credits')
           .eq('id', userId)
           .single();
-        
+
         if (error) {
           console.error("Error checking free credits status:", error);
           if (error.message.includes("column profiles.received_free_credits does not exist")) {
-            console.log("received_free_credits column doesn't exist yet");
             setHasClaimedFreeCredits(false);
           }
           return;
         }
         
-        console.log("Free credits status data:", data);
         setHasClaimedFreeCredits(!!data?.received_free_credits);
       } catch (err) {
         console.error("Unexpected error checking claim status:", err);
@@ -58,7 +57,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     
     checkClaimStatus();
   }, [user, userId]);
-  
+
   const handleClaimFreeCredits = async () => {
     if (!userId) {
       uiToast({
@@ -70,33 +69,28 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
     }
     
     try {
-      console.log("Claiming free credits for user:", userId);
       setIsProcessing(true);
       setProcessingPack('free');
-      
+
       const { data, error } = await supabase.functions.invoke("claim-free-credits", {
         body: { userId, creditsToAdd: 15 },
       });
-      
-      console.log("Response from claim-free-credits:", data, error);
-      
+
       if (error) {
         throw new Error(error.message);
       }
-      
+
       if (data?.success) {
         toast.success("Success!", {
           description: `${data.creditsAdded || 15} free credits have been added to your account`
         });
-        
+
         setHasClaimedFreeCredits(true);
-        
         await refreshUser();
         await refreshCredits();
       } else {
         throw new Error(data?.message || "Failed to claim free credits");
       }
-      
     } catch (error) {
       console.error('Error claiming free credits:', error);
       toast.error("Failed to Claim Credits", {
@@ -107,7 +101,7 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setProcessingPack(null);
     }
   };
-  
+
   const handlePurchaseClick = async (amount: number, price: number, packId: string) => {
     if (!userId) {
       uiToast({
@@ -117,11 +111,11 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       });
       return;
     }
-    
+
     try {
       setIsProcessing(true);
       setProcessingPack(packId);
-      
+
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
           userId,
@@ -129,23 +123,23 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
           returnUrl: `${window.location.origin}/billing?success=true`,
         },
       });
-      
+
       if (error) {
         throw new Error(error.message);
       }
-      
+
       if (!data?.url) {
         throw new Error("Failed to create checkout session");
       }
-      
+
       localStorage.setItem('credit_purchase_intent', JSON.stringify({
         amount,
         timestamp: Date.now(),
         sessionId: data.sessionId,
       }));
-      
+
       window.location.href = data.url;
-      
+
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast.error("Purchase Failed", {
@@ -156,13 +150,31 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
       setProcessingPack(null);
     }
   };
-  
+
+  if (loadingUser) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading Credits...</CardTitle>
+          <CardDescription>Please wait while we load your account details.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Purchase Credits</CardTitle>
         <CardDescription>
-          Buy credits to use for AI-generated ad campaigns, image generation, and more
+          You currently have <strong>{currentCredits}</strong> credits available.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -218,131 +230,47 @@ const CreditsPurchaseCard: React.FC<CreditsPurchaseCardProps> = ({ userId, curre
               </Card>
             </div>
 
+            {/* Packs */}
             <div className="grid gap-4 md:grid-cols-3">
-              <Card className="relative border-2 hover:border-primary/50">
-                <CardHeader>
-                  <CardTitle>100 Credits</CardTitle>
-                  <CardDescription>Starter pack</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-3xl font-bold">$15</div>
-                  <div className="text-sm text-muted-foreground">15¢ per credit</div>
-                  <ul className="space-y-2 mt-4 text-sm">
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Create ~20 Google ads</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Generate ~20 Instagram images</span>
-                    </li>
-                  </ul>
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(100, 15, 'starter')}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing && processingPack === 'starter' ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buy Credits
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Starter Pack */}
+              <PackCard
+                title="100 Credits"
+                description="Starter pack"
+                price={15}
+                perCredit="15¢ per credit"
+                features={["Create ~20 Google ads", "Generate ~20 Instagram images"]}
+                onClick={() => handlePurchaseClick(100, 15, 'starter')}
+                isProcessing={isProcessing}
+                processingPack={processingPack}
+                packId="starter"
+              />
 
-              <Card className="relative border-2 border-primary">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs py-1 px-3 rounded-full">
-                  MOST POPULAR
-                </div>
-                <CardHeader>
-                  <CardTitle>500 Credits</CardTitle>
-                  <CardDescription>Popular pack</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-3xl font-bold">$50</div>
-                  <div className="text-sm text-muted-foreground">10¢ per credit</div>
-                  <ul className="space-y-2 mt-4 text-sm">
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Create ~100 Google ads</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Generate ~100 Instagram images</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>33% discount vs starter pack</span>
-                    </li>
-                  </ul>
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(500, 50, 'pro')}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing && processingPack === 'pro' ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buy Credits
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Pro Pack */}
+              <PackCard
+                title="500 Credits"
+                description="Popular pack"
+                price={50}
+                perCredit="10¢ per credit"
+                features={["Create ~100 Google ads", "Generate ~100 Instagram images", "33% discount vs starter pack"]}
+                onClick={() => handlePurchaseClick(500, 50, 'pro')}
+                isProcessing={isProcessing}
+                processingPack={processingPack}
+                packId="pro"
+                highlight
+              />
 
-              <Card className="relative border-2 hover:border-primary/50">
-                <CardHeader>
-                  <CardTitle>2000 Credits</CardTitle>
-                  <CardDescription>Professional pack</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-3xl font-bold">$150</div>
-                  <div className="text-sm text-muted-foreground">7.5¢ per credit</div>
-                  <ul className="space-y-2 mt-4 text-sm">
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Create ~400 Google ads</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>Generate ~400 Instagram images</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="mr-2 h-4 w-4 text-green-500" />
-                      <span>50% discount vs starter pack</span>
-                    </li>
-                  </ul>
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={() => handlePurchaseClick(2000, 150, 'agency')}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing && processingPack === 'agency' ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buy Credits
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Agency Pack */}
+              <PackCard
+                title="2000 Credits"
+                description="Professional pack"
+                price={150}
+                perCredit="7.5¢ per credit"
+                features={["Create ~400 Google ads", "Generate ~400 Instagram images", "50% discount vs starter pack"]}
+                onClick={() => handlePurchaseClick(2000, 150, 'agency')}
+                isProcessing={isProcessing}
+                processingPack={processingPack}
+                packId="agency"
+              />
             </div>
           </TabsContent>
         </Tabs>
