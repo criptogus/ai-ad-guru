@@ -29,6 +29,10 @@ export SKIP_BINARY_INSTALL=true
 export BUILD_ONLY_JS=true
 export NODE_OPTIONS=--no-warnings
 
+# Generate Supabase types
+echo "📝 Generating Supabase types..."
+node generate-supabase-types.js
+
 # Run the build with special environment variables
 echo "🚀 Starting build process..."
 vite build --mode development --config vite.config.js

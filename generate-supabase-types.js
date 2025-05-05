@@ -1,6 +1,5 @@
 
 // generate-supabase-types.js
-// This script generates TypeScript types for Supabase tables
 import fs from 'fs';
 
 console.log('Generating Supabase types...');
@@ -167,10 +166,117 @@ export interface Database {
           }
         ]
       }
+      oauth_states: {
+        Row: {
+          id: string
+          user_id: string 
+          platform: string
+          redirect_uri: string
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          id: string
+          user_id: string
+          platform: string
+          redirect_uri: string
+          created_at: string
+          expires_at: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          platform?: string
+          redirect_uri?: string
+          created_at?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
+      app_prompts: {
+        Row: {
+          id: string
+          key: string
+          prompt: string
+          description: string | null
+          version: number | null
+          read_only: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          is_active: boolean | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          prompt: string
+          description?: string | null
+          version?: number | null
+          read_only?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          is_active?: boolean | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          prompt?: string
+          description?: string | null
+          version?: number | null
+          read_only?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      user_integrations: {
+        Row: {
+          id: string
+          user_id: string
+          platform: string
+          access_token: string
+          refresh_token: string | null
+          account_id: string | null
+          expires_at: string | null
+          created_at: string | null
+          updated_at: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          platform: string
+          access_token: string
+          refresh_token?: string | null
+          account_id?: string | null
+          expires_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          platform?: string
+          access_token?: string
+          refresh_token?: string | null
+          account_id?: string | null
+          expires_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       // Include other tables here if needed
     }
     Views: {
-      // Define views if needed
+      credit_balance: {
+        Row: {
+          total_credits: number | null
+          user_id: string | null
+        }
+      }
     }
     Functions: {
       // Define functions if needed

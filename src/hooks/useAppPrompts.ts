@@ -12,6 +12,10 @@ export interface AppPrompt {
   read_only: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// Extended interface for our local state
+interface AppPromptExtended extends AppPrompt {
   is_active?: boolean;
   metadata?: Record<string, any> | null;
 }
@@ -58,7 +62,6 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         const { data, error: fetchError } = await supabase
           .from('app_prompts')
           .select('*')
-          .eq('is_active', true)
           .order('version', { ascending: false });
 
         if (fetchError) {
@@ -71,9 +74,11 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         const processedKeys = new Set<string>();
         
         if (data) {
-          data.forEach((prompt: AppPrompt) => {
+          data.forEach((prompt: AppPromptExtended) => {
             if (!processedKeys.has(prompt.key)) {
-              promptsRecord[prompt.key] = prompt;
+              // Omit is_active from the prompt object
+              const { is_active, metadata, ...promptData } = prompt;
+              promptsRecord[prompt.key] = promptData;
               processedKeys.add(prompt.key);
             }
           });
@@ -152,7 +157,6 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
             prompt: newPrompt,
             description: description || existingPrompt.description,
             version: existingPrompt.version + 1,
-            is_active: true,
             read_only: existingPrompt.read_only
           })
           .select()
@@ -160,10 +164,11 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
           
         if (insertError) throw insertError;
         
-        // Update local state
+        // Update local state (filter out is_active if present)
+        const { is_active, metadata, ...cleanedPromptData } = newPromptData;
         setPrompts(prev => ({
           ...prev,
-          [key]: newPromptData
+          [key]: cleanedPromptData
         }));
       } else {
         // Create new prompt
@@ -181,26 +186,30 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
   
   const createPrompt = async (key: string, prompt: string, description?: string): Promise<boolean> => {
     try {
+      const insertData = {
+        key,
+        prompt,
+        description,
+        version: 1,
+        read_only: false
+      };
+      
       const { error: insertError, data: newPromptData } = await supabase
         .from('app_prompts')
-        .insert({
-          key,
-          prompt,
-          description,
-          version: 1,
-          is_active: true,
-          read_only: false
-        })
+        .insert(insertData)
         .select()
         .single();
         
       if (insertError) throw insertError;
       
-      // Update local state
-      setPrompts(prev => ({
-        ...prev,
-        [key]: newPromptData
-      }));
+      // Update local state (filter out is_active if present)
+      if (newPromptData) {
+        const { is_active, metadata, ...cleanedPromptData } = newPromptData;
+        setPrompts(prev => ({
+          ...prev,
+          [key]: cleanedPromptData
+        }));
+      }
       
       toast.success("New prompt created successfully");
       return true;

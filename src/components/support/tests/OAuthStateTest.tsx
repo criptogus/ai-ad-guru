@@ -6,6 +6,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { DiagnosticStatus } from '../types/diagnostics';
 import { checkTableExists, getTableColumns } from '../utils/databaseUtils';
 
+interface OAuthStateTest {
+  id: string;
+  platform: string;
+  redirect_uri: string;
+  created_at: string;
+  expires_at: string;
+  user_id: string;
+}
+
 interface OAuthStateTestProps {
   status: DiagnosticStatus;
   error: string | null;
@@ -39,27 +48,6 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       const testId = crypto.randomUUID();
       const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID
       
-      // Build insert object based on available columns
-      const insertData: Record<string, any> = {
-        platform: 'test',
-        redirect_uri: 'https://example.com',
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 60000).toISOString()
-      };
-      
-      // Add columns that might exist
-      if (columns.includes('id')) {
-        insertData.id = testId;
-      }
-      
-      if (columns.includes('user_id')) {
-        insertData.user_id = testUserId;
-      }
-      
-      if (columns.includes('state')) {
-        insertData.state = `test-${Date.now()}`;
-      }
-      
       // First check if we have the minimum required columns for OAuth state
       const requiredColumns = ['platform', 'redirect_uri'];
       const missingColumns = requiredColumns.filter(col => !columns.includes(col));
@@ -68,6 +56,16 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
         onStatusChange('error', `Table is missing required columns: ${missingColumns.join(', ')}`);
         return false;
       }
+      
+      // Build insert object with all required fields
+      const insertData: OAuthStateTest = {
+        id: testId,
+        platform: 'test',
+        redirect_uri: 'https://example.com',
+        user_id: testUserId,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 60000).toISOString()
+      };
       
       // Insert test record
       const { error: insertError } = await supabase
@@ -81,20 +79,10 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       }
       
       // Try to delete the test record to clean up
-      // Use the id if we have it, otherwise use all fields to identify the record
-      if (columns.includes('id')) {
-        await supabase
-          .from('oauth_states')
-          .delete()
-          .eq('id', testId);
-      } else {
-        // Use other fields to identify the record for deletion
-        await supabase
-          .from('oauth_states')
-          .delete()
-          .eq('platform', 'test')
-          .eq('redirect_uri', 'https://example.com');
-      }
+      await supabase
+        .from('oauth_states')
+        .delete()
+        .eq('id', testId);
       
       onStatusChange('success', null);
       return true;

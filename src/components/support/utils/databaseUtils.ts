@@ -1,14 +1,19 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { errorLogger } from '@/services/libs/error-handling';
+import { Database } from '@/integrations/supabase/types';
+
+type TableNames = keyof Database['public']['Tables'];
+type TableViews = keyof Database['public']['Views'];
 
 /**
  * Check if a table exists in the database
  */
 export const checkTableExists = async (tableName: string): Promise<boolean> => {
   try {
+    // Use type assertion to handle dynamic table names
     const { count, error } = await supabase
-      .from(tableName)
+      .from(tableName as TableNames)
       .select('*', { count: 'exact', head: true });
       
     return !error || error.code === 'PGRST116'; // PGRST116 is "No rows returned" which is fine
@@ -34,7 +39,7 @@ export const getTableColumns = async (tableName: string): Promise<string[]> => {
         console.error('Error creating get_table_columns function:', createFnError);
         // Fallback to a simpler approach - just get a row and extract keys
         const { data: sampleRow } = await supabase
-          .from(tableName)
+          .from(tableName as TableNames)
           .select('*')
           .limit(1)
           .single();
@@ -52,7 +57,7 @@ export const getTableColumns = async (tableName: string): Promise<string[]> => {
       
       // Fallback to a simpler approach - just get a row and extract keys
       const { data: sampleRow } = await supabase
-        .from(tableName)
+        .from(tableName as TableNames)
         .select('*')
         .limit(1)
         .single();

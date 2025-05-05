@@ -1,3 +1,4 @@
+
 export type AdPlatform = 'google' | 'meta' | 'linkedin' | 'microsoft';
 
 export interface Connection {

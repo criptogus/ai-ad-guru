@@ -31,7 +31,7 @@ function xxhashBase16() { return 'mockedHash'; }
 
 // Export everything properly for both ESM and CommonJS
 export { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 };
-export default { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 };
+module.exports = { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 };
 `;
 
   fs.writeFileSync(nativePath, mockContent);
