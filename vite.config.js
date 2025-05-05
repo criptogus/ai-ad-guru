@@ -1,16 +1,19 @@
 
-// vite.config.js - Versão extremamente simplificada
+// vite.config.js - Ultra simplified version for fallback
 import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
-  // Configuração mínima absoluta
   build: {
     minify: false,
     rollupOptions: {
-      // Desativar todos os plugins e recursos do Rollup
+      external: [
+        '@rollup/rollup-linux-x64-gnu', 
+        '@swc/core-linux-x64-gnu',
+        'puppeteer',
+        '@puppeteer/browsers'
+      ],
       treeshake: false,
-      plugins: []
     }
   },
   resolve: {
@@ -18,4 +21,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  define: {
+    'process.env.ROLLUP_NATIVE': '"false"',
+    'process.env.PUPPETEER_SKIP_DOWNLOAD': '"true"',
+    'process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD': '"true"',
+  }
 });

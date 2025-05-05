@@ -1,3 +1,5 @@
+// src/integrations/supabase/types.d.ts - Type definitions for Supabase
+// This is a declaration file so we don't need to update the auto-generated types.ts file
 export type Json =
   | string
   | number
@@ -6,48 +8,158 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       ad_spend_fees: {
         Row: {
-          campaign_id: string
-          created_at: string
-          date: string
-          fee_amount: number
           id: string
-          spend_amount: number
-          stripe_usage_record_id: string | null
           user_id: string
+          campaign_id: string
+          spend_amount: number
+          fee_amount: number
+          date: string
+          stripe_usage_record_id: string | null
+          created_at: string
         }
         Insert: {
-          campaign_id: string
-          created_at?: string
-          date: string
-          fee_amount: number
           id?: string
-          spend_amount: number
-          stripe_usage_record_id?: string | null
           user_id: string
+          campaign_id: string
+          spend_amount: number
+          fee_amount: number
+          date: string
+          stripe_usage_record_id?: string | null
+          created_at?: string
         }
         Update: {
-          campaign_id?: string
-          created_at?: string
-          date?: string
-          fee_amount?: number
           id?: string
-          spend_amount?: number
-          stripe_usage_record_id?: string | null
           user_id?: string
+          campaign_id?: string
+          spend_amount?: number
+          fee_amount?: number
+          date?: string
+          stripe_usage_record_id?: string | null
+          created_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "ad_spend_fees_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
+            foreignKeyName: "ad_spend_fees_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ad_spend_fees_campaign_id_fkey"
+            columns: ["campaign_id"]
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      company_info: {
+        Row: {
+          id: string
+          user_id: string
+          company_name: string
+          website: string | null
+          industry: string | null
+          target_market: string | null
+          language: string | null
+          tone_of_voice: string | null
+          custom_tone: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          logo_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          company_name: string
+          website?: string | null
+          industry?: string | null
+          target_market?: string | null
+          language?: string | null
+          tone_of_voice?: string | null
+          custom_tone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          company_name?: string
+          website?: string | null
+          industry?: string | null
+          target_market?: string | null
+          language?: string | null
+          tone_of_voice?: string | null
+          custom_tone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_info_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      // Updated profiles with new fields
+      profiles: {
+        Row: {
+          id: string
+          name: string
+          avatar: string | null
+          credits: number | null
+          has_paid: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          onboarding_completed: boolean | null
+          welcome_credits_seen: boolean | null
+          stripe_customer_id: string | null
+        }
+        Insert: {
+          id: string
+          name: string
+          avatar?: string | null
+          credits?: number | null
+          has_paid?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          onboarding_completed?: boolean | null
+          welcome_credits_seen?: boolean | null
+          stripe_customer_id?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          avatar?: string | null
+          credits?: number | null
+          has_paid?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          onboarding_completed?: boolean | null
+          welcome_credits_seen?: boolean | null
+          stripe_customer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
       ai_results: {
@@ -231,57 +343,6 @@ export type Database = {
           },
         ]
       }
-      company_info: {
-        Row: {
-          company_name: string
-          created_at: string
-          custom_tone: string | null
-          id: string
-          industry: string | null
-          language: string | null
-          logo_url: string | null
-          primary_color: string | null
-          secondary_color: string | null
-          target_market: string | null
-          tone_of_voice: string | null
-          updated_at: string
-          user_id: string
-          website: string | null
-        }
-        Insert: {
-          company_name: string
-          created_at?: string
-          custom_tone?: string | null
-          id?: string
-          industry?: string | null
-          language?: string | null
-          logo_url?: string | null
-          primary_color?: string | null
-          secondary_color?: string | null
-          target_market?: string | null
-          tone_of_voice?: string | null
-          updated_at?: string
-          user_id: string
-          website?: string | null
-        }
-        Update: {
-          company_name?: string
-          created_at?: string
-          custom_tone?: string | null
-          id?: string
-          industry?: string | null
-          language?: string | null
-          logo_url?: string | null
-          primary_color?: string | null
-          secondary_color?: string | null
-          target_market?: string | null
-          tone_of_voice?: string | null
-          updated_at?: string
-          user_id?: string
-          website?: string | null
-        }
-        Relationships: []
-      }
       credit_ledger: {
         Row: {
           change: number
@@ -401,45 +462,6 @@ export type Database = {
           platform?: string
           redirect_uri?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar: string | null
-          created_at: string | null
-          credits: number | null
-          has_paid: boolean | null
-          id: string
-          name: string
-          onboarding_completed: boolean | null
-          stripe_customer_id: string | null
-          updated_at: string | null
-          welcome_credits_seen: boolean | null
-        }
-        Insert: {
-          avatar?: string | null
-          created_at?: string | null
-          credits?: number | null
-          has_paid?: boolean | null
-          id: string
-          name: string
-          onboarding_completed?: boolean | null
-          stripe_customer_id?: string | null
-          updated_at?: string | null
-          welcome_credits_seen?: boolean | null
-        }
-        Update: {
-          avatar?: string | null
-          created_at?: string | null
-          credits?: number | null
-          has_paid?: boolean | null
-          id?: string
-          name?: string
-          onboarding_completed?: boolean | null
-          stripe_customer_id?: string | null
-          updated_at?: string | null
-          welcome_credits_seen?: boolean | null
         }
         Relationships: []
       }
@@ -653,114 +675,3 @@ export type Database = {
     }
   }
 }
-
-type DefaultSchema = Database[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
