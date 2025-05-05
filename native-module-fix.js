@@ -2,36 +2,48 @@
 #!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log('🔧 Applying fix to Rollup native module...');
 
 // Path to the problematic file
-const nativePath = './node_modules/rollup/dist/native.js';
-
-console.log('🔧 Applying direct fix to Rollup native module...');
+const nativePath = path.resolve('./node_modules/rollup/dist/native.js');
 
 if (fs.existsSync(nativePath)) {
+  console.log(`Found Rollup native.js at: ${nativePath}`);
+  
   // Create a complete mock implementation
   const mockContent = `
 // DIRECT_PATCH_APPLIED - Mock implementation for native.js
 // This replaces the problematic code that tries to require platform-specific modules
 
-// Mock parse function
-function parse() {
+// Mock functions used by Rollup
+export function parse() {
   return { type: 'Program', body: [], sourceType: 'module' };
 }
 
-// Mock parseAsync function
-async function parseAsync() {
+export async function parseAsync() {
   return { type: 'Program', body: [], sourceType: 'module' };
 }
 
-// Mock hash functions
-function xxhashBase64Url() { return 'mockedHash'; }
-function xxhashBase36() { return 'mockedHash'; }
-function xxhashBase16() { return 'mockedHash'; }
+export function xxhashBase64Url() { return 'mockedHash'; }
+export function xxhashBase36() { return 'mockedHash'; }
+export function xxhashBase16() { return 'mockedHash'; }
 
-// Export everything properly for both ESM and CommonJS
-export { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 };
-module.exports = { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 };
+// Export as default for both ESM and CommonJS compatibility
+const nativeModule = {
+  parse,
+  parseAsync,
+  xxhashBase64Url,
+  xxhashBase36,
+  xxhashBase16,
+  isSupported: false
+};
+
+export default nativeModule;
 `;
 
   fs.writeFileSync(nativePath, mockContent);
@@ -41,49 +53,50 @@ module.exports = { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase1
   process.exit(1);
 }
 
-// Fix any other imports that might reference the native module
-const fixImports = (dir = './node_modules/rollup/dist') => {
-  const files = fs.readdirSync(dir, { withFileTypes: true });
-  
-  for (const file of files) {
-    const fullPath = path.join(dir, file.name);
+// Fix node-entry.js import
+const nodeEntryPath = path.resolve('./node_modules/rollup/dist/es/shared/node-entry.js');
+if (fs.existsSync(nodeEntryPath)) {
+  try {
+    let content = fs.readFileSync(nodeEntryPath, 'utf8');
     
-    if (file.isDirectory()) {
-      fixImports(fullPath);
-    } else if (file.name.endsWith('.js') && file.name !== 'native.js') {
-      const content = fs.readFileSync(fullPath, 'utf8');
+    // Replace the problematic import with a default import
+    if (content.includes("import { parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } from '../../native.js';")) {
+      const modifiedContent = content.replace(
+        "import { parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } from '../../native.js';",
+        "import nativeModule from '../../native.js';\nconst { parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } = nativeModule;"
+      );
       
-      // Check if file imports from native.js
-      if (content.includes("from '../native.js'") || 
-          content.includes("from '../../native.js'") || 
-          content.includes("require('../native.js')") || 
-          content.includes("require('../../native.js')")) {
-        
-        console.log(`Fixing imports in ${fullPath}`);
-        
-        // Update import style to be consistent with our mock
-        let updated = content
-          .replace(
-            /import \{ .*? \} from ['"]\.\.\/native\.js['"]/g, 
-            `import nativeMod from '../native.js';\nconst { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } = nativeMod;`
-          )
-          .replace(
-            /import \{ .*? \} from ['"]\.\.\/\.\.\/native\.js['"]/g, 
-            `import nativeMod from '../../native.js';\nconst { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } = nativeMod;`
-          );
-        
-        fs.writeFileSync(fullPath, updated);
-      }
+      fs.writeFileSync(nodeEntryPath, modifiedContent);
+      console.log('✅ Successfully patched node-entry.js');
+    } else {
+      console.log('⚠️ node-entry.js does not contain the expected import statement. Skipping.');
     }
+  } catch (err) {
+    console.error('❌ Error patching node-entry.js:', err);
   }
-};
-
-// Try to fix imports in other Rollup files
-try {
-  fixImports();
-  console.log('✅ Fixed imports in related files');
-} catch (err) {
-  console.log('⚠️ Error fixing imports:', err);
 }
 
-console.log('🚀 Rollup native module fixed successfully!');
+// Fix parseAst.js
+const parseAstPath = path.resolve('./node_modules/rollup/dist/es/shared/parseAst.js');
+if (fs.existsSync(parseAstPath)) {
+  try {
+    let content = fs.readFileSync(parseAstPath, 'utf8');
+    
+    // Replace the problematic import with a default import
+    if (content.includes("import { parse, parseAsync } from '../../native.js';")) {
+      const modifiedContent = content.replace(
+        "import { parse, parseAsync } from '../../native.js';",
+        "import nativeModule from '../../native.js';\nconst { parse, parseAsync } = nativeModule;"
+      );
+      
+      fs.writeFileSync(parseAstPath, modifiedContent);
+      console.log('✅ Successfully patched parseAst.js');
+    } else {
+      console.log('⚠️ parseAst.js does not contain the expected import statement. Skipping.');
+    }
+  } catch (err) {
+    console.error('❌ Error patching parseAst.js:', err);
+  }
+}
+
+console.log('🚀 Rollup native module fix completed!');

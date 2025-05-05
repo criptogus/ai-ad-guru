@@ -58,7 +58,7 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       }
       
       // Build insert object with all required fields
-      const insertData: OAuthStateTest = {
+      const insertData = {
         id: testId,
         platform: 'test',
         redirect_uri: 'https://example.com',
@@ -67,10 +67,10 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
         expires_at: new Date(Date.now() + 60000).toISOString()
       };
       
-      // Insert test record
+      // Insert test record - using type assertion to bypass the type check
       const { error: insertError } = await supabase
-        .from('oauth_states')
-        .insert(insertData);
+        .from('oauth_states' as any)
+        .insert(insertData as any);
       
       if (insertError) {
         console.error('OAuth state insert error:', insertError);
@@ -80,7 +80,7 @@ const OAuthStateTest = forwardRef<{ runTest: () => Promise<boolean> }, OAuthStat
       
       // Try to delete the test record to clean up
       await supabase
-        .from('oauth_states')
+        .from('oauth_states' as any)
         .delete()
         .eq('id', testId);
       

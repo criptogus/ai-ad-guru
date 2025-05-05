@@ -12,10 +12,6 @@ export interface AppPrompt {
   read_only: boolean;
   created_at: string;
   updated_at: string;
-}
-
-// Extended interface for our local state
-interface AppPromptExtended extends AppPrompt {
   is_active?: boolean;
   metadata?: Record<string, any> | null;
 }
@@ -37,14 +33,16 @@ const DEFAULT_PROMPTS: Record<string, Omit<AppPrompt, 'id' | 'created_at' | 'upd
     prompt: 'You are an AI assistant specialized in creating effective advertising content. Generate compelling ad copy for {{platform}} that highlights the unique value proposition of {{companyName}} in the {{industry}} industry. The target audience is {{targetAudience}}. Use a {{brandTone}} tone and incorporate these keywords: {{keywords}}. The primary call to action should be: {{callToAction}}. Focus on these unique selling points: {{uniqueSellingPoints}}.',
     description: 'Primary prompt used for generating ad content across all platforms',
     version: 1,
-    read_only: true
+    read_only: true,
+    is_active: true
   },
   openai_image_generator: {
     key: 'openai_image_generator',
     prompt: 'Generate a cinematic, high-end advertising image for an {{platform}} campaign targeting {{targetAudience}} in {{industry}}. The visual must evoke {{mindTrigger}} and drive conversions, styled like a top-tier NYC creative agency\'s work. Use photorealistic rendering with soft lighting, shallow depth of field, and a clean, persuasive composition. Reflect {{companyName}}\'s value through a central subject. Incorporate modern branding with clean, bold visuals. Format: 1080x1080px for Instagram, 1200x627px for LinkedIn. Ensure mobile-friendly visuals with no text overlay.',
     description: 'Enhanced prompt template for generating ad images across platforms',
     version: 1,
-    read_only: true
+    read_only: true,
+    is_active: true
   }
 };
 
@@ -60,7 +58,7 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         setError(null);
 
         const { data, error: fetchError } = await supabase
-          .from('app_prompts')
+          .from('app_prompts' as any)
           .select('*')
           .order('version', { ascending: false });
 
@@ -74,11 +72,21 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         const processedKeys = new Set<string>();
         
         if (data) {
-          data.forEach((prompt: AppPromptExtended) => {
+          data.forEach((prompt: any) => {
             if (!processedKeys.has(prompt.key)) {
-              // Omit is_active from the prompt object
-              const { is_active, metadata, ...promptData } = prompt;
-              promptsRecord[prompt.key] = promptData;
+              const cleanedPrompt: AppPrompt = {
+                id: prompt.id,
+                key: prompt.key,
+                prompt: prompt.prompt,
+                description: prompt.description,
+                version: prompt.version || 1,
+                read_only: prompt.read_only || false,
+                created_at: prompt.created_at,
+                updated_at: prompt.updated_at,
+                is_active: prompt.is_active !== false // Default to true if not explicitly set to false
+              };
+              
+              promptsRecord[prompt.key] = cleanedPrompt;
               processedKeys.add(prompt.key);
             }
           });
@@ -143,7 +151,7 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
       if (existingPrompt) {
         // Mark the existing prompt as inactive (soft-delete for versioning)
         const { error: deactivateError } = await supabase
-          .from('app_prompts')
+          .from('app_prompts' as any)
           .update({ is_active: false })
           .eq('id', existingPrompt.id);
           
@@ -151,25 +159,39 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         
         // Create a new version
         const { error: insertError, data: newPromptData } = await supabase
-          .from('app_prompts')
+          .from('app_prompts' as any)
           .insert({
             key,
             prompt: newPrompt,
             description: description || existingPrompt.description,
             version: existingPrompt.version + 1,
-            read_only: existingPrompt.read_only
+            read_only: existingPrompt.read_only,
+            is_active: true
           })
           .select()
           .single();
           
         if (insertError) throw insertError;
         
-        // Update local state (filter out is_active if present)
-        const { is_active, metadata, ...cleanedPromptData } = newPromptData;
-        setPrompts(prev => ({
-          ...prev,
-          [key]: cleanedPromptData
-        }));
+        // Update local state
+        if (newPromptData) {
+          const cleanedPrompt: AppPrompt = {
+            id: newPromptData.id,
+            key: newPromptData.key,
+            prompt: newPromptData.prompt,
+            description: newPromptData.description,
+            version: newPromptData.version || 1,
+            read_only: newPromptData.read_only || false,
+            created_at: newPromptData.created_at,
+            updated_at: newPromptData.updated_at,
+            is_active: true
+          };
+          
+          setPrompts(prev => ({
+            ...prev,
+            [key]: cleanedPrompt
+          }));
+        }
       } else {
         // Create new prompt
         return await createPrompt(key, newPrompt, description);
@@ -191,23 +213,35 @@ export const useAppPrompts = (): UseAppPromptsReturn => {
         prompt,
         description,
         version: 1,
-        read_only: false
+        read_only: false,
+        is_active: true
       };
       
       const { error: insertError, data: newPromptData } = await supabase
-        .from('app_prompts')
+        .from('app_prompts' as any)
         .insert(insertData)
         .select()
         .single();
         
       if (insertError) throw insertError;
       
-      // Update local state (filter out is_active if present)
+      // Update local state
       if (newPromptData) {
-        const { is_active, metadata, ...cleanedPromptData } = newPromptData;
+        const cleanedPrompt: AppPrompt = {
+          id: newPromptData.id,
+          key: newPromptData.key,
+          prompt: newPromptData.prompt,
+          description: newPromptData.description,
+          version: newPromptData.version || 1,
+          read_only: newPromptData.read_only || false,
+          created_at: newPromptData.created_at,
+          updated_at: newPromptData.updated_at,
+          is_active: true
+        };
+        
         setPrompts(prev => ({
           ...prev,
-          [key]: cleanedPromptData
+          [key]: cleanedPrompt
         }));
       }
       
