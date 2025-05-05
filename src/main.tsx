@@ -1,7 +1,7 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CampaignProvider } from "@/contexts/CampaignContext";
 import { CreditsProvider } from "@/contexts/CreditsContext";
@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>
-      <ThemeProvider>
+      <ThemeProvider defaultTheme="system" storageKey="theme-preference">
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <CreditsProvider>

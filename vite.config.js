@@ -1,6 +1,7 @@
 
 // vite.config.js - Versão extremamente simplificada
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
   // Configuração mínima absoluta
@@ -11,5 +12,10 @@ export default defineConfig({
       treeshake: false,
       plugins: []
     }
-  }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 });
