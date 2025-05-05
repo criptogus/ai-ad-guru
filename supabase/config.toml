@@ -1,7 +1,1 @@
-
-# svnockyhgohttzgbgydo
-# This is a config file for a Supabase Edge Function.
-
-[functions]
-[functions.refresh-credit-balance]
-verify_jwt = true
+project_id = "svnockyhgohttzgbgydo"
