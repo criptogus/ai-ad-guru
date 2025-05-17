@@ -1,5 +1,6 @@
-
-#!/usr/bin/env node
+// Este arquivo foi corrigido para resolver o erro de build no Netlify
+// O shebang foi comentado para evitar erro de sintaxe quando executado como módulo ES
+// #!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
 
