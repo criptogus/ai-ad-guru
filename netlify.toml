@@ -2,5 +2,5 @@
 NODE_VERSION = "18"
 
 [build]
-command = "npm install --omit=optional && npm run build"
+command = "node rollup-patch.js && npm install --omit=optional --legacy-peer-deps && npm run build"
 publish = "dist"
