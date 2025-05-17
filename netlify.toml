@@ -4,5 +4,5 @@ publish = "dist"
 
 [build.environment]
 ROLLUP_NATIVE_SKIP = "true"
-NODE_VERSION = "18.x"
+NODE_VERSION = "18.19.1"
 PHP_ENABLED = "false"
