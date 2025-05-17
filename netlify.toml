@@ -1,7 +1,8 @@
 [build]
-command = "node rollup-native-patch.js && npm install && npm run build"
+command = "node rollup-aggressive-patch.js && npm install --legacy-peer-deps && npm run build"
 publish = "dist"
 
 [build.environment]
 ROLLUP_NATIVE_SKIP = "true"
-NODE_VERSION = "16.20.0"
+NODE_VERSION = "14.20.0"
+NPM_FLAGS = "--legacy-peer-deps --no-optional"
