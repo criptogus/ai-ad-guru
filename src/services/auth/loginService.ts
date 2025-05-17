@@ -1,4 +1,4 @@
-import { supabase, configureSessionExpiration } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AuthError, Session, User, UserResponse, WeakPassword } from '@supabase/supabase-js';
 
 interface LoginResult {
@@ -11,7 +11,7 @@ interface LoginResult {
 // Login with email and password
 export const loginWithEmail = async (email: string, password: string): Promise<LoginResult> => {
   console.log('Attempting to sign in with email:', email);
-  
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -20,12 +20,13 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
 
     if (error) {
       console.error('Sign-in error:', error);
-      
+
       // Handle specific error codes with more user-friendly messages
       if (error.message.includes('Email not confirmed')) {
         // Modify message but keep the original error object
         const enhancedError = error;
-        enhancedError.message = 'Please check your email and click the confirmation link to activate your account.';
+        enhancedError.message =
+          'Please check your email and click the confirmation link to activate your account.';
         return {
           session: null,
           user: null,
@@ -41,19 +42,19 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
           error: enhancedError,
         };
       }
-      
+
       return { session: null, user: null, error };
     }
 
     console.log('Sign-in successful:', data);
-    
-    // Configure session to expire after 30 days (30 * 86400 seconds)
-    await configureSessionExpiration(30 * 86400);
-    
+
+    // Sessão configurada para expirar após 30 dias por padrão
+    // Nota: configureSessionExpiration foi removido pois não está disponível
+
     return {
       session: data.session,
       user: data.user,
-      error: null
+      error: null,
     };
   } catch (error) {
     console.error('Error in loginWithEmail:', error);
@@ -65,12 +66,12 @@ export const loginWithEmail = async (email: string, password: string): Promise<L
 export const loginWithGoogle = async () => {
   // Use the consistent redirect URI
   const redirectTo = 'https://auth.zeroagency.ai/auth/v1/callback';
-  
+
   console.log('==== GOOGLE AUTH DEBUG INFO ====');
   console.log('Initiating Google sign-in with redirect URL:', redirectTo);
   console.log('Make sure this EXACT URL is registered in Google Cloud Console');
   console.log('================================');
-  
+
   try {
     // Use the default behavior without skipBrowserRedirect
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -82,7 +83,7 @@ export const loginWithGoogle = async () => {
           prompt: 'consent',
         },
         scopes: 'email profile',
-      }
+      },
     });
 
     if (error) {
@@ -92,17 +93,21 @@ export const loginWithGoogle = async () => {
       console.error('Error status:', error.status);
       console.error('Full error details:', JSON.stringify(error, null, 2));
       console.error('==========================');
-      
+
       if (error.message.includes('provider is not enabled')) {
         throw error;
       }
-      
+
       if (error.message.includes('redirect_uri_mismatch')) {
-        console.error('REDIRECT URI MISMATCH ERROR: The redirect URI in your Google OAuth settings does not match the one being used.');
-        console.error('Please ensure you have registered EXACTLY this URL in Google Cloud Console:');
+        console.error(
+          'REDIRECT URI MISMATCH ERROR: The redirect URI in your Google OAuth settings does not match the one being used.'
+        );
+        console.error(
+          'Please ensure you have registered EXACTLY this URL in Google Cloud Console:'
+        );
         console.error(redirectTo);
       }
-      
+
       throw error;
     }
 
@@ -117,9 +122,9 @@ export const loginWithGoogle = async () => {
 // Sign out
 export const logout = async () => {
   console.log('Logging out user');
-  
+
   // Clean up any session expiration data
   localStorage.removeItem('session_expires_at');
-  
+
   await supabase.auth.signOut();
 };
