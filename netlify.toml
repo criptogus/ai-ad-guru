@@ -1,7 +1,7 @@
 [build]
-command = "node rollup-patch.js && npm install --no-optional && npm run build"
+command = "node rollup-native-patch.js && npm install && npm run build"
 publish = "dist"
 
 [build.environment]
-ROLLUP_SKIP_NATIVE = "true"
+ROLLUP_NATIVE_SKIP = "true"
 NODE_VERSION = "16.20.0"
