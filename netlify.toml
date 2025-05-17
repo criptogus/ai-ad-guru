@@ -1,10 +1,8 @@
 [build]
-command = "npm install --legacy-peer-deps && npm run build"
+command = "npm ci && npm run build"
 publish = "dist"
 
 [build.environment]
 ROLLUP_NATIVE_SKIP = "true"
-NODE_VERSION = "14.20.0"
-NPM_FLAGS = "--legacy-peer-deps --no-optional"
+NODE_VERSION = "18.x"
 PHP_ENABLED = "false"
-PHP_VERSION = "disabled"
