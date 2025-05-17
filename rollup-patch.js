@@ -6,8 +6,13 @@
  * falha no build do Netlify.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obter o diretório atual em módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Caminho para o arquivo native.js do Rollup
 const nativeJsPath = path.join(process.cwd(), 'node_modules', 'rollup', 'dist', 'native.js');
