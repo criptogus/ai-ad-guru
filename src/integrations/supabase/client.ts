@@ -2,16 +2,41 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Obter as variáveis de ambiente ou usar valores padrão para desenvolvimento local
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_KEY || process.env.SUPABASE_KEY || '';
+// Valores de fallback para desenvolvimento/teste
+// Usando URL real mas com chave de fallback para evitar erros críticos
+const FALLBACK_URL = 'https://svnockyhgohttzgbgydo.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bm9ja3loZ29odHR6Z2JneWRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQ3NjQ4MDAsImV4cCI6MjAwMDM0MDgwMH0.fallback-key-for-development-only';
+
+// Obter as variáveis de ambiente ou usar valores de fallback
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || FALLBACK_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_KEY || process.env.SUPABASE_KEY || FALLBACK_KEY;
+
+// Log detalhado para diagnóstico
+console.log('Configuração do Supabase:', {
+  url: SUPABASE_URL,
+  keyPresent: !!SUPABASE_PUBLISHABLE_KEY,
+  usingFallbackUrl: SUPABASE_URL === FALLBACK_URL,
+  usingFallbackKey: SUPABASE_PUBLISHABLE_KEY === FALLBACK_KEY,
+  envVars: {
+    VITE_SUPABASE_URL: !!import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_KEY: !!import.meta.env.VITE_SUPABASE_KEY,
+    NODE_ENV: import.meta.env.MODE || 'unknown'
+  }
+});
 
 // Verificar se as variáveis de ambiente estão definidas
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.warn('Variáveis de ambiente do Supabase não encontradas. A autenticação pode não funcionar corretamente.');
+if (SUPABASE_URL === FALLBACK_URL || SUPABASE_PUBLISHABLE_KEY === FALLBACK_KEY) {
+  console.warn('⚠️ Usando valores de fallback para o Supabase. A autenticação e funcionalidades dependentes podem não funcionar corretamente.');
+  console.warn('⚠️ Verifique se as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_KEY estão configuradas no Netlify.');
 }
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// Exportar informações de diagnóstico para uso em componentes de UI
+export const supabaseConnectionInfo = {
+  isConfigured: SUPABASE_URL !== FALLBACK_URL && SUPABASE_PUBLISHABLE_KEY !== FALLBACK_KEY,
+  usingFallback: SUPABASE_URL === FALLBACK_URL || SUPABASE_PUBLISHABLE_KEY === FALLBACK_KEY
+};
