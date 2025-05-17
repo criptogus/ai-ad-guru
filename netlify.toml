@@ -1,0 +1,6 @@
+[build.environment]
+NODE_VERSION = "18"
+
+[build]
+command = "npm install --omit=optional && npm run build"
+publish = "dist"
