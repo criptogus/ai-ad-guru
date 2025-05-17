@@ -1,5 +1,6 @@
+
 [build]
-command = "npm install && npm run build"
+command = "npm install && node native-module-fix.js && npm run build"
 publish = "dist"
 
 [build.environment]
@@ -7,3 +8,6 @@ ROLLUP_NATIVE_SKIP = "true"
 NODE_VERSION = "18.19.1"
 PHP_ENABLED = "false"
 SECRETS_SCAN_ENABLED = "false"
+PUPPETEER_SKIP_DOWNLOAD = "true"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+ROLLUP_PURE_JS = "true"

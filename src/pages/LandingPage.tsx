@@ -9,12 +9,10 @@ import { Trust } from '@/components/landing/Trust';
 import { Pricing } from '@/components/landing/Pricing';
 import { Cta } from '@/components/landing/Cta';
 import { Footer } from '@/components/landing/Footer';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const LandingPage: React.FC = () => {
-  // Use the enhanced auth redirect hook to handle redirection for authenticated users
-  useAuthRedirect({ redirectAuthenticated: true, redirectPath: '/dashboard' });
+  const { t } = useLanguage();
   
   return (
     <div className="min-h-screen bg-background">
@@ -23,35 +21,30 @@ const LandingPage: React.FC = () => {
         <meta name="description" content="Automate your Google Ads & Meta Ads campaigns with AI-powered optimization. Create, manage, and optimize ads that convert better with less effort." />
       </Helmet>
       
-      <AuthProvider>
-        <Nav />
-      </AuthProvider>
+      <Nav />
       
       <main>
         <Hero 
-          title="AI-Powered Ad Management" 
-          subtitle="Create, optimize, and scale your ad campaigns with intelligent automation"
+          title={t("ai_powered_ad_management")}
+          subtitle={t("create_optimize_scale")} 
           primaryAction="/auth/register"
-          primaryActionText="Get Started"
+          primaryActionText={t("get_started")}
           secondaryAction="/pricing"
-          secondaryActionText="See Pricing"
+          secondaryActionText={t("see_pricing")}
         />
         
         <Features />
-        
         <Process />
-        
         <Trust />
-        
         <Pricing />
         
         <Cta 
-          title="Ready to transform your advertising strategy?"
-          subtitle="Join thousands of businesses saving time and money with AI-powered ad optimization."
+          title={t("ready_to_transform")}
+          subtitle={t("join_thousands")}
           primaryAction="/auth/register"
-          primaryActionText="Start for free"
+          primaryActionText={t("start_for_free")}
           secondaryAction="/pricing" 
-          secondaryActionText="View pricing"
+          secondaryActionText={t("view_pricing")}
         />
       </main>
       

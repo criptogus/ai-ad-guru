@@ -22,6 +22,9 @@ const queryClient = new QueryClient({
   },
 });
 
+// Log to help with debugging
+console.log('🚀 Application starting - initializing providers');
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>

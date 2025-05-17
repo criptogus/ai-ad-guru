@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from 'react';
 import {
   RouterProvider,
@@ -41,14 +40,19 @@ const LandingPage = lazy(() => import('@/pages/LandingPage'));
 
 // Create the router
 const router = createBrowserRouter([
-  // Public routes
+  // Root route - Home page
   {
     path: "/",
-    element: <Suspense fallback={<Loading />}><LandingPage /></Suspense>
+    element: <Suspense fallback={<Loading />}><HomePage /></Suspense>
   },
+  // Other public routes
   {
     path: "/pricing",
     element: <Suspense fallback={<Loading />}><PricingPage /></Suspense>
+  },
+  {
+    path: "/landing",
+    element: <Suspense fallback={<Loading />}><LandingPage /></Suspense>
   },
   // Auth routes
   {
@@ -194,17 +198,6 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-}
-
-// NavigationControl to handle navigation (renamed from Navigate to avoid conflicts)
-function NavigationControl({ to, state, replace }: { to: string; state?: any; replace?: boolean }) {
-  const navigate = useNavigate();
-  
-  React.useEffect(() => {
-    navigate(to, { state, replace });
-  }, [navigate, to, state, replace]);
-  
-  return null;
 }
 
 // Export the Router component that provides the router
