@@ -1,6 +1,6 @@
 
 [build]
-command = "npm install && node native-module-fix.js && npm run build"
+command = "npm install && node native-module-fix.js && npx tsc -p tsconfig.vite.json && npm run build"
 publish = "dist"
 
 [build.environment]
